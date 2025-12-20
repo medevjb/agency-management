@@ -280,90 +280,110 @@
 
 @push('scripts')
 <script>
+// Global variables for DataTables functionality
 let usersTable;
 let selectedRows = [];
 
-$(document).ready(function() {
-    // Initialize DataTable
-    usersTable = $('#usersTable').DataTable({
-        processing: true,
-        serverSide: true,
-        responsive: true,
-        pageLength: 25,
-        ajax: {
-            url: '/users/data',
-            type: 'GET',
-            data: function(d) {
-                // Add current filter values to request
-                d.search = $('#search').val() || '';
-                d.employee_id = $('#employee_id').val() || '';
-                d.role = $('#role').val() || '';
-                d.status = $('#quick_status').val() || '';
-                d.team_id = $('#team_id').val() || '';
-                d.tech_stack_id = $('#tech_stack_id').val() || '';
-                d.department = $('#department').val() || '';
-            }
-        },
-        columns: [
-            {
-                data: null,
-                orderable: false,
-                className: 'text-center',
-                render: function(data, type, row) {
-                    return '<input type="checkbox" class="user-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" value="' + row.id + '">';
+// Main initialization function
+function initializeUsersModule() {
+    // Check if jQuery is available
+    if (typeof $ === 'undefined') {
+        console.log('Waiting for jQuery to load...');
+        setTimeout(initializeUsersModule, 100);
+        return;
+    }
+
+    // Check if SweetAlert is available
+    if (typeof Swal === 'undefined') {
+        console.log('Waiting for SweetAlert to load...');
+        setTimeout(initializeUsersModule, 100);
+        return;
+    }
+
+    console.log('jQuery and SweetAlert loaded, initializing DataTable...');
+
+        // Initialize DataTable
+        usersTable = $('#usersTable').DataTable({
+            processing: true,
+            serverSide: true,
+            responsive: true,
+            pageLength: 25,
+            ajax: {
+                url: '/users/data',
+                type: 'GET',
+                data: function(d) {
+                    // Add current filter values to request
+                    d.search = $('#search').val() || '';
+                    d.employee_id = $('#employee_id').val() || '';
+                    d.role = $('#role').val() || '';
+                    d.status = $('#quick_status').val() || '';
+                    d.team_id = $('#team_id').val() || '';
+                    d.tech_stack_id = $('#tech_stack_id').val() || '';
+                    d.department = $('#department').val() || '';
                 }
             },
-            { data: 'name', orderable: true },
-            { data: 'email', orderable: true },
-            { data: 'employee_id', orderable: true },
-            { data: 'phone', orderable: true },
-            { data: 'department', orderable: true },
-            { data: 'position', orderable: true },
-            { data: 'team', orderable: true },
-            { data: 'tech_stack', orderable: true },
-            { data: 'role', orderable: true },
-            { data: 'status', orderable: true },
-            { data: 'created_at', orderable: true },
-            {
-                data: 'actions',
-                orderable: false,
-                className: 'text-center'
+            columns: [
+                {
+                    data: null,
+                    orderable: false,
+                    className: 'text-center',
+                    render: function(data, type, row) {
+                        return '<input type="checkbox" class="user-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" value="' + row.id + '">';
+                    }
+                },
+                { data: 'name', orderable: true },
+                { data: 'email', orderable: true },
+                { data: 'employee_id', orderable: true },
+                { data: 'phone', orderable: true },
+                { data: 'department', orderable: true },
+                { data: 'position', orderable: true },
+                { data: 'team', orderable: true },
+                { data: 'tech_stack', orderable: true },
+                { data: 'role', orderable: true },
+                { data: 'status', orderable: true },
+                { data: 'created_at', orderable: true },
+                {
+                    data: 'actions',
+                    orderable: false,
+                    className: 'text-center'
+                }
+            ],
+            order: [[11, 'desc']], // Default sort by created_at desc
+            language: {
+                processing: '<div class="flex items-center"><i class="fas fa-spinner fa-spin mr-2"></i> Loading...</div>',
+                emptyTable: 'No users found',
+                zeroRecords: 'No matching users found'
+            },
+            drawCallback: function(settings) {
+                // Re-attach event handlers after each draw
+                attachCheckboxHandlers();
             }
-        ],
-        order: [[11, 'desc']], // Default sort by created_at desc
-        language: {
-            processing: '<div class="flex items-center"><i class="fas fa-spinner fa-spin mr-2"></i> Loading...</div>',
-            emptyTable: 'No users found',
-            zeroRecords: 'No matching users found'
-        },
-        drawCallback: function(settings) {
-            // Re-attach event handlers after each draw
-            attachCheckboxHandlers();
-        }
-    });
+        });
 
-    // Auto-apply filters on input change (debounced)
-    let searchTimeout;
-    $('#search, #quick_status').on('input change', function() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(function() {
-            applyFilters();
-        }, 500);
-    });
+        // Auto-apply filters on input change (debounced)
+        let searchTimeout;
+        $('#search, #quick_status').on('input change', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function() {
+                applyFilters();
+            }, 500);
+        });
 
-    // Attach initial checkbox handlers
-    attachCheckboxHandlers();
+        // Attach initial checkbox handlers
+        attachCheckboxHandlers();
 
-    // Select all functionality
-    $('#selectAll').change(function() {
-        const checkboxes = $('.user-checkbox');
-        checkboxes.prop('checked', $(this).prop('checked'));
-        updateBulkSelection();
-    });
-});
+        // Select all functionality
+        $('#selectAll').change(function() {
+            const checkboxes = $('.user-checkbox');
+            checkboxes.prop('checked', $(this).prop('checked'));
+            updateBulkSelection();
+        });
 
-// Toggle filters visibility
-function toggleFilters() {
+        console.log('Users module initialized successfully');
+}
+
+// Helper functions - make them globally accessible
+window.toggleFilters = function() {
     const advancedFilters = $('#advancedFilters');
     const toggle = $('#filterToggle');
 
@@ -376,27 +396,27 @@ function toggleFilters() {
     }
 }
 
-// Apply filters
-function applyFilters() {
-    usersTable.ajax.reload();
+window.applyFilters = function() {
+    if (usersTable) {
+        usersTable.ajax.reload();
+    }
 }
 
-// Clear filters
-function clearFilters() {
+window.clearFilters = function() {
     $('#filterForm')[0].reset();
-    usersTable.ajax.reload();
+    if (usersTable) {
+        usersTable.ajax.reload();
+    }
 }
 
-// Attach checkbox event handlers
-function attachCheckboxHandlers() {
+window.attachCheckboxHandlers = function() {
     // Individual checkbox change
     $('.user-checkbox').off('change').on('change', function() {
         updateBulkSelection();
     });
 }
 
-// Update bulk selection
-function updateBulkSelection() {
+window.updateBulkSelection = function() {
     const checkboxes = $('.user-checkbox:checked');
     selectedRows = [];
 
@@ -429,16 +449,14 @@ function updateBulkSelection() {
     }
 }
 
-// Clear selection
-function clearSelection() {
+window.clearSelection = function() {
     $('.user-checkbox').prop('checked', false);
     $('#selectAll').prop('checked', false);
     selectedRows = [];
     updateBulkSelection();
 }
 
-// Apply bulk operations
-function applyBulkOperations() {
+window.applyBulkOperations = function() {
     if (selectedRows.length === 0) {
         showToast('Please select users first', 'warning');
         return;
@@ -483,7 +501,9 @@ function applyBulkOperations() {
         if (result.isConfirmed) {
             if (result.value.success) {
                 Swal.fire('Success!', result.value.message, 'success');
-                usersTable.ajax.reload();
+                if (usersTable) {
+                    usersTable.ajax.reload();
+                }
                 clearSelection();
                 $('#bulkRole').val('');
                 $('#bulkTeam').val('');
@@ -494,8 +514,7 @@ function applyBulkOperations() {
     });
 }
 
-// Delete selected users
-function deleteSelectedUsers() {
+window.deleteSelectedUsers = function() {
     if (selectedRows.length === 0) {
         showToast('Please select users first', 'warning');
         return;
@@ -531,7 +550,9 @@ function deleteSelectedUsers() {
         if (result.isConfirmed) {
             if (result.value.success) {
                 Swal.fire('Deleted!', result.value.message, 'success');
-                usersTable.ajax.reload();
+                if (usersTable) {
+                    usersTable.ajax.reload();
+                }
                 clearSelection();
             } else {
                 Swal.fire('Error!', result.value.message, 'error');
@@ -540,8 +561,7 @@ function deleteSelectedUsers() {
     });
 }
 
-// Export selected users
-function exportSelectedUsers() {
+window.exportSelectedUsers = function() {
     if (selectedRows.length > 0) {
         window.location.href = '/users/export?user_ids=' + selectedRows.join(',');
     } else {
@@ -549,8 +569,7 @@ function exportSelectedUsers() {
     }
 }
 
-// Delete user
-function deleteUser(userId, userName) {
+window.deleteUser = function(userId, userName) {
     Swal.fire({
         title: 'Delete User?',
         html: `Are you sure you want to delete <strong>${userName}</strong>?<br>This action cannot be undone.`,
@@ -577,7 +596,9 @@ function deleteUser(userId, userName) {
         if (result.isConfirmed) {
             if (result.value.success) {
                 Swal.fire('Deleted!', result.value.message, 'success');
-                usersTable.ajax.reload();
+                if (usersTable) {
+                    usersTable.ajax.reload();
+                }
             } else {
                 Swal.fire('Error!', result.value.message, 'error');
             }
@@ -585,8 +606,7 @@ function deleteUser(userId, userName) {
     });
 }
 
-// Toggle user status
-function toggleUserStatus(userId, userName, status) {
+window.toggleUserStatus = function(userId, userName, status) {
     const statusText = status ? 'activate' : 'deactivate';
 
     Swal.fire({
@@ -615,7 +635,9 @@ function toggleUserStatus(userId, userName, status) {
         if (result.isConfirmed) {
             if (result.value.success) {
                 Swal.fire('Success!', result.value.message, 'success');
-                usersTable.ajax.reload();
+                if (usersTable) {
+                    usersTable.ajax.reload();
+                }
             } else {
                 Swal.fire('Error!', result.value.message, 'error');
             }
@@ -623,26 +645,34 @@ function toggleUserStatus(userId, userName, status) {
     });
 }
 
-// Toast notification helper
 function showToast(message, type = 'info') {
-    // Simple toast implementation - you can replace with a better one
-    const toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-            toast.addEventListener('mouseenter', Swal.stopTimer)
-            toast.addEventListener('mouseleave', Swal.resumeTimer)
-        }
-    });
+    if (typeof Swal !== 'undefined') {
+        const toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
 
-    toast.fire({
-        icon: type,
-        title: message
-    });
+        toast.fire({
+            icon: type,
+            title: message
+        });
+    } else {
+        // Fallback if SweetAlert is not available
+        console.log(message);
+    }
 }
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    initializeUsersModule();
+});
 </script>
 @endpush
 @endsection
