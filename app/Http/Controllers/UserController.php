@@ -85,16 +85,22 @@ class UserController extends Controller
         $query = User::with(['team', 'techStack', 'roles'])
             ->where('id', '!=', auth()->id());
 
-        // Apply same filters as index method
-        if ($request->filled('search')) {
-            $searchTerm = $request->search;
+        // Apply filters for DataTables
+        if ($request->filled('search') && $request->search['value'] != '') {
+            $searchTerm = $request->search['value'];
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('name', 'like', "%{$searchTerm}%")
                     ->orWhere('email', 'like', "%{$searchTerm}%")
                     ->orWhere('employee_id', 'like', "%{$searchTerm}%")
+                    ->orWhere('phone', 'like', "%{$searchTerm}%")
                     ->orWhere('position', 'like', "%{$searchTerm}%")
                     ->orWhere('department', 'like', "%{$searchTerm}%");
             });
+        }
+
+        // Apply additional filters
+        if ($request->filled('employee_id')) {
+            $query->where('employee_id', 'like', "%{$request->employee_id}%");
         }
 
         if ($request->filled('role')) {
@@ -119,9 +125,84 @@ class UserController extends Controller
             $query->where('department', $request->department);
         }
 
-        $users = $query->latest()->get();
+        // Get total records
+        $totalRecords = $query->count();
 
-        return response()->json($users);
+        // Apply ordering for DataTables
+        if ($request->filled('order')) {
+            $orderColumn = $request->order[0]['column'];
+            $orderDir = $request->order[0]['dir'];
+
+            $columns = ['name', 'email', 'employee_id', 'phone', 'department', 'position', 'team', 'tech_stack', 'role', 'status', 'created_at'];
+            if (isset($columns[$orderColumn])) {
+                if ($columns[$orderColumn] === 'team') {
+                    $query->orderBy('team_id', $orderDir);
+                } elseif ($columns[$orderColumn] === 'tech_stack') {
+                    $query->orderBy('tech_stack_id', $orderDir);
+                } elseif ($columns[$orderColumn] === 'role') {
+                    $query->with('roles')->orderBy('id', $orderDir);
+                } else {
+                    $query->orderBy($columns[$orderColumn], $orderDir);
+                }
+            }
+        } else {
+            $query->latest();
+        }
+
+        // Apply pagination
+        $users = $query->skip($request->start ?? 0)
+            ->take($request->length ?? 10)
+            ->get();
+
+        // Format data for DataTables
+        $formattedUsers = $users->map(function ($user) {
+            $roles = $user->roles->pluck('name')->map(function ($role) {
+                return '<span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">'.ucfirst($role).'</span>';
+            })->implode(' ');
+
+            return [
+                'id' => $user->id,
+                'name' => '<div class="flex items-center">
+                    <img src="https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=4F46E5&color=fff" alt="'.$user->name.'" class="w-8 h-8 rounded-full mr-3">
+                    <div>
+                        <div class="font-medium text-gray-900">'.$user->name.'</div>
+                        <div class="text-xs text-gray-500">ID: '.$user->employee_id.'</div>
+                    </div>
+                </div>',
+                'email' => '<a href="mailto:'.$user->email.'" class="text-indigo-600 hover:text-indigo-900">'.$user->email.'</a>',
+                'employee_id' => $user->employee_id ?: 'N/A',
+                'phone' => $user->phone ?: 'N/A',
+                'department' => $user->department ?: 'N/A',
+                'position' => $user->position ?: 'N/A',
+                'team' => $user->team ? '<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">'.$user->team->name.'</span>' : 'N/A',
+                'tech_stack' => $user->techStack ? '<span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">'.$user->techStack->name.'</span>' : 'N/A',
+                'role' => $roles ?: 'N/A',
+                'status' => '<span class="px-2 py-1 text-xs rounded-full '.($user->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800').'">'.($user->is_active ? 'Active' : 'Inactive').'</span>',
+                'created_at' => $user->created_at->format('M j, Y'),
+                'actions' => '<div class="flex items-center space-x-2">
+                    <a href="'.route('users.show', $user->id).'" class="text-indigo-600 hover:text-indigo-900" title="View">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                    <a href="'.route('users.edit', $user->id).'" class="text-blue-600 hover:text-blue-900" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <button onclick="deleteUser('.$user->id.', \''.$user->name.'\')" class="text-red-600 hover:text-red-900" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    <button onclick="toggleUserStatus('.$user->id.', \''.$user->name.'\', '.($user->is_active ? 'false' : 'true').')" class="'.($user->is_active ? 'text-yellow-600 hover:text-yellow-900' : 'text-green-600 hover:text-green-900').'" title="'.($user->is_active ? 'Deactivate' : 'Activate').'">
+                        <i class="fas '.($user->is_active ? 'fa-user-slash' : 'fa-user-check').'"></i>
+                    </button>
+                </div>',
+                'DT_RowId' => 'user-'.$user->id,
+            ];
+        });
+
+        return response()->json([
+            'draw' => intval($request->draw),
+            'recordsTotal' => User::where('id', '!=', auth()->id())->count(),
+            'recordsFiltered' => $totalRecords,
+            'data' => $formattedUsers,
+        ]);
     }
 
     /**

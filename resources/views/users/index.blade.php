@@ -15,10 +15,10 @@
                     <i class="fas fa-file-import mr-2"></i>
                     Bulk Import
                 </a>
-                <button onclick="exportUsers()"
+                <button onclick="exportSelectedUsers()"
                         class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105">
                     <i class="fas fa-file-export mr-2"></i>
-                    Export Users
+                    Export
                 </button>
                 <a href="{{ route('users.create') }}"
                    class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105">
@@ -29,7 +29,7 @@
         </div>
     </div>
 
-    <!-- Advanced Filters Section -->
+    <!-- Filters Section -->
     <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-8">
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-lg font-bold text-gray-900 flex items-center">
@@ -43,149 +43,146 @@
             </button>
         </div>
 
-        <form method="GET" action="{{ route('users.index') }}" id="filterForm">
-            @csrf
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="filterFields">
-                <!-- Search Input -->
-                <div>
-                    <label for="search" class="block text-sm font-bold text-gray-700 mb-2">
-                        <i class="fas fa-search mr-2 text-indigo-500"></i>Search Users
-                    </label>
-                    <div class="relative">
-                        <input type="text" id="search" name="search" value="{{ request('search') }}"
-                               placeholder="Search by name, email..."
-                               class="w-full px-5 py-3 pl-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                            <i class="fas fa-search text-gray-400"></i>
-                        </div>
+        <form id="filterForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="filterFields">
+            <!-- Search Input -->
+            <div>
+                <label for="search" class="block text-sm font-bold text-gray-700 mb-2">
+                    <i class="fas fa-search mr-2 text-indigo-500"></i>Search Users
+                </label>
+                <div class="relative">
+                    <input type="text" id="search" name="search" value="{{ request('search') }}"
+                           placeholder="Search by name, email..."
+                           class="w-full px-5 py-3 pl-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
                     </div>
                 </div>
+            </div>
 
-                <!-- Employee ID Filter -->
-                <div>
-                    <label for="employee_id" class="block text-sm font-bold text-gray-700 mb-2">
-                        <i class="fas fa-id-badge mr-2 text-indigo-500"></i>Employee ID
-                    </label>
-                    <div class="relative">
-                        <input type="text" id="employee_id" name="employee_id" value="{{ request('employee_id') }}"
-                               placeholder="Search by employee ID..."
-                               class="w-full px-5 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200">
+            <!-- Employee ID Filter -->
+            <div>
+                <label for="employee_id" class="block text-sm font-bold text-gray-700 mb-2">
+                    <i class="fas fa-id-badge mr-2 text-indigo-500"></i>Employee ID
+                </label>
+                <div class="relative">
+                    <input type="text" id="employee_id" name="employee_id" value="{{ request('employee_id') }}"
+                           placeholder="Search by employee ID..."
+                           class="w-full px-5 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200">
+                </div>
+            </div>
+
+            <!-- Role Filter -->
+            <div>
+                <label for="role" class="block text-sm font-bold text-gray-700 mb-2">
+                    <i class="fas fa-user-tag mr-2 text-indigo-500"></i>Role
+                </label>
+                <div class="relative">
+                    <select id="role" name="role"
+                            class="w-full px-5 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm appearance-none transition-all duration-200">
+                        <option value="">All Roles</option>
+                        @foreach($roles as $role)
+                            <option value="{{ $role->name }}" {{ request('role') == $role->name ? 'selected' : '' }}>
+                                {{ ucfirst($role->name) }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                        <i class="fas fa-chevron-down text-gray-400"></i>
                     </div>
                 </div>
+            </div>
 
-                <!-- Role Filter -->
-                <div>
-                    <label for="role" class="block text-sm font-bold text-gray-700 mb-2">
-                        <i class="fas fa-user-tag mr-2 text-indigo-500"></i>Role
-                    </label>
-                    <div class="relative">
-                        <select id="role" name="role"
-                                class="w-full px-5 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm appearance-none transition-all duration-200">
-                            <option value="">All Roles</option>
-                            @foreach($roles as $role)
-                                <option value="{{ $role->name }}" {{ request('role') == $role->name ? 'selected' : '' }}>
-                                    {{ ucfirst($role->name) }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                            <i class="fas fa-chevron-down text-gray-400"></i>
-                        </div>
+            <!-- Status Filter -->
+            <div>
+                <label for="status" class="block text-sm font-bold text-gray-700 mb-2">
+                    <i class="fas fa-toggle-on mr-2 text-indigo-500"></i>Status
+                </label>
+                <div class="relative">
+                    <select id="status" name="status"
+                            class="w-full px-5 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm appearance-none transition-all duration-200">
+                        <option value="">All Status</option>
+                        <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
+                        <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                        <i class="fas fa-chevron-down text-gray-400"></i>
                     </div>
                 </div>
+            </div>
 
-                <!-- Status Filter -->
-                <div>
-                    <label for="status" class="block text-sm font-bold text-gray-700 mb-2">
-                        <i class="fas fa-toggle-on mr-2 text-indigo-500"></i>Status
-                    </label>
-                    <div class="relative">
-                        <select id="status" name="status"
-                                class="w-full px-5 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm appearance-none transition-all duration-200">
-                            <option value="">All Status</option>
-                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
-                            <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
-                        </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                            <i class="fas fa-chevron-down text-gray-400"></i>
-                        </div>
+            <!-- Team Filter -->
+            <div>
+                <label for="team_id" class="block text-sm font-bold text-gray-700 mb-2">
+                    <i class="fas fa-users mr-2 text-indigo-500"></i>Team
+                </label>
+                <div class="relative">
+                    <select id="team_id" name="team_id"
+                            class="w-full px-5 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm appearance-none transition-all duration-200">
+                        <option value="">All Teams</option>
+                        @foreach($teams as $team)
+                            <option value="{{ $team->id }}" {{ request('team_id') == $team->id ? 'selected' : '' }}>
+                                {{ $team->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                        <i class="fas fa-chevron-down text-gray-400"></i>
                     </div>
                 </div>
+            </div>
 
-                <!-- Team Filter -->
-                <div>
-                    <label for="team_id" class="block text-sm font-bold text-gray-700 mb-2">
-                        <i class="fas fa-users mr-2 text-indigo-500"></i>Team
-                    </label>
-                    <div class="relative">
-                        <select id="team_id" name="team_id"
-                                class="w-full px-5 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm appearance-none transition-all duration-200">
-                            <option value="">All Teams</option>
-                            @foreach($teams as $team)
-                                <option value="{{ $team->id }}" {{ request('team_id') == $team->id ? 'selected' : '' }}>
-                                    {{ $team->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                            <i class="fas fa-chevron-down text-gray-400"></i>
-                        </div>
+            <!-- Department Filter -->
+            <div>
+                <label for="department" class="block text-sm font-bold text-gray-700 mb-2">
+                    <i class="fas fa-building mr-2 text-indigo-500"></i>Department
+                </label>
+                <div class="relative">
+                    <select id="department" name="department"
+                            class="w-full px-5 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm appearance-none transition-all duration-200">
+                        <option value="">All Departments</option>
+                        @foreach($departments as $department)
+                            <option value="{{ $department }}" {{ request('department') == $department ? 'selected' : '' }}>
+                                {{ $department }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                        <i class="fas fa-chevron-down text-gray-400"></i>
                     </div>
                 </div>
+            </div>
 
-                <!-- Department Filter -->
-                <div>
-                    <label for="department" class="block text-sm font-bold text-gray-700 mb-2">
-                        <i class="fas fa-building mr-2 text-indigo-500"></i>Department
-                    </label>
-                    <div class="relative">
-                        <select id="department" name="department"
-                                class="w-full px-5 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm appearance-none transition-all duration-200">
-                            <option value="">All Departments</option>
-                            @foreach($departments as $department)
-                                <option value="{{ $department }}" {{ request('department') == $department ? 'selected' : '' }}>
-                                    {{ $department }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                            <i class="fas fa-chevron-down text-gray-400"></i>
-                        </div>
+            <!-- Tech Stack Filter -->
+            <div>
+                <label for="tech_stack_id" class="block text-sm font-bold text-gray-700 mb-2">
+                    <i class="fas fa-code mr-2 text-indigo-500"></i>Tech Stack
+                </label>
+                <div class="relative">
+                    <select id="tech_stack_id" name="tech_stack_id"
+                            class="w-full px-5 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm appearance-none transition-all duration-200">
+                        <option value="">All Tech Stacks</option>
+                        @foreach($techStacks as $techStack)
+                            <option value="{{ $techStack->id }}" {{ request('tech_stack_id') == $techStack->id ? 'selected' : '' }}>
+                                {{ $techStack->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                        <i class="fas fa-chevron-down text-gray-400"></i>
                     </div>
                 </div>
+            </div>
 
-                <!-- Tech Stack Filter -->
-                <div>
-                    <label for="tech_stack_id" class="block text-sm font-bold text-gray-700 mb-2">
-                        <i class="fas fa-code mr-2 text-indigo-500"></i>Tech Stack
-                    </label>
-                    <div class="relative">
-                        <select id="tech_stack_id" name="tech_stack_id"
-                                class="w-full px-5 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm appearance-none transition-all duration-200">
-                            <option value="">All Tech Stacks</option>
-                            @foreach($techStacks as $techStack)
-                                <option value="{{ $techStack->id }}" {{ request('tech_stack_id') == $techStack->id ? 'selected' : '' }}>
-                                    {{ $techStack->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                            <i class="fas fa-chevron-down text-gray-400"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="flex items-end gap-3">
-                    <button type="submit"
-                            class="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200">
-                        <i class="fas fa-search mr-2"></i> Apply Filters
-                    </button>
-                    <a href="{{ route('users.index') }}"
-                       class="flex-1 px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold rounded-xl transition-all duration-200 text-center">
-                        <i class="fas fa-times mr-2"></i> Clear
-                    </a>
-                </div>
+            <!-- Action Buttons -->
+            <div class="flex items-end gap-3">
+                <button type="button" onclick="applyFilters()"
+                        class="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200">
+                    <i class="fas fa-search mr-2"></i> Apply Filters
+                </button>
+                <button type="button" onclick="clearFilters()"
+                       class="flex-1 px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold rounded-xl transition-all duration-200">
+                    <i class="fas fa-times mr-2"></i> Clear
+                </button>
             </div>
         </form>
     </div>
@@ -248,10 +245,10 @@
         </div>
     </div>
 
-    <!-- Users Table -->
+    <!-- Users DataTable -->
     <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full">
+            <table id="usersTable" class="display table table-striped" style="width:100%">
                 <thead class="bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200">
                     <tr>
                         <th class="px-6 py-4 text-left">
@@ -277,126 +274,8 @@
                         </th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
-                    @forelse($users as $user)
-                        <tr class="hover:bg-gray-50 transition-colors duration-150">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <input type="checkbox" class="user-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                       value="{{ $user->id }}" onchange="updateBulkSelection()">
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 h-12 w-12">
-                                        <img class="h-12 w-12 rounded-full object-cover border-2 border-gray-200"
-                                             src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=4F46E5&color=fff&size=48"
-                                             alt="{{ $user->name }}">
-                                    </div>
-                                    <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
-                                        <div class="text-sm text-gray-500">ID: {{ $user->employee_id ?? 'N/A' }}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ $user->email }}</div>
-                                <div class="text-sm text-gray-500">{{ $user->phone ?? 'No phone' }}</div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex flex-wrap gap-1 mb-2">
-                                    @foreach($user->roles as $role)
-                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
-                                            {{ $role->name == 'admin' ? 'bg-red-100 text-red-800' :
-                                               ($role->name == 'operation-manager' ? 'bg-blue-100 text-blue-800' :
-                                               ($role->name == 'stack-leader' ? 'bg-purple-100 text-purple-800' :
-                                               ($role->name == 'team-leader' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'))) }}">
-                                            {{ ucfirst($role->name) }}
-                                        </span>
-                                    @endforeach
-                                </div>
-                                <div class="text-sm text-gray-900 font-medium">{{ $user->position ?? 'N/A' }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900 font-medium">{{ $user->team?->name ?? 'No Team' }}</div>
-                                <div class="text-sm text-gray-500">{{ $user->department ?? 'N/A' }}</div>
-                                <div class="text-sm text-gray-500">{{ $user->techStack?->name ?? 'No Tech Stack' }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @if($user->is_active)
-                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                        <i class="fas fa-check-circle mr-1"></i>Active
-                                    </span>
-                                @else
-                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                        <i class="fas fa-times-circle mr-1"></i>Inactive
-                                    </span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <div class="flex items-center space-x-2">
-                                    <a href="{{ route('users.show', $user) }}"
-                                       class="text-indigo-600 hover:text-indigo-900 transition-colors" title="View">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="{{ route('users.edit', $user) }}"
-                                       class="text-blue-600 hover:text-blue-900 transition-colors" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    @if($user->id !== auth()->id())
-                                        <button onclick="toggleUserStatus({{ $user->id }})"
-                                                class="text-orange-600 hover:text-orange-900 transition-colors" title="Toggle Status">
-                                            <i class="fas fa-toggle-on"></i>
-                                        </button>
-                                        <button onclick="deleteUser({{ $user->id }})"
-                                                class="text-red-600 hover:text-red-900 transition-colors" title="Delete">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                        <button onclick="resetUserPassword({{ $user->id }})"
-                                                class="text-purple-600 hover:text-purple-900 transition-colors" title="Reset Password">
-                                            <i class="fas fa-key"></i>
-                                        </button>
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7" class="px-6 py-12 text-center">
-                                <div class="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-4">
-                                    <i class="fas fa-users text-gray-400 text-3xl"></i>
-                                </div>
-                                <h3 class="text-lg font-semibold text-gray-900 mb-2">No users found</h3>
-                                <p class="text-gray-500 mb-4">Get started by creating your first user.</p>
-                                <a href="{{ route('users.create') }}"
-                                   class="inline-flex items-center px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-                                    <i class="fas fa-plus mr-2"></i>
-                                    Add User
-                                </a>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
             </table>
         </div>
-
-        <!-- Pagination -->
-        @if($users->hasPages())
-            <div class="bg-white px-6 py-4 border-t border-gray-200">
-                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div class="text-sm text-gray-700">
-                        Showing
-                        <span class="font-medium">{{ $users->firstItem() }}</span>
-                        to
-                        <span class="font-medium">{{ $users->lastItem() }}</span>
-                        of
-                        <span class="font-medium">{{ $users->total() }}</span>
-                        results
-                    </div>
-                    <div class="flex items-center space-x-1">
-                        {{ $users->links() }}
-                    </div>
-                </div>
-            </div>
-        @endif
     </div>
 
     <!-- Statistics Footer -->
@@ -410,19 +289,19 @@
             </h3>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div class="bg-gray-50 rounded-lg p-4 text-center">
-                    <div class="text-2xl font-bold text-gray-900">{{ $users->total() }}</div>
+                    <div class="text-2xl font-bold text-gray-900" id="totalUsers">0</div>
                     <div class="text-sm text-gray-600 mt-1">Total Users</div>
                 </div>
                 <div class="bg-green-50 rounded-lg p-4 text-center">
-                    <div class="text-2xl font-bold text-green-600">{{ App\Models\User::where('is_active', true)->where('id', '!=', auth()->id())->count() }}</div>
+                    <div class="text-2xl font-bold text-green-600" id="activeUsers">0</div>
                     <div class="text-sm text-gray-600 mt-1">Active</div>
                 </div>
                 <div class="bg-red-50 rounded-lg p-4 text-center">
-                    <div class="text-2xl font-bold text-red-600">{{ App\Models\User::where('is_active', false)->where('id', '!=', auth()->id())->count() }}</div>
+                    <div class="text-2xl font-bold text-red-600" id="inactiveUsers">0</div>
                     <div class="text-sm text-gray-600 mt-1">Inactive</div>
                 </div>
                 <div class="bg-purple-50 rounded-lg p-4 text-center">
-                    <div class="text-2xl font-bold text-purple-600">{{ App\Models\User::role('admin')->count() }}</div>
+                    <div class="text-2xl font-bold text-purple-600" id="adminUsers">0</div>
                     <div class="text-sm text-gray-600 mt-1">Admins</div>
                 </div>
             </div>
@@ -432,64 +311,253 @@
 
 @push('scripts')
 <script>
+let usersTable;
+let selectedRows = [];
+
+$(document).ready(function() {
+    // Initialize DataTable
+    usersTable = $('#usersTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '/users/data',
+            type: 'GET',
+            data: function(d) {
+                // Add current filter values to request
+                d.search = $('#search').val() || '';
+                d.employee_id = $('#employee_id').val() || '';
+                d.role = $('#role').val() || '';
+                d.status = $('#status').val() || '';
+                d.team_id = $('#team_id').val() || '';
+                d.department = $('#department').val() || '';
+                d.tech_stack_id = $('#tech_stack_id').val() || '';
+                return d;
+            }
+        },
+        columns: [
+            {
+                data: 'checkbox',
+                orderable: false,
+                searchable: false,
+                width: '30px',
+                render: function(data, type, row) {
+                    return `
+                        <input type="checkbox" class="user-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                               value="${row.id}" onchange="updateBulkSelection('${row.id}')">
+                    `;
+                }
+            },
+            {
+                data: 'user',
+                render: function(data, type, row) {
+                    return `
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-12 w-12">
+                                <img class="h-12 w-12 rounded-full object-cover border-2 border-gray-200"
+                                     src="https://ui-avatars.com/api/?name=${encodeURIComponent(row.name)}&background=4F46E5&color=fff&size=48"
+                                     alt="${row.name}">
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">${row.name}</div>
+                                <div class="text-sm text-gray-500">ID: ${row.employee_id || 'N/A'}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            },
+            {
+                data: 'email',
+                render: function(data, type, row) {
+                    return `
+                        <div class="text-sm text-gray-900">${row.email}</div>
+                        <div class="text-sm text-gray-500">${row.phone || 'No phone'}</div>
+                    `;
+                }
+            },
+            {
+                data: 'roles',
+                render: function(data, type, row) {
+                    let rolesHtml = '';
+                    if (row.roles && row.roles.length > 0) {
+                        rolesHtml = '<div class="flex flex-wrap gap-1 mb-2">';
+                        row.roles.forEach(role => {
+                            const colorClass = role.name === 'admin' ? 'bg-red-100 text-red-800' :
+                                              (role.name === 'operation-manager' ? 'bg-blue-100 text-blue-800' :
+                                              (role.name === 'stack-leader' ? 'bg-purple-100 text-purple-800' :
+                                              (role.name === 'team-leader' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800')));
+                            rolesHtml += `<span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${colorClass}">${role.name}</span>`;
+                        });
+                        rolesHtml += '</div>';
+                    }
+                    return rolesHtml + `<div class="text-sm text-gray-900 font-medium">${row.position || 'N/A'}</div>`;
+                }
+            },
+            {
+                data: 'team',
+                render: function(data, type, row) {
+                    return `
+                        <div class="text-sm text-gray-900 font-medium">${row.team ? row.team.name : 'No Team'}</div>
+                        <div class="text-sm text-gray-500">${row.department || 'N/A'}</div>
+                        <div class="text-sm text-gray-500">${row.tech_stack ? row.tech_stack.name : 'No Tech Stack'}</div>
+                    `;
+                }
+            },
+            {
+                data: 'status',
+                render: function(data, type, row) {
+                    if (row.is_active) {
+                        return '<span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800"><i class="fas fa-check-circle mr-1"></i>Active</span>';
+                    } else {
+                        return '<span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800"><i class="fas fa-times-circle mr-1"></i>Inactive</span>';
+                    }
+                }
+            },
+            {
+                data: 'actions',
+                orderable: false,
+                searchable: false,
+                render: function(data, type, row) {
+                    let actions = '';
+                    actions += `<a href="/users/${row.id}" class="text-indigo-600 hover:text-indigo-900 transition-colors" title="View"><i class="fas fa-eye"></i></a>`;
+                    actions += `<a href="/users/${row.id}/edit" class="text-blue-600 hover:text-blue-900 transition-colors ml-2" title="Edit"><i class="fas fa-edit"></i></a>`;
+
+                    if (row.id !== {{ auth()->id() }}) {
+                        actions += `<button onclick="toggleUserStatus(${row.id})" class="text-orange-600 hover:text-orange-900 transition-colors ml-2" title="Toggle Status"><i class="fas fa-toggle-on"></i></button>`;
+                        actions += `<button onclick="deleteUser(${row.id})" class="text-red-600 hover:text-red-900 transition-colors ml-2" title="Delete"><i class="fas fa-trash"></i></button>`;
+                        actions += `<button onclick="resetUserPassword(${row.id})" class="text-purple-600 hover:text-purple-900 transition-colors ml-2" title="Reset Password"><i class="fas fa-key"></i></button>`;
+                    }
+
+                    return actions;
+                }
+            }
+        ],
+        order: [[1, 'desc']], // Sort by name column
+        language: {
+            processing: '<i class="fas fa-spinner fa-spin fa-2x"></i> Loading...',
+            lengthMenu: 'Show _MENU_ entries',
+            zeroRecords: 'No matching records found',
+            info: 'Showing _START_ to _END_ of _TOTAL_ entries',
+            infoEmpty: 'Showing 0 to 0 of 0 entries',
+            infoFiltered: '(filtered from _MAX_ total entries)',
+            search: 'Search:',
+            paginate: {
+                first: 'First',
+                last: 'Last',
+                next: 'Next',
+                previous: 'Previous'
+            },
+            aria: {
+                sortAscending: ': activate to sort column ascending',
+                sortDescending: ': activate to sort column descending'
+            }
+        },
+        initComplete: function(settings, json) {
+            // Load statistics
+            loadUserStats();
+        }
+    });
+
+    // Select all functionality
+    $('#selectAll').change(function() {
+        const checkboxes = $('.user-checkbox');
+        checkboxes.prop('checked', $(this).prop('checked'));
+        updateBulkSelection();
+    });
+
+    // Auto-hide filters on mobile when page loads
+    if (window.innerWidth < 768) {
+        $('#filterFields').hide();
+        $('#filterToggle').removeClass('fa-chevron-down').addClass('fa-chevron-right');
+    }
+});
+
 // Toggle filters visibility
 function toggleFilters() {
-    const filterFields = document.getElementById('filterFields');
-    const toggle = document.getElementById('filterToggle');
+    const filterFields = $('#filterFields');
+    const toggle = $('#filterToggle');
 
-    if (filterFields.style.display === 'none') {
-        filterFields.style.display = 'grid';
-        toggle.classList.remove('fa-chevron-right');
-        toggle.classList.add('fa-chevron-down');
+    if (filterFields.is(':hidden')) {
+        filterFields.show();
+        toggle.removeClass('fa-chevron-right').addClass('fa-chevron-down');
     } else {
-        filterFields.style.display = 'none';
-        toggle.classList.remove('fa-chevron-down');
-        toggle.classList.add('fa-chevron-right');
+        filterFields.hide();
+        toggle.removeClass('fa-chevron-down').addClass('fa-chevron-right');
     }
 }
 
-// Export users function
-function exportUsers() {
-    const form = document.getElementById('filterForm');
-    const formData = new FormData(form);
+// Apply filters
+function applyFilters() {
+    usersTable.ajax.reload();
+}
 
-    // Remove file input from export params
-    formData.delete('csv_file');
-
-    const params = new URLSearchParams(formData).toString();
-    window.open(`/users/export?${params}`, '_blank');
+// Clear filters
+function clearFilters() {
+    $('#filterForm')[0].reset();
+    usersTable.ajax.reload();
 }
 
 // Bulk selection functionality
-function updateBulkSelection() {
-    const checkboxes = document.querySelectorAll('.user-checkbox:checked');
-    const bulkSection = document.getElementById('bulkOperationsSection');
-    const selectedCount = document.getElementById('selectedCount');
+function updateBulkSelection(userId) {
+    const checkbox = $(`input[value="${userId}"]`);
 
-    if (checkboxes.length > 0) {
-        bulkSection.classList.remove('hidden');
-        selectedCount.textContent = checkboxes.length;
+    if (checkbox.prop('checked')) {
+        if (!selectedRows.includes(userId)) {
+            selectedRows.push(userId);
+        }
     } else {
-        bulkSection.classList.add('hidden');
+        selectedRows = selectedRows.filter(id => id !== userId);
+    }
+
+    updateBulkOperationSection();
+}
+
+function updateBulkOperationSection() {
+    const bulkSection = $('#bulkOperationsSection');
+    const selectedCount = $('#selectedCount');
+
+    if (selectedRows.length > 0) {
+        bulkSection.removeClass('hidden');
+        selectedCount.text(selectedRows.length);
+    } else {
+        bulkSection.addClass('hidden');
     }
 }
 
-// Select all functionality
-document.getElementById('selectAll').addEventListener('change', function() {
-    const checkboxes = document.querySelectorAll('.user-checkbox');
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = this.checked;
-    });
-    updateBulkSelection();
-});
-
 // Clear bulk selection
 function clearBulkSelection() {
-    document.querySelectorAll('.user-checkbox').forEach(checkbox => {
-        checkbox.checked = false;
-    });
-    document.getElementById('selectAll').checked = false;
-    updateBulkSelection();
+    $('.user-checkbox').prop('checked', false);
+    $('#selectAll').prop('checked', false);
+    selectedRows = [];
+    updateBulkOperationSection();
+}
+
+// Export functions
+function exportSelectedUsers() {
+    const filters = {
+        search: $('#search').val() || '',
+        employee_id: $('#employee_id').val() || '',
+        role: $('#role').val() || '',
+        status: $('#status').val() || '',
+        team_id: $('#team_id').val() || '',
+        department: $('#department').val() || '',
+        tech_stack_id: $('#tech_stack_id').val() || '',
+        selected_users: selectedRows.length > 0 ? selectedRows : null
+    };
+
+    const queryString = new URLSearchParams(filters).toString();
+    window.open(`/users/export?${queryString}`, '_blank');
+}
+
+// Load user statistics
+function loadUserStats() {
+    fetch('/users/stats')
+        .then(response => response.json())
+        .then(data => {
+            $('#totalUsers').text(data.stats.total_users);
+            $('#activeUsers').text(data.stats.active_users);
+            $('#inactiveUsers').text(data.stats.inactive_users);
+            $('#adminUsers').text(data.role_stats.admin || 0);
+        });
 }
 
 // Toggle user status
@@ -529,9 +597,8 @@ function performToggleStatus(userId) {
     .then(data => {
         if (data.success) {
             showToast(data.message, 'success');
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
+            usersTable.ajax.reload();
+            loadUserStats();
         } else {
             showToast(data.message, 'error');
         }
@@ -661,29 +728,26 @@ function performPasswordReset(userId, password) {
 
 // Bulk operation function
 function bulkOperation(operation) {
-    const selectedUsers = Array.from(document.querySelectorAll('.user-checkbox:checked'))
-        .map(checkbox => checkbox.value);
-
-    if (selectedUsers.length === 0) {
+    if (selectedRows.length === 0) {
         showToast('Please select at least one user', 'warning');
         return;
     }
 
     let confirmMessage = '';
     let requestData = {
-        user_ids: selectedUsers,
+        user_ids: selectedRows,
         operation: operation
     };
 
     switch (operation) {
         case 'activate':
-            confirmMessage = `Are you sure you want to activate ${selectedUsers.length} user(s)?`;
+            confirmMessage = `Are you sure you want to activate ${selectedRows.length} user(s)?`;
             break;
         case 'deactivate':
-            confirmMessage = `Are you sure you want to deactivate ${selectedUsers.length} user(s)?`;
+            confirmMessage = `Are you sure you want to deactivate ${selectedRows.length} user(s)?`;
             break;
         case 'delete':
-            confirmMessage = `Are you sure you want to delete ${selectedUsers.length} user(s)? This action cannot be undone!`;
+            confirmMessage = `Are you sure you want to delete ${selectedRows.length} user(s)? This action cannot be undone!`;
             break;
         case 'assign_role':
             const roleSelect = document.getElementById('bulkRoleSelect');
@@ -692,7 +756,7 @@ function bulkOperation(operation) {
                 return;
             }
             requestData.role = roleSelect.value;
-            confirmMessage = `Assign role "${roleSelect.options[roleSelect.selectedIndex].text}" to ${selectedUsers.length} user(s)?`;
+            confirmMessage = `Assign role "${roleSelect.options[roleSelect.selectedIndex].text}" to ${selectedRows.length} user(s)?`;
             break;
         case 'assign_team':
             const teamSelect = document.getElementById('bulkTeamSelect');
@@ -744,9 +808,9 @@ function performBulkOperation(data) {
     .then(result => {
         if (result.success) {
             showToast(result.message, 'success');
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
+            clearBulkSelection();
+            usersTable.ajax.reload();
+            loadUserStats();
         } else {
             showToast(result.message, 'error');
         }
@@ -797,19 +861,6 @@ function showToast(message, type = 'info') {
             document.body.removeChild(toast);
         }, 300);
     }, 3000);
-}
-
-// Auto-hide filters on mobile when page loads
-if (window.innerWidth < 768) {
-    document.addEventListener('DOMContentLoaded', function() {
-        const filterFields = document.getElementById('filterFields');
-        const toggle = document.getElementById('filterToggle');
-        if (filterFields && toggle) {
-            filterFields.style.display = 'none';
-            toggle.classList.remove('fa-chevron-down');
-            toggle.classList.add('fa-chevron-right');
-        }
-    });
 }
 </script>
 @endpush
