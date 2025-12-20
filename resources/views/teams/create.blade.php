@@ -271,6 +271,9 @@
     </div>
 </div>
 
+<!-- Toast Notifications Container -->
+<div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
 @push('styles')
 <style>
     /* Custom scrollbar for members list */
@@ -300,6 +303,78 @@
         transition-property: all;
         transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
         transition-duration: 200ms;
+    }
+
+    /* Toast Notifications */
+    .toast {
+        transform: translateX(400px);
+        transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        min-width: 320px;
+        max-width: 480px;
+    }
+
+    .toast.show {
+        transform: translateX(0);
+    }
+
+    .toast-success {
+        background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+        border-left: 4px solid #047857;
+    }
+
+    .toast-error {
+        background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+        border-left: 4px solid #B91C1C;
+    }
+
+    .toast-warning {
+        background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+        border-left: 4px solid #B45309;
+    }
+
+    .toast-info {
+        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+        border-left: 4px solid #1D4ED8;
+    }
+
+    .toast-progress {
+        animation: toast-progress 5s linear;
+    }
+
+    @keyframes toast-progress {
+        from { width: 100%; }
+        to { width: 0%; }
+    }
+
+    /* Toast animations */
+    @keyframes slide-in-right {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes slide-out-right {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+
+    .toast-enter {
+        animation: slide-in-right 0.3s ease-out;
+    }
+
+    .toast-exit {
+        animation: slide-out-right 0.3s ease-in;
     }
 </style>
 @endpush
@@ -416,6 +491,193 @@ function updateSelectedCount() {
     const checkboxes = document.querySelectorAll('input[name="members[]"]:checked');
     const count = checkboxes.length;
     document.getElementById('selectedCount').textContent = count;
+}
+
+// Toast Notification Functions
+function showToast(message, type = 'info', duration = 5000) {
+    const toastContainer = document.getElementById('toastContainer');
+
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast ${type} rounded-lg shadow-2xl p-4 text-white flex items-center space-x-3 toast-enter`;
+
+    // Get icon based on type
+    let icon = '';
+    switch(type) {
+        case 'success':
+            icon = '<i class="fas fa-check-circle text-xl"></i>';
+            break;
+        case 'error':
+            icon = '<i class="fas fa-exclamation-circle text-xl"></i>';
+            break;
+        case 'warning':
+            icon = '<i class="fas fa-exclamation-triangle text-xl"></i>';
+            break;
+        default:
+            icon = '<i class="fas fa-info-circle text-xl"></i>';
+    }
+
+    toast.innerHTML = `
+        <div class="flex items-center space-x-3 flex-1">
+            <div class="flex-shrink-0">
+                ${icon}
+            </div>
+            <div class="flex-1">
+                <p class="font-semibold text-sm">${message}</p>
+            </div>
+            <div class="flex-shrink-0">
+                <button onclick="closeToast(this)" class="text-white hover:text-gray-200 transition-colors duration-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div class="absolute bottom-0 left-0 h-1 bg-white/20 rounded-b-lg toast-progress" style="width: 100%;"></div>
+    `;
+
+    // Add relative positioning for progress bar
+    toast.style.position = 'relative';
+    toast.style.overflow = 'hidden';
+
+    // Add to container
+    toastContainer.appendChild(toast);
+
+    // Trigger animation
+    setTimeout(() => {
+        toast.classList.remove('toast-enter');
+        toast.classList.add('show');
+    }, 10);
+
+    // Auto remove after duration
+    if (duration > 0) {
+        setTimeout(() => {
+            closeToast(toast.querySelector('button'));
+        }, duration);
+    }
+}
+
+function closeToast(button) {
+    const toast = button.closest('.toast');
+    if (toast) {
+        toast.classList.remove('show');
+        toast.classList.add('toast-exit');
+
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }
+}
+
+// Form validation and submission
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('createTeamForm');
+
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Client-side validation
+            const teamName = document.getElementById('name').value.trim();
+            const teamLeader = document.getElementById('team_leader_id').value;
+            const selectedMembers = document.querySelectorAll('input[name="members[]"]:checked');
+
+            // Validation checks
+            if (!teamName) {
+                showToast('Please enter a team name', 'error');
+                goToStep(1);
+                document.getElementById('name').focus();
+                return;
+            }
+
+            if (teamName.length < 3) {
+                showToast('Team name must be at least 3 characters long', 'error');
+                goToStep(1);
+                document.getElementById('name').focus();
+                return;
+            }
+
+            if (teamName.length > 100) {
+                showToast('Team name cannot exceed 100 characters', 'error');
+                goToStep(1);
+                document.getElementById('name').focus();
+                return;
+            }
+
+            // Check if team leader is selected as member (conflict)
+            if (teamLeader && selectedMembers.length > 0) {
+                const leaderIsMember = Array.from(selectedMembers).some(checkbox => checkbox.value === teamLeader);
+                if (leaderIsMember) {
+                    showToast('Team leader cannot also be selected as a team member', 'warning');
+                    goToStep(2);
+                    return;
+                }
+            }
+
+            // If validation passes, submit form
+            submitTeamForm();
+        });
+    }
+});
+
+function submitTeamForm() {
+    const form = document.getElementById('createTeamForm');
+    const formData = new FormData(form);
+    const submitButton = form.querySelector('button[type="submit"]');
+
+    // Show loading state
+    const originalText = submitButton.innerHTML;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating Team...';
+    submitButton.disabled = true;
+
+    // Submit via AJAX for better UX
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.text())
+    .then(html => {
+        // Check if redirected (success) or returned validation errors
+        if (html.includes('teams.index')) {
+            showToast('Team created successfully!', 'success');
+            setTimeout(() => {
+                window.location.href = '/teams';
+            }, 1500);
+        } else {
+            // Parse validation errors from returned HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            const errorElements = tempDiv.querySelectorAll('.text-red-600');
+
+            if (errorElements.length > 0) {
+                const errors = Array.from(errorElements).map(el => el.textContent.trim()).filter(text => text);
+                errors.forEach(error => {
+                    showToast(error, 'error');
+                });
+
+                // Find which step has errors and navigate to it
+                if (tempDiv.querySelector('#name')?.closest('.text-red-600')) {
+                    goToStep(1);
+                } else if (tempDiv.querySelector('#team_leader_id')?.closest('.text-red-600')) {
+                    goToStep(2);
+                } else if (tempDiv.querySelector('input[name="members[]"]')?.closest('.text-red-600')) {
+                    goToStep(3);
+                }
+            } else {
+                showToast('An unexpected error occurred. Please try again.', 'error');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Network error. Please check your connection and try again.', 'error');
+    })
+    .finally(() => {
+        // Restore button state
+        submitButton.innerHTML = originalText;
+        submitButton.disabled = false;
+    });
 }
 </script>
 @endpush

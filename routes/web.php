@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TechStackController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -51,6 +52,25 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/tech-stacks/{id}', [TechStackController::class, 'destroy'])->name('tech-stacks.destroy');
     Route::post('/tech-stacks/{id}/add-members', [TechStackController::class, 'addMembers'])->name('tech-stacks.add-members');
     Route::delete('/tech-stacks/{id}/members/{user_id}', [TechStackController::class, 'removeMember'])->name('tech-stacks.remove-member');
+
+    // Users Management Routes - Only for users with admin role
+    Route::middleware(['auth', 'role:admin'])->prefix('users')->name('users.')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('index');
+        Route::get('/data', [UserController::class, 'getUsers'])->name('data');
+        Route::get('/create', [UserController::class, 'create'])->name('create');
+        Route::post('/', [UserController::class, 'store'])->name('store');
+        Route::get('/{user}', [UserController::class, 'show'])->name('show');
+        Route::get('/{user}/edit', [UserController::class, 'edit'])->name('edit');
+        Route::patch('/{user}', [UserController::class, 'update'])->name('update');
+        Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
+        Route::post('/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('toggle-status');
+        Route::post('/{user}/reset-password', [UserController::class, 'resetPassword'])->name('reset-password');
+        Route::get('/stats', [UserController::class, 'getStats'])->name('stats');
+        Route::get('/export', [UserController::class, 'export'])->name('export');
+        Route::get('/bulk-import', [UserController::class, 'bulkImportForm'])->name('bulk-import.form');
+        Route::post('/bulk-import', [UserController::class, 'bulkImport'])->name('bulk-import.store');
+        Route::post('/bulk-operation', [UserController::class, 'bulkOperation'])->name('bulk-operation');
+    });
 });
 
 // Admin Routes - Only for users with admin role

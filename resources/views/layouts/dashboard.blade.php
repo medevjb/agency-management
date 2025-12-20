@@ -11,9 +11,6 @@
 
     <link rel="stylesheet" href="{{ Vite::asset('resources/css/app.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        [x-cloak] { display: none !important; }
-    </style>
     @stack('styles')
 </head>
 <body class="font-sans antialiased bg-gray-100">
@@ -137,7 +134,7 @@
                     </a>
 
                     @role('admin')
-                    <a href="{{ route('admin.users') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+                    <a href="{{ route('users.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
                         <i class="fas fa-users mr-3"></i>
                         Users
                     </a>
@@ -213,23 +210,15 @@
                             </button>
 
                             <!-- User Dropdown -->
-                            <div class="relative" x-data="{ open: false }" @click.outside="open = false">
-                                <button @click="open = !open"
-                                        data-user-dropdown-btn
+                            <div class="relative">
+                                <button id="user-dropdown-btn"
                                         class="flex items-center space-x-2 text-gray-700 hover:text-gray-900 focus:outline-none">
                                     <img class="h-8 w-8 rounded-full" src="https://ui-avatars.com/api/?name={{ Auth::user()->name }}&background=4F46E5&color=fff" alt="{{ Auth::user()->name }}">
                                     <span class="hidden md:block">{{ Auth::user()->name }}</span>
                                     <i class="fas fa-chevron-down text-sm"></i>
                                 </button>
 
-                                <div x-show="open" x-cloak
-                                     x-transition:enter="transition ease-out duration-200"
-                                     x-transition:enter-start="transform opacity-0 scale-95"
-                                     x-transition:enter-end="transform opacity-100 scale-100"
-                                     x-transition:leave="transition ease-in duration-75"
-                                     x-transition:leave-start="transform opacity-100 scale-100"
-                                     x-transition:leave-end="transform opacity-0 scale-95"
-                                     data-user-dropdown
+                                <div id="user-dropdown"
                                      class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 hidden">
                                     <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                         <i class="fas fa-user mr-2"></i> Profile
@@ -260,7 +249,7 @@
 
     <script src="{{ Vite::asset('resources/js/app.js') }}" defer></script>
 
-    <!-- Fallback for dropdown if Alpine.js is not working -->
+    <!-- User Dropdown Script -->
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Debug: Check if SweetAlert is available
@@ -269,19 +258,29 @@
             console.log('SweetAlert version:', Swal.version);
         }
 
-        // Simple dropdown fallback
-        const userDropdownBtn = document.querySelector('[data-user-dropdown-btn]');
-        const userDropdown = document.querySelector('[data-user-dropdown]');
+        // User dropdown functionality
+        const userDropdownBtn = document.getElementById('user-dropdown-btn');
+        const userDropdown = document.getElementById('user-dropdown');
 
         if (userDropdownBtn && userDropdown) {
+            // Toggle dropdown when button is clicked
             userDropdownBtn.addEventListener('click', function(e) {
+                e.preventDefault();
                 e.stopPropagation();
+                console.log('Dropdown clicked'); // Debug log
                 userDropdown.classList.toggle('hidden');
             });
 
             // Close dropdown when clicking outside
             document.addEventListener('click', function(e) {
                 if (!userDropdown.contains(e.target) && !userDropdownBtn.contains(e.target)) {
+                    userDropdown.classList.add('hidden');
+                }
+            });
+
+            // Close dropdown when pressing Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
                     userDropdown.classList.add('hidden');
                 }
             });

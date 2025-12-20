@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Team;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 
 class TeamController extends Controller
@@ -20,9 +20,10 @@ class TeamController extends Controller
      */
     public function index()
     {
-        if (!auth()->user()->can('manage teams')) {
+        if (! auth()->user()->can('manage teams')) {
             abort(403, 'Unauthorized');
         }
+
         return view('teams.index');
     }
 
@@ -36,20 +37,23 @@ class TeamController extends Controller
         return DataTables::of($query)
             ->editColumn('team_leader', function ($team) {
                 $leader = $team->teamLeader;
+
                 return $leader ? [
                     'name' => $leader->name,
-                    'employee_id' => $leader->employee_id
+                    'employee_id' => $leader->employee_id,
                 ] : null;
             })
             ->addColumn('members_count', function ($team) {
                 $count = $team->members->count();
                 $activeCount = $team->members->where('is_active', true)->count();
-                return $count . ' ' . $activeCount . ' active';
+
+                return $count.' '.$activeCount.' active';
             })
             ->addColumn('projects_count', function ($team) {
                 $count = $team->projects->count();
                 $activeCount = $team->projects->whereIn('status', ['planning', 'in-progress'])->count();
-                return $count . ' ' . $activeCount . ' active';
+
+                return $count.' '.$activeCount.' active';
             })
             ->setRowId('id')
             ->make(true);
@@ -61,6 +65,7 @@ class TeamController extends Controller
     public function create()
     {
         $users = User::where('is_active', true)->get();
+
         return view('teams.create', compact('users'));
     }
 
@@ -87,13 +92,13 @@ class TeamController extends Controller
         if ($validated['team_leader_id']) {
             $leader = User::find($validated['team_leader_id']);
             $leader->update(['team_id' => $team->id]);
-            if (!$leader->hasRole('team-leader')) {
+            if (! $leader->hasRole('team-leader')) {
                 $leader->assignRole('team-leader');
             }
         }
 
         // Add team members
-        if (!empty($validated['members'])) {
+        if (! empty($validated['members'])) {
             foreach ($validated['members'] as $memberId) {
                 User::where('id', $memberId)->update(['team_id' => $team->id]);
             }
@@ -109,6 +114,7 @@ class TeamController extends Controller
     public function show(string $id)
     {
         $team = Team::with(['teamLeader', 'members', 'projects'])->findOrFail($id);
+
         return view('teams.show', compact('team'));
     }
 
@@ -119,6 +125,7 @@ class TeamController extends Controller
     {
         $team = Team::with(['teamLeader', 'members'])->findOrFail($id);
         $users = User::where('is_active', true)->get();
+
         return view('teams.edit', compact('team', 'users'));
     }
 
@@ -130,7 +137,7 @@ class TeamController extends Controller
         $team = Team::findOrFail($id);
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:teams,name,' . $team->id,
+            'name' => 'required|string|max:255|unique:teams,name,'.$team->id,
             'description' => 'nullable|string',
             'team_leader_id' => 'nullable|exists:users,id',
             'members' => 'nullable|array',
@@ -147,7 +154,7 @@ class TeamController extends Controller
         if ($validated['team_leader_id']) {
             $leader = User::find($validated['team_leader_id']);
             $leader->update(['team_id' => $team->id]);
-            if (!$leader->hasRole('team-leader')) {
+            if (! $leader->hasRole('team-leader')) {
                 $leader->assignRole('team-leader');
             }
         }
@@ -155,7 +162,7 @@ class TeamController extends Controller
         // Update team members - remove all current members and add new ones
         User::where('team_id', $team->id)->update(['team_id' => null]);
 
-        if (!empty($validated['members'])) {
+        if (! empty($validated['members'])) {
             foreach ($validated['members'] as $memberId) {
                 User::where('id', $memberId)->update(['team_id' => $team->id]);
             }
@@ -177,7 +184,7 @@ class TeamController extends Controller
         if ($activeProjects > 0) {
             return response()->json([
                 'success' => false,
-                'message' => 'Cannot delete team with active projects.'
+                'message' => 'Cannot delete team with active projects.',
             ], 422);
         }
 
@@ -188,7 +195,7 @@ class TeamController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Team deleted successfully.'
+            'message' => 'Team deleted successfully.',
         ]);
     }
 
