@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan make:controller:*)",
+      "Bash(php artisan serve:*)",
+      "Bash(php artisan:*)",
+      "Bash(npm run build)",
+      "Bash(vendor/bin/pint:*)",
+      "Bash(composer require:*)",
+      "Bash(composer show:*)",
+      "Bash(curl:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
