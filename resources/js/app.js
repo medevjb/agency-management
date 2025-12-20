@@ -20,4 +20,7 @@ window.JSZip = jszip;
 window.Swal = Swal;
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
+// Mark that Vite assets have been processed
+window.__vite_processed__ = true;
+
 Alpine.start();

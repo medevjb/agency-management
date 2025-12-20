@@ -285,18 +285,33 @@ let usersTable;
 let selectedRows = [];
 
 // Main initialization function
+let initAttempts = 0;
+const maxInitAttempts = 50; // Max 5 seconds (50 * 100ms)
+
 function initializeUsersModule() {
+    initAttempts++;
+
     // Check if jQuery is available
     if (typeof $ === 'undefined') {
-        console.log('Waiting for jQuery to load...');
-        setTimeout(initializeUsersModule, 100);
+        if (initAttempts < maxInitAttempts) {
+            console.log(`Waiting for jQuery to load... (attempt ${initAttempts})`);
+            setTimeout(initializeUsersModule, 100);
+        } else {
+            console.error('jQuery failed to load after maximum attempts');
+            alert('Application error: JavaScript libraries failed to load. Please refresh the page.');
+        }
         return;
     }
 
     // Check if SweetAlert is available
     if (typeof Swal === 'undefined') {
-        console.log('Waiting for SweetAlert to load...');
-        setTimeout(initializeUsersModule, 100);
+        if (initAttempts < maxInitAttempts) {
+            console.log(`Waiting for SweetAlert to load... (attempt ${initAttempts})`);
+            setTimeout(initializeUsersModule, 100);
+        } else {
+            console.error('SweetAlert failed to load after maximum attempts');
+            alert('Application error: SweetAlert library failed to load. Please refresh the page.');
+        }
         return;
     }
 
@@ -669,10 +684,37 @@ function showToast(message, type = 'info') {
     }
 }
 
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
+// Initialize with better timing - wait for jQuery to be available
+function startInitialization() {
+    console.log('Starting initialization...');
+
+    // Additional check for Vite loaded content
+    if (typeof window.__vite_processed__ === 'undefined') {
+        console.log('Vite assets still loading, retrying...');
+        setTimeout(startInitialization, 200);
+        return;
+    }
+
     initializeUsersModule();
-});
+}
+
+// Wait for both DOM and Vite assets to be ready
+function waitForReadyState() {
+    if (document.readyState === 'complete') {
+        startInitialization();
+    } else {
+        setTimeout(waitForReadyState, 100);
+    }
+}
+
+// Initialize when page is fully loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(waitForReadyState, 100); // Small delay to ensure app.js has time to execute
+    });
+} else {
+    waitForReadyState();
+}
 </script>
 @endpush
 @endsection
