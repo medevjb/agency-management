@@ -48,6 +48,16 @@
                         </div>
                     @endrole
 
+                    @role('admin')
+                    <div class="border-t border-indigo-700 pt-2 mt-2">
+                        <p class="px-4 py-2 text-xs font-semibold text-indigo-300 uppercase tracking-wider">User Management</p>
+                        <a href="{{ route('users.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+                            <i class="fas fa-users mr-3"></i>
+                            Users
+                        </a>
+                    </div>
+                    @endrole
+
                     <div class="border-t border-indigo-700 pt-2 mt-2">
                         <p class="px-4 py-2 text-xs font-semibold text-indigo-300 uppercase tracking-wider">Project</p>
                         <a href="{{ route('projects.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
@@ -134,16 +144,22 @@
                     </a>
 
                     @role('admin')
-                    <a href="{{ route('users.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-                        <i class="fas fa-users mr-3"></i>
-                        Users
-                    </a>
+                    <div class="border-t border-indigo-700 pt-2 mt-2">
+                        <p class="px-4 py-2 text-xs font-semibold text-indigo-300 uppercase tracking-wider">User Management</p>
+                        <a href="{{ route('users.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+                            <i class="fas fa-users mr-3"></i>
+                            Users
+                        </a>
+                    </div>
                     @endrole
 
-                    <a href="{{ route('projects.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-                        <i class="fas fa-folder mr-3"></i>
-                        Projects
-                    </a>
+                    <div class="border-t border-indigo-700 pt-2 mt-2">
+                        <p class="px-4 py-2 text-xs font-semibold text-indigo-300 uppercase tracking-wider">Project</p>
+                        <a href="{{ route('projects.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+                            <i class="fas fa-folder mr-3"></i>
+                            Projects
+                        </a>
+                    </div>
 
                     @canany(['manage teams', 'view teams'])
                     @can('manage teams')
