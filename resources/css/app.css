@@ -1,6 +1,234 @@
-@import 'datatables.net-bs5/css/dataTables.bootstrap5.css';
-@import 'datatables.net-buttons-bs5/css/buttons.bootstrap5.css';
-@import 'datatables.net-responsive-bs5/css/responsive.bootstrap5.css';
+@import "datatables.net-bs5/css/dataTables.bootstrap5.css";
+@import "datatables.net-buttons-bs5/css/buttons.bootstrap5.css";
+@import "datatables.net-responsive-bs5/css/responsive.bootstrap5.css";
+
+div.dt-container div.dt-search {
+    display: none;
+}
+#usersTable_wrapper .dt-length {
+    padding: 15px;
+}
+#usersTable_wrapper .dt-length select {
+    border-radius: 10px;
+    padding: 5px 25px;
+}
+.datatableprimary {
+    margin: 0px 30px;
+}
+.dt-info {
+    margin-top: 10px;
+    margin-left: 15px;
+    width: 50%;
+    float: left;
+}
+/* Pagination container - single line layout */
+.dt-paging {
+    background: #ffffff;
+    padding: 15px 20px;
+    margin: 0;
+    border-top: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Pagination navigation container */
+.dt-paging nav {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.dt-paging nav ul.pagination {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dt-paging-button {
+    margin: 0;
+}
+
+.dt-paging-button .page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    margin: 0;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #374151;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 1;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.dt-paging-button .page-link:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+    color: #111827;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dt-paging-button.active .page-link {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+.dt-paging-button.disabled .page-link {
+    background: #f9fafb;
+    border-color: #e5e7eb;
+    color: #9ca3af;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.dt-paging-button.disabled .page-link:hover {
+    background: #f9fafb;
+    border-color: #e5e7eb;
+    color: #9ca3af;
+    box-shadow: none;
+}
+
+/* Special styling for first/previous/next/last buttons */
+.dt-paging-button .page-link.first,
+.dt-paging-button .page-link.previous,
+.dt-paging-button .page-link.next,
+.dt-paging-button .page-link.last {
+    padding: 0 12px;
+    font-size: 13px;
+    text-transform: capitalize;
+}
+
+/* Update dt-info to work with the single-line layout */
+.dt-info {
+    margin: 0;
+    width: auto;
+    float: none;
+    color: #6b7280;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Style for usersTable_info to match dt-info */
+#usersTable_info {
+    padding: 15px 20px;
+    margin: 0;
+    background: #ffffff;
+    color: #6b7280;
+    font-size: 14px;
+    font-weight: 500;
+    width: 50%;
+    float: left;
+}
+
+/* Container for both info elements to be on same line */
+.dt-info-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    border-bottom: none;
+    padding: 0;
+}
+
+.dt-info-container #usersTable_info {
+    border: none;
+    padding: 15px 20px;
+    flex: 1;
+}
+
+.dt-info-container .dt-info {
+    padding: 15px 20px;
+    flex: 1;
+    text-align: right;
+}
+
+/* Responsive pagination */
+@media (max-width: 768px) {
+    .dt-paging {
+        padding: 12px 15px;
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+
+    .dt-paging nav {
+        justify-content: center;
+    }
+
+    .dt-info {
+        text-align: center;
+        font-size: 13px;
+    }
+
+    .dt-paging-button .page-link {
+        min-width: 32px;
+        height: 32px;
+        font-size: 13px;
+    }
+
+    .dt-paging-button .page-link.first,
+    .dt-paging-button .page-link.previous,
+    .dt-paging-button .page-link.next,
+    .dt-paging-button .page-link.last {
+        padding: 0 10px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .dt-paging {
+        padding: 10px;
+    }
+
+    .dt-paging nav ul.pagination {
+        gap: 4px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .dt-paging-button .page-link {
+        min-width: 30px;
+        height: 30px;
+        font-size: 12px;
+        padding: 0 8px;
+    }
+
+    .dt-paging-button .page-link.first,
+    .dt-paging-button .page-link.previous,
+    .dt-paging-button .page-link.next,
+    .dt-paging-button .page-link.last {
+        padding: 0 8px;
+        font-size: 11px;
+    }
+
+    .dt-info {
+        font-size: 12px;
+    }
+}
+#bulkOperations {
+    margin: 0 31px 10px;
+}
+#usersTable_wrapper > .gap-2 {
+    width: 50%;
+    float: right;
+    margin-top: 17px;
+    margin-right: 16px;
+}
 
 @tailwind base;
 @tailwind components;

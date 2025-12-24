@@ -32,7 +32,7 @@
                 <p class="text-purple-100">Fill in the user details and assign appropriate permissions</p>
             </div>
 
-            <form method="POST" action="{{ route('users.store') }}" id="createUserForm">
+            <form method="POST" action="{{ route('users.store') }}" id="createUserForm" novalidate>
                 @csrf
                 <div class="p-8">
                     <!-- Progress Steps -->
@@ -69,134 +69,141 @@
                                 </div>
                                 Basic User Information
                             </h3>
-                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div>
-                                    <label for="name" class="block text-sm font-bold text-gray-700 mb-3 flex items-center">
-                                        <i class="fas fa-user mr-2 text-indigo-500"></i>
+                                    <label for="name" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                        <i class="fas fa-user mr-2 text-indigo-500 text-sm"></i>
                                         Full Name <span class="text-red-500 ml-1">*</span>
                                     </label>
                                     <div class="relative">
                                         <input type="text" id="name" name="name" required
                                                value="{{ old('name') }}"
-                                               class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-lg"
+                                               class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
                                                placeholder="Enter full name">
-                                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                            <i class="fas fa-user text-gray-400"></i>
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                            <i class="fas fa-user text-gray-400 text-sm"></i>
                                         </div>
                                     </div>
                                     @error('name')
-                                        <p class="mt-3 text-sm text-red-600 flex items-center font-medium">
-                                            <i class="fas fa-exclamation-circle mr-2"></i>
+                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                            <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
                                             {{ $message }}
                                         </p>
                                     @enderror
                                 </div>
 
                                 <div>
-                                    <label for="email" class="block text-sm font-bold text-gray-700 mb-3 flex items-center">
-                                        <i class="fas fa-envelope mr-2 text-indigo-500"></i>
+                                    <label for="email" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                        <i class="fas fa-envelope mr-2 text-indigo-500 text-sm"></i>
                                         Email Address <span class="text-red-500 ml-1">*</span>
                                     </label>
                                     <div class="relative">
                                         <input type="email" id="email" name="email" required
                                                value="{{ old('email') }}"
-                                               class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-lg"
+                                               class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
                                                placeholder="user@company.com">
-                                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                            <i class="fas fa-envelope text-gray-400"></i>
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                            <i class="fas fa-envelope text-gray-400 text-sm"></i>
                                         </div>
                                     </div>
                                     @error('email')
-                                        <p class="mt-3 text-sm text-red-600 flex items-center font-medium">
-                                            <i class="fas fa-exclamation-circle mr-2"></i>
+                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                            <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
                                             {{ $message }}
                                         </p>
                                     @enderror
                                 </div>
 
                                 <div>
-                                    <label for="employee_id" class="block text-sm font-bold text-gray-700 mb-3 flex items-center">
-                                        <i class="fas fa-id-badge mr-2 text-indigo-500"></i>
+                                    <label for="employee_id" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                        <i class="fas fa-id-badge mr-2 text-indigo-500 text-sm"></i>
                                         Employee ID
                                     </label>
                                     <div class="relative">
                                         <input type="text" id="employee_id" name="employee_id"
                                                value="{{ old('employee_id') }}"
-                                               pattern="[0-9]{6,8}"
-                                               class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-lg"
+                                               inputmode="numeric"
+                                               class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
                                                placeholder="6-8 digit number (optional)">
-                                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                            <i class="fas fa-id-badge text-gray-400"></i>
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                            <i class="fas fa-id-badge text-gray-400 text-sm"></i>
                                         </div>
                                     </div>
-                                    <p class="mt-2 text-sm text-gray-500">Leave empty to auto-generate</p>
+                                    <p class="mt-1 text-xs text-gray-500">Leave empty to auto-generate</p>
                                     @error('employee_id')
-                                        <p class="mt-3 text-sm text-red-600 flex items-center font-medium">
-                                            <i class="fas fa-exclamation-circle mr-2"></i>
+                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                            <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
                                             {{ $message }}
                                         </p>
                                     @enderror
                                 </div>
 
                                 <div>
-                                    <label for="phone" class="block text-sm font-bold text-gray-700 mb-3 flex items-center">
-                                        <i class="fas fa-phone mr-2 text-indigo-500"></i>
+                                    <label for="phone" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                        <i class="fas fa-phone mr-2 text-indigo-500 text-sm"></i>
                                         Phone Number
                                     </label>
                                     <div class="relative">
                                         <input type="tel" id="phone" name="phone"
                                                value="{{ old('phone') }}"
-                                               class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-lg"
+                                               class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
                                                placeholder="+1 (555) 123-4567">
-                                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                            <i class="fas fa-phone text-gray-400"></i>
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                            <i class="fas fa-phone text-gray-400 text-sm"></i>
                                         </div>
                                     </div>
                                     @error('phone')
-                                        <p class="mt-3 text-sm text-red-600 flex items-center font-medium">
-                                            <i class="fas fa-exclamation-circle mr-2"></i>
+                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                            <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
                                             {{ $message }}
                                         </p>
                                     @enderror
                                 </div>
 
                                 <div>
-                                    <label for="password" class="block text-sm font-bold text-gray-700 mb-3 flex items-center">
-                                        <i class="fas fa-lock mr-2 text-indigo-500"></i>
+                                    <label for="password" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                        <i class="fas fa-lock mr-2 text-indigo-500 text-sm"></i>
                                         Password <span class="text-red-500 ml-1">*</span>
                                     </label>
                                     <div class="relative">
                                         <input type="password" id="password" name="password" required
-                                               class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-lg"
+                                               class="w-full px-4 py-2.5 pr-12 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
                                                placeholder="•••••••••">
-                                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                            <i class="fas fa-lock text-gray-400"></i>
-                                        </div>
+                                        <button type="button"
+                                                onclick="togglePasswordVisibility('password')"
+                                                class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 focus:outline-none focus:text-indigo-600 transition-colors duration-200"
+                                                aria-label="Toggle password visibility">
+                                            <i id="password-toggle-icon" class="fas fa-eye text-sm"></i>
+                                        </button>
                                     </div>
+                                    <p class="mt-1 text-xs text-gray-500">Must contain at least 8 characters with uppercase, lowercase, and numbers</p>
                                     @error('password')
-                                        <p class="mt-3 text-sm text-red-600 flex items-center font-medium">
-                                            <i class="fas fa-exclamation-circle mr-2"></i>
+                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                            <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
                                             {{ $message }}
                                         </p>
                                     @enderror
                                 </div>
 
                                 <div>
-                                    <label for="password_confirmation" class="block text-sm font-bold text-gray-700 mb-3 flex items-center">
-                                        <i class="fas fa-lock mr-2 text-indigo-500"></i>
+                                    <label for="password_confirmation" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                        <i class="fas fa-lock mr-2 text-indigo-500 text-sm"></i>
                                         Confirm Password <span class="text-red-500 ml-1">*</span>
                                     </label>
                                     <div class="relative">
                                         <input type="password" id="password_confirmation" name="password_confirmation" required
-                                               class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-lg"
+                                               class="w-full px-4 py-2.5 pr-12 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
                                                placeholder="•••••••••">
-                                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                            <i class="fas fa-lock text-gray-400"></i>
-                                        </div>
+                                        <button type="button"
+                                                onclick="togglePasswordVisibility('password_confirmation')"
+                                                class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 focus:outline-none focus:text-indigo-600 transition-colors duration-200"
+                                                aria-label="Toggle password confirmation visibility">
+                                            <i id="password_confirmation-toggle-icon" class="fas fa-eye text-sm"></i>
+                                        </button>
                                     </div>
                                     @error('password_confirmation')
-                                        <p class="mt-3 text-sm text-red-600 flex items-center font-medium">
-                                            <i class="fas fa-exclamation-circle mr-2"></i>
+                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                            <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
                                             {{ $message }}
                                         </p>
                                     @enderror
@@ -207,8 +214,8 @@
                         <!-- Navigation -->
                         <div class="flex justify-end">
                             <button type="button" onclick="goToStep(2)"
-                                    class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105">
-                                Next Step <i class="fas fa-arrow-right ml-2"></i>
+                                    class="px-6 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-semibold rounded-lg shadow hover:shadow-lg transform transition-all duration-200 hover:scale-105 text-sm">
+                                Next Step <i class="fas fa-arrow-right ml-1.5 text-xs"></i>
                             </button>
                         </div>
                     </div>
@@ -222,105 +229,112 @@
                                 </div>
                                 Professional Information
                             </h3>
-                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div>
-                                    <label for="department" class="block text-sm font-bold text-gray-700 mb-3">
+                                    <label for="department" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                        <i class="fas fa-building mr-2 text-indigo-500 text-sm"></i>
                                         Department
                                     </label>
                                     <div class="relative">
                                         <input type="text" id="department" name="department"
                                                value="{{ old('department') }}"
-                                               class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-lg"
+                                               class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
                                                placeholder="Engineering, Marketing, etc.">
-                                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                            <i class="fas fa-building text-gray-400"></i>
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                            <i class="fas fa-building text-gray-400 text-sm"></i>
                                         </div>
                                     </div>
                                     @error('department')
-                                        <p class="mt-3 text-sm text-red-600 flex items-center font-medium">
-                                            <i class="fas fa-exclamation-circle mr-2"></i>
+                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                            <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
                                             {{ $message }}
                                         </p>
                                     @enderror
                                 </div>
 
                                 <div>
-                                    <label for="position" class="block text-sm font-bold text-gray-700 mb-3">
+                                    <label for="position" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                        <i class="fas fa-user-tag mr-2 text-indigo-500 text-sm"></i>
                                         Position
                                     </label>
                                     <div class="relative">
                                         <input type="text" id="position" name="position"
                                                value="{{ old('position') }}"
-                                               class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-lg"
+                                               class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
                                                placeholder="Senior Developer, Manager, etc.">
-                                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                            <i class="fas fa-user-tag text-gray-400"></i>
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                            <i class="fas fa-user-tag text-gray-400 text-sm"></i>
                                         </div>
                                     </div>
                                     @error('position')
-                                        <p class="mt-3 text-sm text-red-600 flex items-center font-medium">
-                                            <i class="fas fa-exclamation-circle mr-2"></i>
+                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                            <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
                                             {{ $message }}
                                         </p>
                                     @enderror
                                 </div>
 
                                 <div>
-                                    <label for="hire_date" class="block text-sm font-bold text-gray-700 mb-3">
+                                    <label for="hire_date" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                        <i class="fas fa-calendar mr-2 text-indigo-500 text-sm"></i>
                                         Hire Date
                                     </label>
                                     <div class="relative">
                                         <input type="date" id="hire_date" name="hire_date"
                                                value="{{ old('hire_date') }}"
-                                               class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-lg">
-                                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                            <i class="fas fa-calendar text-gray-400"></i>
+                                               class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base">
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                            <i class="fas fa-calendar text-gray-400 text-sm"></i>
                                         </div>
                                     </div>
                                     @error('hire_date')
-                                        <p class="mt-3 text-sm text-red-600 flex items-center font-medium">
-                                            <i class="fas fa-exclamation-circle mr-2"></i>
+                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                            <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
                                             {{ $message }}
                                         </p>
                                     @enderror
                                 </div>
 
                                 <div>
-                                    <label for="salary" class="block text-sm font-bold text-gray-700 mb-3">
+                                    <label for="salary" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                        <i class="fas fa-dollar-sign mr-2 text-indigo-500 text-sm"></i>
                                         Salary
                                     </label>
                                     <div class="relative">
-                                        <input type="number" id="salary" name="salary" step="0.01" min="0"
+                                        <input type="text" id="salary" name="salary"
                                                value="{{ old('salary') }}"
-                                               class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-lg"
+                                               inputmode="decimal"
+                                               class="w-full px-4 py-2.5 pl-7 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
                                                placeholder="0.00">
-                                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                                            <span class="text-gray-500">$</span>
+                                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                            <span class="text-gray-500 font-medium text-sm">$</span>
                                         </div>
                                     </div>
+                                    <p class="mt-1 text-xs text-gray-500">Annual salary in USD (optional)</p>
                                     @error('salary')
-                                        <p class="mt-3 text-sm text-red-600 flex items-center font-medium">
-                                            <i class="fas fa-exclamation-circle mr-2"></i>
+                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                            <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
                                             {{ $message }}
                                         </p>
                                     @enderror
                                 </div>
 
                                 <div class="lg:col-span-2">
-                                    <label for="address" class="block text-sm font-bold text-gray-700 mb-3">
+                                    <label for="address" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                        <i class="fas fa-map-marker-alt mr-2 text-indigo-500 text-sm"></i>
                                         Address
                                     </label>
                                     <div class="relative">
                                         <textarea id="address" name="address" rows="3"
-                                                  class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-lg resize-none"
+                                                  class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base resize-none"
                                                   placeholder="Enter full address">{{ old('address') }}</textarea>
-                                        <div class="absolute top-3 right-3 pointer-events-none">
-                                            <i class="fas fa-map-marker-alt text-gray-400"></i>
+                                        <div class="absolute top-2.5 right-2.5 pointer-events-none">
+                                            <i class="fas fa-map-marker-alt text-gray-400 text-sm"></i>
                                         </div>
                                     </div>
                                     @error('address')
-                                        <p class="mt-3 text-sm text-red-600 flex items-center font-medium">
-                                            <i class="fas fa-exclamation-circle mr-2"></i>
+                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                            <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
                                             {{ $message }}
                                         </p>
                                     @enderror
@@ -331,12 +345,12 @@
                         <!-- Navigation -->
                         <div class="flex justify-between">
                             <button type="button" onclick="goToStep(1)"
-                                    class="px-8 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors duration-200">
-                                <i class="fas fa-arrow-left mr-2"></i> Previous
+                                    class="px-5 py-2 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200 text-sm">
+                                <i class="fas fa-arrow-left mr-1.5 text-xs"></i> Previous
                             </button>
                             <button type="button" onclick="goToStep(3)"
-                                    class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105">
-                                Next Step <i class="fas fa-arrow-right ml-2"></i>
+                                    class="px-6 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-semibold rounded-lg shadow hover:shadow-lg transform transition-all duration-200 hover:scale-105 text-sm">
+                                Next Step <i class="fas fa-arrow-right ml-1.5 text-xs"></i>
                             </button>
                         </div>
                     </div>
@@ -350,14 +364,15 @@
                                 </div>
                                 Team and Tech Stack Assignments
                             </h3>
-                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div>
-                                    <label for="team_id" class="block text-sm font-bold text-gray-700 mb-3">
+                                    <label for="team_id" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                        <i class="fas fa-users mr-2 text-indigo-500 text-sm"></i>
                                         Assign to Team
                                     </label>
                                     <div class="relative">
                                         <select id="team_id" name="team_id"
-                                                class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm appearance-none transition-all duration-200 text-lg">
+                                                class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm appearance-none transition-all duration-200 text-base">
                                             <option value="">Select a team (optional)</option>
                                             @foreach($teams as $team)
                                                 <option value="{{ $team->id }}" {{ old('team_id') == $team->id ? 'selected' : '' }}>
@@ -365,25 +380,27 @@
                                                 </option>
                                             @endforeach
                                         </select>
-                                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                            <i class="fas fa-chevron-down text-gray-400"></i>
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                            <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
                                         </div>
                                     </div>
+                                    <p class="mt-1 text-xs text-gray-500">Assign user to a team for better collaboration</p>
                                     @error('team_id')
-                                        <p class="mt-3 text-sm text-red-600 flex items-center font-medium">
-                                            <i class="fas fa-exclamation-circle mr-2"></i>
+                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                            <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
                                             {{ $message }}
                                         </p>
                                     @enderror
                                 </div>
 
                                 <div>
-                                    <label for="tech_stack_id" class="block text-sm font-bold text-gray-700 mb-3">
+                                    <label for="tech_stack_id" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                        <i class="fas fa-code mr-2 text-indigo-500 text-sm"></i>
                                         Assign to Tech Stack
                                     </label>
                                     <div class="relative">
                                         <select id="tech_stack_id" name="tech_stack_id"
-                                                class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm appearance-none transition-all duration-200 text-lg">
+                                                class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm appearance-none transition-all duration-200 text-base">
                                             <option value="">Select a tech stack (optional)</option>
                                             @foreach($techStacks as $techStack)
                                                 <option value="{{ $techStack->id }}" {{ old('tech_stack_id') == $techStack->id ? 'selected' : '' }}>
@@ -391,13 +408,14 @@
                                                 </option>
                                             @endforeach
                                         </select>
-                                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                            <i class="fas fa-chevron-down text-gray-400"></i>
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                            <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
                                         </div>
                                     </div>
+                                    <p class="mt-1 text-xs text-gray-500">Define the user's primary technology stack</p>
                                     @error('tech_stack_id')
-                                        <p class="mt-3 text-sm text-red-600 flex items-center font-medium">
-                                            <i class="fas fa-exclamation-circle mr-2"></i>
+                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                            <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
                                             {{ $message }}
                                         </p>
                                     @enderror
@@ -408,12 +426,12 @@
                         <!-- Navigation -->
                         <div class="flex justify-between">
                             <button type="button" onclick="goToStep(2)"
-                                    class="px-8 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors duration-200">
-                                <i class="fas fa-arrow-left mr-2"></i> Previous
+                                    class="px-5 py-2 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200 text-sm">
+                                <i class="fas fa-arrow-left mr-1.5 text-xs"></i> Previous
                             </button>
                             <button type="button" onclick="goToStep(4)"
-                                    class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105">
-                                Next Step <i class="fas fa-arrow-right ml-2"></i>
+                                    class="px-6 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-semibold rounded-lg shadow hover:shadow-lg transform transition-all duration-200 hover:scale-105 text-sm">
+                                Next Step <i class="fas fa-arrow-right ml-1.5 text-xs"></i>
                             </button>
                         </div>
                     </div>
@@ -427,14 +445,15 @@
                                 </div>
                                 Role and Permissions
                             </h3>
-                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div>
-                                    <label for="role" class="block text-sm font-bold text-gray-700 mb-3">
+                                    <label for="role" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                        <i class="fas fa-user-shield mr-2 text-indigo-500 text-sm"></i>
                                         Assign Primary Role
                                     </label>
                                     <div class="relative">
                                         <select id="role" name="role"
-                                                class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm appearance-none transition-all duration-200 text-lg">
+                                                class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm appearance-none transition-all duration-200 text-base">
                                             <option value="">Select a role</option>
                                             @foreach($roles as $role)
                                                 <option value="{{ $role->name }}" {{ old('role') == $role->name ? 'selected' : '' }}>
@@ -442,69 +461,131 @@
                                                 </option>
                                             @endforeach
                                         </select>
-                                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                            <i class="fas fa-chevron-down text-gray-400"></i>
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                            <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
                                         </div>
                                     </div>
+                                    <p class="mt-1 text-xs text-gray-500">Primary role determines basic user permissions</p>
                                     @error('role')
-                                        <p class="mt-3 text-sm text-red-600 flex items-center font-medium">
-                                            <i class="fas fa-exclamation-circle mr-2"></i>
+                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                            <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
                                             {{ $message }}
                                         </p>
                                     @enderror
                                 </div>
 
                                 <div>
-                                    <label class="flex items-center">
+                                    <label class="flex items-center p-3 border-2 border-gray-200 rounded-lg hover:border-indigo-300 transition-colors duration-200">
                                         <input type="checkbox" id="is_active" name="is_active" value="1"
                                                {{ old('is_active', '1') ? 'checked' : '' }}
-                                               class="mr-3 w-5 h-5 text-indigo-600 bg-indigo-100 border-indigo-300 rounded focus:ring-indigo-500 focus:ring-2">
-                                        <span class="text-sm font-bold text-gray-700">Active User</span>
+                                               class="mr-3 w-4 h-4 text-green-600 bg-green-100 border-green-300 rounded focus:ring-green-500 focus:ring-2">
+                                        <div>
+                                            <span class="text-sm font-semibold text-gray-700 block">Active User</span>
+                                            <span class="text-xs text-gray-500">Can login and access the system</span>
+                                        </div>
                                     </label>
-                                    <p class="mt-2 text-sm text-gray-500 ml-8">Uncheck to create inactive user</p>
                                 </div>
                             </div>
 
                             <!-- Additional Permissions -->
-                            <div class="mt-8">
-                                <h4 class="text-lg font-semibold text-gray-900 mb-4">Additional Permissions</h4>
-                                <div class="space-y-4">
+                            <div class="mt-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h4 class="text-base font-semibold text-gray-900 flex items-center">
+                                        <i class="fas fa-key mr-2 text-indigo-500 text-sm"></i>
+                                        Additional Permissions
+                                    </h4>
+                                    <button type="button"
+                                            class="text-xs text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
+                                            onclick="toggleAllAccordions()">
+                                        <i class="fas fa-expand-alt mr-1"></i>
+                                        <span id="toggleAllText">Expand All</span>
+                                    </button>
+                                </div>
+                                <div class="space-y-2" id="permissionsAccordion">
                                     @foreach($permissions as $group => $groupPermissions)
-                                        <div class="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-6 border border-orange-200">
-                                            <h5 class="font-semibold text-gray-900 mb-3 text-capitalize">{{ $group }} Permissions</h5>
-                                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                                @foreach($groupPermissions as $permission)
-                                                    <label class="flex items-center p-3 hover:bg-white rounded-lg cursor-pointer transition-colors duration-200">
-                                                        <input type="checkbox" name="permissions[]" value="{{ $permission->id }}"
-                                                               {{ in_array($permission->id, old('permissions', [])) ? 'checked' : '' }}
-                                                               class="mr-3 w-4 h-4 text-orange-600 bg-orange-100 border-orange-300 rounded focus:ring-orange-500 focus:ring-2">
-                                                        <div>
-                                                            <div class="text-sm font-medium text-gray-900">{{ ucfirst(str_replace('-', ' ', $permission->name)) }}</div>
-                                                            <div class="text-xs text-gray-500">{{ $permission->name }}</div>
+                                        <div class="permissions-accordion-item border border-gray-200 rounded-lg overflow-hidden transition-all duration-200">
+                                            <button type="button"
+                                                    class="accordion-header w-full px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-purple-50 flex items-center justify-between text-left transition-all duration-200"
+                                                    onclick="toggleAccordion(this)">
+                                                <div class="flex items-center">
+                                                    <div class="flex items-center justify-center w-6 h-6 bg-indigo-500 text-white rounded mr-3">
+                                                        <i class="fas fa-chevron-down text-xs transition-transform duration-200 accordion-icon"></i>
+                                                    </div>
+                                                    <div class="text-left">
+                                                        <h5 class="text-sm font-semibold text-gray-900 capitalize">{{ $group }}</h5>
+                                                        <p class="text-xs text-gray-500">{{ count($groupPermissions) }} permissions</p>
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-center space-x-2">
+                                                    @php
+                                                        $checkedCount = collect(old('permissions', []))->filter(function($perm) use ($groupPermissions) {
+                                                            return collect($groupPermissions)->pluck('id')->contains($perm);
+                                                        })->count();
+                                                    @endphp
+                                                    <span class="text-xs font-medium text-gray-600 bg-gray-200 px-2 py-1 rounded">
+                                                        {{ $checkedCount }}/{{ count($groupPermissions) }}
+                                                    </span>
+                                                    <i class="fas fa-shield-alt text-indigo-400 text-sm"></i>
+                                                </div>
+                                            </button>
+                                            <div class="accordion-content hidden">
+                                                <div class="px-4 py-3 bg-white border-t border-gray-200">
+                                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                                                        @foreach($groupPermissions as $permission)
+                                                            <label class="flex items-center p-2 hover:bg-indigo-50 rounded cursor-pointer transition-colors duration-200 border border-transparent hover:border-indigo-200 group">
+                                                                <input type="checkbox" name="permissions[]" value="{{ $permission->id }}"
+                                                                       {{ in_array($permission->id, old('permissions', [])) ? 'checked' : '' }}
+                                                                       class="mr-2 w-3.5 h-3.5 text-indigo-600 bg-indigo-100 border-indigo-300 rounded focus:ring-indigo-500 focus:ring-2">
+                                                                <div class="flex-1 min-w-0">
+                                                                    <div class="text-xs font-medium text-gray-900 truncate">{{ ucfirst(str_replace('-', ' ', $permission->name)) }}</div>
+                                                                    <div class="text-xs text-gray-400 truncate">{{ $permission->name }}</div>
+                                                                </div>
+                                                            </label>
+                                                        @endforeach
+                                                    </div>
+                                                    @if(count($groupPermissions) > 4)
+                                                        <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+                                                            <button type="button"
+                                                                    class="text-xs text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
+                                                                    onclick="toggleAllPermissions(this, '{{ $group }}')">
+                                                                <i class="fas fa-check-square mr-1"></i>
+                                                                <span class="toggle-all-text">Select All {{ ucfirst($group) }}</span>
+                                                            </button>
+                                                            <span class="text-xs text-gray-400">
+                                                                {{ round(collect(old('permissions', []))->filter(function($perm) use ($groupPermissions) {
+                                                                    return collect($groupPermissions)->pluck('id')->contains($perm);
+                                                                })->count() / count($groupPermissions) * 100) }}% selected
+                                                            </span>
                                                         </div>
-                                                    </label>
-                                                @endforeach
+                                                    @endif
+                                                </div>
                                             </div>
                                         </div>
                                     @endforeach
+                                </div>
+                                <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                    <p class="text-xs text-blue-700 flex items-center">
+                                        <i class="fas fa-info-circle mr-2 text-blue-500"></i>
+                                        Permissions are additional access rights beyond the primary role. Select only what the user needs for their job function.
+                                    </p>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Form Actions -->
-                        <div class="flex flex-col sm:flex-row justify-between gap-4">
+                        <div class="flex flex-col sm:flex-row justify-between gap-3">
                             <button type="button" onclick="goToStep(3)"
-                                    class="px-8 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors duration-200">
-                                <i class="fas fa-arrow-left mr-2"></i> Previous
+                                    class="px-5 py-2 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200 text-sm">
+                                <i class="fas fa-arrow-left mr-1.5 text-xs"></i> Previous
                             </button>
-                            <div class="flex gap-4">
+                            <div class="flex gap-3">
                                 <a href="{{ route('users.index') }}"
-                                   class="px-8 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors duration-200">
-                                    <i class="fas fa-times mr-2"></i> Cancel
+                                   class="px-5 py-2 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200 text-sm">
+                                    <i class="fas fa-times mr-1.5 text-xs"></i> Cancel
                                 </a>
                                 <button type="submit"
-                                        class="px-8 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105">
-                                    <i class="fas fa-check mr-2"></i> Create User
+                                        class="px-6 py-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-lg shadow hover:shadow-lg transform transition-all duration-200 hover:scale-105 text-sm">
+                                    <i class="fas fa-check mr-1.5 text-xs"></i> Create User
                                 </button>
                             </div>
                         </div>
@@ -543,6 +624,10 @@
         transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         min-width: 320px;
         max-width: 480px;
+        background: #ffffff;
+        border-left: 4px solid #6366F1;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+        backdrop-filter: blur(10px);
     }
 
     .toast.show {
@@ -550,27 +635,71 @@
     }
 
     .toast-success {
-        background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-        border-left: 4px solid #047857;
+        background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+        border-left: 4px solid #10B981;
+    }
+
+    .toast-success .toast-icon {
+        color: #10B981;
+        background: #ecfdf5;
     }
 
     .toast-error {
-        background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
-        border-left: 4px solid #B91C1C;
+        background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
+        border-left: 4px solid #EF4444;
+    }
+
+    .toast-error .toast-icon {
+        color: #EF4444;
+        background: #fef2f2;
     }
 
     .toast-warning {
-        background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-        border-left: 4px solid #B45309;
+        background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
+        border-left: 4px solid #F59E0B;
+    }
+
+    .toast-warning .toast-icon {
+        color: #F59E0B;
+        background: #fffbeb;
+    }
+
+    .toast-info {
+        background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+        border-left: 4px solid #3B82F6;
+    }
+
+    .toast-info .toast-icon {
+        color: #3B82F6;
+        background: #eff6ff;
     }
 
     .toast-progress {
+        height: 3px;
+        background: #6366F1;
         animation: toast-progress 5s linear;
+        border-radius: 0 0 0 4px;
+    }
+
+    .toast-success .toast-progress {
+        background: #10B981;
+    }
+
+    .toast-error .toast-progress {
+        background: #EF4444;
+    }
+
+    .toast-warning .toast-progress {
+        background: #F59E0B;
+    }
+
+    .toast-info .toast-progress {
+        background: #3B82F6;
     }
 
     @keyframes toast-progress {
-        from { width: 100%; }
-        to { width: 0%; }
+        from { width: 100%; opacity: 0.8; }
+        to { width: 0%; opacity: 0.3; }
     }
 
     @keyframes slide-in-right {
@@ -602,6 +731,75 @@
     .toast-exit {
         animation: slide-out-right 0.3s ease-in;
     }
+
+    /* Toast icon styling */
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .toast-title {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 2px;
+    }
+
+    .toast-message {
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .toast-close {
+        color: #9ca3af;
+        background: transparent;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .toast-close:hover {
+        color: #6b7280;
+        background: #f3f4f6;
+    }
+
+    /* Accordion Styles */
+    .permissions-accordion-item {
+        transition: all 0.2s ease;
+    }
+
+    .permissions-accordion-item:hover {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .accordion-header {
+        transition: all 0.2s ease;
+    }
+
+    .accordion-content {
+        transition: all 0.3s ease;
+    }
+
+    .rotate-180 {
+        transform: rotate(180deg);
+    }
+
+    /* Permission checkbox hover effect */
+    .permissions-accordion-item label:hover input[type="checkbox"] {
+        border-color: #4f46e5;
+    }
+
+    .permissions-accordion-item label:has(input:checked) {
+        background-color: #eef2ff;
+        border-color: #4f46e5;
+    }
 </style>
 @endpush
 
@@ -609,31 +807,88 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Create user page loaded');
+
+    // Test if all step elements exist
+    for (let i = 1; i <= 4; i++) {
+        const stepContent = document.getElementById('step' + i + 'Content');
+        const stepIndicator = document.getElementById('step' + i);
+        const progressElement = document.getElementById('progress' + i);
+
+        console.log(`Step ${i} elements:`, {
+            content: !!stepContent,
+            indicator: !!stepIndicator,
+            progress: !!progressElement
+        });
+
+        if (!stepContent) {
+            console.error(`Step ${i} content not found!`);
+        }
+        if (!stepIndicator) {
+            console.error(`Step ${i} indicator not found!`);
+        }
+        if (i < 4 && !progressElement) {
+            console.error(`Progress ${i} not found!`);
+        }
+    }
+
+    // Initialize first step
+    goToStep(1);
 });
 
 function goToStep(stepNumber) {
-    // Hide all steps
+    console.log('Going to step:', stepNumber);
+
+    // Hide all steps and reset step indicators
     for (let i = 1; i <= 4; i++) {
-        document.getElementById('step' + i + 'Content').classList.add('hidden');
-        document.getElementById('step' + i).classList.remove('bg-indigo-600', 'text-white');
-        document.getElementById('step' + i).classList.add('bg-gray-300', 'text-gray-600');
-        document.getElementById('progress' + i).classList.remove('bg-indigo-600');
-        document.getElementById('progress' + i).classList.add('bg-gray-300');
+        const stepContent = document.getElementById('step' + i + 'Content');
+        const stepIndicator = document.getElementById('step' + i);
+        const progressElement = document.getElementById('progress' + i);
+
+        if (stepContent) {
+            stepContent.classList.add('hidden');
+        }
+
+        if (stepIndicator) {
+            stepIndicator.classList.remove('bg-indigo-600', 'text-white');
+            stepIndicator.classList.add('bg-gray-300', 'text-gray-600');
+        }
+
+        if (progressElement) {
+            progressElement.classList.remove('bg-indigo-600');
+            progressElement.classList.add('bg-gray-300');
+        }
     }
 
-    // Show current step
-    document.getElementById('step' + stepNumber + 'Content').classList.remove('hidden');
-    document.getElementById('step' + stepNumber).classList.remove('bg-gray-300', 'text-gray-600');
-    document.getElementById('step' + stepNumber).classList.add('bg-indigo-600', 'text-white');
+    // Show current step and highlight it
+    const currentStepContent = document.getElementById('step' + stepNumber + 'Content');
+    const currentStepIndicator = document.getElementById('step' + stepNumber);
 
-    // Update progress bar
+    if (currentStepContent) {
+        currentStepContent.classList.remove('hidden');
+        console.log('Step content shown:', stepNumber);
+    } else {
+        console.error('Step content not found:', stepNumber);
+    }
+
+    if (currentStepIndicator) {
+        currentStepIndicator.classList.remove('bg-gray-300', 'text-gray-600');
+        currentStepIndicator.classList.add('bg-indigo-600', 'text-white');
+    }
+
+    // Update progress bars for completed steps
     for (let i = 1; i < stepNumber; i++) {
-        document.getElementById('progress' + i).classList.remove('bg-gray-300');
-        document.getElementById('progress' + i).classList.add('bg-indigo-600');
+        const progressElement = document.getElementById('progress' + i);
+        if (progressElement) {
+            progressElement.classList.remove('bg-gray-300');
+            progressElement.classList.add('bg-indigo-600');
+        }
     }
 
     // Scroll to top of form
-    document.getElementById('createUserForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const form = document.getElementById('createUserForm');
+    if (form) {
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }
 
 // Form validation and submission
@@ -644,30 +899,22 @@ document.addEventListener('DOMContentLoaded', function() {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
 
-            // Client-side validation
+            // Basic client-side validation for required fields only
             const name = document.getElementById('name').value.trim();
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const passwordConfirm = document.getElementById('password_confirmation').value;
-            const employeeId = document.getElementById('employee_id').value.trim();
 
-            // Validation checks
+            // Check required fields
             if (!name) {
-                showToast('Please enter a name', 'error');
-                goToStep(1);
-                document.getElementById('name').focus();
-                return;
-            }
-
-            if (name.length < 2) {
-                showToast('Name must be at least 2 characters long', 'error');
+                showToast('Name is required', 'error');
                 goToStep(1);
                 document.getElementById('name').focus();
                 return;
             }
 
             if (!email) {
-                showToast('Please enter an email address', 'error');
+                showToast('Email address is required', 'error');
                 goToStep(1);
                 document.getElementById('email').focus();
                 return;
@@ -681,16 +928,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             if (!password) {
-                showToast('Please enter a password', 'error');
+                showToast('Password is required', 'error');
                 goToStep(1);
                 document.getElementById('password').focus();
                 return;
             }
 
-            if (password.length < 8) {
-                showToast('Password must be at least 8 characters long', 'error');
+            if (!passwordConfirm) {
+                showToast('Password confirmation is required', 'error');
                 goToStep(1);
-                document.getElementById('password').focus();
+                document.getElementById('password_confirmation').focus();
                 return;
             }
 
@@ -701,14 +948,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            if (employeeId && !/^[0-9]{6,8}$/.test(employeeId)) {
-                showToast('Employee ID must be a 6-8 digit number', 'error');
-                goToStep(1);
-                document.getElementById('employee_id').focus();
-                return;
-            }
-
-            // If validation passes, submit form
+            // Submit form - server will handle all other validation
             submitUserForm();
         });
     }
@@ -719,38 +959,346 @@ function validateEmail(email) {
     return re.test(email);
 }
 
+// Toggle password visibility
+function togglePasswordVisibility(fieldId) {
+    const passwordField = document.getElementById(fieldId);
+    const toggleIcon = document.getElementById(fieldId + '-toggle-icon');
+
+    if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordField.type = 'password';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+    }
+}
+
+// Accordion functionality
+function toggleAccordion(button) {
+    const accordionItem = button.closest('.permissions-accordion-item');
+    const content = accordionItem.querySelector('.accordion-content');
+    const icon = button.querySelector('.accordion-icon');
+
+    if (content.classList.contains('hidden')) {
+        // Close all other accordions
+        document.querySelectorAll('.accordion-content').forEach(item => {
+            item.classList.add('hidden');
+        });
+        document.querySelectorAll('.accordion-icon').forEach(item => {
+            item.classList.remove('rotate-180');
+        });
+
+        // Open this accordion
+        content.classList.remove('hidden');
+        icon.classList.add('rotate-180');
+    } else {
+        // Close this accordion
+        content.classList.add('hidden');
+        icon.classList.remove('rotate-180');
+    }
+}
+
+// Toggle all permissions in a group
+function toggleAllPermissions(button, groupName) {
+    const accordionItem = button.closest('.accordion-content');
+    const checkboxes = accordionItem.querySelectorAll('input[name="permissions[]"]');
+    const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = !anyChecked;
+    });
+
+    // Update button text
+    const buttonText = button.querySelector('.toggle-all-text');
+    if (anyChecked) {
+        buttonText.textContent = 'Deselect All ' + ucfirst(groupName);
+    } else {
+        buttonText.textContent = 'Select All ' + ucfirst(groupName);
+    }
+
+    // Update counter
+    updatePermissionCounters();
+}
+
+// Toggle all accordions
+function toggleAllAccordions() {
+    const accordions = document.querySelectorAll('.accordion-content');
+    const toggleAllText = document.getElementById('toggleAllText');
+    const allOpen = Array.from(accordions).every(acc => !acc.classList.contains('hidden'));
+
+    if (allOpen) {
+        // Close all
+        accordions.forEach(accordion => {
+            accordion.classList.add('hidden');
+        });
+        document.querySelectorAll('.accordion-icon').forEach(icon => {
+            icon.classList.remove('rotate-180');
+        });
+        toggleAllText.textContent = 'Expand All';
+    } else {
+        // Open all
+        accordions.forEach(accordion => {
+            accordion.classList.remove('hidden');
+        });
+        document.querySelectorAll('.accordion-icon').forEach(icon => {
+            icon.classList.add('rotate-180');
+        });
+        toggleAllText.textContent = 'Collapse All';
+    }
+}
+
+// Update permission counters
+function updatePermissionCounters() {
+    document.querySelectorAll('.permissions-accordion-item').forEach(item => {
+        const checkboxes = item.querySelectorAll('input[name="permissions[]"]');
+        const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+        const totalCount = checkboxes.length;
+
+        const counter = item.querySelector('.bg-gray-200');
+        if (counter) {
+            counter.textContent = `${checkedCount}/${totalCount}`;
+        }
+
+        // Update percentage
+        const percentage = item.querySelector('.text-gray-400');
+        if (percentage) {
+            percentage.textContent = `${Math.round(checkedCount / totalCount * 100)}% selected`;
+        }
+    });
+}
+
+// Add event listeners for permission checkboxes and field input
+document.addEventListener('DOMContentLoaded', function() {
+    // Clear field error when user starts typing
+    document.addEventListener('input', function(e) {
+        if (e.target.id && e.target.tagName === 'INPUT') {
+            clearFieldError(e.target.id);
+        }
+    });
+
+    // Clear field error when user changes select
+    document.addEventListener('change', function(e) {
+        if (e.target.id && e.target.tagName === 'SELECT') {
+            clearFieldError(e.target.id);
+        }
+
+        // Handle permission checkboxes
+        if (e.target.name === 'permissions[]') {
+            updatePermissionCounters();
+        }
+    });
+});
+
+// Function to show field-level error
+function showFieldError(fieldId, errorMessage) {
+    // Handle Laravel field name mapping
+    let actualFieldId = fieldId;
+
+    // Map Laravel validation field names to actual field IDs
+    const fieldMapping = {
+        'password_confirmation': 'password',
+        'permissions': 'permissions_0', // Handle array field differently
+    };
+
+    actualFieldId = fieldMapping[fieldId] || fieldId;
+
+    const fieldElement = document.getElementById(actualFieldId);
+    if (!fieldElement) {
+        console.warn(`Field not found: ${actualFieldId} (original: ${fieldId})`);
+        return;
+    }
+
+    // Find or create error container
+    let errorContainer = fieldElement.parentNode.querySelector('.field-error');
+    if (!errorContainer) {
+        errorContainer = document.createElement('div');
+        errorContainer.className = 'field-error mt-1.5 text-sm text-red-600 flex items-center font-medium';
+        errorContainer.innerHTML = `
+            <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
+            <span class="error-message"></span>
+        `;
+        fieldElement.parentNode.appendChild(errorContainer);
+    }
+
+    // Set error message and style
+    const errorSpan = errorContainer.querySelector('.error-message');
+    errorSpan.textContent = errorMessage;
+
+    // Add error styling to field
+    fieldElement.classList.add('border-red-500', 'focus:ring-red-500/20', 'focus:border-red-500');
+    fieldElement.classList.remove('border-gray-200', 'focus:ring-indigo-500/20', 'focus:border-indigo-500');
+
+    // Make error visible
+    errorContainer.style.display = 'flex';
+
+    console.log(`Field error shown for: ${actualFieldId} - ${errorMessage}`);
+}
+
+// Function to clear field-level errors
+function clearFieldErrors() {
+    // Remove all field error containers
+    document.querySelectorAll('.field-error').forEach(container => {
+        container.remove();
+    });
+
+    // Reset field styling
+    document.querySelectorAll('[id]').forEach(field => {
+        field.classList.remove('border-red-500', 'focus:ring-red-500/20', 'focus:border-red-500');
+        field.classList.add('border-gray-200', 'focus:ring-indigo-500/20', 'focus:border-indigo-500');
+    });
+
+    // Clear Laravel validation session errors if they exist
+    document.querySelectorAll('.validation-error').forEach(error => {
+        error.remove();
+    });
+}
+
+// Function to clear specific field error
+function clearFieldError(fieldId) {
+    // Handle Laravel field name mapping
+    let actualFieldId = fieldId;
+
+    // Map Laravel validation field names to actual field IDs
+    const fieldMapping = {
+        'password_confirmation': 'password',
+        'permissions': 'permissions_0', // Handle array field differently
+    };
+
+    actualFieldId = fieldMapping[fieldId] || fieldId;
+
+    const fieldElement = document.getElementById(actualFieldId);
+    if (!fieldElement) return;
+
+    // Remove error container
+    const errorContainer = fieldElement.parentNode.querySelector('.field-error');
+    if (errorContainer) {
+        errorContainer.remove();
+    }
+
+    // Reset field styling
+    fieldElement.classList.remove('border-red-500', 'focus:ring-red-500/20', 'focus:border-red-500');
+    fieldElement.classList.add('border-gray-200', 'focus:ring-indigo-500/20', 'focus:border-indigo-500');
+}
+
 function submitUserForm() {
     const form = document.getElementById('createUserForm');
     const formData = new FormData(form);
     const submitButton = form.querySelector('button[type="submit"]');
+
+    // Clear any previous errors
+    clearFieldErrors();
 
     // Show loading state
     const originalText = submitButton.innerHTML;
     submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating User...';
     submitButton.disabled = true;
 
-    // Submit via AJAX for better UX
-    fetch(form.action, {
-        method: 'POST',
-        body: formData,
+    // Submit via Axios for better UX
+    axios.post(form.action, formData, {
         headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Content-Type': 'multipart/form-data',
+            'Accept': 'application/json'
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('✅ Axios response:', response);
+        return response.data;
+    })
     .then(data => {
         if (data.success) {
-            showToast('User created successfully!', 'success');
+            showToast('User created successfully! Redirecting to users list...', 'success');
+
+            // Optional: Show user details in success message
+            if (data.user) {
+                console.log('Created user:', data.user);
+            }
+
+            // Redirect after showing success message
             setTimeout(() => {
-                window.location.href = '/users';
-            }, 1500);
+                window.location.href = data.redirect || '/users';
+            }, 2000);
         } else {
             showToast(data.message || 'Failed to create user', 'error');
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        showToast('Network error. Please check your connection and try again.', 'error');
+        console.error('Axios error:', error);
+
+        // Check if error has response data (Laravel validation errors)
+        if (error.response && error.response.data) {
+            const errorData = error.response.data;
+
+            if (errorData.errors) {
+                // Handle Laravel validation errors - show field-level errors
+                const errorKeys = Object.keys(errorData.errors);
+
+                console.log('🔍 Validation errors received:', errorKeys);
+                console.log('🔍 Error details:', errorData.errors);
+
+                // Clear previous field errors
+                clearFieldErrors();
+
+                // Show errors for each field
+                errorKeys.forEach(fieldKey => {
+                    const fieldErrors = errorData.errors[fieldKey];
+                    const errorMessage = Array.isArray(fieldErrors) ? fieldErrors[0] : fieldErrors;
+                    console.log(`🔨 Showing error for field: ${fieldKey} - ${errorMessage}`);
+                    showFieldError(fieldKey, errorMessage);
+                });
+
+                // Focus on the first field with error and navigate to correct step
+                if (errorKeys.length > 0) {
+                    const firstKey = errorKeys[0];
+                    const fieldElement = document.getElementById(firstKey);
+
+                    console.log(`🎯 First error field: ${firstKey}, Element found:`, !!fieldElement);
+
+                    if (fieldElement) {
+                        // Determine which step contains this field
+                        const step1Fields = ['name', 'email', 'employee_id', 'phone', 'password'];
+                        const step2Fields = ['department', 'position', 'hire_date', 'salary', 'address'];
+                        const step3Fields = ['team_id', 'tech_stack_id'];
+                        const step4Fields = ['role'];
+
+                        // Handle password confirmation field mapping
+                        const actualFieldId = firstKey === 'password_confirmation' ? 'password' : firstKey;
+
+                        setTimeout(() => {
+                            if (step1Fields.includes(actualFieldId)) {
+                                goToStep(1);
+                            } else if (step2Fields.includes(actualFieldId)) {
+                                goToStep(2);
+                            } else if (step3Fields.includes(actualFieldId)) {
+                                goToStep(3);
+                            } else if (step4Fields.includes(actualFieldId)) {
+                                goToStep(4);
+                            }
+
+                            // Focus on the actual field after step transition
+                            setTimeout(() => {
+                                const actualField = document.getElementById(actualFieldId);
+                                if (actualField) {
+                                    actualField.focus();
+                                    actualField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }
+                            }, 300);
+                        }, 100);
+                    }
+                }
+            } else {
+                // Show general error from server response
+                showToast(errorData.message || errorData.error || 'An error occurred while creating the user', 'error');
+            }
+        } else if (error.request) {
+            // Request was made but no response received
+            showToast('Network error. Please check your connection and try again.', 'error');
+        } else {
+            // Something else happened
+            showToast(error.message || 'An unexpected error occurred', 'error');
+        }
     })
     .finally(() => {
         // Restore button state
@@ -762,44 +1310,46 @@ function submitUserForm() {
 // Toast notification functions
 function showToast(message, type = 'info', duration = 5000) {
     const toastContainer = document.getElementById('toastContainer');
+    const toastId = 'toast-' + Date.now();
 
     const toast = document.createElement('div');
-    toast.className = `toast ${type} rounded-lg shadow-2xl p-4 text-white flex items-center space-x-3 toast-enter`;
+    toast.className = `toast ${type === 'error' ? 'toast-error' : type === 'success' ? 'toast-success' : type === 'warning' ? 'toast-warning' : 'toast-info'} flex items-center p-4 mb-4 rounded-lg shadow-lg relative overflow-hidden toast-enter`;
+    toast.id = toastId;
 
+    // Icon and title based on type
     let icon = '';
+    let title = '';
     switch(type) {
         case 'success':
-            icon = '<i class="fas fa-check-circle text-xl"></i>';
+            icon = '<i class="fas fa-check-circle"></i>';
+            title = 'Success';
             break;
         case 'error':
-            icon = '<i class="fas fa-exclamation-circle text-xl"></i>';
+            icon = '<i class="fas fa-exclamation-circle"></i>';
+            title = 'Error';
             break;
         case 'warning':
-            icon = '<i class="fas fa-exclamation-triangle text-xl"></i>';
+            icon = '<i class="fas fa-exclamation-triangle"></i>';
+            title = 'Warning';
             break;
         default:
-            icon = '<i class="fas fa-info-circle text-xl"></i>';
+            icon = '<i class="fas fa-info-circle"></i>';
+            title = 'Information';
     }
 
     toast.innerHTML = `
-        <div class="flex items-center space-x-3 flex-1">
-            <div class="flex-shrink-0">
-                ${icon}
-            </div>
-            <div class="flex-1">
-                <p class="font-semibold text-sm">${message}</p>
-            </div>
-            <div class="flex-shrink-0">
-                <button onclick="closeToast(this)" class="text-white hover:text-gray-200 transition-colors duration-200">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
+        <div class="toast-icon mr-3">
+            ${icon}
         </div>
-        <div class="absolute bottom-0 left-0 h-1 bg-white/20 rounded-b-lg toast-progress" style="width: 100%;"></div>
+        <div class="flex-1">
+            <div class="toast-title">${title}</div>
+            <div class="toast-message">${message}</div>
+        </div>
+        <button type="button" class="toast-close ml-4" onclick="closeToast(this)">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="toast-progress"></div>
     `;
-
-    toast.style.position = 'relative';
-    toast.style.overflow = 'hidden';
 
     toastContainer.appendChild(toast);
 

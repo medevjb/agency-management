@@ -70,15 +70,11 @@
                                     </div>
                                 </div>
                                 @can('manage tech stacks')
-                                    <form action="{{ route('tech-stacks.remove-member', [$techStack->id, $member->id]) }}"
-                                          method="POST" onsubmit="return confirm('Remove {{ $member->name }} from tech stack?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit"
-                                                class="text-red-600 hover:text-red-800 text-sm">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </form>
+                                    <button type="button"
+                                            onclick="removeMember({{ $techStack->id }}, {{ $member->id }}, '{{ $member->name }}')"
+                                            class="text-red-600 hover:text-red-800 text-sm">
+                                        <i class="fas fa-times"></i>
+                                    </button>
                                 @endcan
                             </div>
                         @endforeach
@@ -248,10 +244,70 @@ function deleteTechStack(techStackId) {
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('Delete tech stack error:', error);
+                const errorMessage = error.response?.data?.message ||
+                                     error.response?.data?.error ||
+                                     error.message ||
+                                     'An error occurred while deleting the tech stack';
                 Swal.fire({
                     title: 'Error!',
-                    text: 'An error occurred while deleting the tech stack.',
+                    text: errorMessage,
+                    icon: 'error',
+                    confirmButtonColor: '#3B82F6'
+                });
+            });
+        }
+    });
+}
+
+function removeMember(techStackId, memberId, memberName) {
+    Swal.fire({
+        title: 'Remove Member?',
+        text: `Are you sure you want to remove ${memberName} from this tech stack?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#EF4444',
+        cancelButtonColor: '#6B7280',
+        confirmButtonText: 'Yes, remove!',
+        cancelButtonText: 'Cancel',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            axios.delete(`/tech-stacks/${techStackId}/members/${memberId}`, {
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => {
+                if (response.data.success) {
+                    Swal.fire({
+                        title: 'Removed!',
+                        text: response.data.message || 'Member has been removed successfully.',
+                        icon: 'success',
+                        timer: 2000,
+                        timerProgressBar: true,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: response.data.message || 'Failed to remove member',
+                        icon: 'error',
+                        confirmButtonColor: '#3B82F6'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Remove member error:', error);
+                const errorMessage = error.response?.data?.message ||
+                                     error.response?.data?.error ||
+                                     error.message ||
+                                     'An error occurred while removing the member';
+                Swal.fire({
+                    title: 'Error!',
+                    text: errorMessage,
                     icon: 'error',
                     confirmButtonColor: '#3B82F6'
                 });

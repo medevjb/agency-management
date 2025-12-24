@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TechStackController;
 use App\Http\Controllers\UserController;
@@ -84,6 +85,14 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/roles', [AdminController::class, 'roles'])->name('roles');
     Route::get('/roles/{roleName}/edit', [AdminController::class, 'editRole'])->name('roles.edit');
     Route::patch('/roles/{roleName}', [AdminController::class, 'updateRole'])->name('roles.update');
+});
+
+// Settings Routes - Only for users with admin role
+Route::middleware(['auth', 'role:admin'])->prefix('settings')->name('settings.')->group(function () {
+    Route::get('/', [SettingsController::class, 'index'])->name('index');
+    Route::get('/{group}', [SettingsController::class, 'index'])->name('group');
+    Route::put('/{group}', [SettingsController::class, 'update'])->name('update');
+    Route::post('/delete-value/{key}', [SettingsController::class, 'deleteValue'])->name('delete-value');
 });
 
 require __DIR__.'/auth.php';

@@ -8,9 +8,11 @@ use App\Models\TechStack;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Yajra\DataTables\DataTables;
 
 class UserController extends Controller
 {
@@ -85,124 +87,127 @@ class UserController extends Controller
         $query = User::with(['team', 'techStack', 'roles'])
             ->where('id', '!=', auth()->id());
 
-        // Apply filters for DataTables
-        if ($request->filled('search') && $request->search['value'] != '') {
-            $searchTerm = $request->search['value'];
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('name', 'like', "%{$searchTerm}%")
-                    ->orWhere('email', 'like', "%{$searchTerm}%")
-                    ->orWhere('employee_id', 'like', "%{$searchTerm}%")
-                    ->orWhere('phone', 'like', "%{$searchTerm}%")
-                    ->orWhere('position', 'like', "%{$searchTerm}%")
-                    ->orWhere('department', 'like', "%{$searchTerm}%");
-            });
-        }
-
-        // Apply additional filters
-        if ($request->filled('employee_id')) {
-            $query->where('employee_id', 'like', "%{$request->employee_id}%");
-        }
-
-        if ($request->filled('role')) {
-            $query->whereHas('roles', function ($q) use ($request) {
-                $q->where('name', $request->role);
-            });
-        }
-
-        if ($request->filled('team_id')) {
-            $query->where('team_id', $request->team_id);
-        }
-
-        if ($request->filled('tech_stack_id')) {
-            $query->where('tech_stack_id', $request->tech_stack_id);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('is_active', $request->status === 'active');
-        }
-
-        if ($request->filled('department')) {
-            $query->where('department', $request->department);
-        }
-
-        // Get total records
-        $totalRecords = $query->count();
-
-        // Apply ordering for DataTables
-        if ($request->filled('order')) {
-            $orderColumn = $request->order[0]['column'];
-            $orderDir = $request->order[0]['dir'];
-
-            $columns = ['name', 'email', 'employee_id', 'phone', 'department', 'position', 'team', 'tech_stack', 'role', 'status', 'created_at'];
-            if (isset($columns[$orderColumn])) {
-                if ($columns[$orderColumn] === 'team') {
-                    $query->orderBy('team_id', $orderDir);
-                } elseif ($columns[$orderColumn] === 'tech_stack') {
-                    $query->orderBy('tech_stack_id', $orderDir);
-                } elseif ($columns[$orderColumn] === 'role') {
-                    $query->with('roles')->orderBy('id', $orderDir);
-                } else {
-                    $query->orderBy($columns[$orderColumn], $orderDir);
-                }
-            }
-        } else {
-            $query->latest();
-        }
-
-        // Apply pagination
-        $users = $query->skip($request->start ?? 0)
-            ->take($request->length ?? 10)
-            ->get();
-
-        // Format data for DataTables
-        $formattedUsers = $users->map(function ($user) {
-            $roles = $user->roles->pluck('name')->map(function ($role) {
-                return '<span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">'.ucfirst($role).'</span>';
-            })->implode(' ');
-
-            return [
-                'id' => $user->id,
-                'name' => '<div class="flex items-center">
+        return DataTables::of($query)
+            ->addColumn('name', function ($user) {
+                return '<div class="flex items-center">
                     <img src="https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=4F46E5&color=fff" alt="'.$user->name.'" class="w-8 h-8 rounded-full mr-3">
                     <div>
                         <div class="font-medium text-gray-900">'.$user->name.'</div>
                         <div class="text-xs text-gray-500">ID: '.$user->employee_id.'</div>
                     </div>
-                </div>',
-                'email' => '<a href="mailto:'.$user->email.'" class="text-indigo-600 hover:text-indigo-900">'.$user->email.'</a>',
-                'employee_id' => $user->employee_id ?: 'N/A',
-                'phone' => $user->phone ?: 'N/A',
-                'department' => $user->department ?: 'N/A',
-                'position' => $user->position ?: 'N/A',
-                'team' => $user->team ? '<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">'.$user->team->name.'</span>' : 'N/A',
-                'tech_stack' => $user->techStack ? '<span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">'.$user->techStack->name.'</span>' : 'N/A',
-                'role' => $roles ?: 'N/A',
-                'status' => '<span class="px-2 py-1 text-xs rounded-full '.($user->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800').'">'.($user->is_active ? 'Active' : 'Inactive').'</span>',
-                'created_at' => $user->created_at->format('M j, Y'),
-                'actions' => '<div class="flex items-center space-x-2">
-                    <a href="'.route('users.show', $user->id).'" class="text-indigo-600 hover:text-indigo-900" title="View">
+                </div>';
+            })
+            ->addColumn('employee_id', function ($user) {
+                return $user->employee_id ?: 'N/A';
+            })
+            ->addColumn('phone', function ($user) {
+                return $user->phone ?: 'N/A';
+            })
+            ->addColumn('department', function ($user) {
+                return $user->department ?: 'N/A';
+            })
+            ->addColumn('position', function ($user) {
+                return $user->position ?: 'N/A';
+            })
+            ->addColumn('team', function ($user) {
+                return $user->team ? '<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">'.$user->team->name.'</span>' : 'N/A';
+            })
+            ->addColumn('tech_stack', function ($user) {
+                return $user->techStack ? '<span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">'.$user->techStack->name.'</span>' : 'N/A';
+            })
+            ->addColumn('role', function ($user) {
+                $roles = $user->roles->pluck('name')->map(function ($role) {
+                    return '<span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">'.ucfirst($role).'</span>';
+                })->implode(' ');
+
+                return $roles ?: 'N/A';
+            })
+            ->addColumn('status', function ($user) {
+                $isChecked = $user->is_active ? 'checked' : '';
+                $disabledPermission = ! auth()->user()->hasPermissionTo('manage users') ? 'disabled' : '';
+
+                // Color classes based on status
+                $bgColor = $user->is_active ? 'bg-green-600' : 'bg-red-600';
+                $focusRingColor = $user->is_active ? 'peer-focus:ring-green-300' : 'peer-focus:ring-red-300';
+                $bgInactiveColor = $user->is_active ? 'bg-gray-200' : 'bg-red-200';
+
+                return '<div class="flex items-center">
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox"
+                               class="sr-only peer status-switcher"
+                               data-user-id="'.$user->id.'"
+                               data-user-name="'.htmlspecialchars($user->name).'"
+                               '.$isChecked.'
+                               '.$disabledPermission.'>
+                        <div class="w-11 h-6 '.$bgInactiveColor.' peer-focus:outline-none peer-focus:ring-4 '.$focusRingColor.' rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[\'\'] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all '.$bgColor.'"></div>
+                    </label>
+                   </div>';
+            })
+            ->addColumn('created_at', function ($user) {
+                return $user->created_at->format('M j, Y');
+            })
+            ->addColumn('actions', function ($user) {
+                return '<div class="flex items-center space-x-2">
+                    <a href="'.route('users.show', $user->id).'" class="group inline-flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-indigo-100 to-indigo-200 text-indigo-600 hover:from-indigo-200 hover:to-indigo-300 transition-all duration-200 hover:scale-110 shadow-sm" title="View">
                         <i class="fas fa-eye"></i>
                     </a>
-                    <a href="'.route('users.edit', $user->id).'" class="text-blue-600 hover:text-blue-900" title="Edit">
+                    <a href="'.route('users.edit', $user->id).'" class="group inline-flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-emerald-100 to-emerald-200 text-emerald-600 hover:from-emerald-200 hover:to-emerald-300 transition-all duration-200 hover:scale-110 shadow-sm" title="Edit">
                         <i class="fas fa-edit"></i>
                     </a>
-                    <button onclick="deleteUser('.$user->id.', \''.$user->name.'\')" class="text-red-600 hover:text-red-900" title="Delete">
+                    <button onclick="deleteUser('.$user->id.', \''.$user->name.'\')" class="group inline-flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-red-100 to-red-200 text-red-600 hover:from-red-200 hover:to-red-300 transition-all duration-200 hover:scale-110 shadow-sm" title="Delete">
                         <i class="fas fa-trash"></i>
                     </button>
-                    <button onclick="toggleUserStatus('.$user->id.', \''.$user->name.'\', '.($user->is_active ? 'false' : 'true').')" class="'.($user->is_active ? 'text-yellow-600 hover:text-yellow-900' : 'text-green-600 hover:text-green-900').'" title="'.($user->is_active ? 'Deactivate' : 'Activate').'">
-                        <i class="fas '.($user->is_active ? 'fa-user-slash' : 'fa-user-check').'"></i>
-                    </button>
-                </div>',
-                'DT_RowId' => 'user-'.$user->id,
-            ];
-        });
+                </div>';
+            })
+            ->setRowId(function ($user) {
+                return 'user-'.$user->id;
+            })
+            ->filter(function ($query) use ($request) {
+                // Global search
+                if ($request->filled('search') && ! empty($request->search)) {
+                    $searchTerm = $request->search;
+                    $query->where(function ($q) use ($searchTerm) {
+                        $q->where('name', 'like', "%{$searchTerm}%")
+                            ->orWhere('email', 'like', "%{$searchTerm}%")
+                            ->orWhere('employee_id', 'like', "%{$searchTerm}%")
+                            ->orWhere('phone', 'like', "%{$searchTerm}%")
+                            ->orWhere('position', 'like', "%{$searchTerm}%")
+                            ->orWhere('department', 'like', "%{$searchTerm}%");
+                    });
+                }
 
-        return response()->json([
-            'draw' => intval($request->draw),
-            'recordsTotal' => User::where('id', '!=', auth()->id())->count(),
-            'recordsFiltered' => $totalRecords,
-            'data' => $formattedUsers,
-        ]);
+                // Column filters
+                if ($request->filled('employee_id')) {
+                    $query->where('employee_id', 'like', "%{$request->employee_id}%");
+                }
+
+                if ($request->filled('role')) {
+                    $query->whereHas('roles', function ($q) use ($request) {
+                        $q->where('name', $request->role);
+                    });
+                }
+
+                if ($request->filled('team_id')) {
+                    $query->where('team_id', $request->team_id);
+                }
+
+                if ($request->filled('tech_stack_id')) {
+                    $query->where('tech_stack_id', $request->tech_stack_id);
+                }
+
+                if ($request->filled('status')) {
+                    $query->where('is_active', $request->status === 'active');
+                }
+
+                if ($request->filled('department')) {
+                    $query->where('department', $request->department);
+                }
+            })
+            ->order(function ($query) {
+                $query->latest();
+            })
+            ->rawColumns(['name', 'team', 'tech_stack', 'role', 'status', 'actions'])
+            ->toJson();
     }
 
     /**
@@ -232,38 +237,71 @@ class UserController extends Controller
             $validated['employee_id'] = $this->generateUniqueEmployeeId();
         }
 
-        // Create user
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'employee_id' => $validated['employee_id'],
-            'phone' => $validated['phone'] ?? null,
-            'password' => Hash::make($validated['password']),
-            'department' => $validated['department'] ?? null,
-            'position' => $validated['position'] ?? null,
-            'hire_date' => $validated['hire_date'] ?? null,
-            'salary' => $validated['salary'] ?? null,
-            'address' => $validated['address'] ?? null,
-            'is_active' => $validated['is_active'] ?? true,
-            'team_id' => $validated['team_id'] ?? null,
-            'tech_stack_id' => $validated['tech_stack_id'] ?? null,
-        ]);
+        try {
+            // Use database transaction to ensure atomicity
+            // If any part fails, everything will be rolled back
+            $user = DB::transaction(function () use ($validated) {
+                // Create user
+                $user = User::create([
+                    'name' => $validated['name'],
+                    'email' => $validated['email'],
+                    'employee_id' => $validated['employee_id'],
+                    'phone' => $validated['phone'] ?? null,
+                    'password' => Hash::make($validated['password']),
+                    'department' => $validated['department'] ?? null,
+                    'position' => $validated['position'] ?? null,
+                    'hire_date' => $validated['hire_date'] ?? null,
+                    'salary' => $validated['salary'] ?? null,
+                    'address' => $validated['address'] ?? null,
+                    'is_active' => $validated['is_active'] ?? true,
+                    'team_id' => $validated['team_id'] ?? null,
+                    'tech_stack_id' => $validated['tech_stack_id'] ?? null,
+                ]);
 
-        // Assign role
-        if (! empty($validated['role'])) {
-            $user->assignRole($validated['role']);
+                // Assign role
+                if (! empty($validated['role'])) {
+                    $user->assignRole($validated['role']);
+                }
+
+                // Assign additional permissions
+                if (! empty($validated['permissions'])) {
+                    $permissions = Permission::whereIn('id', $validated['permissions'])->get();
+                    $user->syncPermissions($permissions);
+                }
+
+                return $user;
+            });
+
+            // Check if request expects JSON (AJAX)
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'User created successfully!',
+                    'user' => $user->load(['team', 'techStack', 'roles']),
+                    'redirect' => route('users.index'),
+                ]);
+            }
+
+            // For regular form submissions, redirect with success message
+            return redirect()
+                ->route('users.index')
+                ->with('success', 'User created successfully!');
+
+        } catch (\Exception $e) {
+            // Check if request expects JSON (AJAX)
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to create user: '.$e->getMessage(),
+                ], 500);
+            }
+
+            // For regular form submissions, redirect back with error
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Failed to create user: '.$e->getMessage());
         }
-
-        // Assign additional permissions
-        if (! empty($validated['permissions'])) {
-            $user->givePermissionTo($validated['permissions']);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'User created successfully.',
-            'user' => $user->load(['team', 'techStack', 'roles']),
-        ]);
     }
 
     /**
@@ -320,10 +358,11 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
             'employee_id' => 'nullable|string|regex:/^[0-9]{6,8}$/|unique:users,employee_id,'.$user->id,
             'phone' => 'nullable|string|max:20',
+            'password' => 'nullable|string|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/',
             'department' => 'nullable|string|max:255',
             'position' => 'nullable|string|max:255',
-            'hire_date' => 'nullable|date',
-            'salary' => 'nullable|numeric|min:0',
+            'hire_date' => 'nullable|date|before_or_equal:today',
+            'salary' => 'nullable|numeric|min:0|max:999999.99',
             'address' => 'nullable|string|max:1000',
             'is_active' => 'boolean',
             'team_id' => 'nullable|exists:teams,id',
@@ -333,22 +372,64 @@ class UserController extends Controller
             'permissions.*' => 'exists:permissions,id',
         ]);
 
-        // Update user
-        $user->update($validated);
+        try {
+            // Use database transaction to ensure atomicity
+            $user = DB::transaction(function () use ($user, $validated) {
+                // Update user basic info
+                $updateData = [
+                    'name' => $validated['name'],
+                    'email' => $validated['email'],
+                    'employee_id' => $validated['employee_id'] ?? null,
+                    'phone' => $validated['phone'] ?? null,
+                    'department' => $validated['department'] ?? null,
+                    'position' => $validated['position'] ?? null,
+                    'hire_date' => $validated['hire_date'] ?? null,
+                    'salary' => $validated['salary'] ?? null,
+                    'address' => $validated['address'] ?? null,
+                    'team_id' => $validated['team_id'] ?? null,
+                    'tech_stack_id' => $validated['tech_stack_id'] ?? null,
+                ];
 
-        // Update role
-        if (isset($validated['role'])) {
-            $user->syncRoles([$validated['role']]);
+                // Only update password if provided
+                if (! empty($validated['password'])) {
+                    $updateData['password'] = Hash::make($validated['password']);
+                }
+
+                // Update active status if provided
+                if (isset($validated['is_active'])) {
+                    $updateData['is_active'] = $validated['is_active'];
+                }
+
+                $user->update($updateData);
+
+                // Update role
+                if (isset($validated['role'])) {
+                    $user->syncRoles([$validated['role']]);
+                }
+
+                // Update permissions
+                if (isset($validated['permissions'])) {
+                    $permissions = Permission::whereIn('id', $validated['permissions'])->get();
+                    $user->syncPermissions($permissions);
+                } else {
+                    $user->syncPermissions([]);
+                }
+
+                return $user;
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User updated successfully.',
+                'user' => $user->load(['team', 'techStack', 'roles']),
+                'redirect' => route('users.index'),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update user: '.$e->getMessage(),
+            ], 500);
         }
-
-        // Update permissions
-        $user->syncPermissions($validated['permissions'] ?? []);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'User updated successfully.',
-            'user' => $user->load(['team', 'techStack', 'roles']),
-        ]);
     }
 
     /**
@@ -457,6 +538,12 @@ class UserController extends Controller
     {
         $query = User::with(['team', 'techStack', 'roles'])
             ->where('id', '!=', auth()->id());
+
+        // Handle selected user IDs
+        if ($request->filled('user_ids')) {
+            $userIds = explode(',', $request->user_ids);
+            $query->whereIn('id', $userIds);
+        }
 
         // Apply same filters as index method
         if ($request->filled('search')) {

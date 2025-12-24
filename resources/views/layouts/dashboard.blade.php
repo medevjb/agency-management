@@ -11,6 +11,10 @@
 
     <link rel="stylesheet" href="{{ Vite::asset('resources/css/app.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <!-- Axios CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.8/dist/axios.min.js"></script>
     @stack('styles')
 </head>
 <body class="font-sans antialiased bg-gray-100">
@@ -44,6 +48,10 @@
                             <a href="{{ route('admin.roles') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
                                 <i class="fas fa-shield-alt mr-3"></i>
                                 Roles & Permissions
+                            </a>
+                            <a href="{{ route('settings.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+                                <i class="fas fa-cog mr-3"></i>
+                                System Settings
                             </a>
                         </div>
                     @endrole
@@ -94,10 +102,6 @@
                     <a href="#" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
                         <i class="fas fa-envelope mr-3"></i>
                         Messages
-                    </a>
-                    <a href="#" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-                        <i class="fas fa-cog mr-3"></i>
-                        Settings
                     </a>
                 </nav>
 
@@ -184,10 +188,6 @@
                         <i class="fas fa-envelope mr-3"></i>
                         Messages
                     </a>
-                    <a href="#" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-                        <i class="fas fa-cog mr-3"></i>
-                        Settings
-                    </a>
                 </nav>
             </div>
         </aside>
@@ -263,18 +263,15 @@
         </div>
     </div>
 
-    <script src="{{ Vite::asset('resources/js/app.js') }}" defer></script>
+    <script src="{{ Vite::asset('resources/js/app.js') }}" type="module" defer></script>
+
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- User Dropdown Script -->
     <script>
+    // User dropdown functionality - load when DOM is ready
     document.addEventListener('DOMContentLoaded', function() {
-        // Debug: Check if SweetAlert is available
-        console.log('SweetAlert available:', typeof Swal !== 'undefined');
-        if (typeof Swal !== 'undefined') {
-            console.log('SweetAlert version:', Swal.version);
-        }
-
-        // User dropdown functionality
         const userDropdownBtn = document.getElementById('user-dropdown-btn');
         const userDropdown = document.getElementById('user-dropdown');
 
@@ -283,7 +280,6 @@
             userDropdownBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Dropdown clicked'); // Debug log
                 userDropdown.classList.toggle('hidden');
             });
 
