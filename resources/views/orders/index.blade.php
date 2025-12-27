@@ -4,6 +4,23 @@
 
 @push('styles')
     <style>
+        /* Column Width Control */
+        /* Status Column - proper width for dropdown */
+        #ordersTable colgroup col[data-dt-column="3"],
+        #ordersTable tbody td[data-dt-column="3"] {
+            min-width: 130px !important;
+            max-width: 150px !important;
+            width: 140px !important;
+        }
+
+        /* Priority Column - proper width for dropdown */
+        #ordersTable colgroup col[data-dt-column="4"],
+        #ordersTable tbody td[data-dt-column="4"] {
+            min-width: 100px !important;
+            max-width: 120px !important;
+            width: 110px !important;
+        }
+
         /* DataTables Pagination Styling matching users module */
         #ordersTable_wrapper .dataTables_length select {
             border-radius: 10px;
@@ -124,7 +141,119 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
         }
 
-        
+        /* Countdown Timer Styling */
+        .countdown-timer {
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .countdown-text {
+            white-space: nowrap;
+        }
+
+        .countdown-unit {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 2px;
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .countdown-unit small {
+            font-size: 0.65em !important;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-left: 1px;
+        }
+
+        .animate-pulse {
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        /* Tooltip styling */
+        .cursor-help {
+            cursor: help;
+            position: relative;
+        }
+
+        .cursor-help[title]:hover::before {
+            content: attr(title);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px 12px;
+            background-color: #1f2937;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            margin-bottom: 8px;
+            pointer-events: none;
+        }
+
+        .cursor-help[title]:hover::after {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #1f2937;
+            margin-bottom: -4px;
+            z-index: 1000;
+        }
+
+        /* Inline select styling */
+        .inline-select {
+            display: inline-block;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 4px center;
+            background-size: 12px;
+            padding-right: 20px !important;
+            line-height: 1.2;
+            height: auto;
+        }
+
+        .inline-select:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+        }
+
+        .inline-select option {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        .statusDropdown {
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .priorityDropdown {
+            font-size: 14px;
+            font-weight: bold;
+        }
     </style>
 @endpush
 
@@ -137,63 +266,24 @@
                     <h1 class="text-3xl font-bold text-gray-900">Orders</h1>
                     <p class="mt-2 text-sm text-gray-600">Manage orders and track their status</p>
                 </div>
-            </div>
-        </div>
-
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            <div class="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl shadow-lg p-4 text-white">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-purple-100 text-xs font-medium mb-1">Total Orders</p>
-                        <p class="text-2xl font-bold" id="totalOrders">0</p>
-                    </div>
-                    <div class="bg-white/20 p-3 rounded-xl">
-                        <i class="fas fa-shopping-cart text-2xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg p-4 text-white">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-green-100 text-xs font-medium mb-1">Completed</p>
-                        <p class="text-2xl font-bold" id="completedOrders">0</p>
-                    </div>
-                    <div class="bg-white/20 p-3 rounded-xl">
-                        <i class="fas fa-check-circle text-2xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl shadow-lg p-4 text-white">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-yellow-100 text-xs font-medium mb-1">In Progress</p>
-                        <p class="text-2xl font-bold" id="inProgressOrders">0</p>
-                    </div>
-                    <div class="bg-white/20 p-3 rounded-xl">
-                        <i class="fas fa-spinner text-2xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl shadow-lg p-4 text-white">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-blue-100 text-xs font-medium mb-1">Total Revenue</p>
-                        <p class="text-xl font-bold" id="totalRevenue">$0</p>
-                    </div>
-                    <div class="bg-white/20 p-3 rounded-xl">
-                        <i class="fas fa-dollar-sign text-2xl"></i>
-                    </div>
-                </div>
+                <a href="{{ route('orders.dashboard') }}"
+                    class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-semibold transition-all shadow-lg">
+                    <i class="fas fa-chart-line mr-2"></i>
+                    View Dashboard
+                </a>
             </div>
         </div>
 
         <!-- Filters (One Line) -->
         <div class="bg-white rounded-xl shadow-md border border-gray-100 p-3 mb-4">
             <div class="flex flex-wrap items-center gap-3">
+                <!-- Search Field -->
+                <div class="relative flex-shrink-0 flex-grow max-w-xs">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                    <input type="text" id="filterSearch" placeholder="Search orders..."
+                        class="w-full pl-9 pr-4 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white transition-all duration-200 text-sm">
+                </div>
+
                 <span class="text-sm font-semibold text-gray-700 flex items-center">
                     <i class="fas fa-filter text-indigo-500 mr-2"></i>
                     Filters:
@@ -237,6 +327,20 @@
                         <option value="">All Tech Stacks</option>
                         @foreach ($techStacks as $stack)
                             <option value="{{ $stack->id }}">{{ $stack->name }}</option>
+                        @endforeach
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                        <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                    </div>
+                </div>
+
+                <!-- Freelance Profile Filter -->
+                <div class="relative flex-shrink-0">
+                    <select id="filterProfile"
+                        class="px-3 py-1.5 pr-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white appearance-none transition-all duration-200 text-sm">
+                        <option value="">All Profiles</option>
+                        @foreach ($profiles as $profile)
+                            <option value="{{ $profile->id }}">{{ $profile->profile_name }}</option>
                         @endforeach
                     </select>
                     <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
@@ -321,15 +425,14 @@
                                 <input type="checkbox" id="checkAll"
                                     class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                             </th>
-                            <th>ID</th>
-                            <th>Name</th>
+                            <th>Order ID</th>
+                            <th>Client</th>
+                            <th>Profile</th>
                             <th>Status</th>
                             <th>Priority</th>
-                            <th>Actual Revenue</th>
+                            <th>Amount</th>
                             <th>Team</th>
-                            <th>Tech Stack</th>
                             <th>Users</th>
-                            <th>Start Date</th>
                             <th>Deadline</th>
                             <th class="text-center">Actions</th>
                         </tr>
@@ -382,6 +485,12 @@
             function createDataTable() {
                 console.log('Creating DataTable...');
 
+                // Define URL templates
+                const urlTemplates = {
+                    show: '{{ url('/orders/') }}',
+                    edit: '{{ url('/orders') }}',
+                };
+
                 // Initialize DataTable
                 const table = $('#ordersTable').DataTable({
                     processing: true,
@@ -391,9 +500,11 @@
                         type: 'GET',
                         data: function(d) {
                             // Add filter parameters
+                            d.search = $('#filterSearch').val();
                             d.status = $('#filterStatus').val();
                             d.team_id = $('#filterTeam').val();
                             d.tech_stack_id = $('#filterTechStack').val();
+                            d.freelance_profile_id = $('#filterProfile').val();
                             d.priority = $('#filterPriority').val();
                         }
                     },
@@ -407,23 +518,32 @@
                             }
                         },
                         {
-                            data: 'id',
-                            name: 'id',
-                            render: function(data) {
-                                return `<span class="font-mono text-sm font-semibold text-gray-600">#${data}</span>`;
+                            data: 'order_id',
+                            name: 'order_id',
+                            render: function(data, type, row) {
+                                return data ? data : '<span class="text-gray-400 text-xs">N/A</span>';
                             }
                         },
                         {
                             data: 'name',
                             name: 'name',
                             render: function(data, type, row) {
-                                return `<a href="{{ route('orders.show', ':id') }}".replace(/:id/g, row.id) class="font-semibold text-gray-900 hover:text-indigo-600 transition-colors">${data}</a>`;
+                                return `<a href="${urlTemplates.show}/${row.id}" class="font-semibold text-gray-900 hover:text-indigo-600 transition-colors">${data}</a>`;
+                            }
+                        },
+                        {
+                            data: 'freelance_profile',
+                            name: 'freelance_profile_id',
+                            render: function(data) {
+                                if (!data || data === 'N/A')
+                                    return '<span class="text-gray-400 text-sm">No profile</span>';
+                                return `<span class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-purple-50 text-purple-700">@${data}</span>`;
                             }
                         },
                         {
                             data: 'status',
                             name: 'status',
-                            render: function(data) {
+                            render: function(data, type, row) {
                                 const statusConfig = {
                                     'nra': {
                                         icon: '🤷‍♀️',
@@ -438,17 +558,17 @@
                                     'in-progress': {
                                         icon: '🔄',
                                         color: 'bg-blue-100 text-blue-800',
-                                        label: 'In Progress'
+                                        label: 'Progress'
                                     },
                                     'completed': {
                                         icon: '✅',
                                         color: 'bg-green-100 text-green-800',
-                                        label: 'Completed'
+                                        label: 'Done'
                                     },
                                     'on-hold': {
                                         icon: '⏸️',
                                         color: 'bg-orange-100 text-orange-800',
-                                        label: 'On Hold'
+                                        label: 'Hold'
                                     },
                                     'cancelled': {
                                         icon: '❌',
@@ -457,13 +577,27 @@
                                     }
                                 };
                                 const config = statusConfig[data] || statusConfig['nra'];
-                                return `<span class="px-3 py-1.5 rounded-full text-xs font-semibold ${config.color}">${config.icon} ${config.label}</span>`;
+
+                                return `
+                                    <select class="inline-select px-3 py-2 rounded text-xs font-semibold ${config.color} border-0 cursor-pointer focus:ring-1 focus:ring-offset-1 focus:ring-purple-500 min-w-[120px] max-w-[140px] statusDropdown"
+                                            data-order-id="${row.id}"
+                                            data-field="status"
+                                            data-original-value="${data}"
+                                            onchange="handleQuickUpdate(this)">
+                                        <option value="nra" ${data === 'nra' ? 'selected' : ''}>🤷‍♀️ NRA</option>
+                                        <option value="pending" ${data === 'pending' ? 'selected' : ''}>⏳ Pending</option>
+                                        <option value="in-progress" ${data === 'in-progress' ? 'selected' : ''}>🔄 Progress</option>
+                                        <option value="completed" ${data === 'completed' ? 'selected' : ''}>✅ Done</option>
+                                        <option value="on-hold" ${data === 'on-hold' ? 'selected' : ''}>⏸️ Hold</option>
+                                        <option value="cancelled" ${data === 'cancelled' ? 'selected' : ''}>❌ Cancelled</option>
+                                    </select>
+                                `;
                             }
                         },
                         {
                             data: 'priority',
                             name: 'priority',
-                            render: function(data) {
+                            render: function(data, type, row) {
                                 const config = {
                                     'low': {
                                         icon: '🟢',
@@ -482,7 +616,18 @@
                                     }
                                 };
                                 const p = config[data] || config['medium'];
-                                return `<span class="px-3 py-1.5 rounded-full text-xs font-semibold ${p.color}">${p.icon} ${p.label}</span>`;
+
+                                return `
+                                    <select class="inline-select px-2 py-2 rounded text-xs font-semibold ${p.color} border-0 cursor-pointer focus:ring-1 focus:ring-offset-1 focus:ring-purple-500 min-w-[95px] max-w-[110px] priorityDropdown"
+                                            data-order-id="${row.id}"
+                                            data-field="priority"
+                                            data-original-value="${data}"
+                                            onchange="handleQuickUpdate(this)">
+                                        <option value="low" ${data === 'low' ? 'selected' : ''}>🟢 Low</option>
+                                        <option value="medium" ${data === 'medium' ? 'selected' : ''}>🟡 Medium</option>
+                                        <option value="high" ${data === 'high' ? 'selected' : ''}>🔴 High</option>
+                                    </select>
+                                `;
                             }
                         },
                         {
@@ -498,38 +643,23 @@
                             name: 'team_id',
                             render: function(data) {
                                 if (!data || data === 'N/A')
-                                return '<span class="text-gray-400 text-xs">No team</span>';
-                                return `<span class="px-2 py-1 rounded-lg text-xs font-medium bg-blue-50 text-blue-700">${data}</span>`;
+                                    return '<span class="text-gray-400 text-sm">No team</span>';
+                                return `<span class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-blue-50 text-blue-700">${data}</span>`;
                             }
                         },
-                        {
-                            data: 'tech_stack',
-                            name: 'tech_stack_id',
-                            render: function(data) {
-                                if (!data || data === 'N/A')
-                                return '<span class="text-gray-400 text-xs">No stack</span>';
-                                return `<span class="px-2 py-1 rounded-lg text-xs font-medium bg-cyan-50 text-cyan-700">${data}</span>`;
-                            }
-                        },
+                       
                         {
                             data: 'users',
                             name: 'users',
-                            render: function(data) {
+                            render: function(data, type, row) {
                                 if (!data || data.length === 0) {
-                                    return '<span class="text-gray-400 text-xs">No users</span>';
+                                    return '<span class="text-gray-400 text-sm">No users</span>';
                                 }
                                 if (data.length === 1) {
-                                    return `<span class="px-2 py-1 rounded-lg text-xs font-medium bg-purple-50 text-purple-700">${data[0].name}</span>`;
+                                    return `<span class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-purple-50 text-purple-700" title="${data[0].name}">${data[0].name}</span>`;
                                 }
-                                return `<span class="px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800">${data.length} users</span>`;
-                            }
-                        },
-                        {
-                            data: 'start_date',
-                            name: 'start_date',
-                            render: function(data) {
-                                if (!data) return '<span class="text-gray-400 text-xs">Not set</span>';
-                                return `<span class="text-xs font-medium text-gray-700">${data}</span>`;
+                                // Multiple users - show count with tooltip
+                                return `<span class="px-3 py-1.5 rounded-full text-sm font-semibold bg-purple-100 text-purple-800 cursor-help" title="${row.users_names}">${data.length} users</span>`;
                             }
                         },
                         {
@@ -538,37 +668,7 @@
                             render: function(data) {
                                 if (!data) return '<span class="text-gray-400 text-xs">Not set</span>';
 
-                                const deadline = new Date(data);
-                                const now = new Date();
-                                const diff = deadline - now;
-
-                                if (diff <= 0) {
-                                    return '<span class="px-2 py-1 rounded-lg text-xs font-semibold bg-red-100 text-red-700">⚠️ Overdue</span>';
-                                }
-
-                                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-                                let countdown = '';
-                                if (days > 0) {
-                                    countdown += days + ' Day' + (days > 1 ? 's' : '') + ' ';
-                                }
-                                if (hours > 0 || days > 0) {
-                                    countdown += hours + ' Hour' + (hours > 1 ? 's' : '') + ' ';
-                                }
-                                countdown += minutes + ' Min';
-
-                                let colorClass = 'bg-green-100 text-green-700';
-                                if (days <= 1) {
-                                    colorClass = 'bg-red-100 text-red-700';
-                                } else if (days <= 7) {
-                                    colorClass = 'bg-yellow-100 text-yellow-700';
-                                } else if (days <= 30) {
-                                    colorClass = 'bg-blue-100 text-blue-700';
-                                }
-
-                                return `<span class="px-2 py-1 rounded-lg text-xs font-semibold ${colorClass}">⏱️ ${countdown}</span>`;
+                                return `<span class="countdown-timer inline-flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-bold whitespace-nowrap" data-deadline="${data}"><i class="fas fa-clock"></i> <span class="countdown-text">Loading...</span></span>`;
                             }
                         },
                         {
@@ -578,10 +678,10 @@
                             render: function(data) {
                                 return `
                         <div class="flex items-center justify-center gap-1">
-                            <a href="{{ route('orders.show', ':id') }}".replace(/:id/g, data.id) class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-100 transition-all" title="View">
+                            <a href="${urlTemplates.show}/${data.id}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-100 transition-all" title="View">
                                 <i class="fas fa-eye text-xs"></i>
                             </a>
-                            <a href="{{ route('orders.edit', ':id') }}".replace(/:id/g, data.id) class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all" title="Edit">
+                            <a href="${urlTemplates.edit}/${data.id}/edit" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all" title="Edit">
                                 <i class="fas fa-edit text-xs"></i>
                             </a>
                             <button onclick="deleteOrder(${data.id})" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-all" title="Delete">
@@ -636,39 +736,75 @@
                         $('#ordersTable_wrapper').prepend(actionButtons);
 
                         // Filter form handlers - real-time filter changes
+                        $('#filterSearch').on('keyup', function() {
+                            table.ajax.reload();
+                        });
+
                         $('#filterStatus, #filterTeam, #filterTechStack, #filterPriority').on('change', function() {
                             table.ajax.reload();
                         });
+
+                        // Initialize countdown timers
+                        updateAllCountdowns();
+
+                        // Update countdowns every second for real-time display
+                        setInterval(updateAllCountdowns, 1000);
                     },
                     drawCallback: function(settings) {
-                        // Update stats after each draw
-                        updateStats();
+                        // Update countdowns after table redraw
+                        updateAllCountdowns();
                     }
                 });
             }
 
-            // Update statistics function
-            function updateStats() {
-                const table = $('#ordersTable').DataTable();
-                const allData = table.rows({
-                    search: 'applied'
-                }).data().toArray();
+            // Update all countdown timers
+            function updateAllCountdowns() {
+                $('.countdown-timer').each(function() {
+                    const $timer = $(this);
+                    const deadline = new Date($timer.data('deadline'));
+                    const now = new Date();
+                    const diff = deadline - now;
 
-                let total = allData.length;
-                let completed = 0;
-                let inProgress = 0;
-                let totalRevenue = 0;
+                    if (diff <= 0) {
+                        $timer.removeClass(
+                                'bg-green-100 text-green-700 bg-yellow-100 text-yellow-700 bg-blue-100 text-blue-700')
+                            .addClass('bg-red-100 text-red-700');
+                        $timer.find('.countdown-text').text('⚠️ Overdue');
+                        return;
+                    }
 
-                allData.forEach(function(row) {
-                    if (row.status === 'completed') completed++;
-                    if (row.status === 'in-progress') inProgress++;
-                    if (row.actual_revenue) totalRevenue += parseFloat(row.actual_revenue);
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                    let countdown = '';
+                    if (days > 0) {
+                        countdown +=
+                            `<span class="countdown-unit">${days}<small class="text-xs opacity-75">d</small></span> `;
+                    }
+                    countdown +=
+                        `<span class="countdown-unit">${hours}<small class="text-xs opacity-75">h</small></span> `;
+                    countdown +=
+                        `<span class="countdown-unit">${minutes}<small class="text-xs opacity-75">m</small></span> `;
+                    countdown +=
+                        `<span class="countdown-unit">${seconds}<small class="text-xs opacity-75">s</small></span>`;
+
+                    let colorClass = 'bg-green-100 text-green-700';
+                    if (days <= 1) {
+                        colorClass = 'bg-red-100 text-red-700 animate-pulse';
+                    } else if (days <= 7) {
+                        colorClass = 'bg-yellow-100 text-yellow-800';
+                    } else if (days <= 30) {
+                        colorClass = 'bg-blue-100 text-blue-700';
+                    }
+
+                    $timer.removeClass(
+                            'bg-green-100 text-green-700 bg-yellow-100 text-yellow-800 bg-blue-100 text-blue-700 bg-red-100 text-red-700 animate-pulse'
+                        )
+                        .addClass(colorClass);
+                    $timer.find('.countdown-text').html(countdown);
                 });
-
-                $('#totalOrders').text(total);
-                $('#completedOrders').text(completed);
-                $('#inProgressOrders').text(inProgress);
-                $('#totalRevenue').text('$' + totalRevenue.toFixed(2));
             }
 
             // Apply filters button - wait for document ready
@@ -864,11 +1000,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         Swal.showLoading();
-                        axios.delete(`/orders/${id}`, {
-                            headers: {
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            }
-                        })
+                        axios.delete(`/orders/${id}`)
                             .then(response => {
                                 Swal.fire({
                                     title: 'Deleted!',
@@ -887,6 +1019,77 @@
                                     confirmButtonColor: '#dc2626'
                                 });
                             });
+                    }
+                });
+            }
+
+            // Quick update function for status and priority
+            function handleQuickUpdate(selectElement) {
+                const orderId = selectElement.dataset.orderId;
+                const field = selectElement.dataset.field;
+                const newValue = selectElement.value;
+                const originalValue = selectElement.dataset.originalValue;
+
+                const fieldLabels = {
+                    'status': 'Status',
+                    'priority': 'Priority'
+                };
+
+                const valueLabels = {
+                    'nra': 'NRA',
+                    'pending': 'Pending',
+                    'in-progress': 'In Progress',
+                    'completed': 'Completed',
+                    'on-hold': 'On Hold',
+                    'cancelled': 'Cancelled',
+                    'low': 'Low',
+                    'medium': 'Medium',
+                    'high': 'High'
+                };
+
+                Swal.fire({
+                    title: 'Update Order?',
+                    text: `Change ${fieldLabels[field]} to "${valueLabels[newValue]}"?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#9333ea',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Yes, update!',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.showLoading();
+
+                        const formData = new FormData();
+                        formData.append(field, newValue);
+
+                        axios.post(`/orders/${orderId}/quick-update`, formData)
+                            .then(response => {
+                                Swal.fire({
+                                    title: 'Updated!',
+                                    text: response.data.message || 'Order updated successfully.',
+                                    icon: 'success',
+                                    confirmButtonColor: '#9333ea',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    $('#ordersTable').DataTable().ajax.reload();
+                                });
+                            })
+                            .catch(error => {
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: error.response?.data?.message || 'Something went wrong.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#dc2626'
+                                }).then(() => {
+                                    // Revert the select to its original value on error
+                                    selectElement.value = originalValue;
+                                });
+                            });
+                    } else {
+                        // User cancelled, revert the select to original value
+                        selectElement.value = originalValue;
                     }
                 });
             }

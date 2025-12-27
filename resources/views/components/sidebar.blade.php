@@ -8,20 +8,35 @@
 
     <!-- Navigation -->
     <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto custom-scrollbar">
+        @php
+            $currentSection = '';
+            if (request()->routeIs('dashboard')) {
+                $currentSection = 'dashboard';
+            } elseif (request()->routeIs('orders.*')) {
+                $currentSection = 'orders';
+            } elseif (request()->routeIs('tasks.*')) {
+                $currentSection = 'tasks';
+            } elseif (request()->routeIs('freelance-profiles.*')) {
+                $currentSection = 'profile';
+            } elseif (request()->routeIs('portfolios.*')) {
+                $currentSection = 'portfolio';
+            } elseif (request()->routeIs('teams.*') || request()->routeIs('tech-stacks.*')) {
+                $currentSection = 'team';
+            } elseif (request()->routeIs('admin.*') || request()->routeIs('users.*') || request()->routeIs('settings.*')) {
+                $currentSection = 'admin';
+            }
+        @endphp
+
         <!-- Dashboard Section -->
-        <div class="mb-2">
-            <button @click="dashboardSection = !dashboardSection"
-                    class="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+        <div class="mb-2 sidebar-section" data-section="dashboard">
+            <button class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
                 <div class="flex items-center">
                     <i class="fas fa-th-large w-5 text-indigo-300 group-hover:text-white transition-colors"></i>
                     <span class="ml-3">Dashboard</span>
                 </div>
-                <i class="fas fa-chevron-down text-xs transition-transform duration-200"
-                   :class="dashboardSection ? 'rotate-180' : ''"></i>
+                <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron {{ $currentSection === 'dashboard' ? 'rotate-180' : '' }}"></i>
             </button>
-            <div x-show="dashboardSection"
-                 x-collapse
-                 class="mt-1 space-y-1 ml-4">
+            <div class="sidebar-content mt-1 space-y-1 ml-4 {{ $currentSection !== 'dashboard' ? 'hidden' : '' }}">
                 <a href="{{ route('dashboard') }}"
                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('dashboard') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
                     <i class="fas fa-chart-line w-5 mr-2"></i>
@@ -31,19 +46,15 @@
         </div>
 
         <!-- Orders Section -->
-        <div class="mb-2">
-            <button @click="ordersSection = !ordersSection"
-                    class="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+        <div class="mb-2 sidebar-section" data-section="orders">
+            <button class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
                 <div class="flex items-center">
                     <i class="fas fa-shopping-cart w-5 text-indigo-300 group-hover:text-white transition-colors"></i>
                     <span class="ml-3">Orders</span>
                 </div>
-                <i class="fas fa-chevron-down text-xs transition-transform duration-200"
-                   :class="ordersSection ? 'rotate-180' : ''"></i>
+                <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron {{ $currentSection === 'orders' ? 'rotate-180' : '' }}"></i>
             </button>
-            <div x-show="ordersSection"
-                 x-collapse
-                 class="mt-1 space-y-1 ml-4">
+            <div class="sidebar-content mt-1 space-y-1 ml-4 {{ $currentSection !== 'orders' ? 'hidden' : '' }}">
                 <a href="{{ route('orders.dashboard') }}"
                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('orders.dashboard') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
                     <i class="fas fa-chart-line w-5 mr-2"></i>
@@ -63,19 +74,15 @@
         </div>
 
         <!-- Tasks Section -->
-        <div class="mb-2">
-            <button @click="tasksSection = !tasksSection"
-                    class="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+        <div class="mb-2 sidebar-section" data-section="tasks">
+            <button class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
                 <div class="flex items-center">
                     <i class="fas fa-tasks w-5 text-cyan-400 group-hover:text-cyan-300 transition-colors"></i>
                     <span class="ml-3">Tasks</span>
                 </div>
-                <i class="fas fa-chevron-down text-xs transition-transform duration-200"
-                   :class="tasksSection ? 'rotate-180' : ''"></i>
+                <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron {{ $currentSection === 'tasks' ? 'rotate-180' : '' }}"></i>
             </button>
-            <div x-show="tasksSection"
-                 x-collapse
-                 class="mt-1 space-y-1 ml-4">
+            <div class="sidebar-content mt-1 space-y-1 ml-4 {{ $currentSection !== 'tasks' ? 'hidden' : '' }}">
                 <a href="{{ route('tasks.index') }}"
                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tasks.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
                     <i class="fas fa-list w-5 mr-2"></i>
@@ -91,19 +98,15 @@
 
         <!-- Profile Management Section -->
         @role('admin|operation-manager|project-manager')
-        <div class="mb-2">
-            <button @click="profileSection = !profileSection"
-                    class="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+        <div class="mb-2 sidebar-section" data-section="profile">
+            <button class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
                 <div class="flex items-center">
                     <i class="fas fa-address-card w-5 text-purple-400 group-hover:text-purple-300 transition-colors"></i>
                     <span class="ml-3">Profiles</span>
                 </div>
-                <i class="fas fa-chevron-down text-xs transition-transform duration-200"
-                   :class="profileSection ? 'rotate-180' : ''"></i>
+                <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron {{ $currentSection === 'profile' ? 'rotate-180' : '' }}"></i>
             </button>
-            <div x-show="profileSection"
-                 x-collapse
-                 class="mt-1 space-y-1 ml-4">
+            <div class="sidebar-content mt-1 space-y-1 ml-4 {{ $currentSection !== 'profile' ? 'hidden' : '' }}">
                 @canany(['manage profiles', 'view profiles'])
                 <a href="{{ route('freelance-profiles.index') }}"
                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('freelance-profiles.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
@@ -115,19 +118,15 @@
         </div>
         @else
         <!-- Regular users view-only -->
-        <div class="mb-2">
-            <button @click="profileSection = !profileSection"
-                    class="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+        <div class="mb-2 sidebar-section" data-section="profile">
+            <button class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
                 <div class="flex items-center">
                     <i class="fas fa-address-card w-5 text-purple-400 group-hover:text-purple-300 transition-colors"></i>
                     <span class="ml-3">Profiles</span>
                 </div>
-                <i class="fas fa-chevron-down text-xs transition-transform duration-200"
-                   :class="profileSection ? 'rotate-180' : ''"></i>
+                <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron {{ $currentSection === 'profile' ? 'rotate-180' : '' }}"></i>
             </button>
-            <div x-show="profileSection"
-                 x-collapse
-                 class="mt-1 space-y-1 ml-4">
+            <div class="sidebar-content mt-1 space-y-1 ml-4 {{ $currentSection !== 'profile' ? 'hidden' : '' }}">
                 <a href="{{ route('freelance-profiles.index') }}"
                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('freelance-profiles.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
                     <i class="fas fa-list w-5 mr-2"></i>
@@ -139,19 +138,15 @@
 
         <!-- Portfolio Section -->
         @canany(['view any portfolio', 'view own portfolio'])
-        <div class="mb-2">
-            <button @click="portfolioSection = !portfolioSection"
-                    class="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+        <div class="mb-2 sidebar-section" data-section="portfolio">
+            <button class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
                 <div class="flex items-center">
                     <i class="fas fa-star w-5 text-yellow-400 group-hover:text-yellow-300 transition-colors"></i>
                     <span class="ml-3">Portfolio</span>
                 </div>
-                <i class="fas fa-chevron-down text-xs transition-transform duration-200"
-                   :class="portfolioSection ? 'rotate-180' : ''"></i>
+                <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron {{ $currentSection === 'portfolio' ? 'rotate-180' : '' }}"></i>
             </button>
-            <div x-show="portfolioSection"
-                 x-collapse
-                 class="mt-1 space-y-1 ml-4">
+            <div class="sidebar-content mt-1 space-y-1 ml-4 {{ $currentSection !== 'portfolio' ? 'hidden' : '' }}">
                 @can('view any portfolio')
                 <a href="{{ route('portfolios.index') }}"
                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('portfolios.index') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
@@ -172,19 +167,15 @@
 
         <!-- Team Management Section -->
         @canany(['manage teams', 'view teams'])
-        <div class="mb-2">
-            <button @click="teamSection = !teamSection"
-                    class="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+        <div class="mb-2 sidebar-section" data-section="team">
+            <button class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
                 <div class="flex items-center">
                     <i class="fas fa-users w-5 text-green-400 group-hover:text-green-300 transition-colors"></i>
                     <span class="ml-3">Team</span>
                 </div>
-                <i class="fas fa-chevron-down text-xs transition-transform duration-200"
-                   :class="teamSection ? 'rotate-180' : ''"></i>
+                <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron {{ $currentSection === 'team' ? 'rotate-180' : '' }}"></i>
             </button>
-            <div x-show="teamSection"
-                 x-collapse
-                 class="mt-1 space-y-1 ml-4">
+            <div class="sidebar-content mt-1 space-y-1 ml-4 {{ $currentSection !== 'team' ? 'hidden' : '' }}">
                 @can('manage teams')
                 <a href="{{ route('teams.index') }}"
                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('teams.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
@@ -205,19 +196,15 @@
 
         <!-- Admin Section -->
         @role('admin')
-        <div class="mb-2">
-            <button @click="adminSection = !adminSection"
-                    class="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-red-600/30 transition-all duration-200 group">
+        <div class="mb-2 sidebar-section" data-section="admin">
+            <button class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-red-600/30 transition-all duration-200 group">
                 <div class="flex items-center">
                     <i class="fas fa-shield-alt w-5 text-red-400 group-hover:text-red-300 transition-colors"></i>
                     <span class="ml-3">Admin</span>
                 </div>
-                <i class="fas fa-chevron-down text-xs transition-transform duration-200"
-                   :class="adminSection ? 'rotate-180' : ''"></i>
+                <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron {{ $currentSection === 'admin' ? 'rotate-180' : '' }}"></i>
             </button>
-            <div x-show="adminSection"
-                 x-collapse
-                 class="mt-1 space-y-1 ml-4">
+            <div class="sidebar-content mt-1 space-y-1 ml-4 {{ $currentSection !== 'admin' ? 'hidden' : '' }}">
                 <a href="{{ route('admin.dashboard') }}"
                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('admin.*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
                     <i class="fas fa-tachometer-alt w-5 mr-2"></i>

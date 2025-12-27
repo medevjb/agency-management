@@ -2,6 +2,14 @@
 
 @section('title', 'Create Order')
 
+@push('styles')
+<style>
+    .form-card {
+        overflow: visible
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="px-4 sm:px-6 lg:px-8 py-8 max-w-6xl mx-auto">
     <!-- Page Header -->
@@ -38,17 +46,34 @@
                 </h2>
             </div>
             <div class="form-card-body space-y-6">
+                
+
                 <!-- Order Name -->
                 <div class="form-field">
                     <label class="form-field-label" for="name">
                         <i class="field-icon fas fa-file-alt bg-purple-100 text-purple-600"></i>
-                        Order Name <span class="required-indicator">*</span>
+                        Client Name <span class="required-indicator">*</span>
                     </label>
                     <input type="text" name="name" id="name" required
                            class="form-field-input"
-                           placeholder="Enter order name (e.g., Website Development Project)"
+                           placeholder="Enter client name (e.g., Doe, John)"
                            maxlength="255">
                     @error('name')
+                        <p class="field-error"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Order ID -->
+                <div class="form-field">
+                    <label class="form-field-label" for="order_id">
+                        <i class="field-icon fas fa-hashtag bg-purple-100 text-purple-600"></i>
+                        Order ID <span class="text-gray-400 font-normal">(optional custom identifier)</span>
+                    </label>
+                    <input type="text" name="order_id" id="order_id"
+                           class="form-field-input"
+                           placeholder="Enter custom order ID (e.g., ORD-2024-001)"
+                           maxlength="255">
+                    @error('order_id')
                         <p class="field-error"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
                     @enderror
                 </div>
@@ -131,7 +156,7 @@
             <div class="form-card-header">
                 <h2 class="form-card-title">
                     <i class="fas fa-calendar-alt bg-gradient-to-br from-green-500 to-emerald-600 text-white"></i>
-                    Schedule & Revenue
+                    Schedule & Amount
                 </h2>
             </div>
             <div class="form-card-body space-y-6">
@@ -172,30 +197,56 @@
                     </div>
                 </div>
 
-                <!-- Revenue -->
+                <!-- Value (Before 20% Split) -->
+                <div class="form-field">
+                    <label class="form-field-label" for="value">
+                        <i class="field-icon fas fa-coins bg-green-100 text-green-600"></i>
+                        Amount (Before 20% Split)
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-lg">$</span>
+                        <input type="number" name="value" id="value" step="0.01" min="0"
+                               class="form-field-input pl-10 text-lg font-semibold"
+                               placeholder="0.00"
+                               oninput="calculateRevenue(this.value)">
+                    </div>
+                    @error('value')
+                        <p class="field-error"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Amount (After 20% Split) -->
                 <div class="form-field">
                     <label class="form-field-label" for="actual_revenue">
-                        <i class="field-icon fas fa-dollar-sign bg-green-100 text-green-600"></i>
-                        Revenue (Before 20% Split)
+                        <i class="field-icon fas fa-dollar-sign bg-purple-100 text-purple-600"></i>
+                        Value (After 20% Split) <span class="text-gray-400 font-normal">(will be calculated automatically)</span>
                     </label>
                     <div class="relative">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-lg">$</span>
                         <input type="number" name="actual_revenue" id="actual_revenue" step="0.01" min="0"
-                               class="form-field-input pl-10 text-lg font-semibold"
+                               class="form-field-input pl-10 text-lg font-semibold bg-gray-50"
                                placeholder="0.00"
-                               oninput="calculateRevenue(this.value)">
+                               readonly>
                     </div>
 
                     <!-- Revenue Preview -->
                     <div id="revenuePreview" class="revenue-preview hidden">
                         <div class="revenue-preview-label">
                             <i class="fas fa-chart-pie mr-1"></i>
-                            Revenue Overview
+                            Amount Overview
                         </div>
                         <div class="revenue-preview-value" id="revenueTotal">$0.00</div>
                         <div class="revenue-preview-split">
                             <i class="fas fa-coins mr-2"></i>
-                            <span>After 20% Split (Will be stored): <strong id="revenueSplit">$0.00</strong></span>
+                            <span>Value: <strong id="revenueValue">$0.00</strong></span>
+                        </div>
+                        <div class="revenue-preview-split">
+                            <i class="fas fa-percentage mr-2"></i>
+                            <span>20% Fee: <strong id="revenueFee">$0.00</strong></span>
+                        </div>
+                        <div class="revenue-preview-split">
+                            <i class="fas fa-check-circle mr-2 text-green-600"></i>
+                            <span>Amount (After Split): <strong class="text-green-600" id="revenueSplit">$0.00</strong></span>
                         </div>
                     </div>
 
@@ -246,6 +297,23 @@
                             @endforeach
                         </select>
                         @error('tech_stack_id')
+                            <p class="field-error"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Freelance Profile -->
+                    <div class="form-field">
+                        <label class="form-field-label" for="freelance_profile_id">
+                            <i class="field-icon fas fa-address-card bg-purple-100 text-purple-600"></i>
+                            Freelance Profile
+                        </label>
+                        <select name="freelance_profile_id" id="freelance_profile_id" class="form-field-select">
+                            <option value="">Select Freelance Profile</option>
+                            @foreach($profiles as $profile)
+                                <option value="{{ $profile->id }}">{{ $profile->profile_name }}</option>
+                            @endforeach
+                        </select>
+                        @error('freelance_profile_id')
                             <p class="field-error"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
                         @enderror
                     </div>
@@ -335,14 +403,23 @@ function calculateRevenue(value) {
     const revenue = parseFloat(value) || 0;
     const preview = document.getElementById('revenuePreview');
     const total = document.getElementById('revenueTotal');
+    const valueDisplay = document.getElementById('revenueValue');
+    const fee = document.getElementById('revenueFee');
     const split = document.getElementById('revenueSplit');
+    const actualRevenueInput = document.getElementById('actual_revenue');
 
     if (revenue > 0) {
         preview.classList.remove('hidden');
+        const feeAmount = revenue * 0.20;
+        const afterSplit = revenue * 0.80;
         total.textContent = '$' + revenue.toFixed(2);
-        split.textContent = '$' + (revenue * 0.80).toFixed(2);
+        valueDisplay.textContent = '$' + revenue.toFixed(2);
+        fee.textContent = '$' + feeAmount.toFixed(2);
+        split.textContent = '$' + afterSplit.toFixed(2);
+        actualRevenueInput.value = afterSplit.toFixed(2);
     } else {
         preview.classList.add('hidden');
+        actualRevenueInput.value = '';
     }
 }
 

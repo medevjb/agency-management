@@ -10,7 +10,7 @@
                 <p class="text-gray-600 mt-2">Here's what's happening with your projects today.</p>
             </div>
             <div class="flex gap-3">
-                <a href="{{ route('projects.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors duration-200">
+                <a href="{{ route('orders.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors duration-200">
                     <i class="fas fa-plus mr-2"></i>New Project
                 </a>
                 <a href="{{ route('teams.create') }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg font-medium transition-colors duration-200">

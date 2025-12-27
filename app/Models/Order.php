@@ -10,15 +10,18 @@ class Order extends Model
     use SoftDeletes;
 
     protected $fillable = [
+        'order_id',
         'name',
         'description',
         'status',
         'priority',
+        'value',
         'start_date',
         'end_date',
         'actual_revenue',
         'team_id',
         'tech_stack_id',
+        'freelance_profile_id',
         'created_by',
     ];
 
@@ -27,6 +30,7 @@ class Order extends Model
         return [
             'start_date' => 'date',
             'end_date' => 'date',
+            'value' => 'decimal:2',
             'actual_revenue' => 'decimal:2',
         ];
     }
@@ -39,6 +43,11 @@ class Order extends Model
     public function techStack(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(TechStack::class);
+    }
+
+    public function freelanceProfile(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Profile::class, 'freelance_profile_id');
     }
 
     public function creator(): \Illuminate\Database\Eloquent\Relations\BelongsTo

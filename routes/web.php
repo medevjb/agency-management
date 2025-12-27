@@ -36,6 +36,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::get('/orders/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit');
     Route::patch('/orders/{order}', [OrderController::class, 'update'])->name('orders.update');
+    Route::post('/orders/{order}/quick-update', [OrderController::class, 'quickUpdate'])->name('orders.quick-update');
     Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
 
     // Tasks routes

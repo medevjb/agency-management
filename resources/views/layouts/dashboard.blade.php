@@ -15,126 +15,481 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <!-- Flatpickr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/light.css">
     <!-- Axios CDN -->
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.8/dist/axios.min.js"></script>
+    <script>
+        // Configure axios defaults for CSRF token
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').content;
+        axios.defaults.headers.common['Accept'] = 'application/json';
+    </script>
+    <style>
+        /* Custom Flatpickr Styling */
+        .flatpickr-calendar {
+            background: #ffffff;
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            font-family: 'Figtree', sans-serif;
+            padding: 16px;
+            width: 320px !important;
+            z-index: 99999 !important;
+        }
+
+        .flatpickr-calendar.inline {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .flatpickr-calendar.hasTime.noCalendar {
+            width: 320px !important;
+        }
+
+        .flatpickr-calendar:before,
+        .flatpickr-calendar:after {
+            display: none;
+        }
+
+        /* Month navigation */
+        .flatpickr-months {
+            margin: 0 0 16px 0;
+            padding: 0;
+            height: 40px;
+        }
+
+        .flatpickr-month {
+            height: 40px;
+            display: flex;
+            align-items: center;
+        }
+
+        .flatpickr-current-month {
+            padding: 0;
+            height: 40px;
+            line-height: 40px;
+            color: #1f2937;
+            font-weight: 600;
+            font-size: 16px;
+            position: relative;
+            left: 0;
+        }
+
+        .flatpickr-current-month span.cur-month {
+            font-weight: 700;
+            color: #6366f1;
+        }
+
+        .flatpickr-current-month span.cur-year {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .flatpickr-months .flatpickr-prev-month,
+        .flatpickr-months .flatpickr-next-month {
+            height: 40px;
+            width: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            border: none;
+            border-radius: 10px;
+            color: #4b5563;
+            fill: #4b5563;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .flatpickr-months .flatpickr-prev-month:hover,
+        .flatpickr-months .flatpickr-next-month:hover {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: #ffffff;
+            fill: #ffffff;
+            transform: scale(1.05);
+        }
+
+        .flatpickr-months .flatpickr-prev-month:active,
+        .flatpickr-months .flatpickr-next-month:active {
+            transform: scale(0.95);
+        }
+
+        .flatpickr-months .flatpickr-prev-month svg,
+        .flatpickr-months .flatpickr-next-month svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Days of week */
+        .flatpickr-weekdays {
+            margin-bottom: 8px;
+        }
+
+        .flatpickr-weekday {
+            color: #6b7280;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Calendar days */
+        .flatpickr-days {
+            width: 100%;
+        }
+
+        .dayContainer {
+            width: 100%;
+            min-width: 100%;
+            max-width: 100%;
+        }
+
+        .flatpickr-day {
+            height: 38px;
+            line-height: 38px;
+            border-radius: 10px;
+            color: #374151;
+            font-weight: 500;
+            font-size: 14px;
+            margin: 2px 0;
+            transition: all 0.2s ease;
+        }
+
+        .flatpickr-day:hover {
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            color: #4f46e5;
+            transform: scale(1.1);
+            border-color: transparent;
+        }
+
+        .flatpickr-day.prevMonthDay,
+        .flatpickr-day.nextMonthDay {
+            color: #d1d5db;
+        }
+
+        .flatpickr-day.today {
+            border: 2px solid #6366f1;
+            background: #ffffff;
+            color: #6366f1;
+            font-weight: 600;
+        }
+
+        .flatpickr-day.today:hover {
+            border: 2px solid #6366f1;
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            color: #4f46e5;
+        }
+
+        .flatpickr-day.selected,
+        .flatpickr-day.startRange,
+        .flatpickr-day.endRange,
+        .flatpickr-day.selected.inRange,
+        .flatpickr-day.startRange.inRange,
+        .flatpickr-day.endRange.inRange,
+        .flatpickr-day.selected:focus,
+        .flatpickr-day.startRange:focus,
+        .flatpickr-day.endRange:focus,
+        .flatpickr-day.selected:hover,
+        .flatpickr-day.startRange:hover,
+        .flatpickr-day.endRange:hover,
+        .flatpickr-day.selected.prevMonthDay,
+        .flatpickr-day.startRange.prevMonthDay,
+        .flatpickr-day.endRange.prevMonthDay,
+        .flatpickr-day.selected.nextMonthDay,
+        .flatpickr-day.startRange.nextMonthDay,
+        .flatpickr-day.endRange.nextMonthDay {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+            border-color: transparent !important;
+            color: #ffffff !important;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .flatpickr-day.inRange {
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%) !important;
+            border-color: transparent !important;
+            color: #4f46e5 !important;
+            box-shadow: none;
+        }
+
+        .flatpickr-day.disabled {
+            color: #d1d5db;
+            background: #f9fafb;
+            cursor: not-allowed;
+        }
+
+        .flatpickr-day.disabled:hover {
+            background: #f9fafb;
+            color: #d1d5db;
+            transform: none;
+        }
+
+        .flatpickr-day.week.selected {
+            box-shadow: -5px 0 0 #6366f1, 5px 0 0 #6366f1;
+        }
+
+        /* Week numbers */
+        .flatpickr-weekwrapper {
+            display: none;
+        }
+
+        /* Time picker */
+        .flatpickr-time {
+            border-top: 1px solid #e5e7eb;
+            height: 50px;
+        }
+
+        .flatpickr-time .numInputWrapper {
+            height: 40px;
+        }
+
+        .flatpickr-time .flatpickr-am-pm {
+            height: 40px;
+            line-height: 40px;
+        }
+
+        /* Calendar container position */
+        .flatpickr-calendar.open {
+            margin-top: 8px;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
     @stack('styles')
 </head>
 <body class="font-sans antialiased bg-gray-100">
-    <div class="min-h-screen flex"
-         x-data="{
-             sidebarOpen: false,
-             dashboardSection: true,
-             ordersSection: true,
-             tasksSection: true,
-             profileSection: true,
-             portfolioSection: true,
-             teamSection: true,
-             adminSection: true
-         }">
-        <!-- Sidebar Component -->
-        @include('components.sidebar')
+    <!-- Sidebar Component -->
+    @include('components.sidebar')
 
-        <!-- Mobile Sidebar Overlay -->
-        <div x-show="sidebarOpen" x-transition:enter="transition-opacity ease-linear duration-300"
-             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-             x-transition:leave="transition-opacity ease-linear duration-300"
-             x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-             class="fixed inset-0 z-40 lg:hidden bg-gray-600 bg-opacity-75" @click="sidebarOpen = false"></div>
+    <!-- Mobile Sidebar Overlay -->
+    <div id="mobileSidebarOverlay" class="hidden fixed inset-0 z-40 lg:hidden bg-gray-600 bg-opacity-75 transition-opacity duration-300"></div>
 
-        <!-- Mobile Sidebar -->
-        <aside x-show="sidebarOpen" x-transition:enter="transition ease-in-out duration-300"
-               x-transition:enter-start="transform -translate-x-full" x-transition:enter-end="transform translate-x-0"
-               x-transition:leave="transition ease-in-out duration-300"
-               x-transition:leave-start="transform translate-x-0" x-transition:leave-end="transform -translate-x-full"
-               class="fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-indigo-600 to-indigo-800 text-white lg:hidden">
-            <div class="flex flex-col h-full">
-                <div class="flex items-center justify-between h-16 px-4 border-b border-indigo-700">
-                    <h1 class="text-xl font-bold">{{ config('app.name', 'Dashboard') }}</h1>
-                    <button @click="sidebarOpen = false" class="text-white hover:text-gray-300">
-                        <i class="fas fa-times"></i>
+    <!-- Mobile Sidebar -->
+    <aside id="mobileSidebar" class="hidden fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-indigo-600 to-indigo-800 text-white lg:hidden">
+        <div class="flex flex-col h-full">
+            <div class="flex items-center justify-between h-16 px-4 border-b border-indigo-700">
+                <h1 class="text-xl font-bold">{{ config('app.name', 'Dashboard') }}</h1>
+                <button id="closeMobileSidebar" class="text-white hover:text-gray-300">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+                <!-- Dashboard Section -->
+                <div class="mb-2 sidebar-section" data-section="dashboard">
+                    <button class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                        <div class="flex items-center">
+                            <i class="fas fa-th-large w-5 text-indigo-300 group-hover:text-white transition-colors"></i>
+                            <span class="ml-3">Dashboard</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron"></i>
                     </button>
+                    <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
+                        <a href="{{ route('dashboard') }}"
+                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('dashboard') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            <i class="fas fa-chart-line w-5 mr-2"></i>
+                            Overview
+                        </a>
+                    </div>
                 </div>
 
-                <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-                    <a href="{{ route('dashboard') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-indigo-900 text-white">
-                        <i class="fas fa-home mr-3"></i>
-                        Dashboard
-                    </a>
+                <!-- Orders Section -->
+                <div class="mb-2 sidebar-section" data-section="orders">
+                    <button class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                        <div class="flex items-center">
+                            <i class="fas fa-shopping-cart w-5 text-indigo-300 group-hover:text-white transition-colors"></i>
+                            <span class="ml-3">Orders</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron"></i>
+                    </button>
+                    <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
+                        <a href="{{ route('orders.dashboard') }}"
+                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('orders.dashboard') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            <i class="fas fa-chart-line w-5 mr-2"></i>
+                            Dashboard
+                        </a>
+                        <a href="{{ route('orders.index') }}"
+                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('orders.index') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            <i class="fas fa-list w-5 mr-2"></i>
+                            All Orders
+                        </a>
+                        <a href="{{ route('orders.create') }}"
+                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('orders.create') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            <i class="fas fa-plus w-5 mr-2"></i>
+                            Add Order
+                        </a>
+                    </div>
+                </div>
 
-                    @role('admin')
-                    <div class="border-t border-indigo-700 pt-2 mt-2">
-                        <p class="px-4 py-2 text-xs font-semibold text-indigo-300 uppercase tracking-wider">Admin</p>
-                        <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-                            <i class="fas fa-tachometer-alt mr-3"></i>
+                <!-- Tasks Section -->
+                <div class="mb-2 sidebar-section" data-section="tasks">
+                    <button class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                        <div class="flex items-center">
+                            <i class="fas fa-tasks w-5 text-cyan-400 group-hover:text-cyan-300 transition-colors"></i>
+                            <span class="ml-3">Tasks</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron"></i>
+                    </button>
+                    <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
+                        <a href="{{ route('tasks.index') }}"
+                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tasks.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            <i class="fas fa-list w-5 mr-2"></i>
+                            All Tasks
+                        </a>
+                        <a href="{{ route('tasks.create') }}"
+                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tasks.create') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            <i class="fas fa-plus w-5 mr-2"></i>
+                            Add Task
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Admin Section -->
+                @role('admin')
+                <div class="mb-2 sidebar-section" data-section="admin">
+                    <button class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-red-600/30 transition-all duration-200 group">
+                        <div class="flex items-center">
+                            <i class="fas fa-shield-alt w-5 text-red-400 group-hover:text-red-300 transition-colors"></i>
+                            <span class="ml-3">Admin</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron"></i>
+                    </button>
+                    <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
+                        <a href="{{ route('admin.dashboard') }}"
+                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('admin.*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
+                            <i class="fas fa-tachometer-alt w-5 mr-2"></i>
                             Admin Dashboard
                         </a>
-                        <a href="{{ route('users.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-                            <i class="fas fa-users-cog mr-3"></i>
+                        <a href="{{ route('users.index') }}"
+                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('users.*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
+                            <i class="fas fa-users-cog w-5 mr-2"></i>
                             Manage Users
                         </a>
-                        <a href="{{ route('admin.roles') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-                            <i class="fas fa-shield-alt mr-3"></i>
+                        <a href="{{ route('admin.roles') }}"
+                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('admin.roles*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
+                            <i class="fas fa-key w-5 mr-2"></i>
                             Roles & Permissions
                         </a>
-                        <a href="{{ route('settings.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-                            <i class="fas fa-cog mr-3"></i>
+                        <a href="{{ route('settings.index') }}"
+                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('settings.*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
+                            <i class="fas fa-cog w-5 mr-2"></i>
                             System Settings
                         </a>
                     </div>
-                    @endrole
+                </div>
+                @endrole
 
-                    <div class="border-t border-indigo-700 pt-2 mt-2">
-                        <p class="px-4 py-2 text-xs font-semibold text-indigo-300 uppercase tracking-wider">Orders</p>
-                        <a href="{{ route('orders.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-                            <i class="fas fa-shopping-cart mr-3"></i>
-                            Orders
+                <!-- Team Section -->
+                @canany(['manage teams', 'view teams'])
+                <div class="mb-2 sidebar-section" data-section="team">
+                    <button class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                        <div class="flex items-center">
+                            <i class="fas fa-users w-5 text-green-400 group-hover:text-green-300 transition-colors"></i>
+                            <span class="ml-3">Team</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron"></i>
+                    </button>
+                    <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
+                        @can('manage teams')
+                        <a href="{{ route('teams.index') }}"
+                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('teams.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            <i class="fas fa-users w-5 mr-2"></i>
+                            Teams
                         </a>
+                        @endif
+                        @can('manage tech stacks')
+                        <a href="{{ route('tech-stacks.index') }}"
+                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tech-stacks.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            <i class="fas fa-layer-group w-5 mr-2"></i>
+                            Tech Stacks
+                        </a>
+                        @endif
                     </div>
-
-                    @canany(['manage teams', 'view teams'])
-                    @can('manage teams')
-                    <a href="{{ route('teams.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-                        <i class="fas fa-users mr-3"></i>
-                        Teams
-                    </a>
-                    @endif
-
-                    @can('manage tech stacks')
-                    <a href="{{ route('tech-stacks.index') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-                        <i class="fas fa-layer-group mr-3"></i>
-                        Tech Stacks
-                    </a>
-                    @endif
-                    @endcan
-                    <a href="#" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-                        <i class="fas fa-calendar mr-3"></i>
-                        Calendar
-                    </a>
-                    <a href="#" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-                        <i class="fas fa-envelope mr-3"></i>
-                        Messages
-                    </a>
-                </nav>
-            </div>
-        </aside>
-
-        <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden lg:ml-64">
-            <!-- Header Component -->
-            @include('components.header')
-
-            <!-- Main Content Area -->
-            <main class="flex-1 overflow-y-auto bg-gray-50">
-                @yield('content')
-            </main>
+                </div>
+                @endcanany
+            </nav>
         </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden lg:ml-64">
+        <!-- Header Component -->
+        @include('components.header')
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto bg-gray-50">
+            @yield('content')
+        </main>
     </div>
 
     <script src="{{ Vite::asset('resources/js/app.js') }}" type="module" defer></script>
 
     <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Sidebar Accordion Script -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get all sidebar sections
+        const sidebarSections = document.querySelectorAll('.sidebar-section');
+
+        // Function to toggle a section (independent - no auto-close of others)
+        function toggleSection(section) {
+            const content = section.querySelector('.sidebar-content');
+            const chevron = section.querySelector('.sidebar-chevron');
+
+            // Toggle visibility
+            content.classList.toggle('hidden');
+            chevron.classList.toggle('rotate-180');
+        }
+
+        // Add click listeners to all sidebar toggles
+        sidebarSections.forEach(function(section) {
+            const toggle = section.querySelector('.sidebar-toggle');
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    toggleSection(section);
+                });
+            }
+        });
+
+        // Mobile sidebar functionality
+        const mobileSidebarBtn = document.getElementById('mobileSidebarBtn');
+        const mobileSidebar = document.getElementById('mobileSidebar');
+        const mobileSidebarOverlay = document.getElementById('mobileSidebarOverlay');
+        const closeMobileSidebarBtn = document.getElementById('closeMobileSidebar');
+
+        if (mobileSidebarBtn && mobileSidebar && mobileSidebarOverlay) {
+            // Open mobile sidebar
+            mobileSidebarBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                mobileSidebar.classList.remove('hidden');
+                mobileSidebarOverlay.classList.remove('hidden');
+            });
+
+            // Close mobile sidebar when clicking overlay
+            mobileSidebarOverlay.addEventListener('click', function() {
+                mobileSidebar.classList.add('hidden');
+                mobileSidebarOverlay.classList.add('hidden');
+            });
+
+            // Close mobile sidebar when clicking close button
+            if (closeMobileSidebarBtn) {
+                closeMobileSidebarBtn.addEventListener('click', function() {
+                    mobileSidebar.classList.add('hidden');
+                    mobileSidebarOverlay.classList.add('hidden');
+                });
+            }
+        }
+    });
+    </script>
 
     <!-- User Dropdown Script -->
     <script>
@@ -178,11 +533,17 @@
             dateInputs.forEach(function(input) {
                 const picker = flatpickr(input, {
                     dateFormat: 'Y-m-d',
-                    minDate: 'today',
                     allowInput: false,
-                    theme: 'light',
                     disableMobile: true,
                     clickOpens: true,
+                    inline: false,
+                    static: true,
+                    animate: true,
+                    monthSelectorType: 'static',
+                    prevArrow:
+                        '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>',
+                    nextArrow:
+                        '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>',
                     onChange: function(selectedDates, dateStr, instance) {
                         // If end date exists and is before start date, update it
                         if (instance.element.id === 'start_date' && selectedDates.length > 0) {
