@@ -2,9 +2,13 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FreelanceProfileController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\OrderDashboardController;
+use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TechStackController;
 use App\Http\Controllers\UserController;
@@ -21,14 +25,28 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('/projects', [ProjectController::class, 'index'])->name('projects.index');
-    Route::get('/projects-data', [ProjectController::class, 'getProjects'])->name('projects.data');
-    Route::get('/projects/create', [ProjectController::class, 'create'])->name('projects.create');
-    Route::post('/projects', [ProjectController::class, 'store'])->name('projects.store');
-    Route::get('/projects/{project}', [ProjectController::class, 'show'])->name('projects.show');
-    Route::get('/projects/{project}/edit', [ProjectController::class, 'edit'])->name('projects.edit');
-    Route::patch('/projects/{project}', [ProjectController::class, 'update'])->name('projects.update');
-    Route::delete('/projects/{project}', [ProjectController::class, 'destroy'])->name('projects.destroy');
+    // Orders routes
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/dashboard', [OrderDashboardController::class, 'index'])->name('orders.dashboard');
+    Route::get('/orders/dashboard/chart-data', [OrderDashboardController::class, 'getChartData'])->name('orders.dashboard.chart-data');
+    Route::get('/orders-data', [OrderController::class, 'getOrders'])->name('orders.data');
+    Route::post('/orders/bulk-action', [OrderController::class, 'bulkAction'])->name('orders.bulk-action');
+    Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');
+    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::get('/orders/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit');
+    Route::patch('/orders/{order}', [OrderController::class, 'update'])->name('orders.update');
+    Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
+
+    // Tasks routes
+    Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
+    Route::get('/tasks-data', [TaskController::class, 'getTasks'])->name('tasks.data');
+    Route::get('/tasks/create', [TaskController::class, 'create'])->name('tasks.create');
+    Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
+    Route::get('/tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');
+    Route::get('/tasks/{task}/edit', [TaskController::class, 'edit'])->name('tasks.edit');
+    Route::patch('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
+    Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
 
     // Teams routes
     Route::get('/teams', [TeamController::class, 'index'])->name('teams.index');
@@ -54,6 +72,32 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/tech-stacks/{id}/add-members', [TechStackController::class, 'addMembers'])->name('tech-stacks.add-members');
     Route::delete('/tech-stacks/{id}/members/{user_id}', [TechStackController::class, 'removeMember'])->name('tech-stacks.remove-member');
 
+    // Portfolios routes
+    Route::prefix('portfolios')->name('portfolios.')->group(function () {
+        Route::get('/', [PortfolioController::class, 'index'])->name('index');
+        Route::get('/my', [PortfolioController::class, 'myPortfolios'])->name('my');
+        Route::get('/create', [PortfolioController::class, 'create'])->name('create');
+        Route::post('/', [PortfolioController::class, 'store'])->name('store');
+        Route::get('/{portfolio}', [PortfolioController::class, 'show'])->name('show');
+        Route::get('/{portfolio}/edit', [PortfolioController::class, 'edit'])->name('edit');
+        Route::patch('/{portfolio}', [PortfolioController::class, 'update'])->name('update');
+        Route::delete('/{portfolio}', [PortfolioController::class, 'destroy'])->name('destroy');
+        Route::patch('/{portfolio}/toggle-status', [PortfolioController::class, 'toggleStatus'])->name('toggle-status');
+        Route::patch('/{portfolio}/toggle-featured', [PortfolioController::class, 'toggleFeatured'])->name('toggle-featured');
+    });
+
+    // Freelance Profiles Routes
+    Route::prefix('freelance-profiles')->name('freelance-profiles.')->group(function () {
+        Route::get('/', [FreelanceProfileController::class, 'index'])->name('index');
+        Route::get('/create', [FreelanceProfileController::class, 'create'])->name('create');
+        Route::post('/', [FreelanceProfileController::class, 'store'])->name('store');
+        Route::get('/{profile}', [FreelanceProfileController::class, 'show'])->name('show');
+        Route::get('/{profile}/edit', [FreelanceProfileController::class, 'edit'])->name('edit');
+        Route::patch('/{profile}', [FreelanceProfileController::class, 'update'])->name('update');
+        Route::patch('/{profile}/toggle-status', [FreelanceProfileController::class, 'toggleStatus'])->name('toggle-status');
+        Route::delete('/{profile}', [FreelanceProfileController::class, 'destroy'])->name('destroy');
+    });
+
     // Users Management Routes - Only for users with admin role
     Route::middleware(['auth', 'role:admin'])->prefix('users')->name('users.')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');
@@ -77,14 +121,16 @@ Route::middleware(['auth'])->group(function () {
 // Admin Routes - Only for users with admin role
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
-    Route::get('/users', [AdminController::class, 'users'])->name('users');
-    Route::get('/users/{user}/edit', [AdminController::class, 'editUser'])->name('users.edit');
-    Route::patch('/users/{user}', [AdminController::class, 'updateUser'])->name('users.update');
-    Route::delete('/users/{user}', [AdminController::class, 'deleteUser'])->name('users.delete');
-
     Route::get('/roles', [AdminController::class, 'roles'])->name('roles');
+    Route::get('/roles/create', [AdminController::class, 'createRole'])->name('roles.create');
+    Route::post('/roles', [AdminController::class, 'storeRole'])->name('roles.store');
     Route::get('/roles/{roleName}/edit', [AdminController::class, 'editRole'])->name('roles.edit');
     Route::patch('/roles/{roleName}', [AdminController::class, 'updateRole'])->name('roles.update');
+    Route::delete('/roles/{roleName}', [AdminController::class, 'deleteRole'])->name('roles.delete');
+    Route::post('/roles/{roleName}/users/{user}', [AdminController::class, 'assignUserToRole'])->name('roles.assignUser');
+    Route::delete('/roles/{roleName}/users/{user}', [AdminController::class, 'removeUserFromRole'])->name('roles.removeUser');
+    Route::get('/users/{user}/roles', [AdminController::class, 'editUserRoles'])->name('users.roles');
+    Route::patch('/users/{user}/roles', [AdminController::class, 'updateUserRoles'])->name('users.roles.update');
 });
 
 // Settings Routes - Only for users with admin role

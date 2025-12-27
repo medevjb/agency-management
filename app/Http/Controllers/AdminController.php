@@ -13,22 +13,26 @@ use Spatie\Permission\Models\Role;
 
 class AdminController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(['auth', 'role:admin']);
-    }
-
     /**
      * Display the admin dashboard.
      */
     public function dashboard()
     {
+        $now = now();
+        $thisMonth = $now->startOfMonth();
+
         $stats = [
             'total_users' => User::count(),
             'total_projects' => Project::count(),
             'total_tasks' => Task::count(),
             'total_teams' => Team::count(),
             'total_tech_stacks' => TechStack::count(),
+            'new_users_this_month' => User::where('created_at', '>=', $thisMonth)->count(),
+            'active_projects' => Project::where('status', 'in-progress')->count(),
+            'completed_projects' => Project::where('status', 'completed')->count(),
+            'completed_tasks' => Task::where('status', 'completed')->count(),
+            'total_team_members' => User::whereNotNull('team_id')->count(),
+            'pending_jobs' => 0, // Can be updated if queue jobs are tracked
         ];
 
         $roleStats = Role::withCount('users')->get()->mapWithKeys(function ($role) {
@@ -46,81 +50,6 @@ class AdminController extends Controller
     }
 
     /**
-     * Display users management page.
-     */
-    public function users(Request $request)
-    {
-        $users = User::with(['team', 'techStack', 'roles'])
-            ->when($request->search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
-            })
-            ->when($request->role, function ($query, $role) {
-                $query->where('role', $role);
-            })
-            ->when($request->team_id, function ($query, $teamId) {
-                $query->where('team_id', $teamId);
-            })
-            ->latest()
-            ->paginate(15);
-
-        $teams = Team::all();
-        $roles = Role::all();
-
-        return view('admin.users', compact('users', 'teams', 'roles'));
-    }
-
-    /**
-     * Show the form for editing a user.
-     */
-    public function editUser(User $user)
-    {
-        $teams = Team::all();
-        $techStacks = TechStack::all();
-        $roles = Role::all();
-
-        return view('admin.edit-user', compact('user', 'teams', 'techStacks', 'roles'));
-    }
-
-    /**
-     * Update the specified user.
-     */
-    public function updateUser(Request $request, User $user)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'role' => 'required|exists:roles,name',
-            'team_id' => 'nullable|exists:teams,id',
-            'tech_stack_id' => 'nullable|exists:tech_stacks,id',
-        ]);
-
-        $user->update($request->all());
-
-        // Sync Laravel Permission role
-        $user->syncRoles([$request->role]);
-
-        return redirect()->route('admin.users')
-            ->with('success', 'User updated successfully.');
-    }
-
-    /**
-     * Remove the specified user.
-     */
-    public function deleteUser(User $user)
-    {
-        if ($user->id === auth()->id()) {
-            return redirect()->route('admin.users')
-                ->with('error', 'You cannot delete your own account.');
-        }
-
-        $user->delete();
-
-        return redirect()->route('admin.users')
-            ->with('success', 'User deleted successfully.');
-    }
-
-    /**
      * Display roles and permissions management page.
      */
     public function roles()
@@ -131,6 +60,38 @@ class AdminController extends Controller
         });
 
         return view('admin.roles', compact('roles', 'permissions'));
+    }
+
+    /**
+     * Show the form for creating a new role.
+     */
+    public function createRole()
+    {
+        $permissions = Permission::all()->groupBy(function ($permission) {
+            return explode(' ', $permission->name)[0];
+        });
+
+        return view('admin.create-role', compact('permissions'));
+    }
+
+    /**
+     * Store a newly created role.
+     */
+    public function storeRole(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|unique:roles,name',
+            'permissions' => 'array',
+            'permissions.*' => 'exists:permissions,id',
+        ]);
+
+        $role = Role::create(['name' => $request->name]);
+        if ($request->has('permissions')) {
+            $role->syncPermissions($request->permissions);
+        }
+
+        return redirect()->route('admin.roles')
+            ->with('success', 'Role created successfully.');
     }
 
     /**
@@ -163,5 +124,101 @@ class AdminController extends Controller
 
         return redirect()->route('admin.roles')
             ->with('success', 'Role permissions updated successfully.');
+    }
+
+    /**
+     * Delete the specified role.
+     */
+    public function deleteRole(string $roleName)
+    {
+        $role = Role::where('name', $roleName)->firstOrFail();
+
+        if ($role->name === 'admin') {
+            return redirect()->route('admin.roles')
+                ->with('error', 'Cannot delete the admin role.');
+        }
+
+        $role->delete();
+
+        return redirect()->route('admin.roles')
+            ->with('success', 'Role deleted successfully.');
+    }
+
+    /**
+     * Show the form for editing user roles.
+     */
+    public function editUserRoles(User $user)
+    {
+        $roles = Role::all();
+        $userRoles = $user->roles->pluck('name')->toArray();
+
+        return view('admin.edit-user-roles', compact('user', 'roles', 'userRoles'));
+    }
+
+    /**
+     * Update the user's roles.
+     */
+    public function updateUserRoles(Request $request, User $user)
+    {
+        $request->validate([
+            'roles' => 'array',
+            'roles.*' => 'exists:roles,name',
+        ]);
+
+        $user->syncRoles($request->roles ?? []);
+
+        // Update primary role column for backward compatibility
+        if (! empty($request->roles)) {
+            $user->update(['role' => $request->roles[0]]);
+        } else {
+            $user->update(['role' => null]);
+        }
+
+        return redirect()->route('users.index')
+            ->with('success', 'User roles updated successfully.');
+    }
+
+    /**
+     * Assign a user to a role.
+     */
+    public function assignUserToRole(Request $request, string $roleName, User $user)
+    {
+        $role = Role::where('name', $roleName)->firstOrFail();
+
+        if ($user->hasRole($role->name)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User already has this role.',
+            ], 400);
+        }
+
+        $user->assignRole($role);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User assigned to role successfully.',
+        ]);
+    }
+
+    /**
+     * Remove a user from a role.
+     */
+    public function removeUserFromRole(string $roleName, User $user)
+    {
+        $role = Role::where('name', $roleName)->firstOrFail();
+
+        if (! $user->hasRole($role->name)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User does not have this role.',
+            ], 400);
+        }
+
+        $user->removeRole($role);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User removed from role successfully.',
+        ]);
     }
 }

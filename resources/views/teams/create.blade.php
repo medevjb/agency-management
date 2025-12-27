@@ -628,16 +628,14 @@ function submitTeamForm() {
     submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating Team...';
     submitButton.disabled = true;
 
-    // Submit via AJAX for better UX
-    fetch(form.action, {
-        method: 'POST',
-        body: formData,
+    // Submit via Axios for better UX
+    axios.post(form.action, formData, {
         headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            'Content-Type': 'multipart/form-data'
         }
     })
-    .then(response => response.text())
-    .then(html => {
+    .then(response => {
+        const html = response.data;
         // Check if redirected (success) or returned validation errors
         if (html.includes('teams.index')) {
             showToast('Team created successfully!', 'success');

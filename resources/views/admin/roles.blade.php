@@ -8,6 +8,9 @@
             <h1 class="text-2xl font-bold text-gray-900">Admin - Roles & Permissions</h1>
             <p class="text-gray-600 mt-1">Manage user roles and system permissions</p>
         </div>
+        <a href="{{ route('admin.roles.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors">
+            <i class="fas fa-plus mr-2"></i>Create Role
+        </a>
     </div>
 
     <!-- Quick Stats -->

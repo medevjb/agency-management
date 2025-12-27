@@ -169,18 +169,13 @@ document.getElementById('bulkImportForm').addEventListener('submit', function(e)
     submitButton.disabled = true;
     submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i>Importing...';
 
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-    fetch('/users/bulk-import', {
-        method: 'POST',
+    axios.post('/users/bulk-import', formData, {
         headers: {
-            'X-CSRF-TOKEN': csrfToken,
-            'Accept': 'application/json',
-        },
-        body: formData
+            'Content-Type': 'multipart/form-data'
+        }
     })
-    .then(response => response.json())
-    .then(data => {
+    .then(response => {
+        const data = response.data;
         if (data.success) {
             showImportResults(data);
             if (data.errors.length === 0 && data.duplicates.length === 0) {

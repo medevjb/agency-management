@@ -151,6 +151,9 @@ class UserController extends Controller
                     <a href="'.route('users.show', $user->id).'" class="group inline-flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-indigo-100 to-indigo-200 text-indigo-600 hover:from-indigo-200 hover:to-indigo-300 transition-all duration-200 hover:scale-110 shadow-sm" title="View">
                         <i class="fas fa-eye"></i>
                     </a>
+                    <a href="'.route('admin.users.roles', $user->id).'" class="group inline-flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-purple-100 to-purple-200 text-purple-600 hover:from-purple-200 hover:to-purple-300 transition-all duration-200 hover:scale-110 shadow-sm" title="Manage Roles">
+                        <i class="fas fa-user-tag"></i>
+                    </a>
                     <a href="'.route('users.edit', $user->id).'" class="group inline-flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-emerald-100 to-emerald-200 text-emerald-600 hover:from-emerald-200 hover:to-emerald-300 transition-all duration-200 hover:scale-110 shadow-sm" title="Edit">
                         <i class="fas fa-edit"></i>
                     </a>

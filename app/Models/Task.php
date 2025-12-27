@@ -18,7 +18,7 @@ class Task extends Model
         'due_date',
         'estimated_hours',
         'actual_hours',
-        'project_id',
+        'order_id',
         'assigned_to',
         'created_by',
     ];
@@ -29,9 +29,9 @@ class Task extends Model
         'actual_hours' => 'integer',
     ];
 
-    public function project(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function order(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(Project::class);
+        return $this->belongsTo(Order::class);
     }
 
     public function assignedTo(): \Illuminate\Database\Eloquent\Relations\BelongsTo

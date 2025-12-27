@@ -214,19 +214,12 @@ function deleteTechStack(techStackId) {
         showLoaderOnConfirm: true
     }).then((result) => {
         if (result.isConfirmed) {
-            fetch(`/tech-stacks/${techStackId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json',
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
+            axios.delete(`/tech-stacks/${techStackId}`)
+            .then(response => {
+                if (response.data.success) {
                     Swal.fire({
                         title: 'Deleted!',
-                        text: data.message || 'Tech stack has been deleted successfully.',
+                        text: response.data.message || 'Tech stack has been deleted successfully.',
                         icon: 'success',
                         timer: 2000,
                         timerProgressBar: true,

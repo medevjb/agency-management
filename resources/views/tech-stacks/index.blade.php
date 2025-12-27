@@ -193,17 +193,11 @@ document.addEventListener('DOMContentLoaded', function() {
             </tr>
         `;
 
-        $.ajax({
-            url: '{{ route('tech-stacks.data') }}',
-            type: 'GET',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            success: function(response) {
+        axios.get('{{ route('tech-stacks.data') }}')
+            .then(response => {
                 console.log('Response from server:', response);
-                if (response.data && Array.isArray(response.data)) {
-                    techStacksData = response.data;
+                if (response.data.data && Array.isArray(response.data.data)) {
+                    techStacksData = response.data.data;
                     filteredData = [...techStacksData];
                     console.log('Tech stacks data loaded:', techStacksData);
                     populateLeaderFilter();
@@ -218,9 +212,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         </tr>
                     `;
                 }
-            },
-            error: function(xhr) {
-                console.error('Error loading tech stacks:', xhr);
+            })
+            .catch(error => {
+                console.error('Error loading tech stacks:', error);
                 const tbody = document.getElementById('tech-stacks-tbody');
                 tbody.innerHTML = `
                     <tr>
@@ -229,8 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </td>
                     </tr>
                 `;
-            }
-        });
+            });
     }
 
     function renderTechStacks() {
@@ -442,17 +435,12 @@ document.addEventListener('DOMContentLoaded', function() {
             showLoaderOnConfirm: true
         }).then((result) => {
             if (result.isConfirmed) {
-                $.ajax({
-                    url: '/tech-stacks/' + techStackId,
-                    type: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        if (response.success) {
+                axios.delete('/tech-stacks/' + techStackId)
+                    .then(response => {
+                        if (response.data.success) {
                             Swal.fire({
                                 title: 'Deleted!',
-                                text: response.message || 'Tech stack has been deleted successfully.',
+                                text: response.data.message || 'Tech stack has been deleted successfully.',
                                 icon: 'success',
                                 timer: 2000,
                                 timerProgressBar: true,
@@ -462,22 +450,20 @@ document.addEventListener('DOMContentLoaded', function() {
                         } else {
                             Swal.fire({
                                 title: 'Error!',
-                                text: response.message || 'Failed to delete tech stack',
+                                text: response.data.message || 'Failed to delete tech stack',
                                 icon: 'error',
                                 confirmButtonColor: '#3B82F6'
                             });
                         }
-                    },
-                    error: function(xhr) {
-                        const response = xhr.responseJSON;
+                    })
+                    .catch(error => {
                         Swal.fire({
                             title: 'Error!',
-                            text: response.message || 'An error occurred while deleting the tech stack.',
+                            text: error.response?.data?.message || 'An error occurred while deleting the tech stack.',
                             icon: 'error',
                             confirmButtonColor: '#3B82F6'
                         });
-                    }
-                });
+                    });
             }
         });
     };

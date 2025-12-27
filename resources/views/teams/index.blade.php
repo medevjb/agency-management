@@ -292,17 +292,11 @@ document.addEventListener('DOMContentLoaded', function() {
             </tr>
         `;
 
-        $.ajax({
-            url: '{{ route('teams.data') }}',
-            type: 'GET',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            success: function(response) {
+        axios.get('{{ route('teams.data') }}')
+            .then(response => {
                 console.log('Response from server:', response);
-                if (response.data && Array.isArray(response.data)) {
-                    teamsData = response.data;
+                if (response.data.data && Array.isArray(response.data.data)) {
+                    teamsData = response.data.data;
                     filteredData = [...teamsData];
                     console.log('Teams data loaded:', teamsData);
                     populateLeaderFilter();
@@ -324,9 +318,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         </tr>
                     `;
                 }
-            },
-            error: function(xhr) {
-                console.error('Error loading teams:', xhr);
+            })
+            .catch(error => {
+                console.error('Error loading teams:', error);
                 const tbody = document.getElementById('teams-tbody');
                 tbody.innerHTML = `
                     <tr>
@@ -612,17 +606,12 @@ document.addEventListener('DOMContentLoaded', function() {
             showLoaderOnConfirm: true
         }).then((result) => {
             if (result.isConfirmed) {
-                $.ajax({
-                    url: '/teams/' + teamId,
-                    type: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        if (response.success) {
+                axios.delete('/teams/' + teamId)
+                    .then(response => {
+                        if (response.data.success) {
                             Swal.fire({
                                 title: 'Deleted!',
-                                text: response.message || 'Team has been deleted successfully.',
+                                text: response.data.message || 'Team has been deleted successfully.',
                                 icon: 'success',
                                 timer: 2000,
                                 timerProgressBar: true,
@@ -632,22 +621,20 @@ document.addEventListener('DOMContentLoaded', function() {
                         } else {
                             Swal.fire({
                                 title: 'Error!',
-                                text: response.message || 'Failed to delete team',
+                                text: response.data.message || 'Failed to delete team',
                                 icon: 'error',
                                 confirmButtonColor: '#3B82F6'
                             });
                         }
-                    },
-                    error: function(xhr) {
-                        const response = xhr.responseJSON;
+                    })
+                    .catch(error => {
                         Swal.fire({
                             title: 'Error!',
-                            text: response.message || 'An error occurred while deleting the team.',
+                            text: error.response?.data?.message || 'An error occurred while deleting the team.',
                             icon: 'error',
                             confirmButtonColor: '#3B82F6'
                         });
-                    }
-                });
+                    });
             }
         });
     };

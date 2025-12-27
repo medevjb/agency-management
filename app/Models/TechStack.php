@@ -30,4 +30,9 @@ class TechStack extends Model
     {
         return $this->hasMany(Project::class);
     }
+
+    public function portfolios(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Portfolio::class);
+    }
 }

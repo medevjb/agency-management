@@ -691,7 +691,7 @@
 
                         // Add action buttons above the table
                         const actionButtons = `
-                            <div class="flex flex-wrap items-center justify-end gap-2 mb-4">
+                            <div class="flex flex-wrap items-center justify-end gap-2 mb-4 createbutton">
                                 <a href="{{ route('users.bulk-import.form') }}"
                                     class="inline-flex items-center px-3 py-1.5 h-8 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white text-sm font-medium rounded-lg shadow hover:shadow-lg transform transition-all duration-200 hover:scale-105 whitespace-nowrap">
                                     <i class="fas fa-file-import mr-1.5 text-xs"></i>
@@ -780,22 +780,13 @@
                                 cancelButtonText: 'Cancel'
                             }).then((result) => {
                                 if (result.isConfirmed) {
-                                    fetch(`/users/${userId}/toggle-status`, {
-                                            method: 'POST',
-                                            headers: {
-                                                'X-CSRF-TOKEN': document.querySelector(
-                                                    'meta[name="csrf-token"]').getAttribute(
-                                                    'content'),
-                                                'Content-Type': 'application/json'
-                                            }
-                                        })
-                                        .then(response => response.json())
-                                        .then(data => {
-                                            if (data.success) {
+                                    axios.post(`/users/${userId}/toggle-status`)
+                                        .then(response => {
+                                            if (response.data.success) {
                                                 Swal.fire({
                                                     icon: 'success',
                                                     title: 'Success!',
-                                                    text: data.message,
+                                                    text: response.data.message,
                                                     timer: 2000,
                                                     showConfirmButton: false
                                                 });
@@ -805,7 +796,7 @@
                                                 Swal.fire({
                                                     icon: 'error',
                                                     title: 'Error!',
-                                                    text: data.message ||
+                                                    text: response.data.message ||
                                                         'Failed to change user status.',
                                                     confirmButtonColor: '#ef4444'
                                                 });

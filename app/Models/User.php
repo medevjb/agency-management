@@ -11,7 +11,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, HasRoles, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -20,6 +20,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'employee_id',
+        'salesperson',
         'name',
         'email',
         'phone',
@@ -119,5 +120,22 @@ class User extends Authenticatable
     public function assignedTasks(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Task::class, 'assigned_to');
+    }
+
+    public function portfolios(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Portfolio::class);
+    }
+
+    public function profiles(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Profile::class);
+    }
+
+    public function orders(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Order::class, 'order_user')
+            ->withPivot('role')
+            ->withTimestamps();
     }
 }

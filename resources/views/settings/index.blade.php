@@ -43,9 +43,7 @@
                                     'task' => 'tasks',
                                     'team' => 'users',
                                     'storage' => 'hdd',
-                                    'api' => 'code',
                                     'maintenance' => 'tools',
-                                    'appearance' => 'palette',
                                     default => 'cog'
                                 };
                             @endphp
@@ -77,9 +75,7 @@
                                 'task' => 'tasks',
                                 'team' => 'users',
                                 'storage' => 'hdd',
-                                'api' => 'code',
                                 'maintenance' => 'tools',
-                                'appearance' => 'palette',
                                 default => 'cog'
                             };
                         @endphp
