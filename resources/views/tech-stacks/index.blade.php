@@ -1,441 +1,594 @@
 @extends('layouts.dashboard')
 
+@push('styles')
+    <style>
+        /* Custom DataTables Styling */
+        .dataTables_wrapper {
+            padding: 1.5rem;
+        }
+
+        .dataTables_wrapper .dataTables_length {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .dataTables_wrapper .dataTables_length label {
+            color: #374151;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .dataTables_wrapper .dataTables_length select {
+            padding: 0.75rem 2.5rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            background-color: white;
+            color: #374151;
+            font-size: 0.875rem;
+            font-weight: 500;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1rem 1rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .dataTables_wrapper .dataTables_length select:hover {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .dataTables_wrapper .dataTables_length select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .dataTables_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .dataTables_wrapper .dataTables_filter label {
+            color: #374151;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .dataTables_wrapper .dataTables_filter input {
+            padding: 0.75rem 2.5rem 0.75rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            background-color: white;
+            color: #374151;
+            font-size: 0.875rem;
+            font-weight: 500;
+            width: 300px;
+            transition: all 0.2s;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'%3e%3ccircle cx='11' cy='11' r='8' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3e%3cpath d='m21 21-4.35-4.35' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: left 0.75rem center;
+            background-size: 1rem 1rem;
+            padding-left: 2.5rem;
+        }
+
+        .dataTables_wrapper .dataTables_filter input::placeholder {
+            color: #9ca3af;
+            font-weight: 400;
+        }
+
+        .dataTables_wrapper .dataTables_filter input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'%3e%3ccircle cx='11' cy='11' r='8' stroke='%23636f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3e%3cpath d='m21 21-4.35-4.35' stroke='%23636f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
+            background-color: #f9fafb;
+        }
+
+        .dataTables_wrapper .dataTables_info {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .dataTables_wrapper .dataTables_paginate {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 0;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            padding: 0.75rem 1rem;
+            margin: 0;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            background-color: white;
+            color: #6b7280;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 3rem;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+            border-color: #d1d5db;
+            color: #374151;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: linear-gradient(135deg, #6366f1 0%, #5558dd 100%);
+            border-color: #6366f1;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+            background: linear-gradient(135deg, #5558dd 0%, #4c51bf 100%);
+            border-color: #4c51bf;
+            box-shadow: 0 6px 16px rgba(85, 83, 221, 0.4);
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.first,
+        .dataTables_wrapper .dataTables_paginate .paginate_button.last {
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.previous,
+        .dataTables_wrapper .dataTables_paginate .paginate_button.next {
+            padding: 0.75rem 1.25rem;
+            font-weight: 600;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.ellipsis {
+            padding: 0.75rem 1rem;
+            background: transparent;
+            border: none;
+            color: #6b7280;
+            cursor: default;
+            box-shadow: none;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.ellipsis:hover {
+            background: transparent;
+            border: none;
+            color: #6b7280;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover {
+            background: white;
+            border-color: #e5e7eb;
+            color: #6b7280;
+            transform: none;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Table styling */
+        .display.dataTable {
+            border-collapse: collapse;
+        }
+
+        .display.dataTable th {
+            background-color: #f9fafb;
+            border-bottom: 2px solid #e5e7eb;
+            color: #374151;
+            font-weight: 600;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+
+        .display.dataTable td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            color: #374151;
+            font-size: 0.875rem;
+        }
+
+        .display.dataTable tbody tr:hover {
+            background-color: #f9fafb;
+        }
+
+        /* Processing overlay */
+        .dataTables_processing {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem 2rem;
+            font-weight: 600;
+            color: #374151;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+@endpush
+
 @section('content')
-<div class="p-6">
+<div class="pt-4 sm:p-6 lg:p-8 lg:pb-3">
     <!-- Page Header -->
-    <div class="mb-8 flex justify-between items-center">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-900">Tech Stacks</h1>
-            <p class="text-gray-600 mt-2">Manage and track all your technology stacks</p>
+    <div class="mb-4">
+        <div class="mb-4">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Tech Stacks</h1>
+            <p class="text-gray-600 text-lg">Manage and track all your technology stacks</p>
         </div>
-        @can('manage tech stacks')
-            <a href="{{ route('tech-stacks.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200">
-                <i class="fas fa-plus mr-2"></i>New Tech Stack
-            </a>
-        @endcan
     </div>
 
-    <!-- Tech Stacks DataTable -->
-    <div class="bg-white rounded-lg shadow-md overflow-hidden">
-        <div class="p-4 border-b border-gray-200">
-            <div class="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
-                <!-- Title Section -->
+    <!-- Filters Section -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-4 mb-6">
+        <form id="filterForm" class="space-y-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <!-- Leader Filter -->
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-900">Tech Stacks List</h3>
-                    <div class="flex flex-wrap gap-4 items-center mt-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Stack Leader</label>
-                            <select id="leaderFilter" class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <option value="">All Leaders</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Member Count</label>
-                            <select id="memberCountFilter" class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <option value="">All Counts</option>
-                                <option value="1-3">1-3 Members</option>
-                                <option value="4-6">4-6 Members</option>
-                                <option value="7+">7+ Members</option>
-                            </select>
-                        </div>
-                        <div class="flex-1 min-w-64">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-                            <div class="relative">
-                                <input type="text" id="searchInput" placeholder="Search tech stacks by name or leader..."
-                                       class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fas fa-search text-gray-400 text-sm"></i>
-                                </div>
-                            </div>
+                    <label for="leaderFilter" class="block text-xs font-semibold text-gray-700 mb-1">
+                        <i class="fas fa-user-tie mr-1 text-indigo-500"></i>Stack Leader
+                    </label>
+                    <div class="relative">
+                        <select id="leaderFilter" name="leader"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white appearance-none transition-all duration-200 text-sm">
+                            <option value="">All Leaders</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
                         </div>
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="flex items-center space-x-2 lg:mt-6">
-                    <button id="resetFilters" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
-                        <i class="fas fa-redo mr-2"></i>Reset
-                    </button>
-                    <button id="refreshBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
-                        <i class="fas fa-sync-alt mr-2"></i>Refresh
+                <!-- Member Count Filter -->
+                <div>
+                    <label for="memberCountFilter" class="block text-xs font-semibold text-gray-700 mb-1">
+                        <i class="fas fa-users mr-1 text-indigo-500"></i>Members
+                    </label>
+                    <div class="relative">
+                        <select id="memberCountFilter" name="member_count"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white appearance-none transition-all duration-200 text-sm">
+                            <option value="">All Counts</option>
+                            <option value="1-3">1-3 Members</option>
+                            <option value="4-6">4-6 Members</option>
+                            <option value="7+">7+ Members</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex items-end space-x-2">
+                    <button type="button" onclick="clearFilters()"
+                            class="flex-1 inline-flex items-center justify-center px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-all duration-200 text-sm">
+                        <i class="fas fa-times mr-1"></i>
+                        Clear
                     </button>
                 </div>
             </div>
-        </div>
+        </form>
+    </div>
 
+    <!-- Tech Stacks Table -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden datatableprimary mb-5">
         <div class="overflow-x-auto">
-            <table id="tech-stacks-table" class="table table-striped" style="width:100%">
-                <thead class="bg-gray-50">
+            <table class="display w-full" id="techStacksTable" style="width:100%">
+                <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tech Stack</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stack Leader</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Members</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Projects</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tech Stack</th>
+                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stack Leader</th>
+                        <th class="px-4 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Members</th>
+                        <th class="px-4 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Projects</th>
+                        <th class="px-4 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
-                <tbody id="tech-stacks-tbody">
-                    <tr>
-                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">
-                            <div class="flex items-center justify-center">
-                                <svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                Loading tech stacks...
-                            </div>
-                        </td>
-                    </tr>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <!-- Table rows will be populated by DataTables -->
                 </tbody>
             </table>
         </div>
     </div>
 </div>
 
-@push('styles')
-<style>
-    #tech-stacks-table {
-        border-collapse: separate;
-        border-spacing: 0;
-    }
-
-    #tech-stacks-table th {
-        border-top: none !important;
-        border-bottom: 2px solid #e5e7eb !important;
-        background-color: #f9fafb !important;
-        font-weight: 600 !important;
-        color: #374151 !important;
-    }
-
-    #tech-stacks-table tbody tr {
-        transition: all 0.15s ease-in-out;
-    }
-
-    #tech-stacks-table tbody tr:hover {
-        background-color: #f3f4f6;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    }
-
-    #tech-stacks-table tbody tr:last-child td {
-        border-bottom: none;
-    }
-
-    #tech-stacks-table td {
-        border-bottom: 1px solid #f3f4f6;
-        vertical-align: middle;
-    }
-
-    .truncate {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .min-w-0 {
-        min-width: 0;
-    }
-</style>
-@endpush
-
 @push('scripts')
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const $ = window.jQuery;
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Initializing tech stacks DataTable...');
 
-    if (!$) {
-        console.error('jQuery not loaded');
-        return;
-    }
+            // Check if jQuery is loaded, if not load from CDN
+            if (typeof $ === 'undefined') {
+                console.log('Loading jQuery from CDN...');
+                const script = document.createElement('script');
+                script.src = 'https://code.jquery.com/jquery-3.6.0.min.js';
+                script.onload = initializeDataTable;
+                document.head.appendChild(script);
+            } else {
+                initializeDataTable();
+            }
+        });
 
-    let techStacksData = [];
-    let filteredData = [];
-    let allLeaders = [];
+        function initializeDataTable() {
+            // Load DataTables CSS if not already loaded
+            if (!document.querySelector('link[href*="dataTables"]')) {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = 'https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css';
+                document.head.appendChild(link);
+            }
 
-    // Load initial data
-    loadTechStacks();
-
-    // Event listeners
-    document.getElementById('searchInput').addEventListener('keyup', function() {
-        filterTechStacks();
-    });
-
-    
-    document.getElementById('resetFilters').addEventListener('click', function() {
-        resetFilters();
-    });
-
-    document.getElementById('leaderFilter').addEventListener('change', function() {
-        filterTechStacks();
-    });
-
-    document.getElementById('memberCountFilter').addEventListener('change', function() {
-        filterTechStacks();
-    });
-
-    document.getElementById('refreshBtn').addEventListener('click', function() {
-        loadTechStacks();
-    });
-
-    function loadTechStacks() {
-        const tbody = document.getElementById('tech-stacks-tbody');
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="5" class="px-6 py-4 text-center text-gray-500">
-                    <div class="flex items-center justify-center">
-                        <svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Loading tech stacks...
-                    </div>
-                </td>
-            </tr>
-        `;
-
-        axios.get('{{ route('tech-stacks.data') }}')
-            .then(response => {
-                console.log('Response from server:', response);
-                if (response.data.data && Array.isArray(response.data.data)) {
-                    techStacksData = response.data.data;
-                    filteredData = [...techStacksData];
-                    console.log('Tech stacks data loaded:', techStacksData);
-                    populateLeaderFilter();
-                    renderTechStacks();
-                } else {
-                    console.log('Invalid response format:', response);
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="5" class="px-6 py-4 text-center text-red-500">
-                                Failed to load tech stacks data
-                            </td>
-                        </tr>
-                    `;
-                }
-            })
-            .catch(error => {
-                console.error('Error loading tech stacks:', error);
-                const tbody = document.getElementById('tech-stacks-tbody');
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="5" class="px-6 py-4 text-center text-red-500">
-                            Error loading tech stacks. Please refresh the page.
-                        </td>
-                    </tr>
-                `;
-            });
-    }
-
-    function renderTechStacks() {
-        const tbody = document.getElementById('tech-stacks-tbody');
-
-        if (filteredData.length === 0) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="5" class="px-6 py-4 text-center text-gray-500">
-                        No tech stacks found
-                    </td>
-                </tr>
-            `;
-            return;
+            // Load DataTables JS if not available
+            if (typeof $.fn.DataTable === 'undefined') {
+                console.log('Loading DataTables from CDN...');
+                const script = document.createElement('script');
+                script.src = 'https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js';
+                script.onload = createDataTable;
+                document.head.appendChild(script);
+            } else {
+                createDataTable();
+            }
         }
 
-        tbody.innerHTML = filteredData.map(techStack => {
-            console.log('Rendering tech stack:', techStack);
+        function createDataTable() {
+            console.log('Creating DataTable...');
 
-            // Handle stack leader data structure
-            let stackLeader = null;
-            if (techStack.stack_leader) {
-                if (typeof techStack.stack_leader === 'object') {
-                    stackLeader = techStack.stack_leader;
-                } else if (typeof techStack.stack_leader === 'string') {
-                    // Parse the string data if needed
-                    const parts = techStack.stack_leader.split(' ');
-                    stackLeader = {
-                        name: parts[0] || 'Unknown',
-                        employee_id: parts[1] || 'N/A'
-                    };
-                }
-            }
+            // Initialize DataTable
+            $('#techStacksTable').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: '{{ route('tech-stacks.data') }}',
+                    type: 'GET',
+                    data: function(d) {
+                        // Add custom filters from form
+                        d.leader = $('#leaderFilter').val();
+                        d.member_count = $('#memberCountFilter').val();
+                    },
+                    dataSrc: function(json) {
+                        console.log('Data received:', json);
 
-            // Handle member and project counts
-            const membersParts = techStack.members_count ? techStack.members_count.split(' ') : ['0', 'active'];
-            const projectsParts = techStack.projects_count ? techStack.projects_count.split(' ') : ['0', 'active'];
+                        // Populate leader filter on first load
+                        if ($('#leaderFilter').find('option').length === 1) {
+                            populateLeaderFilter(json.data);
+                        }
 
-            const techStackId = techStack.DT_RowId || techStack.id;
-
-            return `
-            <tr class="hover:bg-gray-50 border-b border-gray-100">
-                <td class="px-6 py-4">
-                    <div class="flex items-center min-w-0">
-                        <div class="flex-shrink-0 h-12 w-12">
-                            <div class="h-12 w-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-sm">
-                                <i class="fas fa-layer-group text-white text-sm"></i>
-                            </div>
-                        </div>
-                        <div class="ml-4 flex-1 min-w-0">
-                            <div class="text-sm font-semibold text-gray-900 truncate">${techStack.name || 'No name'}</div>
-                            <div class="text-sm text-gray-500 truncate">${techStack.description || 'No description'}</div>
-                        </div>
-                    </div>
-                </td>
-                <td class="px-6 py-4">
-                    ${stackLeader && stackLeader.name ? `
-                        <div class="flex items-center min-w-0">
-                            <div class="flex-shrink-0 h-10 w-10">
-                                <div class="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-sm">
-                                    <i class="fas fa-user-tie text-white text-xs"></i>
+                        return json.data;
+                    }
+                },
+                columns: [
+                    {
+                        data: null,
+                        render: function(data, type, row, meta) {
+                            return `
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-12 w-12">
+                                        <div class="h-12 w-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-md">
+                                            <i class="fas fa-layer-group text-white text-sm"></i>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-semibold text-gray-900">${data.name || 'No name'}</div>
+                                        <div class="text-sm text-gray-500 truncate max-w-xs">${data.description || 'No description'}</div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="ml-3 flex-1 min-w-0">
-                                <div class="text-sm font-medium text-gray-900 truncate">${stackLeader.name}</div>
-                                <div class="text-xs text-gray-500">${stackLeader.employee_id || 'N/A'}</div>
-                            </div>
-                        </div>
-                    ` : `
-                        <div class="flex items-center text-gray-400">
-                            <div class="flex-shrink-0 h-8 w-8">
-                                <div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
-                                    <i class="fas fa-user-slash text-gray-500 text-xs"></i>
+                            `;
+                        }
+                    },
+                    {
+                        data: 'stack_leader',
+                        render: function(data, type, row, meta) {
+                            if (data && data.name) {
+                                return `
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10">
+                                            <div class="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-md">
+                                                <i class="fas fa-user-tie text-white text-xs"></i>
+                                            </div>
+                                        </div>
+                                        <div class="ml-3">
+                                            <div class="text-sm font-medium text-gray-900">${data.name}</div>
+                                            <div class="text-xs text-gray-500">${data.employee_id || 'N/A'}</div>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                            return `
+                                <div class="flex items-center text-gray-400">
+                                    <div class="flex-shrink-0 h-8 w-8">
+                                        <div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                            <i class="fas fa-user-slash text-gray-500 text-xs"></i>
+                                        </div>
+                                    </div>
+                                    <div class="ml-2 text-sm">Not Assigned</div>
                                 </div>
-                            </div>
-                            <div class="ml-2 text-sm">Not Assigned</div>
+                            `;
+                        }
+                    },
+                    {
+                        data: 'members_count',
+                        className: 'text-center',
+                        render: function(data, type, row, meta) {
+                            const memberCount = data ? parseInt(data.split(' ')[0]) : 0;
+                            return `
+                                <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 shadow-sm">
+                                    <i class="fas fa-users mr-1"></i>
+                                    ${memberCount}
+                                </div>
+                            `;
+                        }
+                    },
+                    {
+                        data: 'projects_count',
+                        className: 'text-center',
+                        render: function(data, type, row, meta) {
+                            const projectCount = data ? parseInt(data.split(' ')[0]) : 0;
+                            return `
+                                <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 shadow-sm">
+                                    <i class="fas fa-folder-open mr-1"></i>
+                                    ${projectCount}
+                                </div>
+                            `;
+                        }
+                    },
+                    {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        className: 'text-center',
+                        render: function(data, type, row, meta) {
+                            const techStackId = data.DT_RowId || data.id;
+                            return `
+                                <div class="flex items-center justify-center space-x-2">
+                                    <a href="/tech-stacks/${techStackId}"
+                                       class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-100 hover:bg-indigo-200 text-indigo-600 hover:text-indigo-800 transition-all duration-200 shadow-sm"
+                                       title="View Tech Stack">
+                                        <i class="fas fa-eye text-sm"></i>
+                                    </a>
+                                    <a href="/tech-stacks/${techStackId}/edit"
+                                       class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 hover:text-blue-800 transition-all duration-200 shadow-sm"
+                                       title="Edit Tech Stack">
+                                        <i class="fas fa-edit text-sm"></i>
+                                    </a>
+                                    <button onclick="deleteTechStack(${techStackId})"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-800 transition-all duration-200 shadow-sm"
+                                            title="Delete Tech Stack">
+                                        <i class="fas fa-trash text-sm"></i>
+                                    </button>
+                                </div>
+                            `;
+                        }
+                    }
+                ],
+                order: [
+                    [0, 'asc']
+                ],
+                pageLength: 10,
+                lengthMenu: [
+                    [10, 25, 50, -1],
+                    [10, 25, 50, "All"]
+                ],
+                responsive: true,
+                language: {
+                    processing: '<i class="fas fa-spinner fa-spin mr-2"></i>Loading...',
+                    emptyTable: 'No tech stacks available',
+                    zeroRecords: 'No matching tech stacks found',
+                    lengthMenu: 'Show _MENU_ entries',
+                    info: 'Showing _START_ to _END_ of _TOTAL_ entries',
+                    infoEmpty: 'Showing 0 to 0 of 0 entries',
+                    infoFiltered: '(filtered from _MAX_ total entries)',
+                    search: 'Search:',
+                    paginate: {
+                        first: 'First',
+                        last: 'Last',
+                        next: 'Next',
+                        previous: 'Previous'
+                    }
+                },
+                dom: 'lfrtip',
+                initComplete: function() {
+                    console.log('✅ DataTable initialized successfully');
+
+                    // Add action button above the table
+                    @can('create', \App\Models\TechStack::class)
+                    const actionButtons = `
+                        <div class="flex flex-wrap items-center justify-end gap-2 mb-4 createbutton">
+                            <a href="{{ route('tech-stacks.create') }}"
+                                class="inline-flex items-center px-3 py-1.5 h-8 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-sm font-medium rounded-lg shadow hover:shadow-lg transform transition-all duration-200 hover:scale-105 whitespace-nowrap">
+                                <i class="fas fa-plus mr-1.5 text-xs"></i>
+                                New Tech Stack
+                            </a>
                         </div>
-                    `}
-                </td>
-                <td class="px-6 py-4 text-center">
-                    <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        <i class="fas fa-code mr-1"></i>
-                        ${membersParts[0] || '0'}
-                    </div>
-                    <div class="text-xs text-gray-500 mt-1">${membersParts[2] || 'active'}</div>
-                </td>
-                <td class="px-6 py-4 text-center">
-                    <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                        <i class="fas fa-folder-open mr-1"></i>
-                        ${projectsParts[0] || '0'}
-                    </div>
-                    <div class="text-xs text-gray-500 mt-1">${projectsParts[2] || 'active'}</div>
-                </td>
-                <td class="px-6 py-4 text-center">
-                    <div class="flex items-center justify-center space-x-2">
-                        <a href="/tech-stacks/${techStackId}"
-                           class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-100 hover:bg-indigo-200 text-indigo-600 hover:text-indigo-800 transition-colors duration-200"
-                           title="View Tech Stack">
-                            <i class="fas fa-eye text-sm"></i>
-                        </a>
-                        <a href="/tech-stacks/${techStackId}/edit"
-                           class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 hover:text-blue-800 transition-colors duration-200"
-                           title="Edit Tech Stack">
-                            <i class="fas fa-edit text-sm"></i>
-                        </a>
-                        <button onclick="deleteTechStack(${techStackId})"
-                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-800 transition-colors duration-200"
-                                title="Delete Tech Stack">
-                            <i class="fas fa-trash text-sm"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-            `;
-        }).join('');
-    }
+                    `;
+                    $('#techStacksTable_wrapper').prepend(actionButtons);
+                    @endcan
 
-    function filterTechStacks() {
-        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-        const leaderFilter = document.getElementById('leaderFilter').value;
-        const memberCountFilter = document.getElementById('memberCountFilter').value;
-
-        filteredData = techStacksData.filter(techStack => {
-            // Search filter
-            let matchesSearch = true;
-            if (searchTerm !== '') {
-                const searchFields = [
-                    techStack.name || '',
-                    techStack.description || '',
-                    (techStack.stack_leader && techStack.stack_leader.name) ? techStack.stack_leader.name : '',
-                    (techStack.stack_leader && techStack.stack_leader.employee_id) ? techStack.stack_leader.employee_id : ''
-                ];
-
-                matchesSearch = searchFields.some(field =>
-                    field.toLowerCase().includes(searchTerm)
-                );
-            }
-
-            // Leader filter
-            let matchesLeader = true;
-            if (leaderFilter !== '') {
-                matchesLeader = techStack.stack_leader && techStack.stack_leader.name === leaderFilter;
-            }
-
-            // Member count filter
-            let matchesMemberCount = true;
-            if (memberCountFilter !== '') {
-                const memberCount = techStack.members_count ? parseInt(techStack.members_count.split(' ')[0]) : 0;
-                switch (memberCountFilter) {
-                    case '1-3':
-                        matchesMemberCount = memberCount >= 1 && memberCount <= 3;
-                        break;
-                    case '4-6':
-                        matchesMemberCount = memberCount >= 4 && memberCount <= 6;
-                        break;
-                    case '7+':
-                        matchesMemberCount = memberCount >= 7;
-                        break;
+                    // Filter form handlers - real-time search
+                    $('#filterForm select').on('change', function() {
+                        $('#techStacksTable').DataTable().ajax.reload(null, false);
+                    });
                 }
+            });
+        }
+
+        function populateLeaderFilter(data) {
+            const leaders = new Set();
+
+            if (Array.isArray(data)) {
+                data.forEach(techStack => {
+                    if (techStack.stack_leader && techStack.stack_leader.name) {
+                        leaders.add(techStack.stack_leader.name);
+                    }
+                });
             }
 
-            return matchesSearch && matchesLeader && matchesMemberCount;
-        });
+            const leaderFilter = $('#leaderFilter');
+            leaderFilter.find('option:not(:first)').remove();
 
-        renderTechStacks();
-    }
+            Array.from(leaders).sort().forEach(leaderName => {
+                const option = $('<option>', {
+                    value: leaderName,
+                    text: leaderName
+                });
+                leaderFilter.append(option);
+            });
+        }
 
-    function resetFilters() {
-        document.getElementById('searchInput').value = '';
-        document.getElementById('leaderFilter').value = '';
-        document.getElementById('memberCountFilter').value = '';
-        filteredData = [...techStacksData];
-        renderTechStacks();
-    }
+        // Global functions
+        function clearFilters() {
+            $('#filterForm')[0].reset();
 
-    function populateLeaderFilter() {
-        const leaderFilter = document.getElementById('leaderFilter');
-        const leaders = new Set();
-
-        techStacksData.forEach(techStack => {
-            if (techStack.stack_leader && techStack.stack_leader.name) {
-                leaders.add(techStack.stack_leader.name);
+            if (typeof $('#techStacksTable').DataTable() !== 'undefined') {
+                $('#techStacksTable').DataTable().ajax.reload();
             }
-        });
 
-        // Clear existing options except the first one
-        leaderFilter.innerHTML = '<option value="">All Leaders</option>';
+            console.log('Filters cleared successfully');
+        }
 
-        // Add leader options
-        Array.from(leaders).sort().forEach(leaderName => {
-            const option = document.createElement('option');
-            option.value = leaderName;
-            option.textContent = leaderName;
-            leaderFilter.appendChild(option);
-        });
-    }
-
-    window.deleteTechStack = function(techStackId) {
-        Swal.fire({
-            title: 'Delete Tech Stack?',
-            text: "Are you sure you want to delete this tech stack? This action cannot be undone.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#EF4444',
-            cancelButtonColor: '#6B7280',
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'Cancel',
-            reverseButtons: true,
-            showLoaderOnConfirm: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-                axios.delete('/tech-stacks/' + techStackId)
+        function deleteTechStack(techStackId) {
+            Swal.fire({
+                title: 'Delete Tech Stack?',
+                text: 'Are you sure you want to delete this tech stack? This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#EF4444',
+                cancelButtonColor: '#6B7280',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    axios.delete('/tech-stacks/' + techStackId, {
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    })
                     .then(response => {
                         if (response.data.success) {
                             Swal.fire({
@@ -446,7 +599,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                 timerProgressBar: true,
                                 showConfirmButton: false
                             });
-                            loadTechStacks(); // Reload the data
+
+                            if (typeof $('#techStacksTable').DataTable() !== 'undefined') {
+                                $('#techStacksTable').DataTable().ajax.reload();
+                            }
                         } else {
                             Swal.fire({
                                 title: 'Error!',
@@ -457,17 +613,21 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     })
                     .catch(error => {
+                        console.error('Delete error:', error);
+                        const errorMessage = error.response?.data?.message ||
+                                             error.response?.data?.error ||
+                                             error.message ||
+                                             'An error occurred while deleting the tech stack';
                         Swal.fire({
                             title: 'Error!',
-                            text: error.response?.data?.message || 'An error occurred while deleting the tech stack.',
+                            text: errorMessage,
                             icon: 'error',
                             confirmButtonColor: '#3B82F6'
                         });
                     });
-            }
-        });
-    };
-});
-</script>
+                }
+            });
+        }
+    </script>
 @endpush
 @endsection

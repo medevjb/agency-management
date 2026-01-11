@@ -142,12 +142,21 @@
                                     <label for="team_leader_id" class="block text-sm font-bold text-gray-700 mb-3">
                                         Select Team Leader
                                     </label>
+                                    <div class="relative mb-2">
+                                        <input type="text" id="team_leader_search" placeholder="Search team leader..."
+                                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm"
+                                               onkeyup="filterTeamLeader()">
+                                        <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
+                                    </div>
                                     <div class="relative">
                                         <select id="team_leader_id" name="team_leader_id"
                                                 class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm appearance-none transition-all duration-200 text-lg">
                                             <option value="">Choose a team leader...</option>
                                             @foreach($users as $user)
-                                                <option value="{{ $user->id }}" {{ old('team_leader_id') == $user->id ? 'selected' : '' }}>
+                                                <option value="{{ $user->id }}"
+                                                        data-name="{{ $user->name }}"
+                                                        data-employee="{{ $user->employee_id }}"
+                                                        {{ old('team_leader_id') == $user->id ? 'selected' : '' }}>
                                                     {{ $user->name }} @if($user->employee_id) ({{ $user->employee_id }}) @endif
                                                 </option>
                                             @endforeach
@@ -189,7 +198,7 @@
                                 Team Members
                             </h3>
                             <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-100">
-                                <div class="flex items-center justify-between mb-6">
+                                <div class="flex items-center justify-between mb-4">
                                     <div>
                                         <h4 class="font-bold text-gray-900">Select Team Members</h4>
                                         <p class="text-sm text-gray-600">Choose who will be part of this team</p>
@@ -205,9 +214,18 @@
                                         </button>
                                     </div>
                                 </div>
+                                <div class="relative mb-4">
+                                    <input type="text" id="members_search" placeholder="Search members..."
+                                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm"
+                                           onkeyup="filterTeamMembers()">
+                                    <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
+                                </div>
                                 <div class="max-h-80 overflow-y-auto space-y-2 border-2 border-purple-100 rounded-xl p-4 bg-white">
                                     @foreach($users as $user)
-                                        <label class="flex items-center p-4 rounded-xl hover:bg-purple-50 cursor-pointer transition-all duration-200 border-2 border-transparent hover:border-purple-200">
+                                        <label class="member-item flex items-center p-4 rounded-xl hover:bg-purple-50 cursor-pointer transition-all duration-200 border-2 border-transparent hover:border-purple-200"
+                                               data-name="{{ strtolower($user->name) }}"
+                                               data-employee="{{ strtolower($user->employee_id ?? '') }}"
+                                               data-position="{{ strtolower($user->position ?? '') }}">
                                             <input type="checkbox" name="members[]" value="{{ $user->id }}"
                                                    {{ in_array($user->id, old('members', [])) ? 'checked' : '' }}
                                                    class="mr-4 w-5 h-5 text-purple-600 bg-purple-100 border-purple-300 rounded focus:ring-purple-500 focus:ring-2"
@@ -676,6 +694,44 @@ function submitTeamForm() {
         submitButton.innerHTML = originalText;
         submitButton.disabled = false;
     });
+}
+
+function filterTeamLeader() {
+    const searchValue = document.getElementById('team_leader_search').value.toLowerCase();
+    const select = document.getElementById('team_leader_id');
+    const options = select.getElementsByTagName('option');
+
+    for (let i = 1; i < options.length; i++) {
+        const option = options[i];
+        const name = option.getAttribute('data-name') ? option.getAttribute('data-name').toLowerCase() : '';
+        const employee = option.getAttribute('data-employee') ? option.getAttribute('data-employee').toLowerCase() : '';
+        const text = name + ' ' + employee;
+
+        if (text.includes(searchValue)) {
+            option.style.display = '';
+        } else {
+            option.style.display = 'none';
+        }
+    }
+}
+
+function filterTeamMembers() {
+    const searchValue = document.getElementById('members_search').value.toLowerCase();
+    const members = document.getElementsByClassName('member-item');
+
+    for (let i = 0; i < members.length; i++) {
+        const member = members[i];
+        const name = member.getAttribute('data-name') || '';
+        const employee = member.getAttribute('data-employee') || '';
+        const position = member.getAttribute('data-position') || '';
+        const text = name + ' ' + employee + ' ' + position;
+
+        if (text.includes(searchValue)) {
+            member.style.display = '';
+        } else {
+            member.style.display = 'none';
+        }
+    }
 }
 </script>
 @endpush

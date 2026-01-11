@@ -73,4 +73,42 @@ class Setting extends Model
             default => $this->value,
         };
     }
+
+    /**
+     * Get project statuses from settings.
+     */
+    public static function getProjectStatuses(): array
+    {
+        $statuses = static::where('key', 'project_statuses')->first();
+
+        if (! $statuses) {
+            // Return default statuses if none exist in database
+            return [
+                'nra' => ['key' => 'nra', 'label' => 'NRA', 'icon' => '🤷‍♀️', 'color' => 'bg-gray-100 text-gray-800'],
+                'pending' => ['key' => 'pending', 'label' => 'Pending', 'icon' => '⏳', 'color' => 'bg-yellow-100 text-yellow-800'],
+                'in-progress' => ['key' => 'in-progress', 'label' => 'In Progress', 'icon' => '🔄', 'color' => 'bg-blue-100 text-blue-800'],
+                'completed' => ['key' => 'completed', 'label' => 'Completed', 'icon' => '✅', 'color' => 'bg-green-100 text-green-800'],
+                'on-hold' => ['key' => 'on-hold', 'label' => 'On Hold', 'icon' => '⏸️', 'color' => 'bg-orange-100 text-orange-800'],
+                'cancelled' => ['key' => 'cancelled', 'label' => 'Cancelled', 'icon' => '❌', 'color' => 'bg-red-100 text-red-800'],
+            ];
+        }
+
+        $data = $statuses->getValue();
+
+        // Convert array to key-value pairs for easier access
+        $result = [];
+        foreach ($data as $status) {
+            $result[$status['key']] = $status;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get task statuses from project statuses (reuse same statuses).
+     */
+    public static function getTaskStatuses(): array
+    {
+        return static::getProjectStatuses();
+    }
 }

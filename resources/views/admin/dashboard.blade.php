@@ -199,9 +199,9 @@
                 <i class="fas fa-shield-alt text-2xl mb-2"></i>
                 <span class="text-sm font-medium">Roles</span>
             </a>
-            <a href="{{ route('projects.index') }}" class="flex flex-col items-center p-4 bg-white/10 hover:bg-white/20 rounded-lg transition-colors">
+            <a href="{{ route('orders.index') }}" class="flex flex-col items-center p-4 bg-white/10 hover:bg-white/20 rounded-lg transition-colors">
                 <i class="fas fa-folder text-2xl mb-2"></i>
-                <span class="text-sm font-medium">Projects</span>
+                <span class="text-sm font-medium">Orders</span>
             </a>
             <a href="{{ route('teams.index') }}" class="flex flex-col items-center p-4 bg-white/10 hover:bg-white/20 rounded-lg transition-colors">
                 <i class="fas fa-users text-2xl mb-2"></i>
@@ -258,13 +258,13 @@
         <div class="bg-white rounded-lg shadow-md">
             <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-900">Recent Projects</h3>
-                    <p class="text-sm text-gray-500">Latest project activities</p>
+                    <h3 class="text-lg font-semibold text-gray-900">Recent Orders</h3>
+                    <p class="text-sm text-gray-500">Latest order activities</p>
                 </div>
-                <a href="{{ route('projects.index') }}" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">View All</a>
+                <a href="{{ route('orders.index') }}" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">View All</a>
             </div>
             <div class="divide-y divide-gray-200">
-                @foreach($recentProjects as $project)
+                @foreach($recentOrders as $order)
                     <div class="px-6 py-4 hover:bg-gray-50 transition-colors">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-3">
@@ -272,19 +272,19 @@
                                     <i class="fas fa-folder text-indigo-600"></i>
                                 </div>
                                 <div>
-                                    <p class="text-sm font-medium text-gray-900">{{ $project->name }}</p>
-                                    <p class="text-xs text-gray-500">by {{ $project->createdBy->name }}</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ $order->name }}</p>
+                                    <p class="text-xs text-gray-500">by {{ $order->creator->name }}</p>
                                 </div>
                             </div>
                             <div class="text-right">
                                 <span class="px-2 py-1 text-xs rounded-full
-                                    @if($project->status === 'completed') bg-green-100 text-green-800
-                                    @elseif($project->status === 'in-progress') bg-blue-100 text-blue-800
-                                    @elseif($project->status === 'on-hold') bg-yellow-100 text-yellow-800
+                                    @if($order->status === 'completed') bg-green-100 text-green-800
+                                    @elseif($order->status === 'in-progress') bg-blue-100 text-blue-800
+                                    @elseif($order->status === 'on-hold') bg-yellow-100 text-yellow-800
                                     @else bg-gray-100 text-gray-800 @endif">
-                                    {{ ucfirst(str_replace('-', ' ', $project->status)) }}
+                                    {{ ucfirst(str_replace('-', ' ', $order->status)) }}
                                 </span>
-                                <p class="text-xs text-gray-500 mt-1">{{ $project->created_at->diffForHumans() }}</p>
+                                <p class="text-xs text-gray-500 mt-1">{{ $order->created_at->diffForHumans() }}</p>
                             </div>
                         </div>
                     </div>

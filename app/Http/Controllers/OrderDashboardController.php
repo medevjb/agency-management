@@ -14,6 +14,8 @@ class OrderDashboardController extends Controller
 
     public function index(Request $request)
     {
+        $user = auth()->user();
+
         // Get date range from request or default to this month
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
@@ -26,22 +28,56 @@ class OrderDashboardController extends Controller
 
         $query = Order::with(['team', 'techStack', 'users']);
 
-        // Apply date filter if provided
-        if ($startDate && $endDate) {
-            $query->whereBetween('created_at', [$startDate, $endDate]);
+        // Filter by user's role and team
+        if (! $user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
+            if ($user->hasRole('stack-leader')) {
+                // Stack leaders see orders that use their tech stack
+                $query->where('tech_stack_id', $user->tech_stack_id);
+            } else {
+                // Team leaders and members see orders from their team
+                $query->where('team_id', $user->team_id);
+            }
         }
 
+        // Get all orders (without date filter for stats and lists)
         $orders = $query->get();
 
-        // Calculate statistics
+        // Separate query for date-filtered revenue calculations
+        $dateFilteredQuery = Order::query();
+
+        // Apply the same team filtering
+        if (! $user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
+            if ($user->hasRole('stack-leader')) {
+                $dateFilteredQuery->where('tech_stack_id', $user->tech_stack_id);
+            } else {
+                $dateFilteredQuery->where('team_id', $user->team_id);
+            }
+        }
+
+        // Apply date filter only for revenue calculations
+        if ($startDate && $endDate) {
+            $dateFilteredQuery->whereBetween('created_at', [$startDate.' 00:00:00', $endDate.' 23:59:59']);
+        }
+
+        $dateFilteredOrders = $dateFilteredQuery->get();
+
+        // Get team information for team users
+        $team = null;
+        $teamMembers = collect();
+        if ($user->team_id && ! $user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
+            $team = \App\Models\Team::with('members', 'teamLeader')->find($user->team_id);
+            $teamMembers = $team ? $team->members : collect();
+        }
+
+        // Calculate statistics (use date-filtered for revenue, all orders for counts)
         $stats = [
             'totalOrders' => $orders->count(),
-            'totalRevenue' => $orders->sum('actual_revenue'),
+            'totalRevenue' => $dateFilteredOrders->where('status', 'completed')->sum('actual_revenue'),
             'activeOrders' => $orders->whereIn('status', ['pending', 'in-progress'])->count(),
             'completedOrders' => $orders->where('status', 'completed')->count(),
             'pendingOrders' => $orders->where('status', 'pending')->count(),
-            'overdueOrders' => $orders->where('end_date', '<', now())->whereNotIn('status', ['completed', 'cancelled'])->count(),
-            'averageRevenue' => $orders->where('actual_revenue', '>', 0)->avg('actual_revenue') ?? 0,
+            'overdueOrders' => $orders->whereNotNull('end_date')->where('end_date', '<', now())->whereNotIn('status', ['completed', 'cancelled'])->count(),
+            'averageRevenue' => $dateFilteredOrders->where('status', 'completed')->where('actual_revenue', '>', 0)->avg('actual_revenue') ?? 0,
         ];
 
         // Orders by status
@@ -61,41 +97,77 @@ class OrderDashboardController extends Controller
             'low' => $orders->where('priority', 'low')->count(),
         ];
 
-        // Recent orders
-        $recentOrders = Order::with(['team', 'techStack'])
-            ->latest()
-            ->take(5)
-            ->get();
+        // Recent orders (filtered by team for non-managers)
+        $recentOrdersQuery = Order::with(['team', 'techStack']);
+        if (! $user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
+            if ($user->hasRole('stack-leader')) {
+                $recentOrdersQuery->where('tech_stack_id', $user->tech_stack_id);
+            } else {
+                $recentOrdersQuery->where('team_id', $user->team_id);
+            }
+        }
+        $recentOrders = $recentOrdersQuery->latest()->take(5)->get();
 
-        // Orders due soon (next 7 days)
-        $ordersDueSoon = Order::with(['team', 'techStack'])
-            ->whereBetween('end_date', [now(), now()->addDays(7)])
-            ->whereNotIn('status', ['completed', 'cancelled'])
-            ->orderBy('end_date')
-            ->take(5)
-            ->get();
+        // Orders due soon (next 4 days, filtered by team for non-managers)
+        $ordersDueSoonQuery = Order::with(['team', 'techStack'])
+            ->whereNotNull('end_date')
+            ->where('end_date', '>=', now())
+            ->where('end_date', '<=', now()->addDays(4)->endOfDay())
+            ->whereNotIn('status', ['completed', 'cancelled']);
+        if (! $user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
+            if ($user->hasRole('stack-leader')) {
+                $ordersDueSoonQuery->where('tech_stack_id', $user->tech_stack_id);
+            } else {
+                $ordersDueSoonQuery->where('team_id', $user->team_id);
+            }
+        }
+        $ordersDueSoon = $ordersDueSoonQuery->orderBy('end_date')->take(5)->get();
 
-        // Overdue orders
-        $overdueOrders = Order::with(['team', 'techStack'])
+        // Overdue orders (filtered by team for non-managers)
+        $overdueOrdersQuery = Order::with(['team', 'techStack'])
+            ->whereNotNull('end_date')
             ->where('end_date', '<', now())
-            ->whereNotIn('status', ['completed', 'cancelled'])
-            ->orderBy('end_date')
-            ->take(5)
-            ->get();
+            ->whereNotIn('status', ['completed', 'cancelled']);
+        if (! $user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
+            if ($user->hasRole('stack-leader')) {
+                $overdueOrdersQuery->where('tech_stack_id', $user->tech_stack_id);
+            } else {
+                $overdueOrdersQuery->where('team_id', $user->team_id);
+            }
+        }
+        $overdueOrders = $overdueOrdersQuery->orderBy('end_date')->take(5)->get();
 
-        // High priority orders
-        $highPriorityOrders = Order::with(['team', 'techStack'])
+        // High priority orders (filtered by team for non-managers)
+        $highPriorityOrdersQuery = Order::with(['team', 'techStack'])
             ->where('priority', 'high')
-            ->whereNotIn('status', ['completed', 'cancelled'])
-            ->latest()
-            ->take(5)
-            ->get();
+            ->whereNotIn('status', ['completed', 'cancelled']);
+        if (! $user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
+            if ($user->hasRole('stack-leader')) {
+                $highPriorityOrdersQuery->where('tech_stack_id', $user->tech_stack_id);
+            } else {
+                $highPriorityOrdersQuery->where('team_id', $user->team_id);
+            }
+        }
+        $highPriorityOrders = $highPriorityOrdersQuery->latest()->take(5)->get();
 
-        // Revenue by team
-        $revenueByTeam = Order::with('team')
-            ->whereNotNull('team_id')
-            ->whereHas('team')
-            ->get()
+        // Revenue by team (use date-filtered orders, only completed)
+        $revenueByTeamQuery = Order::with('team')->whereNotNull('team_id')->whereHas('team')->where('status', 'completed');
+
+        // Apply team filtering for non-managers
+        if (! $user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
+            if ($user->hasRole('stack-leader')) {
+                $revenueByTeamQuery->where('tech_stack_id', $user->tech_stack_id);
+            } else {
+                $revenueByTeamQuery->where('team_id', $user->team_id);
+            }
+        }
+
+        // Apply date filter
+        if ($startDate && $endDate) {
+            $revenueByTeamQuery->whereBetween('created_at', [$startDate.' 00:00:00', $endDate.' 23:59:59']);
+        }
+
+        $revenueByTeam = $revenueByTeamQuery->get()
             ->groupBy('team_id')
             ->map(function ($group) {
                 return [
@@ -107,10 +179,20 @@ class OrderDashboardController extends Controller
             ->sortByDesc('revenue')
             ->values();
 
-        // Monthly revenue for the current year
-        $monthlyRevenue = Order::selectRaw('MONTH(created_at) as month, SUM(actual_revenue) as revenue')
-            ->whereYear('created_at', now()->year)
-            ->groupBy('month')
+        // Monthly revenue for the current year (filtered by team for non-managers, only completed orders)
+        $monthlyRevenueQuery = Order::selectRaw('MONTH(created_at) as month, SUM(actual_revenue) as revenue')
+            ->where('status', 'completed')
+            ->whereYear('created_at', now()->year);
+
+        if (! $user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
+            if ($user->hasRole('stack-leader')) {
+                $monthlyRevenueQuery->where('tech_stack_id', $user->tech_stack_id);
+            } else {
+                $monthlyRevenueQuery->where('team_id', $user->team_id);
+            }
+        }
+
+        $monthlyRevenue = $monthlyRevenueQuery->groupBy('month')
             ->orderBy('month')
             ->pluck('revenue', 'month')
             ->toArray();
@@ -134,30 +216,44 @@ class OrderDashboardController extends Controller
             'revenueByTeam',
             'monthlyRevenue',
             'startDate',
-            'endDate'
+            'endDate',
+            'team',
+            'teamMembers'
         ));
     }
 
     public function getChartData(Request $request)
     {
+        $user = auth()->user();
         $period = $request->input('period', 'month'); // week, month, year
 
-        $query = Order::query();
+        $query = Order::query()->where('status', 'completed');
+
+        // Filter by user's role and team
+        if (! $user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
+            if ($user->hasRole('stack-leader')) {
+                // Stack leaders see orders that use their tech stack
+                $query->where('tech_stack_id', $user->tech_stack_id);
+            } else {
+                // Team leaders and members see orders from their team
+                $query->where('team_id', $user->team_id);
+            }
+        }
 
         if ($period === 'week') {
-            $data = Order::selectRaw('DATE(created_at) as date, SUM(actual_revenue) as revenue, COUNT(*) as orders')
+            $data = $query->selectRaw('DATE(created_at) as date, SUM(actual_revenue) as revenue, COUNT(*) as orders')
                 ->where('created_at', '>=', now()->subDays(7))
                 ->groupBy('date')
                 ->orderBy('date')
                 ->get();
         } elseif ($period === 'month') {
-            $data = Order::selectRaw('DATE(created_at) as date, SUM(actual_revenue) as revenue, COUNT(*) as orders')
+            $data = $query->selectRaw('DATE(created_at) as date, SUM(actual_revenue) as revenue, COUNT(*) as orders')
                 ->where('created_at', '>=', now()->startOfMonth())
                 ->groupBy('date')
                 ->orderBy('date')
                 ->get();
         } else {
-            $data = Order::selectRaw('MONTH(created_at) as month, SUM(actual_revenue) as revenue, COUNT(*) as orders')
+            $data = $query->selectRaw('MONTH(created_at) as month, SUM(actual_revenue) as revenue, COUNT(*) as orders')
                 ->whereYear('created_at', now()->year)
                 ->groupBy('month')
                 ->orderBy('month')

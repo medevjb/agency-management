@@ -103,68 +103,93 @@
         </form>
     </div>
 
-    <!-- Profiles Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <!-- Profiles Grid - Compact Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
         @foreach($profiles as $profile)
-            <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-                <!-- Profile Header with Avatar -->
-                <div class="relative">
+            <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+                <!-- Profile Header - Compact -->
+                <div class="relative h-24">
                     @if($profile->avatar)
                         <img src="{{ asset('storage/' . $profile->avatar) }}"
                              alt="{{ $profile->profile_name }}"
-                             class="w-full h-48 object-cover">
+                             class="w-full h-full object-cover">
                     @else
-                        <div class="w-full h-48 bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
-                            <i class="fas fa-user text-white text-6xl opacity-50"></i>
+                        <div class="w-full h-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
+                            <i class="fas fa-user text-white text-4xl opacity-50"></i>
                         </div>
                     @endif
 
-                    <!-- Status Badge -->
-                    <div class="absolute top-3 right-3">
+                    <!-- Status Badge - Compact -->
+                    <div class="absolute top-2 right-2">
                         @if($profile->status === 'active')
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-green-500 text-white shadow-lg">
-                                <i class="fas fa-check-circle mr-1"></i>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-green-500 text-white shadow-md">
+                                <i class="fas fa-check-circle mr-1 text-xs"></i>
                                 Active
                             </span>
                         @else
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-red-500 text-white shadow-lg">
-                                <i class="fas fa-times-circle mr-1"></i>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-red-500 text-white shadow-md">
+                                <i class="fas fa-times-circle mr-1 text-xs"></i>
                                 Inactive
                             </span>
                         @endif
                     </div>
+
+                    <!-- Verified Badge -->
+                    @if($profile->is_verified)
+                        <div class="absolute bottom-2 left-2">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-blue-500 text-white shadow-md">
+                                <i class="fas fa-check mr-1 text-xs"></i>
+                                Verified
+                            </span>
+                        </div>
+                    @endif
                 </div>
 
-                <!-- Profile Info -->
-                <div class="p-5">
-                    <div class="text-center mb-4">
-                        <h3 class="text-xl font-bold text-gray-900">{{ $profile->profile_name }}</h3>
-                        <p class="text-purple-600 font-semibold"><span>@</span>{{$profile->username}}</p>
+                <!-- Profile Info - Compact -->
+                <div class="p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex-1 min-w-0">
+                            <h3 class="text-base font-bold text-gray-900 truncate">{{ $profile->profile_name }}</h3>
+                            <p class="text-purple-600 font-medium text-sm truncate"><span>@</span>{{$profile->username}}</p>
+                        </div>
                     </div>
 
-                    <!-- Actions -->
-                    <div class="flex flex-col gap-2">
+                    <!-- Rating -->
+                    @if($profile->rating > 0)
+                        <div class="flex items-center mb-3">
+                            <div class="flex items-center">
+                                @for($i = 1; $i <= 5; $i++)
+                                    @if($i <= $profile->rating)
+                                        <i class="fas fa-star text-yellow-400 text-sm"></i>
+                                    @else
+                                        <i class="fas fa-star text-gray-300 text-sm"></i>
+                                    @endif
+                                @endfor
+                            </div>
+                            <span class="text-xs text-gray-500 ml-2">({{ $profile->total_jobs }} jobs)</span>
+                        </div>
+                    @endif
+
+                    <!-- Compact Actions -->
+                    <div class="flex items-center gap-2">
                         <button onclick="viewProfile({{ $profile->id }})"
-                                class="w-full flex items-center justify-center px-4 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 font-semibold text-sm transition-all">
-                            <i class="fas fa-eye mr-2"></i>View Details
+                                class="flex-1 flex items-center justify-center px-3 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 font-medium text-xs transition-all group-hover:bg-purple-100">
+                            <i class="fas fa-eye mr-1 text-xs"></i>View
                         </button>
                         @can('edit profile')
-                            <div class="flex gap-2">
-                                <button onclick="editProfile({{ $profile->id }})"
-                                        class="flex-1 flex items-center justify-center px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 font-semibold text-sm transition-all">
-                                    <i class="fas fa-edit mr-1"></i>Edit
-                                </button>
-                                <button onclick="toggleStatus({{ $profile->id }}, '{{ $profile->status }}')"
-                                        class="flex-1 flex items-center justify-center px-4 py-2 {{ $profile->status === 'active' ? 'bg-red-50 text-red-700 hover:bg-red-100' : 'bg-green-50 text-green-700 hover:bg-green-100' }} rounded-lg font-semibold text-sm transition-all">
-                                    <i class="fas {{ $profile->status === 'active' ? 'fa-ban' : 'fa-check' }} mr-1"></i>
-                                    {{ $profile->status === 'active' ? 'Disable' : 'Enable' }}
-                                </button>
-                            </div>
+                            <button onclick="editProfile({{ $profile->id }})"
+                                    class="flex-1 flex items-center justify-center px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 font-medium text-xs transition-all">
+                                <i class="fas fa-edit mr-1 text-xs"></i>Edit
+                            </button>
+                            <button onclick="toggleStatus({{ $profile->id }}, '{{ $profile->status }}')"
+                                    class="flex items-center justify-center px-2 py-2 {{ $profile->status === 'active' ? 'bg-red-50 text-red-700 hover:bg-red-100' : 'bg-green-50 text-green-700 hover:bg-green-100' }} rounded-lg font-medium text-xs transition-all">
+                                <i class="fas {{ $profile->status === 'active' ? 'fa-ban' : 'fa-check' }} text-xs"></i>
+                            </button>
                         @endcan
                         @can('delete profile')
                             <button onclick="deleteProfile({{ $profile->id }})"
-                                    class="w-full flex items-center justify-center px-4 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 font-semibold text-sm transition-all">
-                                <i class="fas fa-trash mr-2"></i>Delete
+                                    class="flex items-center justify-center px-2 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 font-medium text-xs transition-all">
+                                <i class="fas fa-trash text-xs"></i>
                             </button>
                         @endcan
                     </div>

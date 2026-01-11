@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Project;
+use App\Models\Order;
 use App\Models\Task;
 use App\Models\Team;
 use App\Models\TechStack;
@@ -23,13 +23,13 @@ class AdminController extends Controller
 
         $stats = [
             'total_users' => User::count(),
-            'total_projects' => Project::count(),
+            'total_orders' => Order::count(),
             'total_tasks' => Task::count(),
             'total_teams' => Team::count(),
             'total_tech_stacks' => TechStack::count(),
             'new_users_this_month' => User::where('created_at', '>=', $thisMonth)->count(),
-            'active_projects' => Project::where('status', 'in-progress')->count(),
-            'completed_projects' => Project::where('status', 'completed')->count(),
+            'active_orders' => Order::where('status', 'in-progress')->count(),
+            'completed_orders' => Order::where('status', 'completed')->count(),
             'completed_tasks' => Task::where('status', 'completed')->count(),
             'total_team_members' => User::whereNotNull('team_id')->count(),
             'pending_jobs' => 0, // Can be updated if queue jobs are tracked
@@ -39,14 +39,14 @@ class AdminController extends Controller
             return [$role->name => $role->users_count];
         });
 
-        $projectStatusStats = Project::selectRaw('status, COUNT(*) as count')
+        $orderStatusStats = Order::selectRaw('status, COUNT(*) as count')
             ->groupBy('status')
             ->pluck('count', 'status');
 
         $recentUsers = User::latest()->take(5)->get();
-        $recentProjects = Project::with(['team', 'createdBy'])->latest()->take(5)->get();
+        $recentOrders = Order::with(['team', 'creator'])->latest()->take(5)->get();
 
-        return view('admin.dashboard', compact('stats', 'roleStats', 'projectStatusStats', 'recentUsers', 'recentProjects'));
+        return view('admin.dashboard', compact('stats', 'roleStats', 'orderStatusStats', 'recentUsers', 'recentOrders'));
     }
 
     /**

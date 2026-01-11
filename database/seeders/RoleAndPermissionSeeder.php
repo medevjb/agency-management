@@ -2,11 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
-use App\Models\User;
 
 class RoleAndPermissionSeeder extends Seeder
 {
@@ -47,33 +46,68 @@ class RoleAndPermissionSeeder extends Seeder
         $operationManager->givePermissionTo([
             'manage all projects', 'view all projects',
             'manage teams', 'view teams', 'manage team members',
-            'manage tech stacks', 'view tech stacks', 'manage tech stack members'
+            'manage tech stacks', 'view tech stacks', 'manage tech stack members',
         ]);
 
         $teamLeader = Role::firstOrCreate(['name' => 'team-leader']);
         $teamLeader->givePermissionTo([
             'manage team projects', 'view team projects',
-            'view teams', 'manage team members'
+            'view teams', 'manage team members',
         ]);
 
         $stackLeader = Role::firstOrCreate(['name' => 'stack-leader']);
         $stackLeader->givePermissionTo([
             'view team projects', 'edit stack projects',
-            'view tech stacks', 'manage tech stack members'
+            'view tech stacks', 'manage tech stack members',
         ]);
 
         $teamMember = Role::firstOrCreate(['name' => 'team-member']);
         $teamMember->givePermissionTo([
             'view assigned projects', 'edit assigned tasks',
-            'view teams', 'view tech stacks'
+            'view teams', 'view tech stacks',
+        ]);
+
+        // Create additional roles with permissions
+        $projectManager = Role::firstOrCreate(['name' => 'project-manager']);
+        $projectManager->givePermissionTo([
+            'manage all projects', 'view all projects',
+            'manage team projects', 'view team projects',
+            'manage teams', 'view teams',
+            'manage team members',
+        ]);
+
+        $developer = Role::firstOrCreate(['name' => 'developer']);
+        $developer->givePermissionTo([
+            'view all projects',
+            'view team projects',
+            'edit assigned tasks',
+            'view teams', 'view tech stacks',
+        ]);
+
+        $designer = Role::firstOrCreate(['name' => 'designer']);
+        $designer->givePermissionTo([
+            'view all projects',
+            'view team projects',
+            'edit assigned tasks',
+            'view teams', 'view tech stacks',
+        ]);
+
+        $qa = Role::firstOrCreate(['name' => 'qa']);
+        $qa->givePermissionTo([
+            'view all projects',
+            'view team projects',
+            'edit assigned tasks',
+            'view teams', 'view tech stacks',
         ]);
 
         // 3. Create a default Admin user for testing
-        User::factory()->create([
-            'employee_id' => 'EMP0001',
-            'name' => 'Admin User',
-            'email' => 'admin@test.com',
-            'password' => bcrypt('password'),
-        ])->assignRole('admin');
+        User::firstOrCreate(
+            ['email' => 'admin@test.com'],
+            [
+                'employee_id' => 'EMP0001',
+                'name' => 'Admin User',
+                'password' => bcrypt('password'),
+            ]
+        )->assignRole('admin');
     }
 }

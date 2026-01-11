@@ -23,12 +23,17 @@ class TechStack extends Model
 
     public function members(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(User::class);
+        return $this->hasMany(User::class, 'tech_stack_id');
     }
 
     public function projects(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(Project::class);
+        return $this->hasMany(Order::class, 'tech_stack_id');
+    }
+
+    public function orders(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Order::class);
     }
 
     public function portfolios(): \Illuminate\Database\Eloquent\Relations\HasMany

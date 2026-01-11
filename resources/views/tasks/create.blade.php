@@ -62,11 +62,13 @@
                 <!-- Due Date -->
                 <div>
                     <label for="due_date" class="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
-                    <input type="date"
+                    <input type="text"
                            name="due_date"
                            id="due_date"
                            value="{{ old('due_date') }}"
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                           class="datepicker w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer"
+                           placeholder="Select due date..."
+                           readonly>
                     @error('due_date')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror

@@ -20,9 +20,7 @@ class TeamController extends Controller
      */
     public function index()
     {
-        if (! auth()->user()->can('manage teams')) {
-            abort(403, 'Unauthorized');
-        }
+        $this->authorize('viewAny', Team::class);
 
         return view('teams.index');
     }
@@ -32,7 +30,23 @@ class TeamController extends Controller
      */
     public function getTeams(Request $request): JsonResponse
     {
-        $query = Team::with(['teamLeader', 'members', 'projects'])->latest();
+        $this->authorize('viewAny', Team::class);
+
+        $user = auth()->user();
+
+        $query = Team::with(['teamLeader', 'members', 'projects'])
+            ->when(! $user->hasRole(['admin', 'operation-manager', 'project-manager']), function ($q) use ($user) {
+                if ($user->hasRole('stack-leader') && $user->tech_stack_id) {
+                    // Stack leaders see teams that use their tech stack
+                    $q->whereHas('orders', function ($query) use ($user) {
+                        $query->where('tech_stack_id', $user->tech_stack_id);
+                    });
+                } else {
+                    // Team leaders and members only see their own team
+                    $q->where('id', $user->team_id);
+                }
+            })
+            ->latest();
 
         return DataTables::of($query)
             ->editColumn('team_leader', function ($team) {
@@ -64,6 +78,8 @@ class TeamController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', Team::class);
+
         $users = User::where('is_active', true)->get();
 
         return view('teams.create', compact('users'));
@@ -74,6 +90,7 @@ class TeamController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', Team::class);
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:teams',
             'description' => 'nullable|string',
@@ -115,6 +132,8 @@ class TeamController extends Controller
     {
         $team = Team::with(['teamLeader', 'members', 'projects'])->findOrFail($id);
 
+        $this->authorize('view', $team);
+
         return view('teams.show', compact('team'));
     }
 
@@ -124,6 +143,9 @@ class TeamController extends Controller
     public function edit(string $id)
     {
         $team = Team::with(['teamLeader', 'members'])->findOrFail($id);
+
+        $this->authorize('update', $team);
+
         $users = User::where('is_active', true)->get();
 
         return view('teams.edit', compact('team', 'users'));
@@ -135,6 +157,8 @@ class TeamController extends Controller
     public function update(Request $request, string $id)
     {
         $team = Team::findOrFail($id);
+
+        $this->authorize('update', $team);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:teams,name,'.$team->id,
@@ -179,6 +203,8 @@ class TeamController extends Controller
     {
         $team = Team::findOrFail($id);
 
+        $this->authorize('delete', $team);
+
         // Check if team has active projects
         $activeProjects = $team->projects()->whereIn('status', ['planning', 'in-progress'])->count();
         if ($activeProjects > 0) {
@@ -206,6 +232,8 @@ class TeamController extends Controller
     {
         $team = Team::findOrFail($id);
 
+        $this->authorize('addMembers', $team);
+
         $validated = $request->validate([
             'members' => 'required|array',
             'members.*' => 'exists:users,id',
@@ -225,6 +253,9 @@ class TeamController extends Controller
     public function removeMember(string $id, string $user_id)
     {
         $team = Team::findOrFail($id);
+
+        $this->authorize('removeMember', $team);
+
         $user = User::findOrFail($user_id);
 
         if ($user->team_id !== $team->id) {

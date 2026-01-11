@@ -272,6 +272,11 @@ class UserController extends Controller
                     $user->syncPermissions($permissions);
                 }
 
+                // Assign managed teams (only for managers)
+                if (! empty($validated['managed_teams'])) {
+                    $user->managedTeams()->sync($validated['managed_teams']);
+                }
+
                 return $user;
             });
 
@@ -339,7 +344,7 @@ class UserController extends Controller
             return explode(' ', $permission->name)[0];
         });
 
-        $user->load(['roles', 'permissions']);
+        $user->load(['roles', 'permissions', 'managedTeams']);
 
         return view('users.edit', compact('user', 'teams', 'techStacks', 'roles', 'permissions'));
     }
@@ -359,7 +364,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
-            'employee_id' => 'nullable|string|regex:/^[0-9]{6,8}$/|unique:users,employee_id,'.$user->id,
+            'employee_id' => 'nullable|string|max:13|unique:users,employee_id,'.$user->id,
             'phone' => 'nullable|string|max:20',
             'password' => 'nullable|string|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/',
             'department' => 'nullable|string|max:255',
@@ -373,6 +378,8 @@ class UserController extends Controller
             'role' => 'nullable|exists:roles,name',
             'permissions' => 'nullable|array',
             'permissions.*' => 'exists:permissions,id',
+            'managed_teams' => 'nullable|array',
+            'managed_teams.*' => 'exists:teams,id',
         ]);
 
         try {
@@ -416,6 +423,13 @@ class UserController extends Controller
                     $user->syncPermissions($permissions);
                 } else {
                     $user->syncPermissions([]);
+                }
+
+                // Update managed teams (only for managers)
+                if (isset($validated['managed_teams'])) {
+                    $user->managedTeams()->sync($validated['managed_teams']);
+                } else {
+                    $user->managedTeams()->sync([]);
                 }
 
                 return $user;
@@ -850,7 +864,12 @@ class UserController extends Controller
     private function generateUniqueEmployeeId(): string
     {
         do {
-            $employeeId = str_pad(mt_rand(100000, 999999), 6, '0', STR_PAD_LEFT);
+            // Generate a random 13-character alphanumeric string
+            $characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            $employeeId = '';
+            for ($i = 0; $i < 13; $i++) {
+                $employeeId .= $characters[random_int(0, strlen($characters) - 1)];
+            }
         } while (User::where('employee_id', $employeeId)->exists());
 
         return $employeeId;

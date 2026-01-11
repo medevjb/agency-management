@@ -18,6 +18,13 @@
         .gradient-overlay {
             background: linear-gradient(135deg, rgba(99, 102, 241, 0.9) 0%, rgba(139, 92, 246, 0.9) 100%);
         }
+        .portfolio-card {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 @endpush
 
@@ -179,7 +186,7 @@
     <!-- Action Buttons -->
     <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div class="text-sm text-gray-600">
-            <span class="font-semibold text-gray-900">{{ $portfolios->total() }}</span> portfolio projects found
+            <span class="font-semibold text-gray-900" id="totalCount">{{ $portfolios->total() }}</span> portfolio projects found
         </div>
         <div class="flex gap-3">
             <a href="{{ route('portfolios.my') }}"
@@ -198,115 +205,195 @@
     </div>
 
     <!-- Portfolio Grid -->
-    @forelse($portfolios as $portfolio)
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            @foreach($portfolios as $portfolio)
-            <div class="portfolio-card bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-                <!-- Image Section -->
-                <div class="relative h-52 overflow-hidden bg-gray-100">
-                    @if($portfolio->screenshot)
-                        <img src="{{ asset('storage/' . $portfolio->screenshot) }}" alt="{{ $portfolio->title }}" class="portfolio-image w-full h-full object-cover">
-                    @else
-                        <div class="w-full h-full gradient-overlay flex items-center justify-center">
-                            <i class="fas fa-laptop-code text-white text-7xl opacity-80"></i>
-                        </div>
-                    @endif
-
-                    <!-- Status Badge -->
-                    <div class="absolute top-3 right-3">
-                        <span class="px-3 py-1 text-xs font-bold rounded-full shadow-lg backdrop-blur-sm
-                            {{ $portfolio->status === 'published' ? 'bg-green-500/90 text-white' :
-                               ($portfolio->status === 'draft' ? 'bg-yellow-500/90 text-white' : 'bg-gray-500/90 text-white') }}">
-                            {{ ucfirst($portfolio->status) }}
-                        </span>
-                    </div>
-
-                    <!-- Featured Badge -->
-                    @if($portfolio->is_featured)
-                        <div class="absolute top-3 left-3">
-                            <span class="flex items-center px-2 py-1 text-xs font-bold rounded-full shadow-lg bg-yellow-500 text-white">
-                                <i class="fas fa-star mr-1"></i>
-                                Featured
-                            </span>
-                        </div>
-                    @endif
+    <div id="portfolioGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        @forelse($portfolios as $portfolio)
+            @include('portfolios.partials.card', ['portfolio' => $portfolio])
+        @empty
+            <div class="col-span-full text-center py-16 bg-white rounded-xl shadow-md">
+                <div class="mb-4">
+                    <i class="fas fa-folder-open text-gray-300 text-7xl"></i>
                 </div>
-
-                <!-- Content Section -->
-                <div class="p-5">
-                    <!-- Tech Stack Badge -->
-                    @if($portfolio->techStack)
-                        <div class="mb-3">
-                            <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800">
-                                <i class="fas fa-layer-group mr-1.5"></i>
-                                {{ $portfolio->techStack->name }}
-                            </span>
-                        </div>
-                    @endif
-
-                    <!-- Title -->
-                    <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-1">{{ $portfolio->title }}</h3>
-
-                    <!-- Description -->
-                    <p class="text-gray-600 text-sm mb-4 line-clamp-2">{{ $portfolio->description ?: 'No description provided.' }}</p>
-
-                    <!-- Author & Date -->
-                    <div class="flex items-center justify-between text-xs text-gray-500 mb-4 pb-3 border-b border-gray-100">
-                        <div class="flex items-center">
-                            <img class="h-6 w-6 rounded-full ring-2 ring-indigo-100" src="https://ui-avatars.com/api/?name={{ $portfolio->user->name }}&background=4F46E5&color=fff" alt="{{ $portfolio->user->name }}">
-                            <span class="ml-2 font-medium">{{ $portfolio->user->name }}</span>
-                        </div>
-                        @if($portfolio->project_date)
-                            <span class="flex items-center">
-                                <i class="fas fa-calendar mr-1"></i>
-                                {{ $portfolio->project_date->format('M Y') }}
-                            </span>
-                        @endif
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="flex gap-2">
-                        <a href="{{ route('portfolios.show', $portfolio) }}"
-                            class="flex-1 text-center px-3 py-2 bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 rounded-lg hover:from-indigo-100 hover:to-purple-100 transition-all text-sm font-semibold">
-                            <i class="fas fa-eye mr-1"></i> View
-                        </a>
-                        @if($portfolio->project_url)
-                        <a href="{{ $portfolio->project_url }}" target="_blank"
-                            class="flex-1 text-center px-3 py-2 bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 rounded-lg hover:from-green-100 hover:to-emerald-100 transition-all text-sm font-semibold">
-                            <i class="fas fa-external-link-alt mr-1"></i> Live
-                        </a>
-                        @endif
-                    </div>
-                </div>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">No Portfolio Projects Found</h3>
+                <p class="text-gray-500 mb-6">Get started by adding your completed projects to showcase your work.</p>
+                @can('create portfolio')
+                <a href="{{ route('portfolios.create') }}"
+                    class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105">
+                    <i class="fas fa-plus mr-2"></i>
+                    Add Your First Project
+                </a>
+                @endcan
             </div>
-            @endforeach
-        </div>
-    @empty
-        <div class="text-center py-16 bg-white rounded-xl shadow-md">
-            <div class="mb-4">
-                <i class="fas fa-folder-open text-gray-300 text-7xl"></i>
-            </div>
-            <h3 class="text-xl font-semibold text-gray-700 mb-2">No Portfolio Projects Found</h3>
-            <p class="text-gray-500 mb-6">Get started by adding your completed projects to showcase your work.</p>
-            @can('create portfolio')
-            <a href="{{ route('portfolios.create') }}"
-                class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105">
-                <i class="fas fa-plus mr-2"></i>
-                Add Your First Project
-            </a>
-            @endcan
-        </div>
-    @endforelse
+        @endforelse
+    </div>
 
-    <!-- Pagination -->
-    @if($portfolios->hasPages())
-        <div class="mt-8 bg-white rounded-xl shadow-md p-4">
-            {{ $portfolios->appends(request()->except('page'))->links() }}
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="hidden py-8 text-center">
+        <div class="inline-flex items-center px-4 py-2 bg-white rounded-lg shadow-md">
+            <i class="fas fa-spinner fa-spin text-indigo-600 mr-2"></i>
+            <span class="text-gray-700 font-medium">Loading more portfolios...</span>
         </div>
-    @endif
+    </div>
+
+    <!-- No More Results -->
+    <div id="noMoreResults" class="hidden py-8 text-center">
+        <div class="inline-flex items-center px-4 py-2 bg-gray-100 rounded-lg">
+            <i class="fas fa-check-circle text-green-600 mr-2"></i>
+            <span class="text-gray-700 font-medium">You've reached the end</span>
+        </div>
+    </div>
 </div>
 
 <script>
+let page = 1;
+let loading = false;
+let hasMore = true;
+
+// Build query string from URL params
+function getQueryParams() {
+    const params = new URLSearchParams(window.location.search);
+    const result = {};
+    for (const [key, value] of params) {
+        if (key !== 'page') {
+            result[key] = value;
+        }
+    }
+    return result;
+}
+
+// Load more portfolios
+async function loadMore() {
+    if (loading || !hasMore) return;
+
+    loading = true;
+    document.getElementById('loadingIndicator').classList.remove('hidden');
+
+    try {
+        const params = new URLSearchParams(getQueryParams());
+        params.set('page', page + 1);
+
+        const response = await axios.get(`{{ route('portfolios.index') }}?${params.toString()}`, {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        const portfolios = response.data.data;
+        hasMore = response.data.has_more;
+
+        if (portfolios.length > 0) {
+            const grid = document.getElementById('portfolioGrid');
+
+            portfolios.forEach(portfolio => {
+                const cardHtml = createPortfolioCard(portfolio);
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = cardHtml;
+                grid.appendChild(tempDiv.firstElementChild);
+            });
+
+            page++;
+        }
+
+        if (!hasMore) {
+            document.getElementById('noMoreResults').classList.remove('hidden');
+        }
+    } catch (error) {
+        console.error('Error loading more portfolios:', error);
+    } finally {
+        loading = false;
+        document.getElementById('loadingIndicator').classList.add('hidden');
+    }
+}
+
+// Create portfolio card HTML
+function createPortfolioCard(portfolio) {
+    const statusClass = portfolio.status === 'published' ? 'bg-green-500/90 text-white' :
+                       (portfolio.status === 'draft' ? 'bg-yellow-500/90 text-white' : 'bg-gray-500/90 text-white');
+
+    const featuredBadge = portfolio.is_featured ? `
+        <div class="absolute top-3 left-3">
+            <span class="flex items-center px-2 py-1 text-xs font-bold rounded-full shadow-lg bg-yellow-500 text-white">
+                <i class="fas fa-star mr-1"></i>
+                Featured
+            </span>
+        </div>
+    ` : '';
+
+    const imageHtml = portfolio.screenshot
+        ? `<img src="/storage/${portfolio.screenshot}" alt="${portfolio.title}" class="portfolio-image w-full h-full object-cover">`
+        : `<div class="w-full h-full gradient-overlay flex items-center justify-center">
+            <i class="fas fa-laptop-code text-white text-7xl opacity-80"></i>
+           </div>`;
+
+    const techStackBadge = portfolio.tech_stack ? `
+        <div class="mb-3">
+            <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                <i class="fas fa-layer-group mr-1.5"></i>
+                ${portfolio.tech_stack.name}
+            </span>
+        </div>
+    ` : '';
+
+    const liveButton = portfolio.project_url ? `
+        <a href="${portfolio.project_url}" target="_blank"
+            class="flex-1 text-center px-3 py-2 bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 rounded-lg hover:from-green-100 hover:to-emerald-100 transition-all text-sm font-semibold">
+            <i class="fas fa-external-link-alt mr-1"></i> Live
+        </a>
+    ` : '';
+
+    return `
+        <div class="portfolio-card bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+            <div class="relative h-52 overflow-hidden bg-gray-100">
+                ${imageHtml}
+                <div class="absolute top-3 right-3">
+                    <span class="px-3 py-1 text-xs font-bold rounded-full shadow-lg backdrop-blur-sm ${statusClass}">
+                        ${portfolio.status.charAt(0).toUpperCase() + portfolio.status.slice(1)}
+                    </span>
+                </div>
+                ${featuredBadge}
+            </div>
+            <div class="p-5">
+                ${techStackBadge}
+                <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-1">${portfolio.title}</h3>
+                <p class="text-gray-600 text-sm mb-4 line-clamp-2">${portfolio.description || 'No description provided.'}</p>
+                <div class="flex items-center justify-between text-xs text-gray-500 mb-4 pb-3 border-b border-gray-100">
+                    <div class="flex items-center">
+                        <img class="h-6 w-6 rounded-full ring-2 ring-indigo-100" src="https://ui-avatars.com/api/?name=${portfolio.user?.name || 'User'}&background=4F46E5&color=fff" alt="${portfolio.user?.name || 'User'}">
+                        <span class="ml-2 font-medium">${portfolio.user?.name || 'Unknown'}</span>
+                    </div>
+                    ${portfolio.project_date ? `<span class="flex items-center"><i class="fas fa-calendar mr-1"></i>${portfolio.project_date}</span>` : ''}
+                </div>
+                <div class="flex gap-2">
+                    <a href="{{ route('portfolios.index') }}/${portfolio.id}"
+                        class="flex-1 text-center px-3 py-2 bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 rounded-lg hover:from-indigo-100 hover:to-purple-100 transition-all text-sm font-semibold">
+                        <i class="fas fa-eye mr-1"></i> View
+                    </a>
+                    ${liveButton}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Infinite scroll handler
+function handleScroll() {
+    const scrollPosition = window.innerHeight + window.pageYOffset;
+    const threshold = document.body.offsetHeight - 500;
+
+    if (scrollPosition >= threshold && !loading && hasMore) {
+        loadMore();
+    }
+}
+
+// Initialize infinite scroll
+document.addEventListener('DOMContentLoaded', function() {
+    window.addEventListener('scroll', handleScroll);
+
+    // Check if there are more results to load
+    hasMore = {{ $portfolios->hasMorePages() ? 'true' : 'false' }};
+    page = {{ $portfolios->currentPage() }};
+});
+
 function toggleFilters() {
     const advancedFilters = document.getElementById('advancedFilters');
     const toggle = document.getElementById('advancedToggle');

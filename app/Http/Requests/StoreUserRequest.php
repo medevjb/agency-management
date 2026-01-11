@@ -22,7 +22,7 @@ class StoreUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'employee_id' => 'nullable|string|regex:/^[0-9]{6,8}$/|unique:users,employee_id',
+            'employee_id' => 'nullable|string|max:13|unique:users,employee_id',
             'name' => 'required|string|max:255|min:2|regex:/^[a-zA-Z\s\-\.]+$/',
             'email' => 'required|string|email|max:255|unique:users,email',
             'phone' => 'nullable|string|max:20|regex:/^[+]?[0-9\s\-\(\)]+$/',
@@ -39,6 +39,8 @@ class StoreUserRequest extends FormRequest
             'tech_stack_id' => 'nullable|exists:tech_stacks,id',
             'permissions' => 'nullable|array',
             'permissions.*' => 'exists:permissions,id',
+            'managed_teams' => 'nullable|array',
+            'managed_teams.*' => 'exists:teams,id',
         ];
     }
 
@@ -51,7 +53,7 @@ class StoreUserRequest extends FormRequest
     {
         return [
             'employee_id.required' => 'Employee ID is required.',
-            'employee_id.regex' => 'Employee ID must be a 6-8 digit number.',
+            'employee_id.regex' => 'Employee ID must be exactly 13 characters (letters or numbers).',
             'employee_id.unique' => 'This employee ID is already in use.',
             'name.required' => 'Name is required.',
             'name.min' => 'Name must be at least 2 characters long.',

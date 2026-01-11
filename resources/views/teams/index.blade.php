@@ -10,7 +10,7 @@
                 <p class="text-gray-600 text-lg">Organize and manage your development teams efficiently</p>
             </div>
 
-            @can('manage teams')
+            @can('create', \App\Models\Team::class)
             <div class="flex-shrink-0">
                 <a href="{{ route('teams.create') }}" class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105">
                     <i class="fas fa-plus mr-2"></i>
@@ -292,18 +292,31 @@ document.addEventListener('DOMContentLoaded', function() {
             </tr>
         `;
 
-        axios.get('{{ route('teams.data') }}')
+        console.log('Loading teams from:', "{{ route('teams.data') }}");
+
+        axios.get("{{ route('teams.data') }}")
             .then(response => {
-                console.log('Response from server:', response);
-                if (response.data.data && Array.isArray(response.data.data)) {
+                console.log('=== Response received ===');
+                console.log('Response object:', response);
+                console.log('Response status:', response.status);
+                console.log('Response data type:', typeof response.data);
+                console.log('Response data:', response.data);
+                console.log('Response.data.data:', response.data?.data);
+                console.log('Is data array?', Array.isArray(response.data?.data));
+
+                // Check if response has data property
+                if (response.data && response.data.data && Array.isArray(response.data.data)) {
                     teamsData = response.data.data;
                     filteredData = [...teamsData];
-                    console.log('Teams data loaded:', teamsData);
+                    console.log('✓ Teams data loaded successfully');
+                    console.log('Teams count:', teamsData.length);
                     populateLeaderFilter();
                     updateStats();
                     renderTeams();
                 } else {
-                    console.log('Invalid response format:', response);
+                    console.error('✗ Invalid response format');
+                    console.error('Expected: { data: [...] }');
+                    console.error('Got:', response.data);
                     tbody.innerHTML = `
                         <tr>
                             <td colspan="5" class="px-6 py-12">
@@ -338,7 +351,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         </td>
                     </tr>
                 `;
-            }
         });
     }
 
@@ -355,7 +367,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                             <p class="text-gray-600 font-semibold text-lg">No teams found</p>
                             <p class="text-sm text-gray-400 mt-1">Try adjusting your search filters or create a new team</p>
-                            @can('manage teams')
+                            @can('create', \App\Models\Team::class)
                             <a href="{{ route('teams.create') }}" class="mt-4 inline-flex items-center justify-center px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105">
                                 <i class="fas fa-plus mr-2"></i>
                                 Create Your First Team
@@ -392,6 +404,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const teamId = team.DT_RowId || team.id;
 
+            // Limit description to 60 characters
+            const description = team.description || 'No description available';
+            const truncatedDescription = description.length > 60
+                ? description.substring(0, 60) + '...'
+                : description;
+
             return `
             <tr class="border-b border-gray-100 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200">
                 <td class="px-6 py-5">
@@ -403,7 +421,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                         <div class="ml-4 flex-1 min-w-0">
                             <div class="text-base font-bold text-gray-900 truncate">${team.name || 'Untitled Team'}</div>
-                            <div class="text-sm text-gray-500 truncate mt-1">${team.description || 'No description available'}</div>
+                            <div class="text-sm text-gray-500 truncate mt-1">${truncatedDescription}</div>
                         </div>
                     </div>
                 </td>

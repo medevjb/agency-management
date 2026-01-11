@@ -176,4 +176,111 @@ class SettingsController extends Controller
 
         return back()->with('success', 'Setting value cleared successfully.');
     }
+
+    /**
+     * Add a new project status.
+     */
+    public function addProjectStatus(Request $request)
+    {
+        $validated = $request->validate([
+            'key' => 'required|string|max:50|regex:/^[a-z0-9-]+$/',
+            'label' => 'required|string|max:100',
+            'icon' => 'required|string|max:10',
+            'color' => 'required|string|max:100',
+        ]);
+
+        $statusesSetting = Setting::where('key', 'project_statuses')->first();
+
+        if (! $statusesSetting) {
+            // Create the setting if it doesn't exist
+            $statuses = [];
+        } else {
+            $statuses = $statusesSetting->getValue();
+        }
+
+        // Check if key already exists
+        $existingKey = collect($statuses)->firstWhere('key', $validated['key']);
+        if ($existingKey) {
+            return back()->with('error', 'Status key already exists.');
+        }
+
+        $statuses[] = [
+            'key' => $validated['key'],
+            'label' => $validated['label'],
+            'icon' => $validated['icon'],
+            'color' => $validated['color'],
+            'default' => false,
+        ];
+
+        Setting::updateOrCreate(
+            ['key' => 'project_statuses'],
+            [
+                'group' => 'project',
+                'value' => json_encode($statuses),
+                'type' => 'json',
+                'label' => 'Project Statuses',
+                'description' => 'Define available project statuses with icons and colors',
+                'is_public' => false,
+            ]
+        );
+
+        return back()->with('success', 'Project status added successfully.');
+    }
+
+    /**
+     * Update a project status.
+     */
+    public function updateProjectStatus(Request $request, string $key)
+    {
+        $validated = $request->validate([
+            'label' => 'required|string|max:100',
+            'icon' => 'required|string|max:10',
+            'color' => 'required|string|max:100',
+        ]);
+
+        $statusesSetting = Setting::where('key', 'project_statuses')->firstOrFail();
+        $statuses = $statusesSetting->getValue();
+
+        // Find and update the status
+        $found = false;
+        foreach ($statuses as &$status) {
+            if ($status['key'] === $key) {
+                $status['label'] = $validated['label'];
+                $status['icon'] = $validated['icon'];
+                $status['color'] = $validated['color'];
+                $found = true;
+                break;
+            }
+        }
+
+        if (! $found) {
+            return back()->with('error', 'Project status not found.');
+        }
+
+        $statusesSetting->update(['value' => json_encode($statuses)]);
+
+        return back()->with('success', 'Project status updated successfully.');
+    }
+
+    /**
+     * Delete a project status.
+     */
+    public function deleteProjectStatus(string $key)
+    {
+        $statusesSetting = Setting::where('key', 'project_statuses')->firstOrFail();
+        $statuses = $statusesSetting->getValue();
+
+        // Don't allow deleting default statuses
+        $defaultStatuses = ['nra', 'pending', 'in-progress', 'completed', 'on-hold', 'cancelled'];
+        if (in_array($key, $defaultStatuses)) {
+            return back()->with('error', 'Cannot delete default project status.');
+        }
+
+        // Remove the status
+        $statuses = collect($statuses)->reject(fn ($status) => $status['key'] === $key)->values()->toArray();
+
+        $statusesSetting->update(['value' => json_encode($statuses)]);
+
+        return back()->with('success', 'Project status deleted successfully.');
+    }
 }

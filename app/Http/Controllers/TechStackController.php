@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\TechStack;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 
 class TechStackController extends Controller
@@ -20,9 +20,8 @@ class TechStackController extends Controller
      */
     public function index()
     {
-        if (!auth()->user()->can('manage tech stacks')) {
-            abort(403, 'Unauthorized');
-        }
+        $this->authorize('viewAny', TechStack::class);
+
         return view('tech-stacks.index');
     }
 
@@ -31,25 +30,48 @@ class TechStackController extends Controller
      */
     public function getTechStacks(Request $request): JsonResponse
     {
-        $query = TechStack::with(['stackLeader', 'members', 'projects'])->latest();
+        $this->authorize('viewAny', TechStack::class);
+
+        $user = auth()->user();
+
+        $query = TechStack::with(['stackLeader', 'members', 'projects'])
+            ->when(! $user->hasRole(['admin', 'stack-leader']), function ($q) use ($user) {
+                // Team leaders see tech stacks used by their team's orders
+                if ($user->hasRole('team-leader') && $user->team_id) {
+                    $q->whereHas('orders', function ($query) use ($user) {
+                        $query->where('team_id', $user->team_id);
+                    });
+                } else {
+                    // Team members see their assigned tech stack
+                    if ($user->tech_stack_id) {
+                        $q->where('id', $user->tech_stack_id);
+                    } else {
+                        $q->whereRaw('1 = 0'); // Show nothing if no tech stack assigned
+                    }
+                }
+            })
+            ->latest();
 
         return DataTables::of($query)
             ->editColumn('stack_leader', function ($techStack) {
                 $leader = $techStack->stackLeader;
+
                 return $leader ? [
                     'name' => $leader->name,
-                    'employee_id' => $leader->employee_id
+                    'employee_id' => $leader->employee_id,
                 ] : null;
             })
             ->addColumn('members_count', function ($techStack) {
                 $count = $techStack->members->count();
                 $activeCount = $techStack->members->where('is_active', true)->count();
-                return $count . ' ' . $activeCount . ' active';
+
+                return $count.' '.$activeCount.' active';
             })
             ->addColumn('projects_count', function ($techStack) {
                 $count = $techStack->projects->count();
                 $activeCount = $techStack->projects->whereIn('status', ['planning', 'in-progress'])->count();
-                return $count . ' ' . $activeCount . ' active';
+
+                return $count.' '.$activeCount.' active';
             })
             ->setRowId('id')
             ->make(true);
@@ -60,7 +82,10 @@ class TechStackController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', TechStack::class);
+
         $users = User::where('is_active', true)->get();
+
         return view('tech-stacks.create', compact('users'));
     }
 
@@ -69,6 +94,7 @@ class TechStackController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', TechStack::class);
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:tech_stacks',
             'description' => 'nullable|string',
@@ -87,13 +113,13 @@ class TechStackController extends Controller
         if ($validated['stack_leader_id']) {
             $leader = User::find($validated['stack_leader_id']);
             $leader->update(['tech_stack_id' => $techStack->id]);
-            if (!$leader->hasRole('stack-leader')) {
+            if (! $leader->hasRole('stack-leader')) {
                 $leader->assignRole('stack-leader');
             }
         }
 
         // Add tech stack members
-        if (!empty($validated['members'])) {
+        if (! empty($validated['members'])) {
             foreach ($validated['members'] as $memberId) {
                 User::where('id', $memberId)->update(['tech_stack_id' => $techStack->id]);
             }
@@ -109,6 +135,9 @@ class TechStackController extends Controller
     public function show(string $id)
     {
         $techStack = TechStack::with(['stackLeader', 'members', 'projects'])->findOrFail($id);
+
+        $this->authorize('view', $techStack);
+
         return view('tech-stacks.show', compact('techStack'));
     }
 
@@ -118,7 +147,11 @@ class TechStackController extends Controller
     public function edit(string $id)
     {
         $techStack = TechStack::with(['stackLeader', 'members'])->findOrFail($id);
+
+        $this->authorize('update', $techStack);
+
         $users = User::where('is_active', true)->get();
+
         return view('tech-stacks.edit', compact('techStack', 'users'));
     }
 
@@ -129,8 +162,10 @@ class TechStackController extends Controller
     {
         $techStack = TechStack::findOrFail($id);
 
+        $this->authorize('update', $techStack);
+
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:tech_stacks,name,' . $techStack->id,
+            'name' => 'required|string|max:255|unique:tech_stacks,name,'.$techStack->id,
             'description' => 'nullable|string',
             'stack_leader_id' => 'nullable|exists:users,id',
             'members' => 'nullable|array',
@@ -147,7 +182,7 @@ class TechStackController extends Controller
         if ($validated['stack_leader_id']) {
             $leader = User::find($validated['stack_leader_id']);
             $leader->update(['tech_stack_id' => $techStack->id]);
-            if (!$leader->hasRole('stack-leader')) {
+            if (! $leader->hasRole('stack-leader')) {
                 $leader->assignRole('stack-leader');
             }
         }
@@ -155,7 +190,7 @@ class TechStackController extends Controller
         // Update tech stack members - remove all current members and add new ones
         User::where('tech_stack_id', $techStack->id)->update(['tech_stack_id' => null]);
 
-        if (!empty($validated['members'])) {
+        if (! empty($validated['members'])) {
             foreach ($validated['members'] as $memberId) {
                 User::where('id', $memberId)->update(['tech_stack_id' => $techStack->id]);
             }
@@ -172,12 +207,14 @@ class TechStackController extends Controller
     {
         $techStack = TechStack::findOrFail($id);
 
+        $this->authorize('delete', $techStack);
+
         // Check if tech stack has active projects
         $activeProjects = $techStack->projects()->whereIn('status', ['planning', 'in-progress'])->count();
         if ($activeProjects > 0) {
             return response()->json([
                 'success' => false,
-                'message' => 'Cannot delete tech stack with active projects.'
+                'message' => 'Cannot delete tech stack with active projects.',
             ], 422);
         }
 
@@ -188,7 +225,7 @@ class TechStackController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Tech stack deleted successfully.'
+            'message' => 'Tech stack deleted successfully.',
         ]);
     }
 
@@ -198,6 +235,8 @@ class TechStackController extends Controller
     public function addMembers(Request $request, string $id)
     {
         $techStack = TechStack::findOrFail($id);
+
+        $this->authorize('addMembers', $techStack);
 
         $validated = $request->validate([
             'members' => 'required|array',
@@ -218,6 +257,9 @@ class TechStackController extends Controller
     public function removeMember(string $id, string $user_id)
     {
         $techStack = TechStack::findOrFail($id);
+
+        $this->authorize('removeMember', $techStack);
+
         $user = User::findOrFail($user_id);
 
         if ($user->tech_stack_id !== $techStack->id) {

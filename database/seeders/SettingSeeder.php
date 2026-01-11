@@ -572,6 +572,24 @@ class SettingSeeder extends Seeder
                 'description' => 'Message to display during maintenance',
                 'is_public' => true,
             ],
+
+            // Project Status Settings
+            [
+                'group' => 'project',
+                'key' => 'project_statuses',
+                'value' => json_encode([
+                    ['key' => 'nra', 'label' => 'NRA', 'icon' => '🤷‍♀️', 'color' => 'bg-gray-100 text-gray-800', 'default' => true],
+                    ['key' => 'pending', 'label' => 'Pending', 'icon' => '⏳', 'color' => 'bg-yellow-100 text-yellow-800', 'default' => true],
+                    ['key' => 'in-progress', 'label' => 'In Progress', 'icon' => '🔄', 'color' => 'bg-blue-100 text-blue-800', 'default' => true],
+                    ['key' => 'completed', 'label' => 'Completed', 'icon' => '✅', 'color' => 'bg-green-100 text-green-800', 'default' => true],
+                    ['key' => 'on-hold', 'label' => 'On Hold', 'icon' => '⏸️', 'color' => 'bg-orange-100 text-orange-800', 'default' => true],
+                    ['key' => 'cancelled', 'label' => 'Cancelled', 'icon' => '❌', 'color' => 'bg-red-100 text-red-800', 'default' => true],
+                ]),
+                'type' => 'json',
+                'label' => 'Project Statuses',
+                'description' => 'Define available project statuses with icons and colors',
+                'is_public' => false,
+            ],
         ];
 
         foreach ($settings as $setting) {

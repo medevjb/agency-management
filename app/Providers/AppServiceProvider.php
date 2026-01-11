@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Setting;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -20,6 +22,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Share project statuses with all views
+        View::composer('*', function ($view) {
+            $view->with('projectStatuses', Setting::getProjectStatuses());
+            $view->with('taskStatuses', Setting::getTaskStatuses());
+        });
+
         // Blade directive for currency symbol
         Blade::directive('currencySymbol', function () {
             return '<?php echo \App\Helpers\CurrencyHelper::getSymbol(); ?>';

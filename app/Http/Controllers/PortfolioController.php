@@ -60,6 +60,18 @@ class PortfolioController extends Controller
             $query->where('project_date', '>=', $request->date_from);
         }
 
+        // Return JSON for AJAX requests
+        if ($request->expectsJson()) {
+            $portfolios = $query->latest()->paginate(12);
+
+            return response()->json([
+                'data' => $portfolios->items(),
+                'has_more' => $portfolios->hasMorePages(),
+                'next_page' => $portfolios->currentPage() + 1,
+                'total' => $portfolios->total(),
+            ]);
+        }
+
         $portfolios = $query->latest()->paginate(12);
         $techStacks = TechStack::all();
 
@@ -80,6 +92,18 @@ class PortfolioController extends Controller
                 $q->where('title', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%");
             });
+        }
+
+        // Return JSON for AJAX requests
+        if ($request->expectsJson()) {
+            $portfolios = $query->latest()->paginate(12);
+
+            return response()->json([
+                'data' => $portfolios->items(),
+                'has_more' => $portfolios->hasMorePages(),
+                'next_page' => $portfolios->currentPage() + 1,
+                'total' => $portfolios->total(),
+            ]);
         }
 
         $portfolios = $query->latest()->paginate(12);

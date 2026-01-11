@@ -1,0 +1,323 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\User;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+
+class ComprehensiveUserSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        // Clear existing users
+        User::query()->delete();
+
+        $users = [
+            // Admin
+            [
+                'name' => 'Admin User',
+                'email' => 'admin@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+                'employee_id' => 'EMP-001',
+                'position' => 'System Administrator',
+                'department' => 'IT',
+                'phone' => '+1-555-0101',
+                'is_active' => true,
+            ],
+            // Project Managers
+            [
+                'name' => 'Sarah Johnson',
+                'email' => 'sarah.johnson@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'project-manager',
+                'employee_id' => 'EMP-002',
+                'position' => 'Senior Project Manager',
+                'department' => 'Project Management',
+                'phone' => '+1-555-0102',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Michael Chen',
+                'email' => 'michael.chen@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'project-manager',
+                'employee_id' => 'EMP-003',
+                'position' => 'Project Manager',
+                'department' => 'Project Management',
+                'phone' => '+1-555-0103',
+                'is_active' => true,
+            ],
+            // Team Leads
+            [
+                'name' => 'David Williams',
+                'email' => 'david.williams@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'team-lead',
+                'employee_id' => 'EMP-004',
+                'position' => 'Lead Developer',
+                'department' => 'Engineering',
+                'phone' => '+1-555-0104',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Emily Rodriguez',
+                'email' => 'emily.rodriguez@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'team-lead',
+                'employee_id' => 'EMP-005',
+                'position' => 'Design Team Lead',
+                'department' => 'Design',
+                'phone' => '+1-555-0105',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'James Wilson',
+                'email' => 'james.wilson@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'team-lead',
+                'employee_id' => 'EMP-006',
+                'position' => 'Marketing Team Lead',
+                'department' => 'Marketing',
+                'phone' => '+1-555-0106',
+                'is_active' => true,
+            ],
+            // Developers
+            [
+                'name' => 'Alex Thompson',
+                'email' => 'alex.thompson@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'developer',
+                'employee_id' => 'EMP-007',
+                'position' => 'Senior Full-Stack Developer',
+                'department' => 'Engineering',
+                'phone' => '+1-555-0107',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Jessica Martinez',
+                'email' => 'jessica.martinez@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'developer',
+                'employee_id' => 'EMP-008',
+                'position' => 'Frontend Developer',
+                'department' => 'Engineering',
+                'phone' => '+1-555-0108',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Ryan Garcia',
+                'email' => 'ryan.garcia@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'developer',
+                'employee_id' => 'EMP-009',
+                'position' => 'Backend Developer',
+                'department' => 'Engineering',
+                'phone' => '+1-555-0109',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Amanda Lee',
+                'email' => 'amanda.lee@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'developer',
+                'employee_id' => 'EMP-010',
+                'position' => 'Full-Stack Developer',
+                'department' => 'Engineering',
+                'phone' => '+1-555-0110',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Christopher Brown',
+                'email' => 'christopher.brown@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'developer',
+                'employee_id' => 'EMP-011',
+                'position' => 'Mobile Developer',
+                'department' => 'Engineering',
+                'phone' => '+1-555-0111',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Michelle Davis',
+                'email' => 'michelle.davis@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'developer',
+                'employee_id' => 'EMP-012',
+                'position' => 'DevOps Engineer',
+                'department' => 'Engineering',
+                'phone' => '+1-555-0112',
+                'is_active' => true,
+            ],
+            // Designers
+            [
+                'name' => 'Stephanie Clark',
+                'email' => 'stephanie.clark@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'designer',
+                'employee_id' => 'EMP-013',
+                'position' => 'Senior UI/UX Designer',
+                'department' => 'Design',
+                'phone' => '+1-555-0113',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Thomas Anderson',
+                'email' => 'thomas.anderson@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'designer',
+                'employee_id' => 'EMP-014',
+                'position' => 'Product Designer',
+                'department' => 'Design',
+                'phone' => '+1-555-0114',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Laura White',
+                'email' => 'laura.white@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'designer',
+                'employee_id' => 'EMP-015',
+                'position' => 'Graphic Designer',
+                'department' => 'Design',
+                'phone' => '+1-555-0115',
+                'is_active' => true,
+            ],
+            // QA/Testers
+            [
+                'name' => 'Kevin Harris',
+                'email' => 'kevin.harris@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'qa',
+                'employee_id' => 'EMP-016',
+                'position' => 'Senior QA Engineer',
+                'department' => 'Quality Assurance',
+                'phone' => '+1-555-0116',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Nancy Martin',
+                'email' => 'nancy.martin@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'qa',
+                'employee_id' => 'EMP-017',
+                'position' => 'QA Tester',
+                'department' => 'Quality Assurance',
+                'phone' => '+1-555-0117',
+                'is_active' => true,
+            ],
+            // Team Members
+            [
+                'name' => 'Daniel Thompson',
+                'email' => 'daniel.thompson@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'team-member',
+                'employee_id' => 'EMP-018',
+                'position' => 'Junior Developer',
+                'department' => 'Engineering',
+                'phone' => '+1-555-0118',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Lisa Robinson',
+                'email' => 'lisa.robinson@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'team-member',
+                'employee_id' => 'EMP-019',
+                'position' => 'Marketing Specialist',
+                'department' => 'Marketing',
+                'phone' => '+1-555-0119',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Mark Lewis',
+                'email' => 'mark.lewis@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'team-member',
+                'employee_id' => 'EMP-020',
+                'position' => 'Content Writer',
+                'department' => 'Marketing',
+                'phone' => '+1-555-0120',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Jennifer Walker',
+                'email' => 'jennifer.walker@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'team-member',
+                'employee_id' => 'EMP-021',
+                'position' => 'Business Analyst',
+                'department' => 'Business Analysis',
+                'phone' => '+1-555-0121',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Robert Hall',
+                'email' => 'robert.hall@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'team-member',
+                'employee_id' => 'EMP-022',
+                'position' => 'Technical Writer',
+                'department' => 'Documentation',
+                'phone' => '+1-555-0122',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Patricia Young',
+                'email' => 'patricia.young@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'team-member',
+                'employee_id' => 'EMP-023',
+                'position' => 'Data Analyst',
+                'department' => 'Analytics',
+                'phone' => '+1-555-0123',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Steven King',
+                'email' => 'steven.king@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'team-member',
+                'employee_id' => 'EMP-024',
+                'position' => 'System Administrator',
+                'department' => 'IT Operations',
+                'phone' => '+1-555-0124',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Susan Wright',
+                'email' => 'susan.wright@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'team-member',
+                'employee_id' => 'EMP-025',
+                'position' => 'HR Manager',
+                'department' => 'Human Resources',
+                'phone' => '+1-555-0125',
+                'is_active' => true,
+            ],
+            // Inactive users
+            [
+                'name' => 'Former Employee',
+                'email' => 'former@test.com',
+                'password' => Hash::make('password'),
+                'role' => 'team-member',
+                'employee_id' => 'EMP-026',
+                'position' => 'Former Position',
+                'department' => 'Former Department',
+                'phone' => '+1-555-0126',
+                'is_active' => false,
+            ],
+        ];
+
+        foreach ($users as $user) {
+            User::create($user);
+        }
+
+        $this->command->info('✅ Users created successfully!');
+        $this->command->info('👥 Created '.count($users).' users');
+    }
+}

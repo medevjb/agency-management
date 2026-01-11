@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\BugReportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FreelanceProfileController;
 use App\Http\Controllers\OrderController;
@@ -15,8 +16,12 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
-});
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+
+    return redirect()->route('login');
+})->name('home');
 
 Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -31,6 +36,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders/dashboard/chart-data', [OrderDashboardController::class, 'getChartData'])->name('orders.dashboard.chart-data');
     Route::get('/orders-data', [OrderController::class, 'getOrders'])->name('orders.data');
     Route::post('/orders/bulk-action', [OrderController::class, 'bulkAction'])->name('orders.bulk-action');
+    Route::get('/orders/search-members', [OrderController::class, 'searchMembers'])->name('orders.search-members');
     Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
@@ -48,6 +54,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/tasks/{task}/edit', [TaskController::class, 'edit'])->name('tasks.edit');
     Route::patch('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
     Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
+
+    // Bug Reports routes
+    Route::prefix('bug-reports')->name('bug-reports.')->group(function () {
+        Route::get('/', [BugReportController::class, 'index'])->name('index');
+        Route::get('/create', [BugReportController::class, 'create'])->name('create');
+        Route::post('/', [BugReportController::class, 'store'])->name('store');
+        Route::get('/{bugReport}', [BugReportController::class, 'show'])->name('show');
+        Route::get('/{bugReport}/edit', [BugReportController::class, 'edit'])->name('edit');
+        Route::patch('/{bugReport}', [BugReportController::class, 'update'])->name('update');
+        Route::delete('/{bugReport}', [BugReportController::class, 'destroy'])->name('destroy');
+        Route::delete('/{bugReport}/images/{image}', [BugReportController::class, 'deleteImage'])->name('images.delete');
+    });
 
     // Teams routes
     Route::get('/teams', [TeamController::class, 'index'])->name('teams.index');
@@ -140,6 +158,11 @@ Route::middleware(['auth', 'role:admin'])->prefix('settings')->name('settings.')
     Route::get('/{group}', [SettingsController::class, 'index'])->name('group');
     Route::put('/{group}', [SettingsController::class, 'update'])->name('update');
     Route::post('/delete-value/{key}', [SettingsController::class, 'deleteValue'])->name('delete-value');
+
+    // Project Status Management
+    Route::post('/project-statuses', [SettingsController::class, 'addProjectStatus'])->name('project-statuses.store');
+    Route::put('/project-statuses/{key}', [SettingsController::class, 'updateProjectStatus'])->name('project-statuses.update');
+    Route::delete('/project-statuses/{key}', [SettingsController::class, 'deleteProjectStatus'])->name('project-statuses.destroy');
 });
 
 require __DIR__.'/auth.php';

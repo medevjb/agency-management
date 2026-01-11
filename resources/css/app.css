@@ -364,7 +364,9 @@ div.dt-container div.dt-search {
         font-size: 13px;
     }
 }
-
+.countdown-timer{
+    font-size: 16px;
+}
 
 /* Custom Scrollbar for Sidebar */
 .custom-scrollbar::-webkit-scrollbar {

@@ -42,6 +42,7 @@
                                     'notifications' => 'bell',
                                     'task' => 'tasks',
                                     'team' => 'users',
+                                    'project' => 'project-diagram',
                                     'storage' => 'hdd',
                                     'maintenance' => 'tools',
                                     default => 'cog'
@@ -74,6 +75,7 @@
                                 'notifications' => 'bell',
                                 'task' => 'tasks',
                                 'team' => 'users',
+                                'project' => 'project-diagram',
                                 'storage' => 'hdd',
                                 'maintenance' => 'tools',
                                 default => 'cog'
@@ -354,9 +356,158 @@
                             </div>
                         @endif
                     </form>
+
+                    @if($group === 'project')
+                        <!-- Project Status Management -->
+                        <div class="border-t border-gray-200 p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                                <i class="fas fa-project-diagram text-indigo-600 mr-2"></i>
+                                Project Status Management
+                            </h3>
+                            <p class="text-sm text-gray-500 mb-6">Manage and customize project statuses that can be used across the application</p>
+
+                            <!-- Add New Status Form -->
+                            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                                <h4 class="text-sm font-semibold text-gray-700 mb-3">Add New Status</h4>
+                                <form method="POST" action="{{ route('settings.project-statuses.store') }}" class="grid grid-cols-1 md:grid-cols-5 gap-3">
+                                    @csrf
+                                    <div>
+                                        <input type="text" name="key" placeholder="Key (e.g., in-review)" required
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                               pattern="[a-z0-9-]+" title="Only lowercase letters, numbers, and hyphens">
+                                    </div>
+                                    <div>
+                                        <input type="text" name="label" placeholder="Label (e.g., In Review)" required
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                    <div>
+                                        <input type="text" name="icon" placeholder="Icon (e.g., 👀)" required
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                    <div>
+                                        <input type="text" name="color" placeholder="Color (e.g., bg-purple-100 text-purple-800)" required
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                    <button type="submit"
+                                            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
+                                        <i class="fas fa-plus mr-1"></i> Add Status
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Statuses List -->
+                            <div class="space-y-3">
+                                @php
+                                    $projectStatuses = \App\Models\Setting::getProjectStatuses();
+                                @endphp
+                                @foreach($projectStatuses as $key => $status)
+                                    <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+                                        <div class="flex items-center space-x-4">
+                                            <span class="text-2xl">{{ $status['icon'] }}</span>
+                                            <div>
+                                                <div class="font-semibold text-gray-900">{{ $status['label'] }}</div>
+                                                <div class="text-xs text-gray-500">{{ $key }}</div>
+                                            </div>
+                                            <span class="px-3 py-1 text-xs font-semibold rounded-full {{ $status['color'] }}">
+                                                {{ $status['label'] }}
+                                            </span>
+                                        </div>
+                                        @if(!in_array($key, ['nra', 'pending', 'in-progress', 'completed', 'on-hold', 'cancelled']))
+                                            <div class="flex items-center space-x-2">
+                                                <button type="button" onclick="editStatus('{{ $key }}', '{{ $status['label'] }}', '{{ $status['icon'] }}', '{{ $status['color'] }}')"
+                                                        class="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <form method="POST" action="{{ route('settings.project-statuses.destroy', ['key' => $key]) }}" class="inline"
+                                                      onsubmit="return confirm('Are you sure you want to delete this status?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit"
+                                                            class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        @else
+                                            <span class="text-xs text-gray-400 italic">Default status</span>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Edit Status Modal -->
+<div id="editStatusModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+    <div class="relative mx-auto p-6 border-0 shadow-xl rounded-2xl bg-white w-full max-w-lg mx-4">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-bold text-gray-900">Edit Project Status</h3>
+            <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <form id="editStatusForm" method="POST" action="">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="original_key" id="edit_original_key" value="">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Label</label>
+                    <input type="text" name="label" id="edit_label" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Icon</label>
+                    <input type="text" name="icon" id="edit_icon" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                    <input type="text" name="color" id="edit_color" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                    <button type="button" onclick="closeEditModal()"
+                            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg">
+                        Save Changes
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function editStatus(key, label, icon, color) {
+    document.getElementById('edit_original_key').value = key;
+    document.getElementById('edit_label').value = label;
+    document.getElementById('edit_icon').value = icon;
+    document.getElementById('edit_color').value = color;
+
+    const form = document.getElementById('editStatusForm');
+    form.action = `/settings/project-statuses/${key}`;
+
+    document.getElementById('editStatusModal').classList.remove('hidden');
+}
+
+function closeEditModal() {
+    document.getElementById('editStatusModal').classList.add('hidden');
+}
+
+// Close modal on escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeEditModal();
+    }
+});
+</script>
 @endsection

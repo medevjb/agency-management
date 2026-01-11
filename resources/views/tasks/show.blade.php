@@ -146,19 +146,19 @@
 
             <!-- Project -->
             <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Project</h2>
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Order</h2>
                 @if($task->project)
-                    <a href="{{ route('projects.show', $task->project->id) }}" class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <a href="{{ route('orders.show', $task->project->id) }}" class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                         <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
                             <i class="fas fa-folder text-indigo-600"></i>
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-900">{{ $task->project->name }}</p>
-                            <p class="text-xs text-gray-500">View Project</p>
+                            <p class="text-xs text-gray-500">View Order</p>
                         </div>
                     </a>
                 @else
-                    <p class="text-gray-400">No project assigned</p>
+                    <p class="text-gray-400">No order assigned</p>
                 @endif
             </div>
         </div>

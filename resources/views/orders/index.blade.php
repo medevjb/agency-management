@@ -5,20 +5,63 @@
 @push('styles')
     <style>
         /* Column Width Control */
-        /* Status Column - proper width for dropdown */
+        /* Status Column - compact width for dropdown */
         #ordersTable colgroup col[data-dt-column="3"],
         #ordersTable tbody td[data-dt-column="3"] {
-            min-width: 130px !important;
-            max-width: 150px !important;
-            width: 140px !important;
+            min-width: 115px !important;
+            max-width: 130px !important;
+            width: 120px !important;
         }
 
-        /* Priority Column - proper width for dropdown */
+        /* Priority Column - compact width for dropdown */
         #ordersTable colgroup col[data-dt-column="4"],
         #ordersTable tbody td[data-dt-column="4"] {
-            min-width: 100px !important;
+            min-width: 90px !important;
+            max-width: 100px !important;
+            width: 95px !important;
+        }
+
+        /* Team Column - compact width */
+        #ordersTable colgroup col[data-dt-column="7"],
+        #ordersTable tbody td[data-dt-column="7"] {
+            min-width: 80px !important;
             max-width: 120px !important;
-            width: 110px !important;
+            width: 100px !important;
+        }
+
+        /* Users Column - compact width */
+        #ordersTable colgroup col[data-dt-column="8"],
+        #ordersTable tbody td[data-dt-column="8"] {
+            min-width: 85px !important;
+            max-width: 110px !important;
+            width: 95px !important;
+        }
+
+        /* Profile Column - compact width */
+        #ordersTable colgroup col[data-dt-column="3"],
+        #ordersTable tbody td[data-dt-column="3"] {
+            min-width: 90px !important;
+            max-width: 120px !important;
+            width: 100px !important;
+        }
+
+        /* Custom scrollbar for horizontal scrolling */
+        .overflow-x-auto::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .overflow-x-auto::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .overflow-x-auto::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
         }
 
         /* DataTables Pagination Styling matching users module */
@@ -154,15 +197,16 @@
         .countdown-unit {
             display: inline-flex;
             align-items: baseline;
-            gap: 2px;
+            gap: 1px;
             font-family: 'Courier New', monospace;
             font-weight: 700;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
             white-space: nowrap;
+            font-size: 0.85em;
         }
 
         .countdown-unit small {
-            font-size: 0.65em !important;
+            font-size: 0.7em !important;
             font-weight: 600;
             text-transform: uppercase;
             margin-left: 1px;
@@ -418,7 +462,7 @@
         <!-- DataTable -->
         <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden datatableprimary mx-0">
             <div class="overflow-x-auto">
-                <table id="ordersTable" class="display w-full" style="width:100%">
+                <table id="ordersTable" class="display w-full" style="width:100%; min-width: 1200px;">
                     <thead>
                         <tr>
                             <th class="text-center" style="width: 40px;">
@@ -536,8 +580,8 @@
                             name: 'freelance_profile_id',
                             render: function(data) {
                                 if (!data || data === 'N/A')
-                                    return '<span class="text-gray-400 text-sm">No profile</span>';
-                                return `<span class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-purple-50 text-purple-700">@${data}</span>`;
+                                    return '<span class="text-gray-400 text-xs">No profile</span>';
+                                return `<span class="px-2 py-1 rounded-lg text-xs font-semibold bg-purple-50 text-purple-700">@${data}</span>`;
                             }
                         },
                         {
@@ -579,7 +623,7 @@
                                 const config = statusConfig[data] || statusConfig['nra'];
 
                                 return `
-                                    <select class="inline-select px-3 py-2 rounded text-xs font-semibold ${config.color} border-0 cursor-pointer focus:ring-1 focus:ring-offset-1 focus:ring-purple-500 min-w-[120px] max-w-[140px] statusDropdown"
+                                    <select class="inline-select px-2 py-1 rounded text-xs font-semibold ${config.color} border-0 cursor-pointer focus:ring-1 focus:ring-offset-1 focus:ring-purple-500 min-w-[100px] max-w-[115px] statusDropdown"
                                             data-order-id="${row.id}"
                                             data-field="status"
                                             data-original-value="${data}"
@@ -618,7 +662,7 @@
                                 const p = config[data] || config['medium'];
 
                                 return `
-                                    <select class="inline-select px-2 py-2 rounded text-xs font-semibold ${p.color} border-0 cursor-pointer focus:ring-1 focus:ring-offset-1 focus:ring-purple-500 min-w-[95px] max-w-[110px] priorityDropdown"
+                                    <select class="inline-select px-2 py-1 rounded text-xs font-semibold ${p.color} border-0 cursor-pointer focus:ring-1 focus:ring-offset-1 focus:ring-purple-500 min-w-[90px] max-w-[105px] priorityDropdown"
                                             data-order-id="${row.id}"
                                             data-field="priority"
                                             data-original-value="${data}"
@@ -643,8 +687,8 @@
                             name: 'team_id',
                             render: function(data) {
                                 if (!data || data === 'N/A')
-                                    return '<span class="text-gray-400 text-sm">No team</span>';
-                                return `<span class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-blue-50 text-blue-700">${data}</span>`;
+                                    return '<span class="text-gray-400 text-xs">No team</span>';
+                                return `<span class="px-2 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 truncate max-w-[120px] inline-block">${data}</span>`;
                             }
                         },
                        
@@ -653,22 +697,27 @@
                             name: 'users',
                             render: function(data, type, row) {
                                 if (!data || data.length === 0) {
-                                    return '<span class="text-gray-400 text-sm">No users</span>';
+                                    return '<span class="text-gray-400 text-xs">No users</span>';
                                 }
                                 if (data.length === 1) {
-                                    return `<span class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-purple-50 text-purple-700" title="${data[0].name}">${data[0].name}</span>`;
+                                    return `<span class="px-2 py-1 rounded-lg text-xs font-semibold bg-purple-50 text-purple-700 truncate max-w-[100px] inline-block" title="${data[0].name}">${data[0].name}</span>`;
                                 }
                                 // Multiple users - show count with tooltip
-                                return `<span class="px-3 py-1.5 rounded-full text-sm font-semibold bg-purple-100 text-purple-800 cursor-help" title="${row.users_names}">${data.length} users</span>`;
+                                return `<span class="px-2 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 cursor-help" title="${row.users_names}">${data.length} users</span>`;
                             }
                         },
                         {
                             data: 'end_date',
                             name: 'end_date',
-                            render: function(data) {
+                            render: function(data, type, row) {
+                                // Check if order is completed
+                                if (row.status === 'completed') {
+                                    return '<span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-green-100 text-green-600"><i class="fas fa-check"></i></span>';
+                                }
+
                                 if (!data) return '<span class="text-gray-400 text-xs">Not set</span>';
 
-                                return `<span class="countdown-timer inline-flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-bold whitespace-nowrap" data-deadline="${data}"><i class="fas fa-clock"></i> <span class="countdown-text">Loading...</span></span>`;
+                                return `<span class="countdown-timer inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold whitespace-nowrap" data-deadline="${data}"><i class="fas fa-clock text-xs"></i> <span class="countdown-text">Loading...</span></span>`;
                             }
                         },
                         {

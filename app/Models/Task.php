@@ -34,6 +34,11 @@ class Task extends Model
         return $this->belongsTo(Order::class);
     }
 
+    public function project(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Order::class, 'order_id');
+    }
+
     public function assignedTo(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_to');

@@ -1,7 +1,7 @@
 <!-- Desktop Sidebar -->
-<aside class="fixed top-0 left-0 h-screen w-64 bg-gradient-to-b from-slate-900 via-indigo-900 to-indigo-950 text-white hidden lg:flex flex-col shadow-2xl z-50">
+<aside class="fixed top-0 left-0 h-screen w-64 bg-indigo-900 text-white hidden lg:flex flex-col shadow-2xl z-50">
     <!-- Logo Section -->
-    <div class="flex items-center justify-center h-16 px-6 border-b border-indigo-700/50 bg-gradient-to-r from-indigo-600 to-purple-600 flex-shrink-0">
+    <div class="flex items-center justify-center h-16 px-6 border-b border-indigo-700/50 flex-shrink-0">
         <i class="fas fa-rocket text-2xl mr-3"></i>
         <h1 class="text-xl font-bold tracking-wide">{{ config('app.name', 'PMT') }}</h1>
     </div>
@@ -16,6 +16,8 @@
                 $currentSection = 'orders';
             } elseif (request()->routeIs('tasks.*')) {
                 $currentSection = 'tasks';
+            } elseif (request()->routeIs('bug-reports.*')) {
+                $currentSection = 'bug-reports';
             } elseif (request()->routeIs('freelance-profiles.*')) {
                 $currentSection = 'profile';
             } elseif (request()->routeIs('portfolios.*')) {
@@ -27,7 +29,8 @@
             }
         @endphp
 
-        <!-- Dashboard Section -->
+        <!-- Dashboard Section - Only for management -->
+        @role(['admin', 'operation-manager', 'project-manager'])
         <div class="mb-2 sidebar-section" data-section="dashboard">
             <button class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
                 <div class="flex items-center">
@@ -44,6 +47,7 @@
                 </a>
             </div>
         </div>
+        @endrole
 
         <!-- Orders Section -->
         <div class="mb-2 sidebar-section" data-section="orders">
@@ -93,6 +97,31 @@
                     <i class="fas fa-plus w-5 mr-2"></i>
                     Add Task
                 </a>
+            </div>
+        </div>
+
+        <!-- Bug Reports Section - Available to all authenticated users -->
+        <div class="mb-2 sidebar-section" data-section="bug-reports">
+            <button class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                <div class="flex items-center">
+                    <i class="fas fa-bug w-5 text-orange-400 group-hover:text-orange-300 transition-colors"></i>
+                    <span class="ml-3">Bug Reports</span>
+                </div>
+                <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron {{ $currentSection === 'bug-reports' ? 'rotate-180' : '' }}"></i>
+            </button>
+            <div class="sidebar-content mt-1 space-y-1 ml-4 {{ $currentSection !== 'bug-reports' ? 'hidden' : '' }}">
+                <a href="{{ route('bug-reports.index') }}"
+                   class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('bug-reports.index') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                    <i class="fas fa-list w-5 mr-2"></i>
+                    All Bugs
+                </a>
+                @can('create', \App\Models\BugReport::class)
+                <a href="{{ route('bug-reports.create') }}"
+                   class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('bug-reports.create') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                    <i class="fas fa-plus w-5 mr-2"></i>
+                    Report Bug
+                </a>
+                @endcan
             </div>
         </div>
 
@@ -166,7 +195,7 @@
         @endcanany
 
         <!-- Team Management Section -->
-        @canany(['manage teams', 'view teams'])
+        @canany('viewAny', \App\Models\Team::class, \App\Models\TechStack::class)
         <div class="mb-2 sidebar-section" data-section="team">
             <button class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
                 <div class="flex items-center">
@@ -176,14 +205,14 @@
                 <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron {{ $currentSection === 'team' ? 'rotate-180' : '' }}"></i>
             </button>
             <div class="sidebar-content mt-1 space-y-1 ml-4 {{ $currentSection !== 'team' ? 'hidden' : '' }}">
-                @can('manage teams')
+                @can('viewAny', \App\Models\Team::class)
                 <a href="{{ route('teams.index') }}"
                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('teams.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
                     <i class="fas fa-users w-5 mr-2"></i>
                     Teams
                 </a>
                 @endif
-                @can('manage tech stacks')
+                @can('viewAny', \App\Models\TechStack::class)
                 <a href="{{ route('tech-stacks.index') }}"
                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tech-stacks.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
                     <i class="fas fa-layer-group w-5 mr-2"></i>
@@ -231,7 +260,7 @@
     </nav>
 
     <!-- User Section -->
-    <div class="px-4 py-4 border-t border-indigo-700/50 bg-gradient-to-r from-indigo-800/50 to-purple-800/50 flex-shrink-0">
+    <div class="px-4 py-4 border-t border-indigo-700/50 flex-shrink-0">
         <div class="flex items-center mb-3">
             <div class="flex-shrink-0">
                 <img class="h-10 w-10 rounded-full ring-2 ring-indigo-400" src="https://ui-avatars.com/api/?name={{ Auth::user()->name }}&background=4F46E5&color=fff&size=128" alt="{{ Auth::user()->name }}">

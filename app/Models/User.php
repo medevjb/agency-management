@@ -69,7 +69,7 @@ class User extends Authenticatable
     public static function validationRules(): array
     {
         return [
-            'employee_id' => 'nullable|string|regex:/^[0-9]{6,8}$/|unique:users,employee_id',
+            'employee_id' => 'nullable|string|regex:/^[a-zA-Z0-9]{13}$/|unique:users,employee_id',
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email',
             'phone' => 'nullable|string|max:20',
@@ -92,7 +92,7 @@ class User extends Authenticatable
     public static function validationMessages(): array
     {
         return [
-            'employee_id.regex' => 'Employee ID must be a 6-8 digit number.',
+            'employee_id.regex' => 'Employee ID must be exactly 13 characters (letters or numbers).',
             'employee_id.unique' => 'This employee ID is already in use.',
             'email.unique' => 'This email address is already registered.',
             'password.confirmed' => 'Password confirmation does not match.',
@@ -137,5 +137,20 @@ class User extends Authenticatable
         return $this->belongsToMany(Order::class, 'order_user')
             ->withPivot('role')
             ->withTimestamps();
+    }
+
+    public function managedTeams(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Team::class, 'manager_team');
+    }
+
+    public function isManagerOfTeam(Team $team): bool
+    {
+        return $this->managedTeams()->where('teams.id', $team->id)->exists();
+    }
+
+    public function isManager(): bool
+    {
+        return $this->hasAnyRole(['operation-manager', 'project-manager']);
     }
 }

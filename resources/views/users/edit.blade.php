@@ -97,8 +97,9 @@
                                     </label>
                                     <input type="text" id="employee_id" name="employee_id"
                                            value="{{ old('employee_id', $user->employee_id) }}"
+                                           maxlength="13"
                                            class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
-                                           placeholder="123456">
+                                           placeholder="13 characters (optional)">
                                 </div>
 
                                 <div>
@@ -170,9 +171,11 @@
                                     <label for="hire_date" class="block text-sm font-semibold text-gray-700 mb-2">
                                         Hire Date
                                     </label>
-                                    <input type="date" id="hire_date" name="hire_date"
+                                    <input type="text" id="hire_date" name="hire_date"
                                            value="{{ old('hire_date', $user->hire_date ? $user->hire_date->format('Y-m-d') : '') }}"
-                                           class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base">
+                                           class="datepicker w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base cursor-pointer"
+                                           placeholder="Select hire date..."
+                                           readonly>
                                 </div>
 
                                 <div>
@@ -288,6 +291,34 @@
                                     </select>
                                 </div>
 
+                                <!-- Managed Teams Section (only for managers) -->
+                                <div id="managedTeamsSection" class="hidden">
+                                    <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                                        <div class="flex items-start mb-3">
+                                            <i class="fas fa-users-cog text-indigo-600 mt-1 mr-2"></i>
+                                            <div class="flex-1">
+                                                <h4 class="text-sm font-semibold text-indigo-900 mb-1">Managed Teams</h4>
+                                                <p class="text-xs text-indigo-700">Select which teams this manager can oversee. Managers will only have access to teams they're assigned to.</p>
+                                            </div>
+                                        </div>
+                                        <div class="space-y-2">
+                                            @foreach($teams as $team)
+                                                <label class="flex items-center p-2 rounded hover:bg-white transition-colors cursor-pointer">
+                                                    <input type="checkbox"
+                                                           name="managed_teams[]"
+                                                           value="{{ $team->id }}"
+                                                           {{ in_array($team->id, old('managed_teams', $user->managedTeams->pluck('id')->toArray())) ? 'checked' : '' }}
+                                                           class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                                    <span class="ml-3 text-sm text-gray-700">{{ $team->name }}</span>
+                                                    @if($team->description)
+                                                        <span class="ml-2 text-xs text-gray-500">({{ $team->description }})</span>
+                                                    @endif
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div class="border-t border-gray-200 pt-6">
                                     <div class="flex items-center justify-between mb-4">
                                         <h4 class="text-lg font-semibold text-gray-900">Additional Permissions</h4>
@@ -371,6 +402,29 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Edit user page loaded');
+
+    // Handle role change to show/hide managed teams section
+    const roleSelect = document.getElementById('role');
+    const managedTeamsSection = document.getElementById('managedTeamsSection');
+
+    function toggleManagedTeamsSection() {
+        const selectedRole = roleSelect.value;
+        if (selectedRole === 'operation-manager' || selectedRole === 'project-manager') {
+            managedTeamsSection.classList.remove('hidden');
+        } else {
+            managedTeamsSection.classList.add('hidden');
+            // Uncheck all managed teams when not a manager role
+            document.querySelectorAll('input[name="managed_teams[]"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+        }
+    }
+
+    // Initial check
+    toggleManagedTeamsSection();
+
+    // Listen for role changes
+    roleSelect.addEventListener('change', toggleManagedTeamsSection);
 
     for (let i = 1; i <= 4; i++) {
         const stepContent = document.getElementById('step' + i + 'Content');
