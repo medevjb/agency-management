@@ -26,12 +26,15 @@
         /* Custom Flatpickr Styling */
         .flatpickr-calendar {
             background: #ffffff;
-            border: none;
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
             font-family: 'Figtree', sans-serif;
-            padding: 16px;
-            width: 320px !important;
+            padding: 12px;
+            width: 280px !important;
+            max-width: 95vw !important;
+            max-height: 90vh !important;
+            overflow: auto;
             z-index: 99999 !important;
         }
 
@@ -40,7 +43,7 @@
         }
 
         .flatpickr-calendar.hasTime.noCalendar {
-            width: 320px !important;
+            width: 280px !important;
         }
 
         .flatpickr-calendar:before,
@@ -50,24 +53,24 @@
 
         /* Month navigation */
         .flatpickr-months {
-            margin: 0 0 16px 0;
+            margin: 0 0 12px 0;
             padding: 0;
-            height: 40px;
+            height: 32px;
         }
 
         .flatpickr-month {
-            height: 40px;
+            height: 32px;
             display: flex;
             align-items: center;
         }
 
         .flatpickr-current-month {
             padding: 0;
-            height: 40px;
-            line-height: 40px;
+            height: 32px;
+            line-height: 32px;
             color: #1f2937;
             font-weight: 600;
-            font-size: 16px;
+            font-size: 14px;
             position: relative;
             left: 0;
         }
@@ -84,14 +87,14 @@
 
         .flatpickr-months .flatpickr-prev-month,
         .flatpickr-months .flatpickr-next-month {
-            height: 40px;
-            width: 40px;
+            height: 32px;
+            width: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
             background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             color: #4b5563;
             fill: #4b5563;
             cursor: pointer;
@@ -113,19 +116,19 @@
 
         .flatpickr-months .flatpickr-prev-month svg,
         .flatpickr-months .flatpickr-next-month svg {
-            width: 20px;
-            height: 20px;
+            width: 16px;
+            height: 16px;
         }
 
         /* Days of week */
         .flatpickr-weekdays {
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .flatpickr-weekday {
             color: #6b7280;
             font-weight: 600;
-            font-size: 12px;
+            font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -142,20 +145,20 @@
         }
 
         .flatpickr-day {
-            height: 38px;
-            line-height: 38px;
-            border-radius: 10px;
+            height: 32px;
+            line-height: 32px;
+            border-radius: 8px;
             color: #374151;
             font-weight: 500;
-            font-size: 14px;
-            margin: 2px 0;
+            font-size: 13px;
+            margin: 1px 0;
             transition: all 0.2s ease;
         }
 
         .flatpickr-day:hover {
             background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
             color: #4f46e5;
-            transform: scale(1.1);
+            transform: scale(1.05);
             border-color: transparent;
         }
 
@@ -199,7 +202,7 @@
             border-color: transparent !important;
             color: #ffffff !important;
             font-weight: 600;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
         }
 
         .flatpickr-day.inRange {
@@ -233,28 +236,28 @@
         /* Time picker */
         .flatpickr-time {
             border-top: 1px solid #e5e7eb;
-            height: 50px;
+            height: 40px;
         }
 
         .flatpickr-time .numInputWrapper {
-            height: 40px;
+            height: 32px;
         }
 
         .flatpickr-time .flatpickr-am-pm {
-            height: 40px;
-            line-height: 40px;
+            height: 32px;
+            line-height: 32px;
         }
 
         /* Calendar container position */
         .flatpickr-calendar.open {
-            margin-top: 8px;
+            margin-top: 4px;
             animation: fadeIn 0.2s ease-out;
         }
 
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(-10px);
+                transform: translateY(-5px);
             }
             to {
                 opacity: 1;
@@ -341,9 +344,14 @@
                     </button>
                     <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
                         <a href="{{ route('tasks.index') }}"
-                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tasks.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tasks.index') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
                             <i class="fas fa-list w-5 mr-2"></i>
                             All Tasks
+                        </a>
+                        <a href="{{ route('tasks.archived') }}"
+                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tasks.archived') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            <i class="fas fa-archive w-5 mr-2"></i>
+                            Archived Tasks
                         </a>
                         <a href="{{ route('tasks.create') }}"
                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tasks.create') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
@@ -389,7 +397,7 @@
                 @endrole
 
                 <!-- Team Section -->
-                @canany('viewAny', \App\Models\Team::class, \App\Models\TechStack::class)
+                @if(auth()->user()->can('viewAny', \App\Models\Team::class) || auth()->user()->can('viewAny', \App\Models\TechStack::class))
                 <div class="mb-2 sidebar-section" data-section="team">
                     <button class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
                         <div class="flex items-center">
@@ -405,17 +413,17 @@
                             <i class="fas fa-users w-5 mr-2"></i>
                             Teams
                         </a>
-                        @endif
+                        @endcan
                         @can('viewAny', \App\Models\TechStack::class)
                         <a href="{{ route('tech-stacks.index') }}"
                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tech-stacks.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
                             <i class="fas fa-layer-group w-5 mr-2"></i>
                             Tech Stacks
                         </a>
-                        @endif
+                        @endcan
                     </div>
                 </div>
-                @endcanany
+                @endif
             </nav>
         </div>
     </aside>
@@ -542,6 +550,8 @@
                     static: true,
                     animate: true,
                     monthSelectorType: 'static',
+                    appendTo: document.body,
+                    position: 'below',
                     prevArrow:
                         '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>',
                     nextArrow:

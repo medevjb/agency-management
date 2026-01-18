@@ -149,7 +149,7 @@
             </div>
 
             <!-- Recent Orders Table -->
-            <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+            <div class="bg-white rounded-2xl shadow-md border border-gray-100 ">
                 <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
                     <div>
                         <h3 class="text-lg font-semibold text-gray-900">Recent Orders</h3>

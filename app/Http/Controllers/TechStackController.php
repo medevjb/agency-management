@@ -18,11 +18,44 @@ class TechStackController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('viewAny', TechStack::class);
 
-        return view('tech-stacks.index');
+        $user = auth()->user();
+
+        $techStacks = TechStack::with(['stackLeader', 'members', 'projects'])
+            ->when($request->filled('search'), function ($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('description', 'like', '%'.$request->search.'%');
+            })
+            ->when($request->filled('leader'), function ($q) use ($request) {
+                $q->where('stack_leader_id', $request->leader);
+            })
+            ->when(! $user->hasRole(['admin', 'stack-leader']), function ($q) use ($user) {
+                // Team leaders see tech stacks used by their team's orders
+                if ($user->hasRole('team-leader') && $user->team_id) {
+                    $q->whereHas('orders', function ($query) use ($user) {
+                        $query->where('team_id', $user->team_id);
+                    });
+                } else {
+                    // Team members see their assigned tech stack
+                    if ($user->tech_stack_id) {
+                        $q->where('id', $user->tech_stack_id);
+                    } else {
+                        $q->whereRaw('1 = 0'); // Show nothing if no tech stack assigned
+                    }
+                }
+            })
+            ->latest()
+            ->paginate(10);
+
+        // Get all unique stack leaders for filter
+        $leaders = User::whereIn('id', TechStack::whereNotNull('stack_leader_id')->pluck('stack_leader_id'))
+            ->orderBy('name')
+            ->get();
+
+        return view('tech-stacks.index', compact('techStacks', 'leaders'));
     }
 
     /**
@@ -49,10 +82,15 @@ class TechStackController extends Controller
                         $q->whereRaw('1 = 0'); // Show nothing if no tech stack assigned
                     }
                 }
-            })
-            ->latest();
+            });
 
         return DataTables::of($query)
+            ->editColumn('name', function ($techStack) {
+                return [
+                    'name' => $techStack->name,
+                    'description' => $techStack->description,
+                ];
+            })
             ->editColumn('stack_leader', function ($techStack) {
                 $leader = $techStack->stackLeader;
 
@@ -72,6 +110,12 @@ class TechStackController extends Controller
                 $activeCount = $techStack->projects->whereIn('status', ['planning', 'in-progress'])->count();
 
                 return $count.' '.$activeCount.' active';
+            })
+            ->orderColumn('members_count', function ($query, $order) {
+                $query->withCount('members')->orderBy('members_count', $order);
+            })
+            ->orderColumn('projects_count', function ($query, $order) {
+                $query->withCount('projects')->orderBy('projects_count', $order);
             })
             ->setRowId('id')
             ->make(true);

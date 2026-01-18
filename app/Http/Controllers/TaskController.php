@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
-use App\Models\Project;
+use App\Models\Order;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -22,32 +22,30 @@ class TaskController extends Controller
         $user = auth()->user();
 
         // Get tasks based on user role
-        $tasks = Task::with(['project', 'assignedTo', 'createdBy'])
+        $tasks = Task::with(['order', 'assignedTo', 'createdBy'])
             ->when(! $user->hasRole(['admin', 'operation-manager', 'project-manager']), function ($query) use ($user) {
-                if ($user->hasRole('team-leader') && $user->team_id) {
-                    // Team leaders see tasks from their team's orders
-                    $query->whereHas('order', function ($q) use ($user) {
-                        $q->where('team_id', $user->team_id);
+                // For non-admin users, show tasks they are assigned to or created, OR tasks from their team's orders
+                $query->where(function ($q) use ($user) {
+                    $q->where(function ($query) use ($user) {
+                        // Tasks assigned to or created by the user
+                        $query->where('assigned_to', $user->id)
+                            ->orWhere('created_by', $user->id);
                     });
-                } elseif ($user->hasRole('stack-leader') && $user->tech_stack_id) {
-                    // Stack leaders see tasks from orders that use their tech stack
-                    $query->whereHas('order', function ($q) use ($user) {
-                        $q->where('tech_stack_id', $user->tech_stack_id);
-                    });
-                } else {
-                    // Team members see all tasks from their team's orders
+
+                    // OR tasks from their team's orders (if they have a team)
                     if ($user->team_id) {
-                        $query->whereHas('order', function ($q) use ($user) {
-                            $q->where('team_id', $user->team_id);
-                        });
-                    } else {
-                        // Fallback to assigned/created tasks if no team
-                        $query->where(function ($q) use ($user) {
-                            $q->where('assigned_to', $user->id)
-                                ->orWhere('created_by', $user->id);
+                        $q->orWhereHas('order', function ($orderQuery) use ($user) {
+                            $orderQuery->where('team_id', $user->team_id);
                         });
                     }
-                }
+
+                    // OR tasks from their tech stack orders (if they are stack-leader)
+                    if ($user->hasRole('stack-leader') && $user->tech_stack_id) {
+                        $q->orWhereHas('order', function ($orderQuery) use ($user) {
+                            $orderQuery->where('tech_stack_id', $user->tech_stack_id);
+                        });
+                    }
+                });
             })
             ->when($request->status, function ($query, $status) {
                 $query->where('status', $status);
@@ -56,16 +54,16 @@ class TaskController extends Controller
                 $query->where('priority', $priority);
             })
             ->when($request->project_id, function ($query, $projectId) {
-                $query->where('project_id', $projectId);
+                $query->where('order_id', $projectId);
             })
             ->latest()
-            ->paginate(10);
+            ->get();
 
-        $projects = Project::all();
+        $orders = Order::all();
         $users = User::all();
 
         $stats = [
-            'total' => $tasks->total(),
+            'total' => $tasks->count(),
             'pending' => Task::where('status', 'pending')
                 ->when(! $user->hasRole(['admin', 'operation-manager', 'project-manager']), function ($q) use ($user) {
                     if ($user->hasRole('team-leader') && $user->team_id) {
@@ -122,7 +120,7 @@ class TaskController extends Controller
                 })->count(),
         ];
 
-        return view('tasks.index', compact('tasks', 'projects', 'users', 'stats'));
+        return view('tasks.index', compact('tasks', 'orders', 'users', 'stats'));
     }
 
     /**
@@ -132,10 +130,10 @@ class TaskController extends Controller
     {
         $this->authorize('create', Task::class);
 
-        $projects = Project::all();
+        $orders = Order::all();
         $users = User::all();
 
-        return view('tasks.create', compact('projects', 'users'));
+        return view('tasks.create', compact('orders', 'users'));
     }
 
     /**
@@ -148,14 +146,18 @@ class TaskController extends Controller
         $task = Task::create([
             'title' => $request->title,
             'description' => $request->description,
-            'status' => 'pending',
+            'status' => $request->status ?? 'pending',
             'priority' => $request->priority ?? 'medium',
             'due_date' => $request->due_date,
             'estimated_hours' => $request->estimated_hours,
-            'project_id' => $request->project_id,
+            'actual_hours' => $request->actual_hours,
+            'order_id' => $request->order_id,
             'assigned_to' => $request->assigned_to ?? auth()->id(),
             'created_by' => auth()->id(),
         ]);
+
+        // Load relationships for response
+        $task->load('order', 'assignedTo', 'createdBy');
 
         // Return JSON for AJAX requests
         if ($request->expectsJson()) {
@@ -175,11 +177,18 @@ class TaskController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Task $task): View
+    public function show(Task $task): View|\Illuminate\Http\JsonResponse
     {
         $this->authorize('view', $task);
 
-        $task->load(['project', 'assignedTo', 'createdBy']);
+        $task->load(['order', 'assignedTo', 'createdBy']);
+
+        // Return JSON for AJAX requests
+        if (request()->expectsJson()) {
+            return response()->json([
+                'task' => $task,
+            ]);
+        }
 
         return view('tasks.show', compact('task'));
     }
@@ -195,15 +204,15 @@ class TaskController extends Controller
         if (request()->expectsJson()) {
             return response()->json([
                 'task' => $task,
-                'projects' => Project::all(),
+                'orders' => Order::all(),
                 'users' => User::all(),
             ]);
         }
 
-        $projects = Project::all();
+        $orders = Order::all();
         $users = User::all();
 
-        return view('tasks.edit', compact('task', 'projects', 'users'));
+        return view('tasks.edit', compact('task', 'orders', 'users'));
     }
 
     /**
@@ -232,17 +241,142 @@ class TaskController extends Controller
     /**
      * Update task status.
      */
-    public function updateStatus(Request $request, Task $task)
+    public function updateStatus(Request $request, Task $task): \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
     {
         $this->authorize('update', $task);
 
         $request->validate([
-            'status' => 'required|in:pending,in-progress,completed,on-hold',
+            'status' => 'required|in:pending,in-progress,completed,on-hold,archived',
         ]);
 
-        $task->update(['status' => $request->status]);
+        $data = ['status' => $request->status];
+
+        // Set completed_at when status changes to completed
+        if ($request->status === 'completed' && $task->status !== 'completed') {
+            $data['completed_at'] = now();
+        } elseif ($request->status !== 'completed') {
+            $data['completed_at'] = null;
+        }
+
+        $task->update($data);
+
+        // Return JSON for AJAX requests
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Task status updated successfully!',
+                'task' => $task,
+            ]);
+        }
 
         return back()->with('success', 'Task status updated successfully.');
+    }
+
+    /**
+     * Bulk update tasks.
+     */
+    public function bulkUpdate(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $request->validate([
+            'task_ids' => 'required|array',
+            'task_ids.*' => 'exists:tasks,id',
+            'status' => 'sometimes|required|in:pending,in-progress,completed,on-hold',
+        ]);
+
+        $taskIds = $request->input('task_ids');
+        $data = $request->only(['status']);
+
+        $tasks = Task::whereIn('id', $taskIds)->get();
+
+        foreach ($tasks as $task) {
+            $this->authorize('update', $task);
+        }
+
+        Task::whereIn('id', $taskIds)->update($data);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Tasks updated successfully!',
+        ]);
+    }
+
+    /**
+     * Archive the specified task.
+     */
+    public function archive(Request $request, Task $task): \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+    {
+        $this->authorize('update', $task);
+
+        $task->update([
+            'status' => 'archived',
+            'archived_at' => now(),
+        ]);
+
+        // Return JSON for AJAX requests
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Task archived successfully!',
+                'task' => $task,
+            ]);
+        }
+
+        return back()->with('success', 'Task archived successfully.');
+    }
+
+    /**
+     * Unarchive the specified task.
+     */
+    public function unarchive(Request $request, Task $task): \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+    {
+        $this->authorize('update', $task);
+
+        $task->update([
+            'status' => 'pending',
+            'archived_at' => null,
+        ]);
+
+        // Return JSON for AJAX requests
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Task unarchived successfully!',
+                'task' => $task,
+            ]);
+        }
+
+        return back()->with('success', 'Task unarchived successfully.');
+    }
+
+    /**
+     * Display archived tasks.
+     */
+    public function archived(): View
+    {
+        $this->authorize('viewAny', Task::class);
+
+        $user = auth()->user();
+
+        $tasks = Task::with(['order', 'assignedTo'])
+            ->where('status', 'archived')
+            ->when(! $user->hasRole(['admin', 'operation-manager', 'project-manager']), function ($query) use ($user) {
+                if ($user->hasRole('stack-leader')) {
+                    $query->where('tech_stack_id', $user->tech_stack_id);
+                } else {
+                    $query->where('team_id', $user->team_id);
+                }
+            })
+            ->orderBy('archived_at', 'desc')
+            ->get();
+
+        $stats = [
+            'total' => $tasks->count(),
+        ];
+
+        $orders = Order::all();
+        $users = User::all();
+
+        return view('tasks.archived', compact('tasks', 'stats', 'orders', 'users'));
     }
 
     /**
@@ -276,32 +410,30 @@ class TaskController extends Controller
 
         $user = auth()->user();
 
-        $query = Task::with(['project', 'assignedTo', 'createdBy'])
+        $query = Task::with(['order', 'assignedTo', 'createdBy'])
             ->when(! $user->hasRole(['admin', 'operation-manager', 'project-manager']), function ($query) use ($user) {
-                if ($user->hasRole('team-leader') && $user->team_id) {
-                    // Team leaders see tasks from their team's orders
-                    $query->whereHas('order', function ($q) use ($user) {
-                        $q->where('team_id', $user->team_id);
+                // For non-admin users, show tasks they are assigned to or created, OR tasks from their team's orders
+                $query->where(function ($q) use ($user) {
+                    $q->where(function ($query) use ($user) {
+                        // Tasks assigned to or created by the user
+                        $query->where('assigned_to', $user->id)
+                            ->orWhere('created_by', $user->id);
                     });
-                } elseif ($user->hasRole('stack-leader') && $user->tech_stack_id) {
-                    // Stack leaders see tasks from orders that use their tech stack
-                    $query->whereHas('order', function ($q) use ($user) {
-                        $q->where('tech_stack_id', $user->tech_stack_id);
-                    });
-                } else {
-                    // Team members see all tasks from their team's orders
+
+                    // OR tasks from their team's orders (if they have a team)
                     if ($user->team_id) {
-                        $query->whereHas('order', function ($q) use ($user) {
-                            $q->where('team_id', $user->team_id);
-                        });
-                    } else {
-                        // Fallback to assigned/created tasks if no team
-                        $query->where(function ($q) use ($user) {
-                            $q->where('assigned_to', $user->id)
-                                ->orWhere('created_by', $user->id);
+                        $q->orWhereHas('order', function ($orderQuery) use ($user) {
+                            $orderQuery->where('team_id', $user->team_id);
                         });
                     }
-                }
+
+                    // OR tasks from their tech stack orders (if they are stack-leader)
+                    if ($user->hasRole('stack-leader') && $user->tech_stack_id) {
+                        $q->orWhereHas('order', function ($orderQuery) use ($user) {
+                            $orderQuery->where('tech_stack_id', $user->tech_stack_id);
+                        });
+                    }
+                });
             })
             ->when($request->status, function ($query, $status) {
                 $query->where('status', $status);
@@ -310,7 +442,7 @@ class TaskController extends Controller
                 $query->where('priority', $priority);
             })
             ->when($request->project_id, function ($query, $projectId) {
-                $query->where('project_id', $projectId);
+                $query->where('order_id', $projectId);
             })
             ->when($request->due_date, function ($query, $dueDate) {
                 $query->whereDate('due_date', '>=', $dueDate);

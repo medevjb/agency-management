@@ -19,9 +19,11 @@ class Order extends Model
         'start_date',
         'end_date',
         'actual_revenue',
+        'delivered_at',
         'team_id',
         'tech_stack_id',
         'freelance_profile_id',
+        'order_sheet_url',
         'created_by',
     ];
 
@@ -32,7 +34,22 @@ class Order extends Model
             'end_date' => 'date',
             'value' => 'decimal:2',
             'actual_revenue' => 'decimal:2',
+            'delivered_at' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::updating(function ($order) {
+            // Automatically set delivered_at when status changes to delivered
+            if ($order->isDirty('status') && $order->status === 'delivered' && $order->getOriginal('status') !== 'delivered') {
+                $order->delivered_at = now();
+            }
+            // Clear delivered_at when status changes from delivered
+            elseif ($order->isDirty('status') && $order->status !== 'delivered' && $order->getOriginal('status') === 'delivered') {
+                $order->delivered_at = null;
+            }
+        });
     }
 
     public function team(): \Illuminate\Database\Eloquent\Relations\BelongsTo

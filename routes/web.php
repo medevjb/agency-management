@@ -37,22 +37,30 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders-data', [OrderController::class, 'getOrders'])->name('orders.data');
     Route::post('/orders/bulk-action', [OrderController::class, 'bulkAction'])->name('orders.bulk-action');
     Route::get('/orders/search-members', [OrderController::class, 'searchMembers'])->name('orders.search-members');
+    Route::get('/orders/search-users', [OrderController::class, 'searchUsers'])->name('orders.search-users');
     Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::get('/orders/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit');
     Route::patch('/orders/{order}', [OrderController::class, 'update'])->name('orders.update');
     Route::post('/orders/{order}/quick-update', [OrderController::class, 'quickUpdate'])->name('orders.quick-update');
+    Route::get('/orders/{order}/users', [OrderController::class, 'getUsers'])->name('orders.users');
+    Route::post('/orders/{order}/assign-users', [OrderController::class, 'assignUsers'])->name('orders.assign-users');
     Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
 
     // Tasks routes
     Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
     Route::get('/tasks-data', [TaskController::class, 'getTasks'])->name('tasks.data');
+    Route::post('/tasks/bulk-update', [TaskController::class, 'bulkUpdate'])->name('tasks.bulk-update');
+    Route::get('/tasks/archived', [TaskController::class, 'archived'])->name('tasks.archived');
     Route::get('/tasks/create', [TaskController::class, 'create'])->name('tasks.create');
     Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
     Route::get('/tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');
     Route::get('/tasks/{task}/edit', [TaskController::class, 'edit'])->name('tasks.edit');
     Route::patch('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
+    Route::patch('/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.update-status');
+    Route::post('/tasks/{task}/archive', [TaskController::class, 'archive'])->name('tasks.archive');
+    Route::post('/tasks/{task}/unarchive', [TaskController::class, 'unarchive'])->name('tasks.unarchive');
     Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
 
     // Bug Reports routes

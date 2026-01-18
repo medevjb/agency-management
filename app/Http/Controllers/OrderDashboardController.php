@@ -16,14 +16,19 @@ class OrderDashboardController extends Controller
     {
         $user = auth()->user();
 
-        // Get date range from request or default to this month
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
+        // Get selected month from request or default to current month
+        $selectedMonth = $request->input('month', now()->format('Y-m'));
 
-        if (! $startDate || ! $endDate) {
-            // Default to current month
-            $startDate = now()->startOfMonth()->format('Y-m-d');
-            $endDate = now()->endOfMonth()->format('Y-m-d');
+        // Parse the selected month
+        $monthDate = \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth);
+        $startDate = $monthDate->startOfMonth()->format('Y-m-d');
+        $endDate = $monthDate->endOfMonth()->format('Y-m-d');
+
+        // Generate list of available months (last 12 months + current)
+        $availableMonths = collect();
+        for ($i = 0; $i < 12; $i++) {
+            $date = now()->subMonths($i);
+            $availableMonths->put($date->format('Y-m'), $date->format('F Y'));
         }
 
         $query = Order::with(['team', 'techStack', 'users']);
@@ -42,7 +47,7 @@ class OrderDashboardController extends Controller
         // Get all orders (without date filter for stats and lists)
         $orders = $query->get();
 
-        // Separate query for date-filtered revenue calculations
+        // Separate query for month-filtered revenue calculations (based on delivered_at)
         $dateFilteredQuery = Order::query();
 
         // Apply the same team filtering
@@ -54,10 +59,8 @@ class OrderDashboardController extends Controller
             }
         }
 
-        // Apply date filter only for revenue calculations
-        if ($startDate && $endDate) {
-            $dateFilteredQuery->whereBetween('created_at', [$startDate.' 00:00:00', $endDate.' 23:59:59']);
-        }
+        // Apply month filter based on delivered_at for revenue calculations
+        $dateFilteredQuery->whereBetween('delivered_at', [$startDate.' 00:00:00', $endDate.' 23:59:59']);
 
         $dateFilteredOrders = $dateFilteredQuery->get();
 
@@ -72,12 +75,12 @@ class OrderDashboardController extends Controller
         // Calculate statistics (use date-filtered for revenue, all orders for counts)
         $stats = [
             'totalOrders' => $orders->count(),
-            'totalRevenue' => $dateFilteredOrders->where('status', 'completed')->sum('actual_revenue'),
+            'totalRevenue' => $dateFilteredOrders->where('status', 'delivered')->sum('actual_revenue'),
             'activeOrders' => $orders->whereIn('status', ['pending', 'in-progress'])->count(),
-            'completedOrders' => $orders->where('status', 'completed')->count(),
+            'completedOrders' => $orders->where('status', 'delivered')->count(),
             'pendingOrders' => $orders->where('status', 'pending')->count(),
-            'overdueOrders' => $orders->whereNotNull('end_date')->where('end_date', '<', now())->whereNotIn('status', ['completed', 'cancelled'])->count(),
-            'averageRevenue' => $dateFilteredOrders->where('status', 'completed')->where('actual_revenue', '>', 0)->avg('actual_revenue') ?? 0,
+            'overdueOrders' => $orders->whereNotNull('end_date')->where('end_date', '<', now())->whereNotIn('status', ['delivered', 'cancelled'])->count(),
+            'averageRevenue' => $dateFilteredOrders->where('status', 'delivered')->where('actual_revenue', '>', 0)->avg('actual_revenue') ?? 0,
         ];
 
         // Orders by status
@@ -85,7 +88,7 @@ class OrderDashboardController extends Controller
             'nra' => $orders->where('status', 'nra')->count(),
             'pending' => $orders->where('status', 'pending')->count(),
             'in-progress' => $orders->where('status', 'in-progress')->count(),
-            'completed' => $orders->where('status', 'completed')->count(),
+            'delivered' => $orders->where('status', 'delivered')->count(),
             'on-hold' => $orders->where('status', 'on-hold')->count(),
             'cancelled' => $orders->where('status', 'cancelled')->count(),
         ];
@@ -113,7 +116,7 @@ class OrderDashboardController extends Controller
             ->whereNotNull('end_date')
             ->where('end_date', '>=', now())
             ->where('end_date', '<=', now()->addDays(4)->endOfDay())
-            ->whereNotIn('status', ['completed', 'cancelled']);
+            ->whereNotIn('status', ['delivered', 'cancelled']);
         if (! $user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             if ($user->hasRole('stack-leader')) {
                 $ordersDueSoonQuery->where('tech_stack_id', $user->tech_stack_id);
@@ -127,7 +130,7 @@ class OrderDashboardController extends Controller
         $overdueOrdersQuery = Order::with(['team', 'techStack'])
             ->whereNotNull('end_date')
             ->where('end_date', '<', now())
-            ->whereNotIn('status', ['completed', 'cancelled']);
+            ->whereNotIn('status', ['delivered', 'cancelled']);
         if (! $user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             if ($user->hasRole('stack-leader')) {
                 $overdueOrdersQuery->where('tech_stack_id', $user->tech_stack_id);
@@ -140,7 +143,7 @@ class OrderDashboardController extends Controller
         // High priority orders (filtered by team for non-managers)
         $highPriorityOrdersQuery = Order::with(['team', 'techStack'])
             ->where('priority', 'high')
-            ->whereNotIn('status', ['completed', 'cancelled']);
+            ->whereNotIn('status', ['delivered', 'cancelled']);
         if (! $user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             if ($user->hasRole('stack-leader')) {
                 $highPriorityOrdersQuery->where('tech_stack_id', $user->tech_stack_id);
@@ -151,7 +154,7 @@ class OrderDashboardController extends Controller
         $highPriorityOrders = $highPriorityOrdersQuery->latest()->take(5)->get();
 
         // Revenue by team (use date-filtered orders, only completed)
-        $revenueByTeamQuery = Order::with('team')->whereNotNull('team_id')->whereHas('team')->where('status', 'completed');
+        $revenueByTeamQuery = Order::with('team')->whereNotNull('team_id')->whereHas('team')->where('status', 'delivered');
 
         // Apply team filtering for non-managers
         if (! $user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
@@ -179,10 +182,11 @@ class OrderDashboardController extends Controller
             ->sortByDesc('revenue')
             ->values();
 
-        // Monthly revenue for the current year (filtered by team for non-managers, only completed orders)
-        $monthlyRevenueQuery = Order::selectRaw('MONTH(created_at) as month, SUM(actual_revenue) as revenue')
-            ->where('status', 'completed')
-            ->whereYear('created_at', now()->year);
+        // Monthly revenue for the current year (filtered by team for non-managers, only delivered orders)
+        $monthlyRevenueQuery = Order::selectRaw('MONTH(delivered_at) as month, SUM(actual_revenue) as revenue')
+            ->where('status', 'delivered')
+            ->whereNotNull('delivered_at')
+            ->whereYear('delivered_at', now()->year);
 
         if (! $user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             if ($user->hasRole('stack-leader')) {
@@ -205,6 +209,70 @@ class OrderDashboardController extends Controller
         }
         ksort($monthlyRevenue);
 
+        // Monthly delivered status analytics (counts and amounts) - for current year
+        $monthlyDeliveredQuery = Order::selectRaw('
+                MONTH(delivered_at) as month,
+                SUM(CASE WHEN status = "delivered" THEN 1 ELSE 0 END) as delivered_count,
+                SUM(CASE WHEN status = "delivered" THEN actual_revenue ELSE 0 END) as delivered_amount,
+                SUM(CASE WHEN status = "cancelled" THEN 1 ELSE 0 END) as cancelled_count,
+                COUNT(*) as total_orders
+            ')
+            ->whereNotNull('delivered_at')
+            ->whereYear('delivered_at', now()->year);
+
+        if (! $user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
+            if ($user->hasRole('stack-leader')) {
+                $monthlyDeliveredQuery->where('tech_stack_id', $user->tech_stack_id);
+            } else {
+                $monthlyDeliveredQuery->where('team_id', $user->team_id);
+            }
+        }
+
+        $monthlyDelivered = $monthlyDeliveredQuery->groupBy('month')
+            ->orderBy('month')
+            ->get()
+            ->keyBy('month');
+
+        // Fill in missing months with 0
+        $monthlyDeliveredData = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $monthlyDeliveredData[$i] = [
+                'delivered_count' => $monthlyDelivered->get($i)?->delivered_count ?? 0,
+                'delivered_amount' => $monthlyDelivered->get($i)?->delivered_amount ?? 0,
+                'cancelled_count' => $monthlyDelivered->get($i)?->cancelled_count ?? 0,
+                'total_orders' => $monthlyDelivered->get($i)?->total_orders ?? 0,
+            ];
+        }
+
+        // Yearly delivered status analytics (last 5 years + current year)
+        $yearlyDeliveredQuery = Order::selectRaw('
+                YEAR(delivered_at) as year,
+                SUM(CASE WHEN status = "delivered" THEN 1 ELSE 0 END) as delivered_count,
+                SUM(CASE WHEN status = "delivered" THEN actual_revenue ELSE 0 END) as delivered_amount,
+                SUM(CASE WHEN status = "cancelled" THEN 1 ELSE 0 END) as cancelled_count,
+                COUNT(*) as total_orders
+            ')
+            ->whereNotNull('delivered_at')
+            ->whereYear('delivered_at', '>=', now()->subYears(5)->year);
+
+        if (! $user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
+            if ($user->hasRole('stack-leader')) {
+                $yearlyDeliveredQuery->where('tech_stack_id', $user->tech_stack_id);
+            } else {
+                $yearlyDeliveredQuery->where('team_id', $user->team_id);
+            }
+        }
+
+        $yearlyDeliveredResults = $yearlyDeliveredQuery->groupBy('year')
+            ->orderBy('year')
+            ->get();
+
+        // Convert to a collection keyed by year
+        $yearlyDelivered = collect();
+        foreach ($yearlyDeliveredResults as $result) {
+            $yearlyDelivered->put($result->year, $result);
+        }
+
         return view('orders.dashboard', compact(
             'stats',
             'ordersByStatus',
@@ -215,8 +283,12 @@ class OrderDashboardController extends Controller
             'highPriorityOrders',
             'revenueByTeam',
             'monthlyRevenue',
+            'monthlyDeliveredData',
+            'yearlyDelivered',
             'startDate',
             'endDate',
+            'selectedMonth',
+            'availableMonths',
             'team',
             'teamMembers'
         ));
@@ -227,7 +299,7 @@ class OrderDashboardController extends Controller
         $user = auth()->user();
         $period = $request->input('period', 'month'); // week, month, year
 
-        $query = Order::query()->where('status', 'completed');
+        $query = Order::query()->where('status', 'delivered');
 
         // Filter by user's role and team
         if (! $user->hasRole(['admin', 'operation-manager', 'project-manager'])) {

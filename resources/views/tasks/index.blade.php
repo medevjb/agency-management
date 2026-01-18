@@ -1,646 +1,1964 @@
 @extends('layouts.dashboard')
 
+@section('title', 'Task Management')
+
 @push('styles')
     <style>
-        /* Custom DataTables Styling */
-        .dataTables_wrapper {
+        /* Task Board Layout */
+        .task-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            min-height: calc(100vh - 300px);
+        }
+
+        @media (max-width: 1536px) {
+            .task-board {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .task-board {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Task Column */
+        .task-column {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        .task-column.drag-over {
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            border-color: #6366f1;
+            transform: scale(1.02);
+        }
+
+        .task-column-header {
+            display: flex;
+            items-center: justify-between;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            border-radius: 12px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .column-pending .task-column-header {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+        }
+
+        .column-in-progress .task-column-header {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+        }
+
+        .column-on-hold .task-column-header {
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+            color: #6b21a8;
+        }
+
+        .column-completed .task-column-header {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+        }
+
+        /* Task Card */
+        .task-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+            cursor: grab;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #e5e7eb;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .task-card:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transform: translateY(-3px) scale(1.01);
+            border-color: #d1d5db;
+        }
+
+        .task-card:active {
+            cursor: grabbing;
+        }
+
+        .task-card.dragging {
+            opacity: 0.5;
+            transform: rotate(2deg) scale(0.95);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Stats Cards */
+        .stat-card {
+            background: white;
+            border-radius: 16px;
             padding: 1.5rem;
-        }
-
-        .dataTables_wrapper .dataTables_length {
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-        }
-
-        .dataTables_wrapper .dataTables_length label {
-            color: #374151;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-size: 0.875rem;
-        }
-
-        .dataTables_wrapper .dataTables_length select {
-            padding: 0.75rem 2.5rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 0.75rem;
-            background-color: white;
-            color: #374151;
-            font-size: 0.875rem;
-            font-weight: 500;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 0.75rem center;
-            background-size: 1rem 1rem;
-            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
             cursor: pointer;
+            border: 2px solid transparent;
         }
 
-        .dataTables_wrapper .dataTables_length select:hover {
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card.active {
             border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
         }
 
-        .dataTables_wrapper .dataTables_length select:focus {
-            outline: none;
+        /* Filter Pills */
+        .filter-pill {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid #e2e8f0;
+            background: white;
+        }
+
+        .filter-pill:hover {
+            transform: translateY(-2px);
             border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
 
-        .dataTables_wrapper .dataTables_filter {
-            margin-bottom: 1rem;
-            display: flex;
-            justify-content: flex-end;
+        .filter-pill.active {
+            border-color: #6366f1;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
         }
 
-        .dataTables_wrapper .dataTables_filter label {
-            color: #374151;
-            font-weight: 500;
+        /* Avatar */
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             display: flex;
             align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        /* Bulk Selection */
+        .task-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #6366f1;
+        }
+
+        /* Drop Zone */
+        .drop-zone {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
             gap: 0.75rem;
-            font-size: 0.875rem;
-        }
-
-        .dataTables_wrapper .dataTables_filter input {
-            padding: 0.75rem 2.5rem 0.75rem 1rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 0.75rem;
-            background-color: white;
-            color: #374151;
-            font-size: 0.875rem;
-            font-weight: 500;
-            width: 300px;
+            padding: 0.5rem;
+            border-radius: 8px;
             transition: all 0.2s;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'%3e%3ccircle cx='11' cy='11' r='8' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3e%3cpath d='m21 21-4.35-4.35' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: left 0.75rem center;
-            background-size: 1rem 1rem;
-            padding-left: 2.5rem;
         }
 
-        .dataTables_wrapper .dataTables_filter input::placeholder {
-            color: #9ca3af;
-            font-weight: 400;
+        .drop-zone.drag-over {
+            background: rgba(99, 102, 241, 0.1);
+            border: 2px dashed #6366f1;
         }
 
-        .dataTables_wrapper .dataTables_filter input:focus {
-            outline: none;
-            border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'%3e%3ccircle cx='11' cy='11' r='8' stroke='%23636f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3e%3cpath d='m21 21-4.35-4.35' stroke='%23636f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
-            background-color: #f9fafb;
+        /* Custom SweetAlert Styles */
+        .custom-alert-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
         }
 
-        .dataTables_wrapper .dataTables_info {
+        .custom-alert-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .custom-alert {
+            background: white;
+            border-radius: 20px;
+            padding: 0;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            overflow: hidden;
+        }
+
+        .custom-alert.show {
+            transform: scale(1) translateY(0);
+        }
+
+        .alert-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-bottom: 1rem;
+            animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .alert-icon.success {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+            box-shadow: 0 10px 30px rgba(34, 197, 94, 0.3);
+        }
+
+        .alert-icon.error {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+        }
+
+        .alert-icon.warning {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+            box-shadow: 0 10px 30px rgba(234, 179, 8, 0.3);
+        }
+
+        .alert-icon.info {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .alert-title {
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .alert-message {
+            font-size: 15px;
+            text-align: center;
             color: #6b7280;
-            font-size: 0.875rem;
-            margin-top: 1.5rem;
-            padding-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .alert-actions {
+            display: flex;
+            gap: 0.75rem;
+            padding: 1.5rem;
+            background: #f9fafb;
             border-top: 1px solid #e5e7eb;
         }
 
-        .dataTables_wrapper .dataTables_paginate {
-            margin-top: 1.5rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 1rem 0;
-        }
-
-        .dataTables_wrapper .dataTables_paginate .paginate_button {
-            padding: 0.75rem 1rem;
-            margin: 0;
-            border: 2px solid #e5e7eb;
-            border-radius: 0.75rem;
-            background-color: white;
-            color: #6b7280;
-            font-size: 0.875rem;
-            font-weight: 500;
+        .alert-btn {
+            flex: 1;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
             cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            text-decoration: none;
-            display: inline-flex;
+            transition: all 0.3s ease;
+            border: none;
+            outline: none;
+        }
+
+        .alert-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .alert-btn:active {
+            transform: translateY(0);
+        }
+
+        .alert-btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .alert-btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+        }
+
+        .alert-btn-secondary {
+            background: white;
+            color: #6b7280;
+            border: 2px solid #e5e7eb;
+        }
+
+        .alert-btn-secondary:hover {
+            border-color: #6366f1;
+            color: #6366f1;
+        }
+
+        .alert-btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .alert-btn-danger:hover {
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+        }
+
+        /* Toast Notification */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: white;
+            border-radius: 16px;
+            padding: 16px 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 320px;
+            animation: slideInRight 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border-left: 4px solid;
+        }
+
+        .toast.removing {
+            animation: slideOutRight 0.3s forwards;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .toast.success {
+            border-left-color: #22c55e;
+        }
+
+        .toast.error {
+            border-left-color: #ef4444;
+        }
+
+        .toast.warning {
+            border-left-color: #f59e0b;
+        }
+
+        .toast.info {
+            border-left-color: #3b82f6;
+        }
+
+        .toast-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
             align-items: center;
             justify-content: center;
-            min-width: 3rem;
+            font-size: 20px;
+            flex-shrink: 0;
         }
 
-        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        .toast.success .toast-icon {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+        }
+
+        .toast.error .toast-icon {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+        }
+
+        .toast.warning .toast-icon {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+        }
+
+        .toast.info .toast-icon {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 700;
+            font-size: 14px;
+            color: #1f2937;
+            margin-bottom: 2px;
+        }
+
+        .toast-message {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .toast-close {
+            width: 24px;
+            height: 24px;
+            border-radius: 8px;
+            border: none;
+            background: #f3f4f6;
+            color: #6b7280;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .toast-close:hover {
+            background: #e5e7eb;
+            color: #1f2937;
+        }
+
+        /* Priority strip colors */
+        .priority-strip-urgent {
+            background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
+        }
+
+        .priority-strip-high {
+            background: linear-gradient(180deg, #f97316 0%, #ea580c 100%);
+            box-shadow: 0 0 8px rgba(249, 115, 22, 0.3);
+        }
+
+        .priority-strip-medium {
+            background: linear-gradient(180deg, #eab308 0%, #ca8a04 100%);
+            box-shadow: 0 0 8px rgba(234, 179, 8, 0.3);
+        }
+
+        .priority-strip-low {
+            background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.3);
+        }
+
+        /* Priority badge styles */
+        .priority-badge-urgent {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            box-shadow: 0 1px 2px rgba(239, 68, 68, 0.1);
+        }
+
+        .priority-badge-high {
+            background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+            color: #9a3412;
+            border: 1px solid #fed7aa;
+            box-shadow: 0 1px 2px rgba(249, 115, 22, 0.1);
+        }
+
+        .priority-badge-medium {
+            background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%);
+            color: #854d0e;
+            border: 1px solid #fef08a;
+            box-shadow: 0 1px 2px rgba(234, 179, 8, 0.1);
+        }
+
+        .priority-badge-low {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            color: #166534;
+            border: 1px solid #bbf7d0;
+            box-shadow: 0 1px 2px rgba(34, 197, 94, 0.1);
+        }
+
+        /* Status progress bars */
+        .progress-bar-pending {
+            background: linear-gradient(90deg, #fef3c7 0%, #fde68a 100%);
+            transition: width 0.5s ease;
+        }
+
+        .progress-bar-in-progress {
+            background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+            transition: width 0.5s ease;
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+        }
+
+        .progress-bar-on-hold {
+            background: linear-gradient(90deg, #a855f7 0%, #9333ea 100%);
+            transition: width 0.5s ease;
+        }
+
+        .progress-bar-completed {
+            background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+            transition: width 0.5s ease;
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+        }
+
+        /* Status icon badges */
+        .status-icon-pending {
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 2px rgba(234, 179, 8, 0.2);
+        }
+
+        .status-icon-in-progress {
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 2px rgba(59, 130, 246, 0.2);
+        }
+
+        .status-icon-on-hold {
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+            color: #6b21a8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 2px rgba(168, 85, 247, 0.2);
+        }
+
+        .status-icon-completed {
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 2px rgba(34, 197, 94, 0.2);
+        }
+
+        /* Due date badges */
+        .due-badge-overdue {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            box-shadow: 0 1px 2px rgba(239, 68, 68, 0.1);
+        }
+
+        .due-badge-soon {
+            background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+            color: #9a3412;
+            border: 1px solid #fed7aa;
+            box-shadow: 0 1px 2px rgba(249, 115, 22, 0.1);
+        }
+
+        .due-badge-normal {
             background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
-            border-color: #d1d5db;
-            color: #374151;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-            background: linear-gradient(135deg, #6366f1 0%, #5558dd 100%);
-            border-color: #6366f1;
-            color: white;
-            font-weight: 600;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-            transform: translateY(-1px);
-        }
-
-        .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
-            background: linear-gradient(135deg, #5558dd 0%, #4c51bf 100%);
-            border-color: #4c51bf;
-            box-shadow: 0 6px 16px rgba(85, 83, 221, 0.4);
-        }
-
-        .dataTables_wrapper .dataTables_paginate .paginate_button.first,
-        .dataTables_wrapper .dataTables_paginate .paginate_button.last {
-            font-weight: 600;
-            padding: 0.75rem 1.5rem;
-        }
-
-        .dataTables_wrapper .dataTables_paginate .paginate_button.previous,
-        .dataTables_wrapper .dataTables_paginate .paginate_button.next {
-            padding: 0.75rem 1.25rem;
-            font-weight: 600;
-        }
-
-        .dataTables_wrapper .dataTables_paginate .paginate_button.ellipsis {
-            padding: 0.75rem 1rem;
-            background: transparent;
-            border: none;
             color: #6b7280;
-            cursor: default;
-            box-shadow: none;
-        }
-
-        .dataTables_wrapper .dataTables_paginate .paginate_button.ellipsis:hover {
-            background: transparent;
-            border: none;
-            color: #6b7280;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover {
-            background: white;
-            border-color: #e5e7eb;
-            color: #6b7280;
-            transform: none;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Table styling */
-        .display.dataTable {
-            border-collapse: collapse;
-        }
-
-        .display.dataTable th {
-            background-color: #f9fafb;
-            border-bottom: 2px solid #e5e7eb;
-            color: #374151;
-            font-weight: 600;
-            padding: 0.75rem 1rem;
-            text-align: left;
-            font-size: 0.875rem;
-        }
-
-        .display.dataTable td {
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid #e5e7eb;
-            color: #374151;
-            font-size: 0.875rem;
-        }
-
-        .display.dataTable tbody tr:hover {
-            background-color: #f9fafb;
-        }
-
-        /* Processing overlay */
-        .dataTables_processing {
-            background-color: rgba(255, 255, 255, 0.9);
-            border: 2px solid #e5e7eb;
-            border-radius: 0.5rem;
-            padding: 1rem 2rem;
-            font-weight: 600;
-            color: #374151;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
         }
     </style>
 @endpush
 
 @section('content')
-<div class="pt-4 sm:p-6 lg:p-8 lg:pb-3">
-    <!-- Page Header -->
-    <div class="mb-4">
-        <div class="mb-4">
-            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">My Tasks</h1>
-            <p class="text-gray-600 text-lg">Manage and track your tasks</p>
+<div class="p-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Task Board</h1>
+            <p class="text-gray-600 mt-1">Drag and drop to organize your tasks</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="{{ route('tasks.archived') }}" class="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl font-semibold hover:from-gray-600 hover:to-gray-700 transition-all shadow-lg hover:shadow-xl">
+                <i class="fas fa-archive mr-2"></i>View Archived
+            </a>
+            <button onclick="openCreateModal()" class="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl">
+                <i class="fas fa-plus mr-2"></i>New Task
+            </button>
         </div>
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="stat-card" onclick="filterByStatus('all')">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-500">Total Tasks</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ $stats['total'] }}</p>
+                    <p class="text-sm text-gray-500 mb-1">All Tasks</p>
+                    <p class="text-3xl font-bold text-gray-900" id="stat-total">0</p>
                 </div>
-                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-tasks text-blue-600 text-xl"></i>
+                <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-tasks text-white text-xl"></i>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
+        <div class="stat-card" onclick="filterByStatus('pending')">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-500">Pending</p>
-                    <p class="text-2xl font-bold text-yellow-600">{{ $stats['pending'] }}</p>
+                    <p class="text-sm text-gray-500 mb-1">Pending</p>
+                    <p class="text-3xl font-bold text-yellow-600" id="stat-pending">0</p>
                 </div>
-                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                <div class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-clock text-white text-xl"></i>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-indigo-500">
+        <div class="stat-card" onclick="filterByStatus('in-progress')">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-500">In Progress</p>
-                    <p class="text-2xl font-bold text-indigo-600">{{ $stats['in_progress'] }}</p>
+                    <p class="text-sm text-gray-500 mb-1">In Progress</p>
+                    <p class="text-3xl font-bold text-blue-600" id="stat-in-progress">0</p>
                 </div>
-                <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-spinner text-indigo-600 text-xl"></i>
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-spinner text-white text-xl"></i>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+        <div class="stat-card" onclick="filterByStatus('completed')">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-500">Completed</p>
-                    <p class="text-2xl font-bold text-green-600">{{ $stats['completed'] }}</p>
+                    <p class="text-sm text-gray-500 mb-1">Completed</p>
+                    <p class="text-3xl font-bold text-green-600" id="stat-completed">0</p>
                 </div>
-                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                <div class="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-check-circle text-white text-xl"></i>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Filters Section -->
-    <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-4 mb-6">
-        <form id="filterForm" class="space-y-3">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                <!-- Status Filter -->
-                <div>
-                    <label for="status" class="block text-xs font-semibold text-gray-700 mb-1">
-                        <i class="fas fa-toggle-on mr-1 text-indigo-500"></i>Status
-                    </label>
-                    <div class="relative">
-                        <select id="status" name="status"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white appearance-none transition-all duration-200 text-sm">
-                            <option value="">All Status</option>
-                            <option value="pending">Pending</option>
-                            <option value="in-progress">In Progress</option>
-                            <option value="on-hold">On Hold</option>
-                            <option value="completed">Completed</option>
-                        </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Priority Filter -->
-                <div>
-                    <label for="priority" class="block text-xs font-semibold text-gray-700 mb-1">
-                        <i class="fas fa-flag mr-1 text-indigo-500"></i>Priority
-                    </label>
-                    <div class="relative">
-                        <select id="priority" name="priority"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white appearance-none transition-all duration-200 text-sm">
-                            <option value="">All Priorities</option>
-                            <option value="low">Low</option>
-                            <option value="medium">Medium</option>
-                            <option value="high">High</option>
-                            <option value="urgent">Urgent</option>
-                        </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Project Filter -->
-                <div>
-                    <label for="project_id" class="block text-xs font-semibold text-gray-700 mb-1">
-                        <i class="fas fa-folder mr-1 text-indigo-500"></i>Project
-                    </label>
-                    <div class="relative">
-                        <select id="project_id" name="project_id"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white appearance-none transition-all duration-200 text-sm">
-                            <option value="">All Projects</option>
-                            @foreach($projects as $project)
-                                <option value="{{ $project->id }}">{{ $project->name }}</option>
-                            @endforeach
-                        </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Actions -->
-                <div class="flex items-end space-x-2">
-                    <button type="button" onclick="applyFilters()"
-                            class="flex-1 inline-flex items-center justify-center px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-all duration-200 text-sm">
-                        <i class="fas fa-search mr-1"></i>
-                        Filter
-                    </button>
-                    <button type="button" onclick="clearFilters()"
-                            class="px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-all duration-200 text-sm">
-                        <i class="fas fa-times"></i>
-                    </button>
+    <!-- Filters -->
+    <div class="bg-white rounded-2xl shadow-sm p-4 mb-6">
+        <div class="flex flex-wrap items-center gap-4">
+            <div class="flex-1 min-w-[300px]">
+                <div class="relative">
+                    <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="searchTasks" placeholder="Search tasks..." class="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-colors">
                 </div>
             </div>
-        </form>
+
+            <div class="flex gap-2 flex-wrap">
+                <button class="filter-pill active" data-filter="all" onclick="filterByStatus('all')">All</button>
+                <button class="filter-pill" data-filter="pending" onclick="filterByStatus('pending')">Pending</button>
+                <button class="filter-pill" data-filter="in-progress" onclick="filterByStatus('in-progress')">In Progress</button>
+                <button class="filter-pill" data-filter="on-hold" onclick="filterByStatus('on-hold')">On Hold</button>
+                <button class="filter-pill" data-filter="completed" onclick="filterByStatus('completed')">Completed</button>
+            </div>
+
+            <select id="filterPriority" onchange="applyFilters()" class="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-colors font-semibold">
+                <option value="">All Priorities</option>
+                <option value="urgent">Urgent</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+            </select>
+
+            <select id="filterOrder" onchange="applyFilters()" class="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-colors font-semibold">
+                <option value="">All Orders</option>
+                @foreach($orders as $order)
+                    <option value="{{ $order->id }}">{{ $order->name }} (ID: {{ $order->id }})</option>
+                @endforeach
+            </select>
+
+            <button onclick="toggleBulkMode()" id="bulkModeBtn" class="px-4 py-3 border-2 border-gray-200 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
+                <i class="fas fa-check-square mr-2"></i>Select
+            </button>
+        </div>
     </div>
 
-    <!-- Tasks Table -->
-    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden datatableprimary mb-5">
-        <div class="overflow-x-auto">
-            <table class="display w-full" id="tasksTable" style="width:100%">
-                <thead class="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task</th>
-                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
-                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned To</th>
-                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
-                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
-                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                        <th class="px-4 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    <!-- Table rows will be populated by DataTables -->
-                </tbody>
-            </table>
+    <!-- Bulk Actions Bar -->
+    <div id="bulkActionBar" class="hidden bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-4 mb-6">
+        <div class="flex items-center justify-between text-white">
+            <div class="flex items-center gap-4">
+                <span class="font-semibold"><span id="selectedCount">0</span> tasks selected</span>
+                <select id="bulkAction" class="px-4 py-2 rounded-lg text-gray-800 font-semibold">
+                    <option value="">Bulk Actions</option>
+                    <option value="mark-pending">Mark as Pending</option>
+                    <option value="mark-in-progress">Mark as In Progress</option>
+                    <option value="mark-on-hold">Mark as On Hold</option>
+                    <option value="mark-completed">Mark as Completed</option>
+                    <option value="delete">Delete Selected</option>
+                </select>
+                <button onclick="applyBulkAction()" class="px-4 py-2 bg-white text-indigo-600 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                    Apply
+                </button>
+            </div>
+            <button onclick="clearSelection()" class="px-4 py-2 bg-white/20 rounded-lg font-semibold hover:bg-white/30 transition-colors">
+                Clear Selection
+            </button>
+        </div>
+    </div>
+
+    <!-- Task Board -->
+    <div class="task-board">
+        <!-- Pending Column -->
+        <div class="task-column column-pending">
+            <div class="task-column-header">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-clock"></i>
+                    <span>Pending</span>
+                </div>
+                <span class="bg-white/50 px-3 py-1 rounded-full text-sm" id="count-pending">0</span>
+            </div>
+            <div class="drop-zone" data-status="pending" ondragover="handleDragOver(event)" ondrop="handleDrop(event, 'pending')" ondragleave="handleDragLeave(event)">
+                <!-- Tasks will be rendered here by JavaScript -->
+            </div>
+        </div>
+
+        <!-- In Progress Column -->
+        <div class="task-column column-in-progress">
+            <div class="task-column-header">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-spinner"></i>
+                    <span>In Progress</span>
+                </div>
+                <span class="bg-white/50 px-3 py-1 rounded-full text-sm" id="count-in-progress">0</span>
+            </div>
+            <div class="drop-zone" data-status="in-progress" ondragover="handleDragOver(event)" ondrop="handleDrop(event, 'in-progress')" ondragleave="handleDragLeave(event)">
+                <!-- Tasks will be rendered here by JavaScript -->
+            </div>
+        </div>
+
+        <!-- On Hold Column -->
+        <div class="task-column column-on-hold">
+            <div class="task-column-header">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-pause-circle"></i>
+                    <span>On Hold</span>
+                </div>
+                <span class="bg-white/50 px-3 py-1 rounded-full text-sm" id="count-on-hold">0</span>
+            </div>
+            <div class="drop-zone" data-status="on-hold" ondragover="handleDragOver(event)" ondrop="handleDrop(event, 'on-hold')" ondragleave="handleDragLeave(event)">
+                <!-- Tasks will be rendered here by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Completed Column -->
+        <div class="task-column column-completed">
+            <div class="task-column-header">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Completed</span>
+                </div>
+                <span class="bg-white/50 px-3 py-1 rounded-full text-sm" id="count-completed">0</span>
+            </div>
+            <div class="drop-zone" data-status="completed" ondragover="handleDragOver(event)" ondrop="handleDrop(event, 'completed')" ondragleave="handleDragLeave(event)">
+                <!-- Tasks will be rendered here by JavaScript -->
+            </div>
         </div>
     </div>
 </div>
 
-@push('scripts')
-    <script>
-        // Simple DataTables initialization with jQuery from CDN
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Initializing tasks DataTable...');
+<!-- Create/Edit Task Modal -->
+<div id="taskModal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" onclick="closeModal()"></div>
 
-            // Check if jQuery is loaded, if not load from CDN
-            if (typeof $ === 'undefined') {
-                console.log('Loading jQuery from CDN...');
-                const script = document.createElement('script');
-                script.src = 'https://code.jquery.com/jquery-3.6.0.min.js';
-                script.onload = initializeDataTable;
-                document.head.appendChild(script);
-            } else {
-                initializeDataTable();
-            }
-        });
-
-        function initializeDataTable() {
-            // Load DataTables CSS if not already loaded
-            if (!document.querySelector('link[href*="dataTables"]')) {
-                const link = document.createElement('link');
-                link.rel = 'stylesheet';
-                link.href = 'https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css';
-                document.head.appendChild(link);
-            }
-
-            // Load DataTables JS if not available
-            if (typeof $.fn.DataTable === 'undefined') {
-                console.log('Loading DataTables from CDN...');
-                const script = document.createElement('script');
-                script.src = 'https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js';
-                script.onload = createDataTable;
-                document.head.appendChild(script);
-            } else {
-                createDataTable();
-            }
-        }
-
-        function createDataTable() {
-            console.log('Creating DataTable...');
-
-            // Initialize DataTable
-            $('#tasksTable').DataTable({
-                processing: true,
-                serverSide: true,
-                ajax: {
-                    url: '{{ route('tasks.data') }}',
-                    type: 'GET',
-                    data: function(d) {
-                        // Add custom filters from form
-                        d.status = $('#status').val();
-                        d.priority = $('#priority').val();
-                        d.project_id = $('#project_id').val();
-                        d.due_date = $('#due_date').val();
-                    }
-                },
-                columns: [
-                    {
-                        data: 'title',
-                        name: 'title',
-                        render: function(data, type, row, meta) {
-                            return '<div class="text-sm font-semibold text-gray-900">' + data + '</div>';
-                        }
-                    },
-                    {
-                        data: 'status',
-                        name: 'status',
-                        render: function(data, type, row, meta) {
-                            const statusColors = {
-                                'pending': 'bg-yellow-100 text-yellow-800',
-                                'in-progress': 'bg-indigo-100 text-indigo-800',
-                                'completed': 'bg-green-100 text-green-800',
-                                'on-hold': 'bg-gray-100 text-gray-800'
-                            };
-                            const statusLabel = data.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
-                            return '<span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full shadow-sm ' + statusColors[data] + '">' + statusLabel + '</span>';
-                        }
-                    },
-                    {
-                        data: 'priority',
-                        name: 'priority',
-                        render: function(data, type, row, meta) {
-                            const priorityColors = {
-                                'urgent': 'bg-red-100 text-red-800',
-                                'high': 'bg-orange-100 text-orange-800',
-                                'medium': 'bg-blue-100 text-blue-800',
-                                'low': 'bg-gray-100 text-gray-800'
-                            };
-                            return '<span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full shadow-sm ' + priorityColors[data] + '">' + data.charAt(0).toUpperCase() + data.slice(1) + '</span>';
-                        }
-                    },
-                    {
-                        data: 'assigned_to',
-                        name: 'assigned_to',
-                        render: function(data, type, row, meta) {
-                            return '<span class="text-sm text-gray-900">' + data + '</span>';
-                        }
-                    },
-                    {
-                        data: 'due_date',
-                        name: 'due_date'
-                    },
-                    {
-                        data: 'project',
-                        name: 'project'
-                    },
-                    {
-                        data: 'created_at',
-                        name: 'created_at'
-                    },
-                    {
-                        data: 'actions',
-                        orderable: false,
-                        searchable: false,
-                        className: 'text-center'
-                    }
-                ],
-                order: [
-                    [6, 'desc']
-                ], // Sort by created_at by default
-                pageLength: 10,
-                lengthMenu: [
-                    [10, 25, 50, -1],
-                    [10, 25, 50, "All"]
-                ],
-                responsive: true,
-                language: {
-                    processing: '<i class="fas fa-spinner fa-spin mr-2"></i>Loading...',
-                    emptyTable: 'No tasks found',
-                    zeroRecords: 'No matching tasks found',
-                    lengthMenu: 'Show _MENU_ entries',
-                    info: 'Showing _START_ to _END_ of _TOTAL_ entries',
-                    infoEmpty: 'Showing 0 to 0 of 0 entries',
-                    infoFiltered: '(filtered from _MAX_ total entries)',
-                    search: 'Search:',
-                    paginate: {
-                        first: 'First',
-                        last: 'Last',
-                        next: 'Next',
-                        previous: 'Previous'
-                    }
-                },
-                dom: 'lfrtip',
-                initComplete: function() {
-                    console.log('✅ DataTable initialized successfully');
-
-                    // Add action button above the table
-                    const actionButtons = `
-                        <div class="flex flex-wrap items-center justify-end gap-2 mb-4 createbutton">
-                            <a href="{{ route('tasks.create') }}"
-                                class="inline-flex items-center px-3 py-1.5 h-8 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-sm font-medium rounded-lg shadow hover:shadow-lg transform transition-all duration-200 hover:scale-105 whitespace-nowrap">
-                                <i class="fas fa-plus mr-1.5 text-xs"></i>
-                                Create Task
-                            </a>
+    <!-- Modal Panel -->
+    <div class="fixed inset-0 z-10 overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xl font-bold text-gray-900" id="modalTitle">Create New Task</h3>
+                        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+                <form id="taskForm" class="p-6">
+                    <input type="hidden" id="taskId">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Title *</label>
+                            <input type="text" id="taskTitle" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none" placeholder="Enter task title">
+                            <p class="text-red-500 text-xs mt-1 hidden" id="taskTitleError"></p>
                         </div>
-                    `;
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                            <textarea id="taskDescription" rows="3" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none"></textarea>
+                            <p class="text-red-500 text-xs mt-1 hidden" id="taskDescriptionError"></p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                                <select id="taskStatus" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none">
+                                    <option value="pending">Pending</option>
+                                    <option value="in-progress">In Progress</option>
+                                    <option value="on-hold">On Hold</option>
+                                    <option value="completed">Completed</option>
+                                </select>
+                                <p class="text-red-500 text-xs mt-1 hidden" id="taskStatusError"></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Priority</label>
+                                <select id="taskPriority" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none">
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                                <p class="text-red-500 text-xs mt-1 hidden" id="taskPriorityError"></p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Due Date</label>
+                                <input type="date" id="taskDueDate" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none">
+                                <p class="text-red-500 text-xs mt-1 hidden" id="taskDueDateError"></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Assigned To</label>
+                                <select id="taskAssignedTo" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none">
+                                    <option value="">Unassigned</option>
+                                    @foreach($users as $user)
+                                        <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                    @endforeach
+                                </select>
+                                <p class="text-red-500 text-xs mt-1 hidden" id="taskAssignedToError"></p>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Order</label>
+                            <select id="taskOrder" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none">
+                                <option value="">No Order</option>
+                                @foreach($orders as $order)
+                                    <option value="{{ $order->id }}">{{ $order->name }} (ID: {{ $order->id }})</option>
+                                @endforeach
+                            </select>
+                            <p class="text-red-500 text-xs mt-1 hidden" id="taskOrderError"></p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Estimated Hours</label>
+                                <input type="number" id="taskEstimatedHours" min="0" step="0.5" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none">
+                                <p class="text-red-500 text-xs mt-1 hidden" id="taskEstimatedHoursError"></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Actual Hours</label>
+                                <input type="number" id="taskActualHours" min="0" step="0.5" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none">
+                                <p class="text-red-500 text-xs mt-1 hidden" id="taskActualHoursError"></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-3 mt-6">
+                        <button type="button" onclick="closeModal()" class="px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all">
+                            Save Task
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
-                    // Insert buttons before the table container
-                    $('#tasksTable_wrapper').prepend(actionButtons);
+<!-- View Task Modal -->
+<div id="viewTaskModal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" onclick="closeViewModal()"></div>
 
-                    // Filter form handlers - real-time search
-                    $('#filterForm select').on('change', function() {
-                        $('#tasksTable').DataTable().ajax.reload();
-                    });
-                }
-            });
-        }
+    <!-- Modal Panel -->
+    <div class="fixed inset-0 z-10 overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
+                <!-- Modal Header -->
+                <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div id="viewModalStatusIcon" class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                                <!-- Status icon will be injected here -->
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white" id="viewModalTitle">Task Title</h3>
+                                <p class="text-sm text-indigo-100" id="viewModalOrder">Order Name</p>
+                            </div>
+                        </div>
+                        <button onclick="closeViewModal()" class="text-white hover:text-gray-200 transition-colors">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
 
-        // Global functions
-        function applyFilters() {
-            // Reload the table with current filter values
-            if (typeof $('#tasksTable').DataTable() !== 'undefined') {
-                console.log('Applying filters...');
-                $('#tasksTable').DataTable().ajax.reload(null, false); // false = no reset paging
-                console.log('Filters applied successfully');
-            }
-        }
+                <!-- Modal Body -->
+                <div class="px-6 py-6">
+                    <!-- Description -->
+                    <div class="mb-6">
+                        <h4 class="text-sm font-semibold text-gray-700 mb-2">Description</h4>
+                        <div id="viewModalDescription" class="text-sm text-gray-600 bg-gray-50 rounded-xl p-4">
+                            No description provided
+                        </div>
+                    </div>
 
-        function clearFilters() {
-            // Clear all filter values
-            $('#filterForm')[0].reset();
+                    <!-- Details Grid -->
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <h4 class="text-sm font-semibold text-gray-700 mb-2">Status</h4>
+                            <div id="viewModalStatus" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold">
+                                <!-- Status badge -->
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-semibold text-gray-700 mb-2">Priority</h4>
+                            <div id="viewModalPriority" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-bold uppercase">
+                                <!-- Priority badge -->
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-semibold text-gray-700 mb-2">Due Date</h4>
+                            <div id="viewModalDueDate" class="text-sm text-gray-900 flex items-center gap-2">
+                                <!-- Due date -->
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-semibold text-gray-700 mb-2">Assigned To</h4>
+                            <div id="viewModalAssignedTo" class="flex items-center gap-2">
+                                <!-- Assignee -->
+                            </div>
+                        </div>
+                    </div>
 
-            // Reload the table
-            if (typeof $('#tasksTable').DataTable() !== 'undefined') {
-                $('#tasksTable').DataTable().ajax.reload();
-            }
+                    <!-- Time Tracking -->
+                    <div id="viewModalTimeTracking" class="mb-6 hidden">
+                        <h4 class="text-sm font-semibold text-gray-700 mb-2">Time Tracking</h4>
+                        <div class="flex items-center gap-4">
+                            <div class="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg">
+                                <i class="fas fa-clock text-gray-500"></i>
+                                <div>
+                                    <p class="text-xs text-gray-500">Estimated</p>
+                                    <p id="viewModalEstimatedHours" class="text-sm font-semibold text-gray-900">0h</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg border border-blue-200">
+                                <i class="fas fa-stopwatch text-blue-600"></i>
+                                <div>
+                                    <p class="text-xs text-blue-600">Actual</p>
+                                    <p id="viewModalActualHours" class="text-sm font-semibold text-blue-900">0h</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            console.log('Filters cleared successfully');
-        }
+                <!-- Modal Footer -->
+                <div class="bg-gray-50 px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center gap-2 text-xs text-gray-500">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Created: <span id="viewModalCreatedAt" class="font-semibold"></span></span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button id="viewModalArchiveBtn" onclick="archiveTaskFromModal()" class="px-4 py-2 border border-orange-300 rounded-lg font-semibold text-orange-700 hover:bg-orange-50 transition-colors hidden">
+                            <i class="fas fa-archive mr-2"></i>Archive
+                        </button>
+                        <button onclick="closeViewModal()" class="px-4 py-2 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
+                            Close
+                        </button>
+                        <button id="viewModalEditBtn" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all">
+                            <i class="fas fa-edit mr-2"></i>Edit Task
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-        function deleteTask(taskId, taskTitle) {
-            Swal.fire({
-                title: 'Delete Task',
-                text: `Are you sure you want to delete "${taskTitle}"?`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete it!',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    axios.delete('/tasks/' + taskId, {
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        }
-                    })
-                    .then(response => {
-                        if (response.data.success) {
-                            Swal.fire(
-                                'Deleted!',
-                                response.data.message,
-                                'success'
-                            );
-                            if (typeof $('#tasksTable').DataTable() !== 'undefined') {
-                                $('#tasksTable').DataTable().ajax.reload();
-                            }
-                        } else {
-                            Swal.fire(
-                                'Error',
-                                response.data.message,
-                                'error'
-                            );
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Delete error:', error);
-                        const errorMessage = error.response?.data?.message ||
-                                             error.response?.data?.error ||
-                                             error.message ||
-                                             'An error occurred while deleting the task';
-                        Swal.fire(
-                            'Error',
-                            errorMessage,
-                            'error'
-                        );
-                    });
-                }
-            });
-        }
-    </script>
-@endpush
+<!-- Custom Alert Modal -->
+<div id="customAlert" class="custom-alert-overlay">
+    <div class="custom-alert">
+        <div class="p-8 text-center">
+            <div class="alert-icon" id="alertIcon">
+                <i class="fas fa-check"></i>
+            </div>
+            <h3 class="alert-title" id="alertTitle">Success!</h3>
+            <p class="alert-message" id="alertMessage">Operation completed successfully.</p>
+        </div>
+        <div class="alert-actions" id="alertActions">
+            <!-- Buttons will be injected here -->
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
 @endsection
+
+@push('scripts')
+<script>
+// Task Management State
+let tasksData = @js($tasks);
+let selectedTasks = new Set();
+let bulkMode = false;
+let draggedTask = null;
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    renderTasks();
+    updateStats();
+});
+
+// Render all tasks
+function renderTasks() {
+    const statuses = ['pending', 'in-progress', 'on-hold', 'completed'];
+
+    statuses.forEach(status => {
+        const dropZone = document.querySelector(`.drop-zone[data-status="${status}"]`);
+        const tasks = tasksData.filter(task => task.status === status);
+
+        dropZone.innerHTML = tasks.map(task => renderTaskCard(task)).join('');
+        document.getElementById(`count-${status}`).textContent = tasks.length;
+    });
+}
+
+// Render individual task card
+function renderTaskCard(task) {
+    const dueDate = task.due_date ? new Date(task.due_date) : null;
+    const now = new Date();
+    const isOverdue = dueDate && dueDate < now && task.status !== 'completed';
+    const isDueSoon = dueDate && !isOverdue && Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24)) <= 3;
+    const daysUntilDue = dueDate ? Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24)) : null;
+
+    const progress = {
+        'pending': 0,
+        'in-progress': 50,
+        'on-hold': 25,
+        'completed': 100
+    }[task.status] || 0;
+
+    const priorityIcons = {
+        urgent: `<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"></path></svg>`,
+        high: `<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>`,
+        medium: `<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>`,
+        low: `<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>`
+    };
+
+    const statusIcons = {
+        'completed': '<i class="fas fa-check text-xs"></i>',
+        'in-progress': '<i class="fas fa-spinner fa-spin text-xs"></i>',
+        'on-hold': '<i class="fas fa-pause text-xs"></i>',
+        'pending': '<i class="fas fa-circle text-[8px]"></i>'
+    };
+
+    return `
+        <div class="task-card group relative cursor-pointer"
+             draggable="true"
+             ondragstart="handleDragStart(event, ${task.id})"
+             ondragend="handleDragEnd(event)"
+             onclick="openViewModal(${task.id})"
+             data-task-id="${task.id}"
+             data-status="${task.status}">
+
+            <!-- Priority Indicator Strip -->
+            <div class="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-lg priority-strip-${task.priority}"></div>
+
+            <!-- Status Progress Bar (Top) -->
+            <div class="absolute top-0 left-0 right-0 h-0.5 bg-gray-100">
+                <div class="h-full progress-bar-${task.status}" style="width: ${progress}%"></div>
+            </div>
+
+            <!-- Card Content -->
+            <div class="pl-4">
+                <!-- Checkbox for bulk selection -->
+                <div class="flex items-start gap-3">
+                    <input type="checkbox"
+                           class="task-checkbox mt-1.5"
+                           style="display: none;"
+                           onchange="toggleTaskSelection(${task.id})"
+                           data-task-id="${task.id}">
+
+                    <div class="flex-1 min-w-0">
+                        <!-- Title Row -->
+                        <div class="flex items-start justify-between gap-2 mb-2">
+                            <h4 class="font-semibold text-gray-900 text-sm leading-snug group-hover:text-indigo-600 transition-colors flex-1">
+                                ${task.title}
+                            </h4>
+                            <!-- Status Icon Badge -->
+                            <span class="flex-shrink-0 status-icon-${task.status}">
+                                ${statusIcons[task.status] || statusIcons['pending']}
+                            </span>
+                        </div>
+
+                        <!-- Description Preview -->
+                        ${task.description ? `
+                            <p class="text-xs text-gray-500 mb-3 line-clamp-2 leading-relaxed">
+                                ${task.description.substring(0, 120)}${task.description.length > 120 ? '...' : ''}
+                            </p>
+                        ` : ''}
+
+                        <!-- Tags and Badges Row -->
+                        <div class="flex flex-wrap items-center gap-1.5 mb-3">
+                            <!-- Priority Badge -->
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider priority-badge-${task.priority}">
+                                ${priorityIcons[task.priority] || priorityIcons['low']}
+                                ${task.priority}
+                            </span>
+
+                            <!-- Due Date Badge -->
+                            ${dueDate ? `
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold due-badge-${isOverdue ? 'overdue' : (isDueSoon ? 'soon' : 'normal')}">
+                                    ${isOverdue
+                                        ? `<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>${Math.abs(daysUntilDue)}d overdue`
+                                        : isDueSoon
+                                            ? `<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg>${daysUntilDue}d left`
+                                            : `<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path></svg>${dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+                                    }
+                                </span>
+                            ` : ''}
+
+                            <!-- Order Badge -->
+                            ${task.order ? `
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg>
+                                    ${task.order.name.length > 20 ? task.order.name.substring(0, 20) + '...' : task.order.name}
+                                </span>
+                            ` : ''}
+                        </div>
+
+                        <!-- Footer Row: Assignee & Time -->
+                        <div class="flex items-center justify-between pt-2.5 border-t border-gray-100">
+                            <!-- Left: Assignee -->
+                            ${task.assigned_to ? `
+                                <div class="flex items-center gap-2">
+                                    <div class="relative">
+                                        <div class="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-xs shadow-md">
+                                            ${task.assignedTo ? task.assignedTo.name.charAt(0) : '?'}
+                                        </div>
+                                        <div class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-xs font-semibold text-gray-800 leading-tight">${task.assignedTo ? task.assignedTo.name : 'Unknown'}</span>
+                                        <span class="text-[10px] text-gray-400">Assigned</span>
+                                    </div>
+                                </div>
+                            ` : `
+                                <div class="flex items-center gap-2">
+                                    <div class="w-7 h-7 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center">
+                                        <svg class="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+                                    </div>
+                                    <span class="text-xs text-gray-400">Unassigned</span>
+                                </div>
+                            `}
+
+                            <!-- Right: Time Tracking -->
+                            ${(task.estimated_hours || task.actual_hours) ? `
+                                <div class="flex items-center gap-2.5">
+                                    ${task.estimated_hours ? `
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px] font-semibold">
+                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg>
+                                            ${task.estimated_hours}h
+                                        </span>
+                                    ` : ''}
+                                    ${task.actual_hours ? `
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] font-semibold border border-blue-200">
+                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg>
+                                            ${task.actual_hours}h
+                                        </span>
+                                    ` : ''}
+                                </div>
+                            ` : `
+                                <div class="w-12"></div>
+                            `}
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions (Right Side) -->
+                    <div class="flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                        <button onclick="event.stopPropagation(); openEditModal(${task.id})"
+                                class="w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-sm hover:shadow"
+                                title="Edit task">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                        </button>
+                        ${task.status === 'completed' ? `
+                            <button onclick="event.stopPropagation(); archiveTask(${task.id}, '${task.title.replace(/'/g, "\\'")}')" 
+                                    class="w-7 h-7 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-600 flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-sm hover:shadow"
+                                    title="Archive task">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
+                            </button>
+                        ` : ''}
+                        <button onclick="event.stopPropagation(); deleteTask(${task.id}, '${task.title.replace(/'/g, "\\'")}')"
+                                class="w-7 h-7 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-sm hover:shadow"
+                                title="Delete task">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Update statistics
+function updateStats() {
+    const stats = {
+        total: tasksData.length,
+        pending: tasksData.filter(t => t.status === 'pending').length,
+        'in-progress': tasksData.filter(t => t.status === 'in-progress').length,
+        'on-hold': tasksData.filter(t => t.status === 'on-hold').length,
+        completed: tasksData.filter(t => t.status === 'completed').length
+    };
+
+    Object.keys(stats).forEach(key => {
+        const el = document.getElementById(`stat-${key}`);
+        if (el) el.textContent = stats[key];
+    });
+}
+
+// Drag and Drop
+function handleDragStart(event, taskId) {
+    draggedTask = taskId;
+    event.target.classList.add('dragging');
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', taskId);
+}
+
+function handleDragEnd(event) {
+    event.target.classList.remove('dragging');
+    document.querySelectorAll('.drop-zone').forEach(zone => {
+        zone.classList.remove('drag-over');
+    });
+    document.querySelectorAll('.task-column').forEach(col => {
+        col.classList.remove('drag-over');
+    });
+}
+
+function handleDragOver(event) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    event.currentTarget.classList.add('drag-over');
+    event.currentTarget.closest('.task-column').classList.add('drag-over');
+}
+
+function handleDragLeave(event) {
+    event.currentTarget.classList.remove('drag-over');
+    event.currentTarget.closest('.task-column')?.classList.remove('drag-over');
+}
+
+async function handleDrop(event, newStatus) {
+    event.preventDefault();
+    event.stopPropagation();
+    event.currentTarget.classList.remove('drag-over');
+    event.currentTarget.closest('.task-column')?.classList.remove('drag-over');
+
+    const taskId = parseInt(event.dataTransfer.getData('text/plain'));
+    if (!taskId) return;
+
+    const task = tasksData.find(t => t.id === taskId);
+    if (!task || task.status === newStatus) return;
+
+    // Optimistic update
+    const oldStatus = task.status;
+    task.status = newStatus;
+
+    if (newStatus === 'completed') {
+        task.completed_at = new Date().toISOString();
+    } else {
+        task.completed_at = null;
+    }
+
+    renderTasks();
+    updateStats();
+
+    // API call
+    try {
+        const response = await axios.patch(`/tasks/${taskId}/status`, { status: newStatus });
+
+        showToast('Success!', 'Task status updated successfully!', 'success');
+    } catch (error) {
+        // Rollback on error
+        task.status = oldStatus;
+        task.completed_at = null;
+        renderTasks();
+        updateStats();
+        showToast('Error!', 'Failed to update task status.', 'error');
+    }
+
+    draggedTask = null;
+}
+
+// Custom Alert System
+function showAlert(type, title, message, buttons = []) {
+    const overlay = document.getElementById('customAlert');
+    const icon = document.getElementById('alertIcon');
+    const titleEl = document.getElementById('alertTitle');
+    const messageEl = document.getElementById('alertMessage');
+    const actionsEl = document.getElementById('alertActions');
+
+    // Set icon
+    icon.className = `alert-icon ${type}`;
+    const icons = {
+        success: 'fa-check',
+        error: 'fa-times',
+        warning: 'fa-exclamation',
+        info: 'fa-info'
+    };
+    icon.innerHTML = `<i class="fas fa-${icons[type]}"></i>`;
+
+    // Set content
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+
+    // Set buttons
+    if (buttons.length === 0) {
+        buttons = [{
+            text: 'OK',
+            class: 'primary',
+            action: () => hideAlert()
+        }];
+    }
+
+    actionsEl.innerHTML = buttons.map(btn => {
+        const classMap = {
+            primary: 'alert-btn-primary',
+            secondary: 'alert-btn-secondary',
+            danger: 'alert-btn-danger'
+        };
+        return `<button class="alert-btn ${classMap[btn.class]}" onclick="${btn.action}">${btn.text}</button>`;
+    }).join('');
+
+    // Show alert
+    overlay.classList.add('show');
+    document.querySelector('.custom-alert').classList.add('show');
+}
+
+function hideAlert() {
+    const overlay = document.getElementById('customAlert');
+    overlay.classList.remove('show');
+    document.querySelector('.custom-alert').classList.remove('show');
+}
+
+// Toast Notifications
+function showToast(title, message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+
+    const icons = {
+        success: 'fa-check',
+        error: 'fa-times',
+        warning: 'fa-exclamation',
+        info: 'fa-info'
+    };
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon">
+            <i class="fas fa-${icons[type]}"></i>
+        </div>
+        <div class="toast-content">
+            <div class="toast-title">${title}</div>
+            <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close" onclick="removeToast(this.parentElement)">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+
+    container.appendChild(toast);
+
+    // Auto remove after 4 seconds
+    setTimeout(() => removeToast(toast), 4000);
+}
+
+function removeToast(toast) {
+    toast.classList.add('removing');
+    setTimeout(() => toast.remove(), 300);
+}
+
+// Update task status (for quick status change)
+async function quickUpdateStatus(taskId, status) {
+    const task = tasksData.find(t => t.id === taskId);
+    if (!task) return;
+
+    const oldStatus = task.status;
+    task.status = status;
+
+    if (status === 'completed') {
+        task.completed_at = new Date().toISOString();
+    } else {
+        task.completed_at = null;
+    }
+
+    renderTasks();
+    updateStats();
+
+    try {
+        await axios.patch(`/tasks/${taskId}/status`, { status });
+        showToast('Success!', 'Task status updated successfully!', 'success');
+    } catch (error) {
+        task.status = oldStatus;
+        task.completed_at = null;
+        renderTasks();
+        updateStats();
+        showToast('Error!', 'Failed to update task status.', 'error');
+    }
+}
+
+// Delete task
+function deleteTask(taskId, taskTitle) {
+    showAlert(
+        'warning',
+        'Delete Task?',
+        `You are about to delete "${taskTitle}". This action cannot be undone.`,
+        [
+            {
+                text: 'Cancel',
+                class: 'secondary',
+                action: 'hideAlert()'
+            },
+            {
+                text: 'Delete',
+                class: 'danger',
+                action: `confirmDeleteTask(${taskId})`
+            }
+        ]
+    );
+}
+
+async function confirmDeleteTask(taskId) {
+    hideAlert();
+
+    try {
+        await axios.delete(`/tasks/${taskId}`);
+
+        tasksData = tasksData.filter(t => t.id !== taskId);
+        renderTasks();
+        updateStats();
+
+        showToast('Deleted!', 'Task has been deleted.', 'success');
+    } catch (error) {
+        showToast('Error!', 'Failed to delete task.', 'error');
+    }
+}
+
+// Archive task
+function archiveTask(taskId, taskTitle) {
+    showAlert(
+        'info',
+        'Archive Task?',
+        `You are about to archive "${taskTitle}". You can unarchive it later from the archived tasks page.`,
+        [
+            {
+                text: 'Cancel',
+                class: 'secondary',
+                action: 'hideAlert()'
+            },
+            {
+                text: 'Archive',
+                class: 'primary',
+                action: `confirmArchiveTask(${taskId})`
+            }
+        ]
+    );
+}
+
+async function confirmArchiveTask(taskId) {
+    hideAlert();
+
+    try {
+        await axios.post(`/tasks/${taskId}/archive`);
+
+        tasksData = tasksData.filter(t => t.id !== taskId);
+        renderTasks();
+        updateStats();
+
+        showToast('Archived!', 'Task has been archived successfully.', 'success');
+    } catch (error) {
+        showToast('Error!', 'Failed to archive task.', 'error');
+    }
+}
+
+// Modal functions
+function openCreateModal() {
+    document.getElementById('modalTitle').textContent = 'Create New Task';
+    document.getElementById('taskForm').reset();
+    document.getElementById('taskId').value = '';
+    document.getElementById('taskModal').classList.remove('hidden');
+}
+
+function openEditModal(taskId) {
+    axios.get(`/tasks/${taskId}/edit`)
+        .then(response => {
+            const task = response.data.task;
+            document.getElementById('modalTitle').textContent = 'Edit Task';
+            document.getElementById('taskId').value = task.id;
+            document.getElementById('taskTitle').value = task.title;
+            document.getElementById('taskDescription').value = task.description || '';
+            document.getElementById('taskStatus').value = task.status;
+            document.getElementById('taskPriority').value = task.priority;
+            document.getElementById('taskDueDate').value = task.due_date || '';
+            document.getElementById('taskAssignedTo').value = task.assigned_to || '';
+            document.getElementById('taskOrder').value = task.order_id || '';
+            document.getElementById('taskEstimatedHours').value = task.estimated_hours || '';
+            document.getElementById('taskActualHours').value = task.actual_hours || '';
+
+            document.getElementById('taskModal').classList.remove('hidden');
+        })
+        .catch(error => {
+            showToast('Error!', 'Failed to load task data.', 'error');
+        });
+}
+
+function closeModal() {
+    document.getElementById('taskModal').classList.add('hidden');
+}
+
+// View Modal Functions
+function openViewModal(taskId) {
+    if (event.target.closest('button')) {
+        return;
+    }
+
+    axios.get(`/tasks/${taskId}`, {
+        headers: {
+            'Accept': 'application/json'
+        }
+    })
+        .then(response => {
+            const task = response.data.task;
+
+            document.getElementById('viewModalTitle').textContent = task.title;
+            document.getElementById('viewModalOrder').textContent = task.order ? `${task.order.name} (ID: ${task.order.id})` : 'No Order';
+            document.getElementById('viewModalDescription').innerHTML = task.description || 'No description provided';
+
+            const statusConfig = {
+                'pending': { icon: 'fa-circle', color: 'bg-yellow-100 text-yellow-800' },
+                'in-progress': { icon: 'fa-spinner fa-spin', color: 'bg-blue-100 text-blue-800' },
+                'on-hold': { icon: 'fa-pause', color: 'bg-purple-100 text-purple-800' },
+                'completed': { icon: 'fa-check', color: 'bg-green-100 text-green-800' }
+            };
+            const status = statusConfig[task.status];
+            document.getElementById('viewModalStatus').innerHTML = `<i class="fas ${status.icon} mr-1"></i>${task.status.replace('-', ' ')}`;
+            document.getElementById('viewModalStatus').className = `inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold ${status.color}`;
+            document.getElementById('viewModalStatusIcon').innerHTML = `<i class="fas ${status.icon} text-white"></i>`;
+
+            const priorityConfig = {
+                'urgent': { color: 'bg-red-100 text-red-800', border: 'border-red-200' },
+                'high': { color: 'bg-orange-100 text-orange-800', border: 'border-orange-200' },
+                'medium': { color: 'bg-yellow-100 text-yellow-800', border: 'border-yellow-200' },
+                'low': { color: 'bg-green-100 text-green-800', border: 'border-green-200' }
+            };
+            const priority = priorityConfig[task.priority];
+            document.getElementById('viewModalPriority').textContent = task.priority;
+            document.getElementById('viewModalPriority').className = `inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-bold uppercase border ${priority.color} ${priority.border}`;
+
+            if (task.due_date) {
+                const dueDate = new Date(task.due_date);
+                document.getElementById('viewModalDueDate').innerHTML = `<i class="far fa-calendar-alt text-gray-400"></i>${dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+            } else {
+                document.getElementById('viewModalDueDate').innerHTML = '<span class="text-gray-400">No due date</span>';
+            }
+
+            if (task.assigned_to) {
+                document.getElementById('viewModalAssignedTo').innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                        ${task.assigned_to.name[0]}
+                    </div>
+                    <span class="text-sm font-medium text-gray-700">${task.assigned_to.name}</span>
+                `;
+            } else {
+                document.getElementById('viewModalAssignedTo').innerHTML = '<span class="text-sm text-gray-400">Unassigned</span>';
+            }
+
+            if (task.estimated_hours || task.actual_hours) {
+                document.getElementById('viewModalTimeTracking').classList.remove('hidden');
+                document.getElementById('viewModalEstimatedHours').textContent = `${task.estimated_hours || 0}h`;
+                document.getElementById('viewModalActualHours').textContent = `${task.actual_hours || 0}h`;
+            } else {
+                document.getElementById('viewModalTimeTracking').classList.add('hidden');
+            }
+
+            if (task.created_at) {
+                const createdDate = new Date(task.created_at);
+                document.getElementById('viewModalCreatedAt').textContent = createdDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            }
+
+            const archiveBtn = document.getElementById('viewModalArchiveBtn');
+            if (task.status === 'completed') {
+                archiveBtn.classList.remove('hidden');
+            } else {
+                archiveBtn.classList.add('hidden');
+            }
+
+            window.currentViewTaskId = taskId;
+
+            document.getElementById('viewModalEditBtn').onclick = function() {
+                closeViewModal();
+                openEditModal(taskId);
+            };
+
+            document.getElementById('viewTaskModal').classList.remove('hidden');
+        })
+        .catch(error => {
+            showToast('Error!', 'Failed to load task details.', 'error');
+        });
+}
+
+function closeViewModal() {
+    document.getElementById('viewTaskModal').classList.add('hidden');
+}
+
+async function archiveTaskFromModal() {
+    if (!window.currentViewTaskId) return;
+
+    hideAlert();
+
+    try {
+        await axios.post(`/tasks/${window.currentViewTaskId}/archive`);
+
+        tasksData = tasksData.filter(t => t.id !== window.currentViewTaskId);
+        renderTasks();
+        updateStats();
+        closeViewModal();
+
+        showToast('Archived!', 'Task has been archived successfully.', 'success');
+    } catch (error) {
+        showToast('Error!', 'Failed to archive task.', 'error');
+    }
+}
+
+// Form submission
+document.getElementById('taskForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    // Clear all previous errors
+    clearValidationErrors();
+
+    const taskId = document.getElementById('taskId').value;
+    const data = {
+        title: document.getElementById('taskTitle').value,
+        description: document.getElementById('taskDescription').value,
+        status: document.getElementById('taskStatus').value,
+        priority: document.getElementById('taskPriority').value,
+        due_date: document.getElementById('taskDueDate').value,
+        assigned_to: document.getElementById('taskAssignedTo').value,
+        order_id: document.getElementById('taskOrder').value,
+        estimated_hours: document.getElementById('taskEstimatedHours').value,
+        actual_hours: document.getElementById('taskActualHours').value,
+        _method: taskId ? 'PATCH' : 'POST'
+    };
+
+    const url = taskId ? `/tasks/${taskId}` : '/tasks';
+
+    try {
+        const response = await axios.post(url, data);
+
+        if (taskId) {
+            // Update existing task
+            const index = tasksData.findIndex(t => t.id === parseInt(taskId));
+            if (index !== -1) {
+                tasksData[index] = response.data.task;
+            }
+        } else {
+            // Add new task
+            tasksData.push(response.data.task);
+        }
+
+        renderTasks();
+        updateStats();
+        closeModal();
+
+        showToast(
+            'Success!',
+            taskId ? 'Task updated successfully!' : 'Task created successfully!',
+            'success'
+        );
+    } catch (error) {
+        if (error.response && error.response.status === 422) {
+            // Validation errors
+            const errors = error.response.data.errors;
+            showValidationErrors(errors);
+        } else {
+            showToast('Error!', 'Failed to save task.', 'error');
+        }
+    }
+});
+
+function clearValidationErrors() {
+    const errorFields = ['taskTitleError', 'taskDescriptionError', 'taskStatusError', 'taskPriorityError', 'taskDueDateError', 'taskEstimatedHoursError', 'taskActualHoursError', 'taskOrderError', 'taskAssignedToError'];
+    errorFields.forEach(fieldId => {
+        const errorEl = document.getElementById(fieldId);
+        if (errorEl) {
+            errorEl.textContent = '';
+            errorEl.classList.add('hidden');
+        }
+    });
+
+    // Remove border-red-500 from all inputs
+    const inputs = document.querySelectorAll('#taskForm input, #taskForm select, #taskForm textarea');
+    inputs.forEach(input => {
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-200');
+    });
+}
+
+function showValidationErrors(errors) {
+    const fieldMapping = {
+        'title': { input: 'taskTitle', error: 'taskTitleError' },
+        'description': { input: 'taskDescription', error: 'taskDescriptionError' },
+        'status': { input: 'taskStatus', error: 'taskStatusError' },
+        'priority': { input: 'taskPriority', error: 'taskPriorityError' },
+        'due_date': { input: 'taskDueDate', error: 'taskDueDateError' },
+        'estimated_hours': { input: 'taskEstimatedHours', error: 'taskEstimatedHoursError' },
+        'actual_hours': { input: 'taskActualHours', error: 'taskActualHoursError' },
+        'order_id': { input: 'taskOrder', error: 'taskOrderError' },
+        'assigned_to': { input: 'taskAssignedTo', error: 'taskAssignedToError' }
+    };
+
+    for (const field in errors) {
+        const mapping = fieldMapping[field];
+        if (!mapping) continue;
+
+        const input = document.getElementById(mapping.input);
+        const errorEl = document.getElementById(mapping.error);
+
+        if (input && errorEl) {
+            input.classList.remove('border-gray-200');
+            input.classList.add('border-red-500');
+            errorEl.textContent = errors[field][0];
+            errorEl.classList.remove('hidden');
+        }
+    }
+
+    showToast('Validation Error', 'Please fix the errors below.', 'error');
+}
+
+// Filter functions
+function filterByStatus(status) {
+    document.querySelectorAll('.filter-pill').forEach(pill => {
+        pill.classList.remove('active');
+        if (pill.dataset.filter === status) {
+            pill.classList.add('active');
+        }
+    });
+
+    // Filter visual only - we keep all data
+    const allTasks = document.querySelectorAll('.task-card');
+    allTasks.forEach(card => {
+        if (status === 'all' || card.dataset.status === status) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+function applyFilters() {
+    const priority = document.getElementById('filterPriority').value;
+    const order = document.getElementById('filterOrder').value;
+    const search = document.getElementById('searchTasks').value.toLowerCase();
+
+    tasksData.forEach(task => {
+        const card = document.querySelector(`.task-card[data-task-id="${task.id}"]`);
+        if (!card) return;
+
+        let visible = true;
+
+        if (priority && task.priority !== priority) visible = false;
+        if (order && task.order_id != order) visible = false;
+        if (search && !task.title.toLowerCase().includes(search)) visible = false;
+
+        card.style.display = visible ? 'block' : 'none';
+    });
+}
+
+// Search with debounce
+let searchTimeout;
+document.getElementById('searchTasks').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(applyFilters, 300);
+});
+
+// Bulk actions
+function toggleBulkMode() {
+    bulkMode = !bulkMode;
+    const btn = document.getElementById('bulkModeBtn');
+
+    if (bulkMode) {
+        btn.classList.add('bg-indigo-100', 'border-indigo-500');
+        document.querySelectorAll('.task-checkbox').forEach(cb => {
+            cb.style.display = 'block';
+        });
+    } else {
+        btn.classList.remove('bg-indigo-100', 'border-indigo-500');
+        document.querySelectorAll('.task-checkbox').forEach(cb => {
+            cb.style.display = 'none';
+            cb.checked = false;
+        });
+        clearSelection();
+    }
+}
+
+function toggleTaskSelection(taskId) {
+    if (selectedTasks.has(taskId)) {
+        selectedTasks.delete(taskId);
+    } else {
+        selectedTasks.add(taskId);
+    }
+    updateBulkActionBar();
+}
+
+function updateBulkActionBar() {
+    const bulkBar = document.getElementById('bulkActionBar');
+    const selectedCount = document.getElementById('selectedCount');
+
+    if (selectedTasks.size > 0) {
+        bulkBar.classList.remove('hidden');
+        selectedCount.textContent = selectedTasks.size;
+    } else {
+        bulkBar.classList.add('hidden');
+    }
+}
+
+function clearSelection() {
+    selectedTasks.clear();
+    document.querySelectorAll('.task-checkbox').forEach(cb => cb.checked = false);
+    updateBulkActionBar();
+}
+
+async function applyBulkAction() {
+    const action = document.getElementById('bulkAction').value;
+
+    if (!action || selectedTasks.size === 0) {
+        return;
+    }
+
+    const statusMap = {
+        'mark-pending': 'pending',
+        'mark-in-progress': 'in-progress',
+        'mark-completed': 'completed',
+        'mark-on-hold': 'on-hold'
+    };
+
+    if (action === 'delete') {
+        showAlert(
+            'warning',
+            'Delete Tasks?',
+            `You are about to delete ${selectedTasks.size} task(s). This action cannot be undone.`,
+            [
+                {
+                    text: 'Cancel',
+                    class: 'secondary',
+                    action: 'hideAlert()'
+                },
+                {
+                    text: 'Delete',
+                    class: 'danger',
+                    action: 'confirmBulkAction()'
+                }
+            ]
+        );
+    } else {
+        executeBulkAction(action, statusMap[action]);
+    }
+}
+
+async function executeBulkAction(action, status) {
+    const data = { task_ids: Array.from(selectedTasks) };
+    if (status) {
+        data.status = status;
+    }
+
+    try {
+        await axios.post('/tasks/bulk-update', data);
+
+        // Update local state
+        if (action === 'delete') {
+            tasksData = tasksData.filter(t => !selectedTasks.has(t.id));
+        } else {
+            tasksData.forEach(task => {
+                if (selectedTasks.has(task.id)) {
+                    task.status = status;
+                    if (status === 'completed') {
+                        task.completed_at = new Date().toISOString();
+                    }
+                }
+            });
+        }
+
+        renderTasks();
+        updateStats();
+        clearSelection();
+
+        showToast('Success!', 'Bulk action completed successfully!', 'success');
+    } catch (error) {
+        showToast('Error!', 'Failed to apply bulk action.', 'error');
+    }
+}
+
+async function confirmBulkAction() {
+    hideAlert();
+    await executeBulkAction('delete');
+}
+</script>
+@endpush

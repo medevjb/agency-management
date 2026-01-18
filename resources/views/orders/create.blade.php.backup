@@ -1,0 +1,440 @@
+@extends('layouts.dashboard')
+
+@section('title', 'Create Order')
+
+@section('content')
+<div class="px-4 sm:px-6 lg:px-8 py-6 max-w-5xl mx-auto">
+    <!-- Page Header -->
+    <div class="mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                    <i class="fas fa-shopping-cart text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Create New Order</h1>
+                    <p class="text-sm text-gray-500">Add a new order to the system</p>
+                </div>
+            </div>
+            <a href="{{ route('orders.index') }}"
+               class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium transition-all">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Back
+            </a>
+        </div>
+    </div>
+
+    <form action="{{ route('orders.store') }}" method="POST">
+        @csrf
+
+        <!-- Main Form Container -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200 ">
+            <div class="p-6 space-y-6">
+                <!-- Row 1: Client Name & Order ID -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Client Name <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="name" required
+                               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm"
+                               placeholder="Enter client name">
+                        @error('name')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Order ID
+                        </label>
+                        <input type="text" name="order_id"
+                               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm"
+                               placeholder="ORD-2024-001">
+                        @error('order_id')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <!-- Row 2: Description -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Description
+                    </label>
+                    <textarea name="description" rows="2"
+                              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm resize-none"
+                              placeholder="Brief description of the order..."></textarea>
+                    @error('description')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Row 3: Status & Priority -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Status <span class="text-red-500">*</span>
+                        </label>
+                        <select name="status" required
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white text-sm">
+                            <option value="">Select status</option>
+                            <option value="nra">NRA</option>
+                            <option value="pending">Pending</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="on-hold">On Hold</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                        @error('status')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Priority <span class="text-red-500">*</span>
+                        </label>
+                        <select name="priority" required
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white text-sm">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                        @error('priority')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <!-- Row 4: Amount & Dates -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Amount ($)
+                        </label>
+                        <input type="number" name="actual_revenue" step="0.01" min="0"
+                               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm"
+                               placeholder="0.00">
+                        @error('actual_revenue')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Start Date
+                        </label>
+                        <input type="text" name="start_date" id="start_date" readonly
+                               class="datepicker w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm cursor-pointer bg-white"
+                               placeholder="Select start date">
+                        @error('start_date')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            End Date
+                        </label>
+                        <input type="text" name="end_date" id="end_date" readonly
+                               class="datepicker w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm cursor-pointer bg-white"
+                               placeholder="Select end date">
+                        @error('end_date')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <!-- Row 5: Team & Tech Stack -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Team
+                        </label>
+                        <select name="team_id"
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white text-sm">
+                            <option value="">Select team</option>
+                            @foreach($teams as $team)
+                                <option value="{{ $team->id }}">{{ $team->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('team_id')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Tech Stack
+                        </label>
+                        <select name="tech_stack_id"
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white text-sm">
+                            <option value="">Select tech stack</option>
+                            @foreach($techStacks as $stack)
+                                <option value="{{ $stack->id }}">{{ $stack->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('tech_stack_id')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <!-- Row 6: Freelance Profile -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Freelance Profile
+                    </label>
+                    <select name="freelance_profile_id"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white text-sm">
+                        <option value="">Select freelance profile</option>
+                        @foreach($profiles as $profile)
+                            <option value="{{ $profile->id }}">{{ $profile->username }}</option>
+                        @endforeach
+                    </select>
+                    @error('freelance_profile_id')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Row 7: Assign Users -->
+                <div x-data="userSelector()">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Assign Users
+                    </label>
+
+                    <!-- Selected Users Display -->
+                    <div class="border border-gray-300 rounded-lg p-3 min-h-[60px] bg-gray-50 mb-2">
+                        <template x-for="selectedUser in selectedUsers" :key="selectedUser.id">
+                            <span class="inline-flex items-center gap-1 px-3 py-1 m-1 bg-indigo-100 text-indigo-800 rounded-lg text-sm">
+                                <span x-text="selectedUser.name"></span>
+                                <button type="button" @click="removeUser(selectedUser.id)" class="hover:text-red-600 transition-colors">
+                                    <i class="fas fa-times text-xs"></i>
+                                </button>
+                            </span>
+                        </template>
+                        <span x-show="selectedUsers.length === 0" class="text-gray-400 text-sm">No users assigned</span>
+                    </div>
+
+                    <!-- Hidden Input to Store Selected User IDs -->
+                    <input type="hidden" name="users[]" x-model="selectedUserIds">
+
+                    <!-- Search and Add Users -->
+                    <div class="relative">
+                        <div class="flex gap-2">
+                            <input type="text" x-model="searchQuery" @input="filterUsers()"
+                                   placeholder="Search users by name or email..."
+                                   class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm">
+                            <button type="button" @click="toggleDropdown()"
+                                    class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all">
+                                <i class="fas fa-search mr-2"></i>
+                                Browse
+                            </button>
+                        </div>
+
+                        <!-- Dropdown List -->
+                        <div x-show="dropdownOpen" x-transition
+                             @click.away="dropdownOpen = false"
+                             class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                            <template x-for="user in filteredUsers" :key="user.id">
+                                <div @click="addUser(user)"
+                                     class="px-4 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-0">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <div class="font-medium text-sm text-gray-900" x-text="user.name"></div>
+                                            <div class="text-xs text-gray-500" x-text="user.email"></div>
+                                        </div>
+                                        <i class="fas fa-plus text-indigo-600 text-xs"></i>
+                                    </div>
+                                </div>
+                            </template>
+                            <div x-show="filteredUsers.length === 0" class="px-4 py-3 text-sm text-gray-500 text-center">
+                                No users found
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="mt-1 text-xs text-gray-500">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Click "Browse" to see all available users
+                    </p>
+                    @error('users')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <script>
+                    function userSelector() {
+                        return {
+                            allUsers: @js($users),
+                            selectedUsers: [],
+                            selectedUserIds: [],
+                            searchQuery: '',
+                            dropdownOpen: false,
+                            filteredUsers: [],
+
+                            init() {
+                                console.log('UserSelector initialized with', this.allUsers.length, 'users');
+                                this.filteredUsers = this.allUsers;
+                            },
+
+                            get availableUsers() {
+                                return this.allUsers.filter(user =>
+                                    !this.selectedUsers.find(selected => selected.id === user.id)
+                                );
+                            },
+
+                            filterUsers() {
+                                if (!this.searchQuery) {
+                                    this.filteredUsers = this.availableUsers;
+                                } else {
+                                    const query = this.searchQuery.toLowerCase();
+                                    this.filteredUsers = this.availableUsers.filter(user =>
+                                        user.name.toLowerCase().includes(query) ||
+                                        user.email.toLowerCase().includes(query)
+                                    );
+                                }
+                            },
+
+                            toggleDropdown() {
+                                this.dropdownOpen = !this.dropdownOpen;
+                                if (this.dropdownOpen) {
+                                    this.filterUsers();
+                                }
+                            },
+
+                            addUser(user) {
+                                this.selectedUsers.push(user);
+                                this.selectedUserIds.push(user.id);
+                                this.searchQuery = '';
+                                this.filterUsers();
+                                this.$nextTick(() => {
+                                    this.updateHiddenInput();
+                                });
+                            },
+
+                            removeUser(userId) {
+                                this.selectedUsers = this.selectedUsers.filter(u => u.id !== userId);
+                                this.selectedUserIds = this.selectedUserIds.filter(id => id !== userId);
+                                this.filterUsers();
+                                this.$nextTick(() => {
+                                    this.updateHiddenInput();
+                                });
+                            },
+
+                            updateHiddenInput() {
+                                const hiddenInput = document.querySelector('input[name="users[]"]');
+                                if (hiddenInput) {
+                                    // Remove old values
+                                    hiddenInput.value = '';
+                                    // Add new values
+                                    this.selectedUserIds.forEach(id => {
+                                        const option = document.createElement('option');
+                                        option.value = id;
+                                        option.selected = true;
+                                        hiddenInput.add(option);
+                                    });
+                                }
+                            }
+                        }
+                    }
+                </script>
+                <style>
+                    [x-cloak] { display: none !important; }
+                </style>
+
+                <!-- Row 8: Order Sheet URL -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Order Sheet URL
+                    </label>
+                    <input type="url" name="order_sheet_url"
+                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm"
+                           placeholder="https://docs.google.com/document/d/...">
+                    @error('order_sheet_url')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Row 8: Delivered Date (Auto-filled when status is delivered) -->
+                <div id="deliveredDateContainer" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Delivered Date
+                    </label>
+                    <input type="text" name="delivered_at" id="delivered_at" readonly
+                           class="datetimepicker w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm cursor-pointer bg-white"
+                           placeholder="Select delivered date and time">
+                    <p class="mt-1 text-xs text-gray-500">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Automatically set when status changes to delivered
+                    </p>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-3">
+                <a href="{{ route('orders.index') }}"
+                   class="px-5 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 text-sm font-medium transition-all">
+                    Cancel
+                </a>
+                <button type="submit"
+                        class="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg shadow-md hover:shadow-lg text-sm font-semibold transition-all">
+                    <i class="fas fa-plus mr-2"></i>
+                    Create Order
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusSelect = document.getElementById('status');
+            const deliveredDateContainer = document.getElementById('deliveredDateContainer');
+            const deliveredDateInput = document.getElementById('delivered_at');
+
+            // Initialize datetime picker for delivered_at
+            let deliveredPicker = null;
+
+            statusSelect.addEventListener('change', function() {
+                if (this.value === 'delivered') {
+                    deliveredDateContainer.classList.remove('hidden');
+
+                    // Initialize datetime picker if not already initialized
+                    if (!deliveredPicker) {
+                        deliveredPicker = flatpickr(deliveredDateInput, {
+                            enableTime: true,
+                            dateFormat: 'Y-m-d H:i:S',
+                            allowInput: false,
+                            disableMobile: true,
+                            clickOpens: true,
+                            inline: false,
+                            static: true,
+                            animate: true,
+                            monthSelectorType: 'static',
+                            time_24hr: true,
+                            appendTo: document.body,
+                            position: 'below',
+                            prevArrow: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>',
+                            nextArrow: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>'
+                        });
+                    }
+
+                    // Auto-fill with current date/time if empty
+                    if (!deliveredDateInput.value) {
+                        const now = new Date();
+                        deliveredPicker.setDate(now);
+                    }
+                } else {
+                    deliveredDateContainer.classList.add('hidden');
+                    if (deliveredPicker) {
+                        deliveredPicker.clear();
+                    }
+                }
+            });
+        });
+    </script>
+@endpush
+@endsection

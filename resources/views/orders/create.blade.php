@@ -2,462 +2,477 @@
 
 @section('title', 'Create Order')
 
-@push('styles')
-<style>
-    .form-card {
-        overflow: visible
-    }
-</style>
-@endpush
-
 @section('content')
-<div class="px-4 sm:px-6 lg:px-8 py-8 max-w-6xl mx-auto">
+<div class="px-4 sm:px-6 lg:px-8 py-6 max-w-5xl mx-auto">
     <!-- Page Header -->
-    <div class="mb-8">
+    <div class="mb-6">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg">
-                        <i class="fas fa-shopping-cart text-white text-xl"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-900">Create New Order</h1>
-                        <p class="mt-1 text-sm text-gray-600">Fill in the details to create a new order</p>
-                    </div>
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                    <i class="fas fa-shopping-cart text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Create New Order</h1>
+                    <p class="text-sm text-gray-500">Add a new order to the system</p>
                 </div>
             </div>
             <a href="{{ route('orders.index') }}"
-               class="inline-flex items-center px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 font-semibold transition-all duration-200 self-start">
+               class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium transition-all">
                 <i class="fas fa-arrow-left mr-2"></i>
-                Back to Orders
+                Back
             </a>
         </div>
     </div>
 
-    <form action="{{ route('orders.store') }}" method="POST" id="orderForm">
+    <form action="{{ route('orders.store') }}" method="POST">
         @csrf
 
-        <!-- Basic Information Section -->
-        <div class="form-card mb-4">
-            <div class="form-card-header">
-                <h2 class="form-card-title">
-                    <i class="fas fa-info-circle bg-gradient-to-br from-purple-500 to-indigo-600 text-white"></i>
-                    Basic Information
-                </h2>
-            </div>
-            <div class="form-card-body space-y-4">
-
-                <!-- Order Name & Order ID on same line -->
-                <div class="form-grid">
-                    <!-- Order Name -->
-                    <div class="form-field">
-                        <label class="form-field-label" for="name">
-                            <i class="field-icon fas fa-file-alt bg-purple-100 text-purple-600"></i>
-                            Client Name <span class="required-indicator">*</span>
+        <!-- Main Form Container -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200 ">
+            <div class="p-6 space-y-6">
+                <!-- Row 1: Client Name & Order ID -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Client Name <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" name="name" id="name" required
-                               class="form-field-input"
-                               placeholder="Doe, John"
-                               maxlength="255">
+                        <input type="text" name="name" required
+                               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm"
+                               placeholder="Enter client name">
                         @error('name')
-                            <p class="field-error"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- Order ID -->
-                    <div class="form-field">
-                        <label class="form-field-label" for="order_id">
-                            <i class="field-icon fas fa-hashtag bg-purple-100 text-purple-600"></i>
-                            Order ID <span class="text-gray-400 font-normal">(optional)</span>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Order ID
                         </label>
-                        <input type="text" name="order_id" id="order_id"
-                               class="form-field-input"
-                               placeholder="ORD-2024-001"
-                               maxlength="255">
+                        <input type="text" name="order_id"
+                               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm"
+                               placeholder="ORD-2024-001">
                         @error('order_id')
-                            <p class="field-error"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
 
-                <!-- Description -->
-                <div class="form-field">
-                    <label class="form-field-label" for="description">
-                        <i class="field-icon fas fa-align-left bg-purple-100 text-purple-600"></i>
+                <!-- Row 2: Description -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
                         Description
                     </label>
-                    <textarea name="description" id="description" rows="3"
-                              class="form-field-textarea"
-                              placeholder="Describe the order details, requirements, and specifications..."
-                              oninput="updateCharCount(this)"></textarea>
-                    <div class="flex justify-between items-center">
-                        <p class="form-field-hint">
-                            <i class="fas fa-lightbulb text-yellow-500 mr-1"></i>
-                            Include project scope, deliverables, and special requirements
-                        </p>
-                        <span id="charCount" class="text-xs text-gray-400">0 characters</span>
-                    </div>
+                    <textarea name="description" rows="2"
+                              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm resize-none"
+                              placeholder="Brief description of the order..."></textarea>
                     @error('description')
-                        <p class="field-error"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
-            </div>
-        </div>
 
-        <!-- Status & Priority Section -->
-        <div class="form-card mb-4">
-            <div class="form-card-header">
-                <h2 class="form-card-title">
-                    <i class="fas fa-flag bg-gradient-to-br from-blue-500 to-cyan-600 text-white"></i>
-                    Status & Priority
-                </h2>
-            </div>
-            <div class="form-card-body">
-                <div class="form-grid">
-                    <!-- Status -->
-                    <div class="form-field">
-                        <label class="form-field-label" for="status">
-                            <i class="field-icon fas fa-spinner bg-blue-100 text-blue-600"></i>
-                            Status <span class="required-indicator">*</span>
+                <!-- Row 3: Status & Priority -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Status <span class="text-red-500">*</span>
                         </label>
-                        <select name="status" id="status" required class="form-field-select">
-                            <option value="">Select Status</option>
-                            <option value="nra" selected> 🤷‍♀️ NRA</option>
-                            <option value="pending">⏳ Pending</option>
-                            <option value="in-progress">🔄 In Progress</option>
-                            <option value="completed">✅ Completed</option>
-                            <option value="on-hold">⏸️ On Hold</option>
-                            <option value="cancelled">❌ Cancelled</option>
+                        <select name="status" required
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white text-sm">
+                            <option value="">Select status</option>
+                            <option value="nra">NRA</option>
+                            <option value="pending">Pending</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="on-hold">On Hold</option>
+                            <option value="cancelled">Cancelled</option>
                         </select>
                         @error('status')
-                            <p class="field-error"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- Priority -->
-                    <div class="form-field">
-                        <label class="form-field-label" for="priority">
-                            <i class="field-icon fas fa-exclamation-circle bg-orange-100 text-orange-600"></i>
-                            Priority <span class="required-indicator">*</span>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Priority <span class="text-red-500">*</span>
                         </label>
-                        <select name="priority" id="priority" required class="form-field-select">
-                            <option value="low">🟢 Low Priority</option>
-                            <option value="medium" selected>🟡 Medium Priority</option>
-                            <option value="high">🔴 High Priority</option>
+                        <select name="priority" required
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white text-sm">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
                         </select>
                         @error('priority')
-                            <p class="field-error"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Schedule & Amount Section -->
-        <div class="form-card mb-4">
-            <div class="form-card-header">
-                <h2 class="form-card-title">
-                    <i class="fas fa-calendar-alt bg-gradient-to-br from-green-500 to-emerald-600 text-white"></i>
-                    Schedule & Amount
-                </h2>
-            </div>
-            <div class="form-card-body space-y-4">
-                <div class="form-grid">
-                    <!-- Start Date -->
-                    <div class="form-field">
-                        <label class="form-field-label" for="start_date">
-                            <i class="field-icon fas fa-play-circle bg-green-100 text-green-600"></i>
-                            Start Date <span class="text-gray-400 font-normal">(when project begins)</span>
-                        </label>
-                        <input type="text" name="start_date" id="start_date" class="form-field-input datepicker" placeholder="Select start date" readonly onchange="calculateDuration()" value="{{ \Carbon\Carbon::today()->format('m/d/Y') }}">
-                        @error('start_date')
-                            <p class="field-error"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- End Date (Deadline) -->
-                    <div class="form-field">
-                        <label class="form-field-label" for="end_date">
-                            <i class="field-icon fas fa-flag-checkered bg-red-100 text-red-600"></i>
-                            Deadline <span class="text-gray-400 font-normal">(project completion date)</span>
-                        </label>
-                        <input type="text" name="end_date" id="end_date" class="form-field-input datepicker" placeholder="Select deadline" readonly onchange="calculateDuration()">
-                        @error('end_date')
-                            <p class="field-error"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
 
-                <!-- Duration Display -->
-                <div id="durationDisplay" class="hidden">
-                    <div class="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200">
-                        <i class="fas fa-clock text-2xl text-blue-600"></i>
-                        <div>
-                            <p class="text-xs font-semibold text-blue-700 uppercase tracking-wide">Project Duration</p>
-                            <p class="text-lg font-bold text-blue-900" id="durationText">--</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Amount fields on same line -->
-                <div class="form-grid">
-                    <!-- Value (Before 20% Split) -->
-                    <div class="form-field">
-                        <label class="form-field-label" for="value">
-                            <i class="field-icon fas fa-coins bg-green-100 text-green-600"></i>
-                            Amount (Before Split)
+                <!-- Row 4: Amount & Dates -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Amount ($)
                         </label>
-                        <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-lg">$</span>
-                            <input type="number" name="value" id="value" step="0.01" min="0"
-                                   class="form-field-input pl-10 text-lg font-semibold"
-                                   placeholder="0.00"
-                                   oninput="calculateRevenue(this.value)">
-                        </div>
-                        @error('value')
-                            <p class="field-error"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Amount (After 20% Split) -->
-                    <div class="form-field">
-                        <label class="form-field-label" for="actual_revenue">
-                            <i class="field-icon fas fa-dollar-sign bg-purple-100 text-purple-600"></i>
-                            Value (After Split) <span class="text-gray-400 font-normal">(auto)</span>
-                        </label>
-                        <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-lg">$</span>
-                            <input type="number" name="actual_revenue" id="actual_revenue" step="0.01" min="0"
-                                   class="form-field-input pl-10 text-lg font-semibold bg-gray-50"
-                                   placeholder="0.00"
-                                   readonly>
-                        </div>
+                        <input type="number" name="actual_revenue" step="0.01" min="0"
+                               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm"
+                               placeholder="0.00">
                         @error('actual_revenue')
-                            <p class="field-error"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Start Date
+                        </label>
+                        <input type="text" name="start_date" id="start_date" readonly
+                               class="datepicker w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm cursor-pointer bg-white"
+                               placeholder="Select start date">
+                        @error('start_date')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            End Date
+                        </label>
+                        <input type="text" name="end_date" id="end_date" readonly
+                               class="datepicker w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm cursor-pointer bg-white"
+                               placeholder="Select end date">
+                        @error('end_date')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
 
-                <!-- Revenue Preview - show below both fields -->
-                <div id="revenuePreview" class="revenue-preview hidden">
-                    <div class="revenue-preview-label">
-                        <i class="fas fa-chart-pie mr-1"></i>
-                        Amount Overview
-                    </div>
-                    <div class="revenue-preview-value" id="revenueTotal">$0.00</div>
-                    <div class="revenue-preview-split">
-                        <i class="fas fa-coins mr-2"></i>
-                        <span>Value: <strong id="revenueValue">$0.00</strong></span>
-                    </div>
-                    <div class="revenue-preview-split">
-                        <i class="fas fa-percentage mr-2"></i>
-                        <span>20% Fee: <strong id="revenueFee">$0.00</strong></span>
-                    </div>
-                    <div class="revenue-preview-split">
-                        <i class="fas fa-check-circle mr-2 text-green-600"></i>
-                        <span>Amount (After Split): <strong class="text-green-600" id="revenueSplit">$0.00</strong></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Assignments Section -->
-        <div class="form-card mb-4">
-            <div class="form-card-header">
-                <h2 class="form-card-title">
-                    <i class="fas fa-users bg-gradient-to-br from-indigo-500 to-purple-600 text-white"></i>
-                    Assignments
-                </h2>
-            </div>
-            <div class="form-card-body space-y-4">
-                <!-- Team, Tech Stack, Freelance Profile on same line (3 columns) -->
-                @if(!$isTeamLeader ?? false)
-                <!-- For admins/managers: 3 columns -->
-                <div class="grid grid-cols-3 gap-4">
-                    <!-- Team -->
-                    <div class="form-field">
-                        <label class="form-field-label" for="team_id">
-                            <i class="field-icon fas fa-users bg-indigo-100 text-indigo-600"></i>
+                <!-- Row 5: Team & Tech Stack -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
                             Team
                         </label>
-                        <select name="team_id" id="team_id" class="form-field-select">
-                            <option value="">Select Team</option>
+                        <select name="team_id"
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white text-sm">
+                            <option value="">Select team</option>
                             @foreach($teams as $team)
                                 <option value="{{ $team->id }}">{{ $team->name }}</option>
                             @endforeach
                         </select>
                         @error('team_id')
-                            <p class="field-error"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- Tech Stack -->
-                    <div class="form-field">
-                        <label class="form-field-label" for="tech_stack_id">
-                            <i class="field-icon fas fa-layer-group bg-indigo-100 text-indigo-600"></i>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
                             Tech Stack
                         </label>
-                        <select name="tech_stack_id" id="tech_stack_id" class="form-field-select">
-                            <option value="">Select Tech Stack</option>
+                        <select name="tech_stack_id"
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white text-sm">
+                            <option value="">Select tech stack</option>
                             @foreach($techStacks as $stack)
                                 <option value="{{ $stack->id }}">{{ $stack->name }}</option>
                             @endforeach
                         </select>
                         @error('tech_stack_id')
-                            <p class="field-error"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Freelance Profile -->
-                    <div class="form-field">
-                        <label class="form-field-label" for="freelance_profile_id">
-                            <i class="field-icon fas fa-address-card bg-purple-100 text-purple-600"></i>
-                            Freelancer
-                        </label>
-                        <select name="freelance_profile_id" id="freelance_profile_id" class="form-field-select">
-                            <option value="">Select Profile</option>
-                            @foreach($profiles as $profile)
-                                <option value="{{ $profile->id }}">{{ $profile->profile_name }}</option>
-                            @endforeach
-                        </select>
-                        @error('freelance_profile_id')
-                            <p class="field-error"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
-                @else
-                <!-- For team leaders: 2 columns (no team field) -->
-                <input type="hidden" name="team_id" value="{{ auth()->user()->team_id }}">
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- Tech Stack -->
-                    <div class="form-field">
-                        <label class="form-field-label" for="tech_stack_id">
-                            <i class="field-icon fas fa-layer-group bg-indigo-100 text-indigo-600"></i>
-                            Tech Stack
-                        </label>
-                        <select name="tech_stack_id" id="tech_stack_id" class="form-field-select">
-                            <option value="">Select Tech Stack</option>
-                            @foreach($techStacks as $stack)
-                                <option value="{{ $stack->id }}">{{ $stack->name }}</option>
-                            @endforeach
-                        </select>
-                        @error('tech_stack_id')
-                            <p class="field-error"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
-                        @enderror
-                    </div>
 
-                    <!-- Freelance Profile -->
-                    <div class="form-field">
-                        <label class="form-field-label" for="freelance_profile_id">
-                            <i class="field-icon fas fa-address-card bg-purple-100 text-purple-600"></i>
-                            Freelancer
-                        </label>
-                        <select name="freelance_profile_id" id="freelance_profile_id" class="form-field-select">
-                            <option value="">Select Profile</option>
-                            @foreach($profiles as $profile)
-                                <option value="{{ $profile->id }}">{{ $profile->profile_name }}</option>
-                            @endforeach
-                        </select>
-                        @error('freelance_profile_id')
-                            <p class="field-error"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-                @endif
-
-                <!-- Team Members -->
-                <div class="form-field">
-                    <label class="form-field-label">
-                        <i class="field-icon fas fa-user-friends bg-indigo-100 text-indigo-600"></i>
-                        Assign Team Members
-                        <span class="ml-auto text-xs font-normal text-gray-500">
-                            <span id="selectedCount">0</span> selected
-                        </span>
+                <!-- Row 6: Freelance Profile -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Freelance Profile
                     </label>
-                    <p class="form-field-hint mb-3">
-                        <i class="fas fa-info-circle text-blue-500 mr-1"></i>
-                        @if($isTeamLeader ?? false)
-                            Search to find team members (initially showing latest 10)
-                        @else
-                            Optional - You can assign members from multiple teams
-                        @endif
-                    </p>
+                    <select name="freelance_profile_id"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white text-sm">
+                        <option value="">Select freelance profile</option>
+                        @foreach($profiles as $profile)
+                            <option value="{{ $profile->id }}">{{ $profile->username }}</option>
+                        @endforeach
+                    </select>
+                    @error('freelance_profile_id')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
 
-                    <!-- Search Input -->
-                    <div class="relative mb-3">
-                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                        <input type="text" id="userSearch" placeholder="Search by name or email..."
-                               class="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
-                               autocomplete="off">
-                        <div id="searchSpinner" class="absolute right-3 top-1/2 -translate-y-1/2 hidden">
-                            <i class="fas fa-spinner fa-spin text-gray-400"></i>
+                <!-- Row 7: Assign Users -->
+                <div id="userSelectorContainer">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Assign Users
+                    </label>
+
+                    <!-- Selected Users Display -->
+                    <div id="selectedUsersDisplay" class="border border-gray-300 rounded-lg p-3 min-h-[60px] bg-gray-50 mb-2">
+                        <span class="text-gray-400 text-sm">No users assigned</span>
+                    </div>
+
+                    <!-- Hidden inputs for selected users will be added dynamically -->
+
+                    <!-- Search and Add Users -->
+                    <div class="relative">
+                        <input type="text" id="userSearchInput"
+                               placeholder="Search users by name or email..."
+                               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm">
+
+                        <!-- Dropdown List -->
+                        <div id="userDropdown" class="hidden absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                            <!-- Users will be populated here by JavaScript -->
                         </div>
                     </div>
 
-                    <div class="checkbox-list" id="userList">
-                        @forelse($users as $user)
-                            <label class="checkbox-item-card mb-2 user-item" data-search="{{ strtolower($user->name . ' ' . $user->email . ' ' . ($user->employee_id ?? '')) }}" data-user-id="{{ $user->id }}">
-                                <input type="checkbox" name="users[]" value="{{ $user->id }}"
-                                       onchange="updateSelectedCount()">
-                                <div class="flex items-center justify-between w-full">
-                                    <div class="ml-3 flex-1 flex items-center">
-                                        <div class="user-avatar">
-                                            {{ strtoupper(substr($user->name, 0, 1)) }}
-                                        </div>
-                                        <div class="user-info">
-                                            <div class="user-name">{{ $user->name }}</div>
-                                            <div class="user-email">{{ $user->email }}</div>
-                                        </div>
-                                    </div>
-                                    @if(auth()->user()->hasRole(['admin', 'operation-manager', 'project-manager']))
-                                    <div class="flex items-center gap-4 text-right text-sm text-gray-600 ml-4">
-                                        @if($user->employee_id)
-                                        <div class="flex items-center gap-1">
-                                            <i class="fas fa-id-badge text-gray-400"></i>
-                                            <span class="font-mono text-xs">{{ $user->employee_id }}</span>
-                                        </div>
-                                        @endif
-                                        @if($user->team)
-                                        <div class="flex items-center gap-1">
-                                            <i class="fas fa-users text-gray-400"></i>
-                                            <span class="text-xs">{{ $user->team->name }}</span>
-                                        </div>
-                                        @endif
-                                    </div>
-                                    @endif
-                                </div>
-                            </label>
-                        @empty
-                            <p class="text-sm text-gray-500 text-center py-4">
-                                <i class="fas fa-users-slash mr-2"></i>
-                                No team members available
-                            </p>
-                        @endforelse
-                        <p id="noResults" class="text-sm text-gray-500 text-center py-4 hidden">
-                            <i class="fas fa-search mr-2"></i>
-                            No users found matching your search
-                        </p>
-                        <p id="searchMore" class="text-sm text-gray-500 text-center py-4 hidden">
-                            <i class="fas fa-info-circle mr-2"></i>
-                            Search for more team members...
-                        </p>
-                    </div>
+                    <p class="mt-1 text-xs text-gray-500">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Start typing to search and add users
+                    </p>
                     @error('users')
-                        <p class="field-error"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
-            </div>
-        </div>
 
-        <!-- Action Buttons -->
-        <div class="action-bar">
-            <div class="flex items-center justify-between">
-                <a href="{{ route('orders.index') }}" class="btn-cancel">
-                    <i class="fas fa-times mr-2"></i>
+                <script>
+                    (function() {
+                        // State
+                        let selectedUsers = [];
+                        let searchTimeout = null;
+                        let currentUsers = []; // Store currently displayed users
+
+                        // DOM Elements
+                        const searchInput = document.getElementById('userSearchInput');
+                        const dropdown = document.getElementById('userDropdown');
+                        const selectedDisplay = document.getElementById('selectedUsersDisplay');
+
+                        // Fetch users from server with search
+                        async function fetchUsers(search = '') {
+                            try {
+                                const excludeIds = selectedUsers.map(u => u.id);
+                                const params = new URLSearchParams();
+                                if (search) {
+                                    params.append('search', search);
+                                }
+                                if (excludeIds.length > 0) {
+                                    params.append('exclude', excludeIds.join(','));
+                                }
+
+                                console.log('Fetching users with params:', params.toString());
+                                const response = await axios.get(`/orders/search-users?${params}`);
+                                console.log('Users fetched:', response.data.users);
+                                currentUsers = response.data.users;
+                                return currentUsers;
+                            } catch (error) {
+                                console.error('Error fetching users:', error);
+                                return [];
+                            }
+                        }
+
+                        // Render dropdown with users
+                        function renderDropdown(users) {
+                            if (users.length === 0) {
+                                dropdown.innerHTML = '<div class="px-4 py-3 text-sm text-gray-500 text-center">No users found</div>';
+                            } else {
+                                dropdown.innerHTML = users.map(user => `
+                                    <div class="user-option flex items-center gap-3 p-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 last:border-0 transition-colors"
+                                         data-user-id="${user.id}"
+                                         data-user-name="${user.name}"
+                                         data-user-email="${user.email}">
+                                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                                            ${user.name.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center gap-2 mb-0.5 flex-wrap">
+                                                <div class="font-semibold text-sm text-gray-900 truncate">${user.name}</div>
+                                                <span class="text-xs text-white bg-indigo-500 px-2 py-0.5 rounded-full flex-shrink-0">${user.employee_id || 'N/A'}</span>
+                                                ${user.team ? `<span class="text-xs text-white bg-purple-500 px-2 py-0.5 rounded-full flex-shrink-0"><i class="fas fa-users mr-1"></i>${user.team.name}</span>` : ''}
+                                            </div>
+                                            <div class="text-xs text-gray-500 truncate">
+                                                ${user.email}
+                                            </div>
+                                        </div>
+                                        <div class="flex-shrink-0">
+                                            <div class="w-8 h-8 rounded-full bg-indigo-100 hover:bg-indigo-200 flex items-center justify-center transition-colors">
+                                                <i class="fas fa-plus text-indigo-600 text-xs"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('');
+
+                                // Add click handlers
+                                dropdown.querySelectorAll('.user-option').forEach(option => {
+                                    option.addEventListener('click', function(e) {
+                                        e.stopPropagation(); // Prevent closing dropdown
+                                        const user = {
+                                            id: parseInt(this.dataset.userId),
+                                            name: this.dataset.userName,
+                                            email: this.dataset.userEmail
+                                        };
+                                        addUser(user);
+                                    });
+                                });
+                            }
+                        }
+
+                        // Search and display users (debounced)
+                        function searchUsers(query) {
+                            // Clear previous timeout
+                            if (searchTimeout) {
+                                clearTimeout(searchTimeout);
+                            }
+
+                            // Debounce search
+                            searchTimeout = setTimeout(async () => {
+                                const users = await fetchUsers(query);
+                                renderDropdown(users);
+                            }, 300);
+                        }
+
+                        // Add user to selected list
+                        function addUser(user) {
+                            if (!selectedUsers.find(s => s.id === user.id)) {
+                                selectedUsers.push(user);
+                                updateSelectedDisplay();
+
+                                // Refresh search results
+                                if (searchInput.value.trim()) {
+                                    searchUsers(searchInput.value);
+                                } else {
+                                    // Just re-render current users excluding selected
+                                    const availableUsers = currentUsers.filter(u => !selectedUsers.find(s => s.id === u.id));
+                                    renderDropdown(availableUsers);
+                                }
+                            }
+                        }
+
+                        // Remove user from selected list
+                        function removeUser(userId) {
+                            selectedUsers = selectedUsers.filter(u => u.id !== userId);
+                            updateSelectedDisplay();
+
+                            // Refresh search results
+                            if (searchInput.value.trim()) {
+                                searchUsers(searchInput.value);
+            } else {
+                // Fetch fresh list
+                fetchUsers('').then(users => renderDropdown(users));
+            }
+                        }
+
+                        // Update selected users display
+                        function updateSelectedDisplay() {
+                            if (selectedUsers.length === 0) {
+                                selectedDisplay.innerHTML = '<span class="text-gray-400 text-sm">No users assigned</span>';
+                            } else {
+                                selectedDisplay.innerHTML = selectedUsers.map(user => `
+                                    <span class="inline-flex items-center gap-1 px-3 py-1 m-1 bg-indigo-100 text-indigo-800 rounded-lg text-sm">
+                                        <span>${user.name}</span>
+                                        <button type="button" class="remove-user-btn hover:text-red-600 transition-colors" data-user-id="${user.id}">
+                                            <i class="fas fa-times text-xs"></i>
+                                        </button>
+                                    </span>
+                                `).join('');
+
+                                // Add click handlers for remove buttons
+                                selectedDisplay.querySelectorAll('.remove-user-btn').forEach(btn => {
+                                    btn.addEventListener('click', function() {
+                                        const userId = parseInt(this.dataset.userId);
+                                        removeUser(userId);
+                                    });
+                                });
+                            }
+
+                            // Update hidden inputs - create multiple inputs for array submission
+                            // Remove old inputs
+                            const container = document.getElementById('userSelectorContainer');
+                            const oldInputs = container.querySelectorAll('input[name="users[]"]');
+                            oldInputs.forEach(input => input.remove());
+
+                            // Add new inputs
+                            selectedUsers.forEach(user => {
+                                const input = document.createElement('input');
+                                input.type = 'hidden';
+                                input.name = 'users[]';
+                                input.value = user.id;
+                                container.appendChild(input);
+                            });
+                        }
+
+                        // Event Listeners
+                        searchInput.addEventListener('input', function() {
+                            const query = this.value.trim();
+
+                            // Always show dropdown when typing or focused
+                            dropdown.classList.remove('hidden');
+
+                            // Clear previous timeout
+                            if (searchTimeout) {
+                                clearTimeout(searchTimeout);
+                            }
+
+                            // Debounce and fetch users
+                            searchTimeout = setTimeout(async () => {
+                                const users = await fetchUsers(query);
+                                renderDropdown(users);
+                            }, 300);
+                        });
+
+                        searchInput.addEventListener('focus', async function() {
+                            // Show dropdown when focused - load default users
+                            dropdown.classList.remove('hidden');
+                            const users = await fetchUsers('');
+                            renderDropdown(users);
+                        });
+
+                        // Close dropdown when clicking outside
+                        document.addEventListener('click', function(e) {
+                            if (!dropdown.contains(e.target) && e.target !== searchInput) {
+                                dropdown.classList.add('hidden');
+                            }
+                        });
+
+                        // Initialize
+                        console.log('UserSelector initialized');
+                        updateSelectedDisplay();
+                    })();
+                </script>
+
+                <!-- Row 8: Order Sheet URL -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Order Sheet URL
+                    </label>
+                    <input type="url" name="order_sheet_url"
+                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm"
+                           placeholder="https://docs.google.com/document/d/...">
+                    @error('order_sheet_url')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Row 8: Delivered Date (Auto-filled when status is delivered) -->
+                <div id="deliveredDateContainer" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Delivered Date
+                    </label>
+                    <input type="text" name="delivered_at" id="delivered_at" readonly
+                           class="datetimepicker w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm cursor-pointer bg-white"
+                           placeholder="Select delivered date and time">
+                    <p class="mt-1 text-xs text-gray-500">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Automatically set when status changes to delivered
+                    </p>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-3">
+                <a href="{{ route('orders.index') }}"
+                   class="px-5 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 text-sm font-medium transition-all">
                     Cancel
                 </a>
-                <button type="submit" id="submitBtn" class="btn-submit">
-                    <i class="fas fa-plus-circle mr-2"></i>
+                <button type="submit"
+                        class="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg shadow-md hover:shadow-lg text-sm font-semibold transition-all">
+                    <i class="fas fa-plus mr-2"></i>
                     Create Order
                 </button>
             </div>
@@ -466,286 +481,52 @@
 </div>
 
 @push('scripts')
-<script>
-// Character counter for description
-function updateCharCount(textarea) {
-    const count = textarea.value.length;
-    const counter = document.getElementById('charCount');
-    counter.textContent = count + ' character' + (count !== 1 ? 's' : '');
-}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusSelect = document.getElementById('status');
+            const deliveredDateContainer = document.getElementById('deliveredDateContainer');
+            const deliveredDateInput = document.getElementById('delivered_at');
 
-// Revenue calculation
-function calculateRevenue(value) {
-    const revenue = parseFloat(value) || 0;
-    const preview = document.getElementById('revenuePreview');
-    const total = document.getElementById('revenueTotal');
-    const valueDisplay = document.getElementById('revenueValue');
-    const fee = document.getElementById('revenueFee');
-    const split = document.getElementById('revenueSplit');
-    const actualRevenueInput = document.getElementById('actual_revenue');
+            // Initialize datetime picker for delivered_at
+            let deliveredPicker = null;
 
-    if (revenue > 0) {
-        preview.classList.remove('hidden');
-        const feeAmount = revenue * 0.20;
-        const afterSplit = revenue * 0.80;
-        total.textContent = '$' + revenue.toFixed(2);
-        valueDisplay.textContent = '$' + revenue.toFixed(2);
-        fee.textContent = '$' + feeAmount.toFixed(2);
-        split.textContent = '$' + afterSplit.toFixed(2);
-        actualRevenueInput.value = afterSplit.toFixed(2);
-    } else {
-        preview.classList.add('hidden');
-        actualRevenueInput.value = '';
-    }
-}
+            statusSelect.addEventListener('change', function() {
+                if (this.value === 'delivered') {
+                    deliveredDateContainer.classList.remove('hidden');
 
-// Calculate project duration
-function calculateDuration() {
-    const startDate = document.getElementById('start_date').value;
-    const endDate = document.getElementById('end_date').value;
-    const durationDisplay = document.getElementById('durationDisplay');
-    const durationText = document.getElementById('durationText');
+                    // Initialize datetime picker if not already initialized
+                    if (!deliveredPicker) {
+                        deliveredPicker = flatpickr(deliveredDateInput, {
+                            enableTime: true,
+                            dateFormat: 'Y-m-d H:i:S',
+                            allowInput: false,
+                            disableMobile: true,
+                            clickOpens: true,
+                            inline: false,
+                            static: true,
+                            animate: true,
+                            monthSelectorType: 'static',
+                            time_24hr: true,
+                            appendTo: document.body,
+                            position: 'below',
+                            prevArrow: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>',
+                            nextArrow: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>'
+                        });
+                    }
 
-    if (startDate && endDate) {
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        const diffTime = Math.abs(end - start);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        if (diffDays > 0) {
-            durationDisplay.classList.remove('hidden');
-
-            let durationString = '';
-            if (diffDays === 1) {
-                durationString = '1 day';
-            } else if (diffDays < 7) {
-                durationString = diffDays + ' days';
-            } else if (diffDays < 30) {
-                const weeks = Math.floor(diffDays / 7);
-                const remainingDays = diffDays % 7;
-                durationString = weeks + ' week' + (weeks > 1 ? 's' : '');
-                if (remainingDays > 0) {
-                    durationString += ' ' + remainingDays + ' day' + (remainingDays > 1 ? 's' : '');
-                }
-            } else {
-                const months = Math.floor(diffDays / 30);
-                const remainingDays = diffDays % 30;
-                durationString = months + ' month' + (months > 1 ? 's' : '');
-                if (remainingDays > 0 && remainingDays < 7) {
-                    durationString += ' ' + remainingDays + ' day' + (remainingDays > 1 ? 's' : '');
-                } else if (remainingDays >= 7) {
-                    const weeks = Math.floor(remainingDays / 7);
-                    durationString += ' ' + weeks + ' week' + (weeks > 1 ? 's' : '');
-                }
-            }
-
-            durationText.textContent = durationString + ' (' + diffDays + ' days total)';
-        } else {
-            durationDisplay.classList.add('hidden');
-        }
-    } else {
-        durationDisplay.classList.add('hidden');
-    }
-}
-
-// Update selected count for team members
-function updateSelectedCount() {
-    const checkboxes = document.querySelectorAll('input[name="users[]"]:checked');
-    document.getElementById('selectedCount').textContent = checkboxes.length;
-}
-
-// Search functionality for users with AJAX support
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('userSearch');
-    const userList = document.getElementById('userList');
-    const noResults = document.getElementById('noResults');
-    const searchMore = document.getElementById('searchMore');
-    const searchSpinner = document.getElementById('searchSpinner');
-    const isTeamLeader = {{ $isTeamLeader ?? 'false' }};
-    let searchTimeout;
-
-    // Store original users for client-side filtering (non-team-leaders)
-    const originalUserItems = Array.from(userList.querySelectorAll('.user-item'));
-    const loadedUserIds = new Set(Array.from(originalUserItems).map(item => item.getAttribute('data-user-id')));
-
-    searchInput.addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase().trim();
-
-        // Clear previous timeout
-        clearTimeout(searchTimeout);
-
-        if (searchTerm === '') {
-            // Show original users when search is cleared
-            userList.querySelectorAll('.user-item').forEach(item => item.remove());
-            originalUserItems.forEach(item => {
-                if (!loadedUserIds.has(item.getAttribute('data-user-id'))) {
-                    userList.appendChild(item);
-                }
-            });
-            originalUserItems.forEach(item => {
-                if (item.parentNode !== userList) {
-                    userList.appendChild(item);
-                }
-            });
-            noResults.classList.add('hidden');
-            searchMore.classList.add('hidden');
-            return;
-        }
-
-        // For team leaders, use AJAX search
-        if (isTeamLeader) {
-            searchSpinner.classList.remove('hidden');
-            searchMore.classList.add('hidden');
-
-            searchTimeout = setTimeout(function() {
-                fetch(`{{ route('orders.search-members') }}?q=${encodeURIComponent(searchTerm)}&team_id={{ auth()->user()->team_id }}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        searchSpinner.classList.add('hidden');
-
-                        // Remove all current user items
-                        userList.querySelectorAll('.user-item').forEach(item => item.remove());
-
-                        if (data.results.length > 0) {
-                            // Add searched users
-                            data.results.forEach(user => {
-                                // Check if user is already loaded
-                                if (!loadedUserIds.has(user.id.toString())) {
-                                    const userItem = createUserItem(user);
-                                    userList.appendChild(userItem);
-                                    loadedUserIds.add(user.id.toString());
-                                }
-                            });
-
-                            // Show all matching users
-                            const allUserItems = userList.querySelectorAll('.user-item');
-                            let visibleCount = 0;
-                            allUserItems.forEach(item => {
-                                const searchData = item.getAttribute('data-search');
-                                if (searchData.includes(searchTerm)) {
-                                    item.style.display = '';
-                                    visibleCount++;
-                                } else {
-                                    item.style.display = 'none';
-                                }
-                            });
-
-                            if (visibleCount === 0) {
-                                noResults.classList.remove('hidden');
-                            } else {
-                                noResults.classList.add('hidden');
-                            }
-                        } else {
-                            noResults.classList.remove('hidden');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error searching users:', error);
-                        searchSpinner.classList.add('hidden');
-                    });
-            }, 300); // Debounce for 300ms
-        } else {
-            // For managers, use client-side filtering
-            let visibleCount = 0;
-            const userItems = userList.querySelectorAll('.user-item');
-
-            userItems.forEach(function(item) {
-                const searchData = item.getAttribute('data-search');
-                if (searchData.includes(searchTerm)) {
-                    item.style.display = '';
-                    visibleCount++;
+                    // Auto-fill with current date/time if empty
+                    if (!deliveredDateInput.value) {
+                        const now = new Date();
+                        deliveredPicker.setDate(now);
+                    }
                 } else {
-                    item.style.display = 'none';
+                    deliveredDateContainer.classList.add('hidden');
+                    if (deliveredPicker) {
+                        deliveredPicker.clear();
+                    }
                 }
             });
-
-            // Show/hide no results message
-            if (visibleCount === 0) {
-                noResults.classList.remove('hidden');
-            } else {
-                noResults.classList.add('hidden');
-            }
-        }
-    });
-
-    // Helper function to create user item
-    function createUserItem(user) {
-        const label = document.createElement('label');
-        label.className = 'checkbox-item-card mb-2 user-item';
-        const searchTerm = (user.text + ' ' + (user.employee_id || '')).toLowerCase();
-        label.setAttribute('data-search', searchTerm);
-        label.setAttribute('data-user-id', user.id);
-
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.name = 'users[]';
-        checkbox.value = user.id;
-        checkbox.onchange = updateSelectedCount;
-
-        const wrapper = document.createElement('div');
-        wrapper.className = 'flex items-center justify-between w-full';
-
-        const leftContainer = document.createElement('div');
-        leftContainer.className = 'ml-3 flex-1 flex items-center';
-
-        const avatar = document.createElement('div');
-        avatar.className = 'user-avatar';
-        avatar.textContent = user.text.charAt(0).toUpperCase();
-
-        const info = document.createElement('div');
-        info.className = 'user-info';
-
-        const name = document.createElement('div');
-        name.className = 'user-name';
-        name.textContent = user.text.split(' (')[0];
-
-        const email = document.createElement('div');
-        email.className = 'user-email';
-        email.textContent = user.text.match(/\(([^)]+)\)/)?.[1] || '';
-
-        info.appendChild(name);
-        info.appendChild(email);
-        leftContainer.appendChild(avatar);
-        leftContainer.appendChild(info);
-        wrapper.appendChild(leftContainer);
-
-        // Add right-side info for admins/managers
-        @if(auth()->user()->hasRole(['admin', 'operation-manager', 'project-manager']))
-        if (user.employee_id || user.team_name) {
-            const rightInfo = document.createElement('div');
-            rightInfo.className = 'flex items-center gap-4 text-right text-sm text-gray-600 ml-4';
-
-            if (user.employee_id) {
-                const empIdDiv = document.createElement('div');
-                empIdDiv.className = 'flex items-center gap-1';
-                empIdDiv.innerHTML = '<i class="fas fa-id-badge text-gray-400"></i><span class="font-mono text-xs">' + user.employee_id + '</span>';
-                rightInfo.appendChild(empIdDiv);
-            }
-
-            if (user.team_name) {
-                const teamDiv = document.createElement('div');
-                teamDiv.className = 'flex items-center gap-1';
-                teamDiv.innerHTML = '<i class="fas fa-users text-gray-400"></i><span class="text-xs">' + user.team_name + '</span>';
-                rightInfo.appendChild(teamDiv);
-            }
-
-            wrapper.appendChild(rightInfo);
-        }
-        @endif
-
-        label.appendChild(checkbox);
-        label.appendChild(wrapper);
-
-        return label;
-    }
-});
-
-// Form validation feedback
-document.getElementById('orderForm').addEventListener('submit', function(e) {
-    const submitBtn = document.getElementById('submitBtn');
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating Order...';
-    submitBtn.disabled = true;
-});
-</script>
+        });
+    </script>
 @endpush
 @endsection

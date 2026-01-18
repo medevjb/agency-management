@@ -21,12 +21,16 @@ class Task extends Model
         'order_id',
         'assigned_to',
         'created_by',
+        'completed_at',
+        'archived_at',
     ];
 
     protected $casts = [
         'due_date' => 'date',
         'estimated_hours' => 'integer',
         'actual_hours' => 'integer',
+        'completed_at' => 'datetime',
+        'archived_at' => 'datetime',
     ];
 
     public function order(): \Illuminate\Database\Eloquent\Relations\BelongsTo

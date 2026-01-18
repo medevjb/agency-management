@@ -64,6 +64,16 @@
             background: #a1a1a1;
         }
 
+        /* Responsive DataTable container */
+        .datatable-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .datatable-container table {
+            min-width: 100%;
+        }
+
         /* DataTables Pagination Styling matching users module */
         #ordersTable_wrapper .dataTables_length select {
             border-radius: 10px;
@@ -294,6 +304,7 @@
             font-size: 14px;
             font-weight: bold;
         }
+
         .priorityDropdown {
             font-size: 14px;
             font-weight: bold;
@@ -333,6 +344,22 @@
                     Filters:
                 </span>
 
+                <!-- Month Filter -->
+                <div class="relative flex-shrink-0 inline-block">
+                    <select id="filterMonth" name="filterMonth"
+                        class="px-3 py-1.5 pr-8 border border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-indigo-50 appearance-none transition-all duration-200 text-sm font-medium">
+                        <option value="">All Time</option>
+                        @foreach ($availableMonths as $value => $label)
+                            <option value="{{ $value }}" {{ $selectedMonth === $value ? 'selected' : '' }}>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                        <i class="fas fa-calendar-alt text-indigo-400 text-xs"></i>
+                    </div>
+                </div>
+
                 <!-- Status Filter -->
                 <div class="relative flex-shrink-0">
                     <select id="filterStatus"
@@ -341,7 +368,7 @@
                         <option value="nra">NRA</option>
                         <option value="pending">Pending</option>
                         <option value="in-progress">In Progress</option>
-                        <option value="completed">Completed</option>
+                        <option value="delivered">Delivered</option>
                         <option value="on-hold">On Hold</option>
                         <option value="cancelled">Cancelled</option>
                     </select>
@@ -460,9 +487,9 @@
         </div>
 
         <!-- DataTable -->
-        <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden datatableprimary mx-0">
-            <div class="overflow-x-auto">
-                <table id="ordersTable" class="display w-full" style="width:100%; min-width: 1200px;">
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100 datatableprimary mx-0">
+            <div class="datatable-container">
+                <table id="ordersTable" class="display w-full" style="width:100%;">
                     <thead>
                         <tr>
                             <th class="text-center" style="width: 40px;">
@@ -477,7 +504,10 @@
                             <th>Amount</th>
                             <th>Team</th>
                             <th>Users</th>
+                            <th>Started</th>
+                            <th>Delivered</th>
                             <th>Deadline</th>
+                            <th class="text-center">Docs</th>
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
@@ -487,11 +517,87 @@
         </div>
     </div>
 
+    <!-- User Assignment Modal -->
+    <div id="userAssignmentModal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" onclick="closeUserAssignmentModal()"></div>
+
+        <!-- Modal Panel -->
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div class="relative transform  rounded-xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
+                    <!-- Modal Header -->
+                    <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-3 sm:px-6">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-base font-semibold leading-6 text-white" id="modal-title">
+                                <i class="fas fa-users mr-2"></i>
+                                Assign Users to Order
+                            </h3>
+                            <button type="button" onclick="closeUserAssignmentModal()" class="text-white hover:text-gray-200 transition-colors">
+                                <i class="fas fa-times text-lg"></i>
+                            </button>
+                        </div>
+                        <p class="mt-1 text-sm text-indigo-100" id="modal-order-name"></p>
+                    </div>
+
+                    <!-- Modal Body -->
+                    <div class="px-4 py-4 sm:px-6">
+                        <!-- Selected Users Display -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Assigned Users
+                            </label>
+                            <div id="modalSelectedUsersDisplay" class="border border-gray-300 rounded-lg p-3 min-h-[60px] bg-gray-50 mb-3">
+                                <span class="text-gray-400 text-sm">No users assigned</span>
+                            </div>
+                        </div>
+
+                        <!-- Search and Add Users -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Search & Add Users
+                            </label>
+                            <div class="relative">
+                                <input type="text" id="modalUserSearchInput"
+                                       placeholder="Search users by name or email..."
+                                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm">
+
+                                <!-- Dropdown List -->
+                                <div id="modalUserDropdown" class="hidden absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                    <!-- Users will be populated here by JavaScript -->
+                                </div>
+                            </div>
+
+                            <p class="mt-1 text-xs text-gray-500">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Start typing to search and add users
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                        <button type="button" onclick="saveUserAssignments()"
+                                class="inline-flex w-full justify-center rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:from-indigo-700 hover:to-purple-700 sm:ml-3 sm:w-auto transition-all">
+                            <i class="fas fa-save mr-2"></i>
+                            Save Assignments
+                        </button>
+                        <button type="button" onclick="closeUserAssignmentModal()"
+                                class="mt-3 inline-flex w-full justify-center rounded-lg bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto transition-all">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @push('scripts')
         <script>
             // DataTables initialization matching users module
             document.addEventListener('DOMContentLoaded', function() {
-                console.log('🚀 Initializing orders DataTable...');
+                console.log('Initializing orders DataTable...');
+                console.log('Total users loaded for modal:', {{ $users->count() }});
 
                 // Check if jQuery is loaded, if not load from CDN
                 if (typeof $ === 'undefined') {
@@ -550,6 +656,7 @@
                             d.tech_stack_id = $('#filterTechStack').val();
                             d.freelance_profile_id = $('#filterProfile').val();
                             d.priority = $('#filterPriority').val();
+                            d.month = $('#filterMonth').val();
                         }
                     },
                     columns: [{
@@ -590,32 +697,26 @@
                             render: function(data, type, row) {
                                 const statusConfig = {
                                     'nra': {
-                                        icon: '🤷‍♀️',
                                         color: 'bg-gray-100 text-gray-800',
                                         label: 'NRA'
                                     },
                                     'pending': {
-                                        icon: '⏳',
                                         color: 'bg-yellow-100 text-yellow-800',
                                         label: 'Pending'
                                     },
                                     'in-progress': {
-                                        icon: '🔄',
                                         color: 'bg-blue-100 text-blue-800',
                                         label: 'Progress'
                                     },
-                                    'completed': {
-                                        icon: '✅',
+                                    'delivered': {
                                         color: 'bg-green-100 text-green-800',
-                                        label: 'Done'
+                                        label: 'Delivered'
                                     },
                                     'on-hold': {
-                                        icon: '⏸️',
                                         color: 'bg-orange-100 text-orange-800',
                                         label: 'Hold'
                                     },
                                     'cancelled': {
-                                        icon: '❌',
                                         color: 'bg-red-100 text-red-800',
                                         label: 'Cancelled'
                                     }
@@ -628,12 +729,12 @@
                                             data-field="status"
                                             data-original-value="${data}"
                                             onchange="handleQuickUpdate(this)">
-                                        <option value="nra" ${data === 'nra' ? 'selected' : ''}>🤷‍♀️ NRA</option>
-                                        <option value="pending" ${data === 'pending' ? 'selected' : ''}>⏳ Pending</option>
-                                        <option value="in-progress" ${data === 'in-progress' ? 'selected' : ''}>🔄 Progress</option>
-                                        <option value="completed" ${data === 'completed' ? 'selected' : ''}>✅ Done</option>
-                                        <option value="on-hold" ${data === 'on-hold' ? 'selected' : ''}>⏸️ Hold</option>
-                                        <option value="cancelled" ${data === 'cancelled' ? 'selected' : ''}>❌ Cancelled</option>
+                                        <option value="nra" ${data === 'nra' ? 'selected' : ''}> NRA</option>
+                                        <option value="pending" ${data === 'pending' ? 'selected' : ''}> Pending</option>
+                                        <option value="in-progress" ${data === 'in-progress' ? 'selected' : ''}> Progress</option>
+                                        <option value="delivered" ${data === 'delivered' ? 'selected' : ''}> Delivered</option>
+                                        <option value="on-hold" ${data === 'on-hold' ? 'selected' : ''}>Hold</option>
+                                        <option value="cancelled" ${data === 'cancelled' ? 'selected' : ''}> Cancelled</option>
                                     </select>
                                 `;
                             }
@@ -644,17 +745,14 @@
                             render: function(data, type, row) {
                                 const config = {
                                     'low': {
-                                        icon: '🟢',
                                         color: 'bg-green-100 text-green-800',
                                         label: 'Low'
                                     },
                                     'medium': {
-                                        icon: '🟡',
                                         color: 'bg-yellow-100 text-yellow-800',
                                         label: 'Medium'
                                     },
                                     'high': {
-                                        icon: '🔴',
                                         color: 'bg-red-100 text-red-800',
                                         label: 'High'
                                     }
@@ -667,9 +765,9 @@
                                             data-field="priority"
                                             data-original-value="${data}"
                                             onchange="handleQuickUpdate(this)">
-                                        <option value="low" ${data === 'low' ? 'selected' : ''}>🟢 Low</option>
-                                        <option value="medium" ${data === 'medium' ? 'selected' : ''}>🟡 Medium</option>
-                                        <option value="high" ${data === 'high' ? 'selected' : ''}>🔴 High</option>
+                                        <option value="low" ${data === 'low' ? 'selected' : ''}> Low</option>
+                                        <option value="medium" ${data === 'medium' ? 'selected' : ''}> Medium</option>
+                                        <option value="high" ${data === 'high' ? 'selected' : ''}> High</option>
                                     </select>
                                 `;
                             }
@@ -691,19 +789,98 @@
                                 return `<span class="px-2 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 truncate max-w-[120px] inline-block">${data}</span>`;
                             }
                         },
-                       
+
                         {
                             data: 'users',
                             name: 'users',
                             render: function(data, type, row) {
                                 if (!data || data.length === 0) {
-                                    return '<span class="text-gray-400 text-xs">No users</span>';
+                                    return `<button onclick="openUserAssignmentModal(${row.id}, '${row.name.replace(/'/g, "\\'")}')" class="w-9 h-8 flex items-center justify-center rounded-lg text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-all cursor-pointer" title="Assign Users">
+                                        <i class="fas fa-user-plus "></i>
+                                    </button>`;
                                 }
                                 if (data.length === 1) {
-                                    return `<span class="px-2 py-1 rounded-lg text-xs font-semibold bg-purple-50 text-purple-700 truncate max-w-[100px] inline-block" title="${data[0].name}">${data[0].name}</span>`;
+                                    return `<button onclick="openUserAssignmentModal(${row.id}, '${row.name.replace(/'/g, "\\'")}')" class="px-2 py-1 rounded-lg text-xs font-semibold bg-purple-50 text-purple-700 truncate max-w-[100px] inline-block hover:bg-purple-100 cursor-pointer transition-all" title="${data[0].name}">${data[0].name}</button>`;
                                 }
-                                // Multiple users - show count with tooltip
-                                return `<span class="px-2 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 cursor-help" title="${row.users_names}">${data.length} users</span>`;
+                                // Multiple users - show icon with count
+                                return `<button onclick="openUserAssignmentModal(${row.id}, '${row.name.replace(/'/g, "\\'")}')" class="w-12 h-8 px-2 flex items-center justify-center rounded-lg text-purple-600 bg-purple-50 hover:bg-purple-100 transition-all cursor-pointer" title="${data.length} users: ${row.users_names}">
+                                    <i class="fas fa-users "></i>
+                                    <span class="ml-0.5  font-bold">${data.length}</span>
+                                </button>`;
+                            }
+                        },
+                        {
+                            data: 'start_date',
+                            name: 'start_date',
+                            render: function(data, type, row) {
+                                // For orders without start date, show clickable placeholder
+                                if (!data) {
+                                    return `<input type="text"
+                                                class="start-date-input px-2 py-1 rounded-lg text-xs font-medium border border-gray-300 bg-gray-50 text-gray-400 whitespace-nowrap w-28 cursor-pointer"
+                                                data-order-id="${row.id}"
+                                                data-original-value=""
+                                                placeholder="Set date"
+                                                readonly onclick="handleStartDateClick(this)">`;
+                                }
+
+                                const date = new Date(data);
+                                const formattedDate = date.toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric'
+                                });
+                                const dbDate = data; // Keep original format for database
+
+                                return `<input type="text"
+                                            class="start-date-input px-2 py-1 rounded-lg text-xs font-medium border border-indigo-300 bg-indigo-50 text-indigo-700 whitespace-nowrap w-28 cursor-pointer"
+                                            value="${formattedDate}"
+                                            data-order-id="${row.id}"
+                                            data-original-value="${dbDate}"
+                                            data-current-value="${dbDate}"
+                                            title="${dbDate}"
+                                            readonly onclick="handleStartDateClick(this)">`;
+                            }
+                        },
+                        {
+                            data: 'delivered_at',
+                            name: 'delivered_at',
+                            render: function(data, type, row) {
+                                // For non-delivered orders, show clickable placeholder
+                                if (row.status !== 'delivered') {
+                                    return `<input type="text"
+                                                class="delivered-date-input px-2 py-1 rounded-lg text-xs font-medium border border-gray-300 bg-gray-50 text-gray-400 whitespace-nowrap w-28 cursor-pointer"
+                                                data-order-id="${row.id}"
+                                                data-original-value=""
+                                                placeholder="Set date"
+                                                readonly onclick="handleDeliveredDateClick(this)">`;
+                                }
+
+                                // For delivered orders, show editable date
+                                if (!data) {
+                                    return `<input type="text"
+                                                class="delivered-date-input px-2 py-1 rounded-lg text-xs font-medium border border-green-300 bg-green-50 text-green-700 whitespace-nowrap w-28 cursor-pointer"
+                                                data-order-id="${row.id}"
+                                                data-original-value=""
+                                                placeholder="Set date"
+                                                readonly onclick="handleDeliveredDateClick(this)">`;
+                                }
+
+                                const date = new Date(data);
+                                const formattedDate = date.toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric'
+                                });
+                                const dbDate = data; // Keep original format for database
+
+                                return `<input type="text"
+                                            class="delivered-date-input px-2 py-1 rounded-lg text-xs font-medium border border-green-300 bg-green-50 text-green-700 whitespace-nowrap w-28 cursor-pointer"
+                                            value="${formattedDate}"
+                                            data-order-id="${row.id}"
+                                            data-original-value="${dbDate}"
+                                            data-current-value="${dbDate}"
+                                            title="${dbDate}"
+                                            readonly onclick="handleDeliveredDateClick(this)">`;
                             }
                         },
                         {
@@ -711,13 +888,33 @@
                             name: 'end_date',
                             render: function(data, type, row) {
                                 // Check if order is completed
-                                if (row.status === 'completed') {
+                                if (row.status === 'delivered') {
                                     return '<span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-green-100 text-green-600"><i class="fas fa-check"></i></span>';
+                                }
+                                if(row.status === 'cancelled') {
+                                    return '<span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 text-red-600"><i class="fas fa-times"></i></span>';
                                 }
 
                                 if (!data) return '<span class="text-gray-400 text-xs">Not set</span>';
 
                                 return `<span class="countdown-timer inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold whitespace-nowrap" data-deadline="${data}"><i class="fas fa-clock text-xs"></i> <span class="countdown-text">Loading...</span></span>`;
+                            }
+                        },
+                        {
+                            data: 'order_sheet_url',
+                            name: 'order_sheet_url',
+                            orderable: false,
+                            className: 'text-center',
+                            render: function(data) {
+                                if (!data) {
+                                    return '<span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 text-gray-400"><i class="fas fa-file-alt text-xs"></i></span>';
+                                }
+                                return `
+                                    <a href="${data}" target="_blank" class="inline-flex items-center justify-center gap-1 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-xs font-semibold rounded-lg shadow-md hover:shadow-lg transition-all cursor-pointer">
+                                        <i class="fas fa-external-link-alt text-xs"></i>
+                                        <span>Docs</span>
+                                    </a>
+                                `;
                             }
                         },
                         {
@@ -772,14 +969,14 @@
 
                         // Add action buttons above the table
                         const actionButtons = `
-                <div class="flex flex-wrap items-center justify-end gap-2 mb-4 createbutton">
-                    <a href="{{ route('orders.create') }}"
-                        class="inline-flex items-center px-3 py-1.5 h-8 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-sm font-medium rounded-lg shadow hover:shadow-lg transform transition-all duration-200 hover:scale-105 whitespace-nowrap">
-                        <i class="fas fa-plus mr-1.5 text-xs"></i>
-                        Add New Order
-                    </a>
-                </div>
-            `;
+                                                <div class="flex flex-wrap items-center justify-end gap-2 mb-4 createbutton">
+                                                    <a href="{{ route('orders.create') }}"
+                                                        class="inline-flex items-center px-3 py-1.5 h-8 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-sm font-medium rounded-lg shadow hover:shadow-lg transform transition-all duration-200 hover:scale-105 whitespace-nowrap">
+                                                        <i class="fas fa-plus mr-1.5 text-xs"></i>
+                                                        Add New Order
+                                                    </a>
+                                                </div>
+                                            `;
 
                         // Insert buttons before the table container
                         $('#ordersTable_wrapper').prepend(actionButtons);
@@ -789,9 +986,12 @@
                             table.ajax.reload();
                         });
 
-                        $('#filterStatus, #filterTeam, #filterTechStack, #filterPriority').on('change', function() {
-                            table.ajax.reload();
-                        });
+                        $('#filterStatus, #filterTeam, #filterTechStack, #filterPriority, #filterMonth').on(
+                            'change',
+                            function() {
+                                console.log($('#filterMonth').val());
+                                table.ajax.reload();
+                            });
 
                         // Initialize countdown timers
                         updateAllCountdowns();
@@ -869,6 +1069,7 @@
                         $('#filterTeam').val('');
                         $('#filterTechStack').val('');
                         $('#filterPriority').val('');
+                        $('#filterMonth').val('');
                         $('#ordersTable').DataTable().ajax.reload();
                     });
 
@@ -1088,7 +1289,7 @@
                     'nra': 'NRA',
                     'pending': 'Pending',
                     'in-progress': 'In Progress',
-                    'completed': 'Completed',
+                    'delivered': 'Delivered',
                     'on-hold': 'On Hold',
                     'cancelled': 'Cancelled',
                     'low': 'Low',
@@ -1142,6 +1343,442 @@
                     }
                 });
             }
+
+            function handleDeliveredDateClick(inputElement) {
+                const orderId = inputElement.dataset.orderId;
+                const originalValue = inputElement.dataset.originalValue || '';
+
+                // Initialize Flatpickr if not available
+                if (typeof flatpickr === 'undefined') {
+                    console.error('Flatpickr is not loaded');
+                    return;
+                }
+
+                // Create a temporary div for the picker
+                const tempDiv = document.createElement('div');
+                tempDiv.style.position = 'fixed';
+                tempDiv.style.top = '0';
+                tempDiv.style.left = '0';
+                tempDiv.style.zIndex = '9999';
+                document.body.appendChild(tempDiv);
+
+                // Initialize Flatpickr with datetime
+                const picker = flatpickr(tempDiv, {
+                    enableTime: true,
+                    dateFormat: 'Y-m-d H:i:S',
+                    time_24hr: true,
+                    defaultDate: originalValue ? new Date(originalValue) : new Date(),
+                    appendTo: document.body,
+                    position: 'below',
+                    onClose: function(selectedDates, dateStr, instance) {
+                        // Remove temporary div
+                        document.body.removeChild(tempDiv);
+
+                        if (selectedDates.length > 0) {
+                            const newDate = dateStr;
+
+                            Swal.fire({
+                                title: 'Update Delivered Date?',
+                                text: `Change delivered date to "${dateStr}"?`,
+                                icon: 'question',
+                                showCancelButton: true,
+                                confirmButtonColor: '#9333ea',
+                                cancelButtonColor: '#6b7280',
+                                confirmButtonText: 'Yes, update!',
+                                cancelButtonText: 'Cancel'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    Swal.showLoading();
+
+                                    const formData = new FormData();
+                                    formData.append('delivered_at', newDate);
+
+                                    axios.post(`/orders/${orderId}/quick-update`, formData)
+                                        .then(response => {
+                                            Swal.fire({
+                                                title: 'Updated!',
+                                                text: response.data.message || 'Delivered date updated successfully.',
+                                                icon: 'success',
+                                                confirmButtonColor: '#9333ea',
+                                                timer: 1500,
+                                                showConfirmButton: false
+                                            }).then(() => {
+                                                $('#ordersTable').DataTable().ajax.reload();
+                                            });
+                                        })
+                                        .catch(error => {
+                                            Swal.fire({
+                                                title: 'Error!',
+                                                text: error.response?.data?.message || 'Something went wrong.',
+                                                icon: 'error',
+                                                confirmButtonColor: '#dc2626'
+                                            });
+                                        });
+                                }
+                            });
+                        }
+                    }
+                });
+
+                // Open the picker
+                picker.open();
+            }
+
+            function handleStartDateClick(inputElement) {
+                const orderId = inputElement.dataset.orderId;
+                const originalValue = inputElement.dataset.originalValue || '';
+
+                // Initialize Flatpickr if not available
+                if (typeof flatpickr === 'undefined') {
+                    console.error('Flatpickr is not loaded');
+                    return;
+                }
+
+                // Create a temporary div for the picker
+                const tempDiv = document.createElement('div');
+                tempDiv.style.position = 'fixed';
+                tempDiv.style.top = '0';
+                tempDiv.style.left = '0';
+                tempDiv.style.zIndex = '9999';
+                document.body.appendChild(tempDiv);
+
+                // Initialize Flatpickr with date only (no time for start date)
+                const picker = flatpickr(tempDiv, {
+                    enableTime: false,
+                    dateFormat: 'Y-m-d',
+                    defaultDate: originalValue ? new Date(originalValue) : new Date(),
+                    appendTo: document.body,
+                    position: 'below',
+                    onClose: function(selectedDates, dateStr, instance) {
+                        // Remove temporary div
+                        document.body.removeChild(tempDiv);
+
+                        if (selectedDates.length > 0) {
+                            const newDate = dateStr;
+
+                            Swal.fire({
+                                title: 'Update Start Date?',
+                                text: `Change start date to "${dateStr}"?`,
+                                icon: 'question',
+                                showCancelButton: true,
+                                confirmButtonColor: '#9333ea',
+                                cancelButtonColor: '#6b7280',
+                                confirmButtonText: 'Yes, update!',
+                                cancelButtonText: 'Cancel'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    Swal.showLoading();
+
+                                    const formData = new FormData();
+                                    formData.append('start_date', newDate);
+
+                                    axios.post(`/orders/${orderId}/quick-update`, formData)
+                                        .then(response => {
+                                            Swal.fire({
+                                                title: 'Updated!',
+                                                text: response.data.message || 'Start date updated successfully.',
+                                                icon: 'success',
+                                                confirmButtonColor: '#9333ea',
+                                                timer: 1500,
+                                                showConfirmButton: false
+                                            }).then(() => {
+                                                $('#ordersTable').DataTable().ajax.reload();
+                                            });
+                                        })
+                                        .catch(error => {
+                                            Swal.fire({
+                                                title: 'Error!',
+                                                text: error.response?.data?.message || 'Something went wrong.',
+                                                icon: 'error',
+                                                confirmButtonColor: '#dc2626'
+                                            });
+                                        });
+                                }
+                            });
+                        }
+                    }
+                });
+
+                // Open the picker
+                picker.open();
+            }
+
+            // User Assignment Modal - Vanilla JS Implementation
+            let currentOrderId = null;
+            let modalSelectedUsers = [];
+            let modalSearchTimeout = null;
+            let modalCurrentUsers = [];
+
+            function openUserAssignmentModal(orderId, orderName) {
+                currentOrderId = orderId;
+                const modal = document.getElementById('userAssignmentModal');
+                const orderNameEl = document.getElementById('modal-order-name');
+
+                // Set order name in modal header
+                orderNameEl.textContent = `Order: ${orderName}`;
+
+                // Show modal
+                modal.classList.remove('hidden');
+
+                // Fetch current assigned users for this order
+                axios.get(`/orders/${orderId}/users`)
+                    .then(response => {
+                        modalSelectedUsers = response.data.users || [];
+                        updateModalSelectedDisplay();
+
+                        // Load initial available users
+                        fetchModalUsers('').then(users => renderModalDropdown(users));
+                    })
+                    .catch(error => {
+                        console.error('Error fetching users:', error);
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Failed to load assigned users.',
+                            icon: 'error',
+                            confirmButtonColor: '#dc2626'
+                        });
+                    });
+            }
+
+            function closeUserAssignmentModal() {
+                const modal = document.getElementById('userAssignmentModal');
+                modal.classList.add('hidden');
+                currentOrderId = null;
+                modalSelectedUsers = [];
+                modalCurrentUsers = [];
+            }
+
+            async function fetchModalUsers(search = '') {
+                try {
+                    const excludeIds = modalSelectedUsers.map(u => u.id);
+                    const params = new URLSearchParams();
+                    if (search) {
+                        params.append('search', search);
+                    }
+                    if (excludeIds.length > 0) {
+                        params.append('exclude', excludeIds.join(','));
+                    }
+
+                    const response = await axios.get(`/orders/search-users?${params}`);
+                    modalCurrentUsers = response.data.users;
+                    return modalCurrentUsers;
+                } catch (error) {
+                    console.error('Error fetching users:', error);
+                    return [];
+                }
+            }
+
+            function renderModalDropdown(users) {
+                const dropdown = document.getElementById('modalUserDropdown');
+                if (users.length === 0) {
+                    dropdown.innerHTML = '<div class="px-4 py-3 text-sm text-gray-500 text-center">No users found</div>';
+                } else {
+                    dropdown.innerHTML = users.map(user => `
+                        <div class="user-option flex items-center gap-3 p-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 last:border-0 transition-colors"
+                             data-user-id="${user.id}"
+                             data-user-name="${user.name}"
+                             data-user-email="${user.email}">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                                ${user.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-0.5 flex-wrap">
+                                    <div class="font-semibold text-sm text-gray-900 truncate">${user.name}</div>
+                                    <span class="text-xs text-white bg-indigo-500 px-2 py-0.5 rounded-full flex-shrink-0">${user.employee_id || 'N/A'}</span>
+                                    ${user.team ? `<span class="text-xs text-white bg-purple-500 px-2 py-0.5 rounded-full flex-shrink-0"><i class="fas fa-users mr-1"></i>${user.team.name}</span>` : ''}
+                                </div>
+                                <div class="text-xs text-gray-500 truncate">
+                                    ${user.email}
+                                </div>
+                            </div>
+                            <div class="flex-shrink-0">
+                                <div class="w-8 h-8 rounded-full bg-indigo-100 hover:bg-indigo-200 flex items-center justify-center transition-colors">
+                                    <i class="fas fa-plus text-indigo-600 text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    // Add click handlers
+                    dropdown.querySelectorAll('.user-option').forEach(option => {
+                        option.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            const user = {
+                                id: parseInt(this.dataset.userId),
+                                name: this.dataset.userName,
+                                email: this.dataset.userEmail
+                            };
+                            addModalUser(user);
+                        });
+                    });
+                }
+            }
+
+            function addModalUser(user) {
+                if (!modalSelectedUsers.find(s => s.id === user.id)) {
+                    modalSelectedUsers.push(user);
+                    updateModalSelectedDisplay();
+
+                    const searchInput = document.getElementById('modalUserSearchInput');
+                    if (searchInput.value.trim()) {
+                        if (modalSearchTimeout) {
+                            clearTimeout(modalSearchTimeout);
+                        }
+                        modalSearchTimeout = setTimeout(async () => {
+                            const users = await fetchModalUsers(searchInput.value.trim());
+                            renderModalDropdown(users);
+                        }, 300);
+                    } else {
+                        fetchModalUsers('').then(users => renderModalDropdown(users));
+                    }
+                }
+            }
+
+            function removeModalUser(userId) {
+                modalSelectedUsers = modalSelectedUsers.filter(u => u.id !== userId);
+                updateModalSelectedDisplay();
+
+                const searchInput = document.getElementById('modalUserSearchInput');
+                if (searchInput.value.trim()) {
+                    if (modalSearchTimeout) {
+                        clearTimeout(modalSearchTimeout);
+                    }
+                    modalSearchTimeout = setTimeout(async () => {
+                        const users = await fetchModalUsers(searchInput.value.trim());
+                        renderModalDropdown(users);
+                    }, 300);
+                } else {
+                    fetchModalUsers('').then(users => renderModalDropdown(users));
+                }
+            }
+
+            function updateModalSelectedDisplay() {
+                const display = document.getElementById('modalSelectedUsersDisplay');
+                if (modalSelectedUsers.length === 0) {
+                    display.innerHTML = '<span class="text-gray-400 text-sm">No users assigned</span>';
+                } else {
+                    display.innerHTML = modalSelectedUsers.map(user => `
+                        <span class="inline-flex items-center gap-1 px-3 py-1 m-1 bg-indigo-100 text-indigo-800 rounded-lg text-sm">
+                            <span>${user.name}</span>
+                            <button type="button" class="remove-modal-user-btn hover:text-red-600 transition-colors" data-user-id="${user.id}">
+                                <i class="fas fa-times text-xs"></i>
+                            </button>
+                        </span>
+                    `).join('');
+
+                    // Add click handlers for remove buttons
+                    display.querySelectorAll('.remove-modal-user-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const userId = parseInt(this.dataset.userId);
+                            removeModalUser(userId);
+                        });
+                    });
+                }
+            }
+
+            function saveUserAssignments() {
+                if (!currentOrderId) {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'No order selected.',
+                        icon: 'error',
+                        confirmButtonColor: '#dc2626'
+                    });
+                    return;
+                }
+
+                const userIds = modalSelectedUsers.map(u => u.id);
+
+                Swal.fire({
+                    title: 'Update User Assignments?',
+                    text: `Assign ${userIds.length} user(s) to this order?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#9333ea',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Yes, update!',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.showLoading();
+
+                        const formData = new FormData();
+                        userIds.forEach(id => {
+                            formData.append('users[]', id);
+                        });
+
+                        axios.post(`/orders/${currentOrderId}/assign-users`, formData)
+                            .then(response => {
+                                Swal.fire({
+                                    title: 'Updated!',
+                                    text: response.data.message || 'User assignments updated successfully.',
+                                    icon: 'success',
+                                    confirmButtonColor: '#9333ea',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    closeUserAssignmentModal();
+                                    $('#ordersTable').DataTable().ajax.reload();
+                                });
+                            })
+                            .catch(error => {
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: error.response?.data?.message || 'Failed to update user assignments.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#dc2626'
+                                });
+                            });
+                    }
+                });
+            }
+
+            // Modal search input event listener
+            document.addEventListener('DOMContentLoaded', function() {
+                const modalSearchInput = document.getElementById('modalUserSearchInput');
+                const modalDropdown = document.getElementById('modalUserDropdown');
+
+                if (modalSearchInput) {
+                    modalSearchInput.addEventListener('input', function() {
+                        const query = this.value.trim();
+                        modalDropdown.classList.remove('hidden');
+
+                        if (modalSearchTimeout) {
+                            clearTimeout(modalSearchTimeout);
+                        }
+
+                        modalSearchTimeout = setTimeout(async () => {
+                            const users = await fetchModalUsers(query);
+                            renderModalDropdown(users);
+                        }, 300);
+                    });
+
+                    modalSearchInput.addEventListener('focus', async function() {
+                        modalDropdown.classList.remove('hidden');
+                        const users = await fetchModalUsers('');
+                        renderModalDropdown(users);
+                    });
+                }
+
+                // Close modal dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (modalDropdown && !modalDropdown.classList.contains('hidden') &&
+                        !modalDropdown.contains(e.target) &&
+                        e.target !== modalSearchInput) {
+                        modalDropdown.classList.add('hidden');
+                    }
+                });
+
+                // Close modal on Escape key
+                document.addEventListener('keydown', function(event) {
+                    if (event.key === 'Escape') {
+                        const modal = document.getElementById('userAssignmentModal');
+                        if (!modal.classList.contains('hidden')) {
+                            closeUserAssignmentModal();
+                        }
+                    }
+                });
+            });
         </script>
     @endpush
 @endsection

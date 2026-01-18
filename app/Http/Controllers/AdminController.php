@@ -20,33 +20,132 @@ class AdminController extends Controller
     {
         $now = now();
         $thisMonth = $now->startOfMonth();
+        $lastMonth = $now->subMonth()->startOfMonth();
+        $thisYear = $now->startOfYear();
 
+        // Basic stats
         $stats = [
             'total_users' => User::count(),
-            'total_orders' => Order::count(),
+            'total_projects' => Order::count(),
             'total_tasks' => Task::count(),
             'total_teams' => Team::count(),
             'total_tech_stacks' => TechStack::count(),
             'new_users_this_month' => User::where('created_at', '>=', $thisMonth)->count(),
-            'active_orders' => Order::where('status', 'in-progress')->count(),
-            'completed_orders' => Order::where('status', 'completed')->count(),
+            'active_projects' => Order::where('status', 'in-progress')->count(),
+            'completed_projects' => Order::where('status', 'completed')->count(),
             'completed_tasks' => Task::where('status', 'completed')->count(),
             'total_team_members' => User::whereNotNull('team_id')->count(),
-            'pending_jobs' => 0, // Can be updated if queue jobs are tracked
+            'pending_jobs' => 0,
         ];
+
+        // Revenue analytics
+        $revenueThisMonth = Order::where('status', 'completed')
+            ->whereBetween('created_at', [$thisMonth, now()])
+            ->sum('actual_revenue');
+
+        $revenueLastMonth = Order::where('status', 'completed')
+            ->whereBetween('created_at', [$lastMonth, $thisMonth])
+            ->sum('actual_revenue');
+
+        $revenueThisYear = Order::where('status', 'completed')
+            ->whereBetween('created_at', [$thisYear, now()])
+            ->sum('actual_revenue');
+
+        $stats['revenue_this_month'] = $revenueThisMonth;
+        $stats['revenue_last_month'] = $revenueLastMonth;
+        $stats['revenue_this_year'] = $revenueThisYear;
+        $stats['revenue_growth'] = $revenueLastMonth > 0
+            ? round((($revenueThisMonth - $revenueLastMonth) / $revenueLastMonth) * 100, 1)
+            : 0;
+
+        // Monthly active users (users created this month)
+        $stats['active_users_this_month'] = User::where('created_at', '>=', $thisMonth)->count();
+
+        // Project completion rate
+        $totalProjects = Order::count();
+        $stats['completion_rate'] = $totalProjects > 0
+            ? round(($stats['completed_projects'] / $totalProjects) * 100, 1)
+            : 0;
 
         $roleStats = Role::withCount('users')->get()->mapWithKeys(function ($role) {
             return [$role->name => $role->users_count];
         });
 
-        $orderStatusStats = Order::selectRaw('status, COUNT(*) as count')
+        $projectStatusStats = Order::selectRaw('status, COUNT(*) as count')
             ->groupBy('status')
             ->pluck('count', 'status');
 
         $recentUsers = User::latest()->take(5)->get();
         $recentOrders = Order::with(['team', 'creator'])->latest()->take(5)->get();
 
-        return view('admin.dashboard', compact('stats', 'roleStats', 'orderStatusStats', 'recentUsers', 'recentOrders'));
+        // Monthly revenue for chart (last 12 months)
+        $monthlyRevenue = Order::selectRaw('MONTH(created_at) as month, SUM(actual_revenue) as revenue')
+            ->where('status', 'delivered')
+            ->whereYear('created_at', now()->year)
+            ->groupBy('month')
+            ->orderBy('month')
+            ->pluck('revenue', 'month')
+            ->toArray();
+
+        // Fill missing months with 0
+        for ($i = 1; $i <= 12; $i++) {
+            if (! isset($monthlyRevenue[$i])) {
+                $monthlyRevenue[$i] = 0;
+            }
+        }
+        ksort($monthlyRevenue);
+
+        // Monthly orders for chart
+        $monthlyOrders = Order::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
+            ->whereYear('created_at', now()->year)
+            ->groupBy('month')
+            ->orderBy('month')
+            ->pluck('count', 'month')
+            ->toArray();
+
+        for ($i = 1; $i <= 12; $i++) {
+            if (! isset($monthlyOrders[$i])) {
+                $monthlyOrders[$i] = 0;
+            }
+        }
+        ksort($monthlyOrders);
+
+        // Top performing teams
+        $topTeams = \App\Models\Team::withCount('orders')
+            ->has('orders')
+            ->get()
+            ->map(function ($team) {
+                $completedRevenue = Order::where('team_id', $team->id)
+                    ->where('status', 'delivered')
+                    ->sum('actual_revenue');
+
+                return [
+                    'name' => $team->name,
+                    'orders_count' => $team->orders_count,
+                    'revenue' => $completedRevenue,
+                ];
+            })
+            ->sortByDesc('revenue')
+            ->take(5)
+            ->values();
+
+        // Recent activity
+        $activities = \App\Models\Project::with('createdBy')
+            ->latest()
+            ->take(8)
+            ->get();
+
+        return view('admin.dashboard', compact(
+            'stats',
+            'roleStats',
+            'projectStatusStats',
+            'recentUsers',
+            'recentOrders',
+            'monthlyRevenue',
+            'monthlyOrders',
+            'topTeams',
+            'activities'
+        ));
     }
 
     /**

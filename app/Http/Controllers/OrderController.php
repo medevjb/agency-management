@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -18,6 +19,27 @@ class OrderController extends Controller
         $this->authorize('viewAny', Order::class);
 
         $user = auth()->user();
+
+        // Get selected month from request (no default - show all orders initially)
+        $selectedMonth = $request->input('month', '');
+
+        // Initialize dates as null
+        $startDate = null;
+        $endDate = null;
+
+        // Parse the selected month only if provided
+        if ($selectedMonth) {
+            $monthDate = \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth);
+            $startDate = $monthDate->startOfMonth()->format('Y-m-d');
+            $endDate = $monthDate->endOfMonth()->format('Y-m-d');
+        }
+
+        // Generate list of available months (last 12 months + current)
+        $availableMonths = collect();
+        for ($i = 0; $i < 12; $i++) {
+            $date = now()->subMonths($i);
+            $availableMonths->put($date->format('Y-m'), $date->format('F Y'));
+        }
 
         // Filter teams based on user role
         if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
@@ -46,7 +68,18 @@ class OrderController extends Controller
 
         $profiles = \App\Models\Profile::active()->get();
 
-        return view('orders.index', compact('teams', 'statuses', 'techStacks', 'profiles'));
+        // Filter users for assignment modal
+        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
+            $users = \App\Models\User::all();
+        } elseif ($user->hasRole('stack-leader')) {
+            // Stack leaders see users assigned to their tech stack
+            $users = \App\Models\User::where('tech_stack_id', $user->tech_stack_id)->get();
+        } else {
+            // Team leaders and members see their team members
+            $users = \App\Models\User::where('team_id', $user->team_id)->get();
+        }
+
+        return view('orders.index', compact('teams', 'statuses', 'techStacks', 'profiles', 'users', 'selectedMonth', 'availableMonths', 'startDate', 'endDate'));
     }
 
     public function getOrders(Request $request)
@@ -65,6 +98,13 @@ class OrderController extends Controller
                 // Team leaders and members see orders from their team
                 $query->where('team_id', $user->team_id);
             }
+        }
+
+        // Filter by month (only in created_at)
+        if ($request->filled('month') && $request->month !== '') {
+            $monthName = Carbon::parse($request->month)->format('F Y');
+
+            $query->whereMonth('start_date', Carbon::parse($request->month)->month);
         }
 
         // Custom search field or DataTables search
@@ -110,7 +150,7 @@ class OrderController extends Controller
 
             // Note: Column 0 is checkbox (null data), so subtract 1 from client-side column index
             $adjustedColumn = $orderColumn - 1;
-            $columns = ['order_id', 'name', 'status', 'priority', 'actual_revenue', 'team_id', 'tech_stack_id', 'freelance_profile_id', 'end_date'];
+            $columns = ['order_id', 'name', 'status', 'priority', 'actual_revenue', 'team_id', 'tech_stack_id', 'freelance_profile_id', 'end_date', 'created_at', 'delivered_at'];
             if (isset($columns[$adjustedColumn])) {
                 $query->orderBy($columns[$adjustedColumn], $orderDir);
             }
@@ -138,10 +178,13 @@ class OrderController extends Controller
                 'actual_revenue' => $order->actual_revenue,
                 'start_date' => $order->start_date ? $order->start_date->format('Y-m-d') : null,
                 'end_date' => $order->end_date ? $order->end_date->format('Y-m-d') : null,
+                'created_at' => $order->created_at ? $order->created_at->format('Y-m-d H:i:s') : null,
+                'delivered_at' => $order->delivered_at ? $order->delivered_at->format('Y-m-d H:i:s') : null,
                 'team' => $order->team ? $order->team->name : 'N/A',
                 'tech_stack' => $order->techStack ? $order->techStack->name : 'N/A',
                 'freelance_profile' => $order->freelanceProfile ? $order->freelanceProfile->username : 'N/A',
                 'freelance_profile_id' => $order->freelance_profile_id,
+                'order_sheet_url' => $order->order_sheet_url,
                 'users' => $order->users->map(function ($user) {
                     return [
                         'id' => $user->id,
@@ -244,7 +287,7 @@ class OrderController extends Controller
 
         $statuses = \App\Models\OrderStatus::orderBy('sort_order')->get();
 
-        // Filter users - team leaders only see their team members (initially limited to 5-10)
+        // Filter users for assignment
         $isTeamLeader = $user->hasRole('team-leader');
         if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             $users = \App\Models\User::all();
@@ -252,11 +295,8 @@ class OrderController extends Controller
             // Stack leaders see users assigned to their tech stack
             $users = \App\Models\User::where('tech_stack_id', $user->tech_stack_id)->get();
         } else {
-            // Team leaders and members see their team members (limited to latest 10 for performance)
-            $users = \App\Models\User::where('team_id', $user->team_id)
-                ->latest()
-                ->limit(10)
-                ->get();
+            // Team leaders and members see their team members
+            $users = \App\Models\User::where('team_id', $user->team_id)->get();
         }
 
         $profiles = \App\Models\Profile::active()->get();
@@ -283,6 +323,7 @@ class OrderController extends Controller
             'team_id' => 'nullable|exists:teams,id',
             'tech_stack_id' => 'nullable|exists:tech_stacks,id',
             'freelance_profile_id' => 'nullable|exists:profiles,id',
+            'order_sheet_url' => 'nullable|url|max:2048',
             'users' => 'nullable|array',
             'users.*' => 'exists:users,id',
         ]);
@@ -308,6 +349,7 @@ class OrderController extends Controller
             'team_id' => $validated['team_id'] ?? null,
             'tech_stack_id' => $validated['tech_stack_id'] ?? null,
             'freelance_profile_id' => $validated['freelance_profile_id'] ?? null,
+            'order_sheet_url' => $validated['order_sheet_url'] ?? null,
             'created_by' => auth()->id(),
         ]);
 
@@ -392,6 +434,7 @@ class OrderController extends Controller
             'team_id' => 'nullable|exists:teams,id',
             'tech_stack_id' => 'nullable|exists:tech_stacks,id',
             'freelance_profile_id' => 'nullable|exists:profiles,id',
+            'order_sheet_url' => 'nullable|url|max:2048',
             'users' => 'nullable|array',
             'users.*' => 'exists:users,id',
             'notes' => 'nullable|string',
@@ -415,6 +458,7 @@ class OrderController extends Controller
             'team_id' => $validated['team_id'] ?? null,
             'tech_stack_id' => $validated['tech_stack_id'] ?? null,
             'freelance_profile_id' => $validated['freelance_profile_id'] ?? null,
+            'order_sheet_url' => $validated['order_sheet_url'] ?? null,
         ]);
 
         // Sync users
@@ -507,6 +551,8 @@ class OrderController extends Controller
         $validated = $request->validate([
             'status' => 'nullable|string',
             'priority' => 'nullable|in:low,medium,high',
+            'delivered_at' => 'nullable|date',
+            'start_date' => 'nullable|date',
         ]);
 
         $order->update($validated);
@@ -514,6 +560,93 @@ class OrderController extends Controller
         return response()->json([
             'message' => 'Order updated successfully.',
             'order' => $order->fresh(),
+        ]);
+    }
+
+    public function getUsers(Order $order)
+    {
+        $this->authorize('view', $order);
+
+        $users = $order->users()->get(['users.id', 'users.name', 'users.email']);
+
+        return response()->json([
+            'users' => $users,
+        ]);
+    }
+
+    public function assignUsers(Request $request, Order $order)
+    {
+        $this->authorize('update', $order);
+
+        $validated = $request->validate([
+            'users' => 'required|array',
+            'users.*' => 'exists:users,id',
+        ]);
+
+        // Sync users to the order
+        $order->users()->sync($validated['users']);
+
+        return response()->json([
+            'message' => 'User assignments updated successfully.',
+            'users' => $order->users()->get(['users.id', 'users.name', 'users.email']),
+        ]);
+    }
+
+    public function searchUsers(Request $request)
+    {
+        $search = $request->input('search', '');
+        $excludeIds = $request->input('exclude');
+
+        // Convert comma-separated string to array if needed
+        if (is_string($excludeIds)) {
+            $excludeIds = explode(',', $excludeIds);
+        }
+        if (! is_array($excludeIds)) {
+            $excludeIds = [];
+        }
+
+        // Filter out empty values
+        $excludeIds = array_filter($excludeIds, 'strlen');
+        $excludeIds = array_map('intval', $excludeIds);
+
+        $user = auth()->user();
+
+        // Build query based on role
+        $query = \App\Models\User::query();
+
+        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
+            // Can see all users
+        } elseif ($user->hasRole('stack-leader')) {
+            // Stack leaders see users with their tech stack
+            $query->where('tech_stack_id', $user->tech_stack_id);
+        } else {
+            // Team leaders and members see their team members
+            $query->where('team_id', $user->team_id);
+        }
+
+        // Exclude already selected users
+        if (! empty($excludeIds)) {
+            $query->whereNotIn('id', $excludeIds);
+        }
+
+        // Apply search filter - search by name, email, employee_id
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('employee_id', 'like', "%{$search}%");
+            });
+        }
+
+        // Limit results and include team relationship
+        $users = $query->with('team:id,name')
+            ->select('id', 'name', 'email', 'employee_id', 'team_id')
+            ->orderBy('name')
+            ->limit(20)
+            ->get();
+
+        return response()->json([
+            'users' => $users,
         ]);
     }
 }

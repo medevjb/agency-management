@@ -16,7 +16,11 @@ import 'sweetalert2/dist/sweetalert2.min.css';
 window.$ = window.jQuery = $;
 window.JSZip = jszip;
 window.Swal = Swal;
-pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
-// Mark that Vite assets have been processed
-window.__vite_processed__ = true;
+// Safely initialize pdfMake with fonts
+if (pdfMake && pdfFonts && pdfFonts.pdfMake && pdfFonts.pdfMake.vfs) {
+    pdfMake.vfs = pdfFonts.pdfMake.vfs;
+    window.pdfMake = pdfMake;
+} else {
+    console.warn('PDFMake fonts not properly initialized');
+}

@@ -23,7 +23,7 @@
                 </div>
                 <p class="text-gray-600 mt-2">{{ $techStack->description ?: 'No description provided' }}</p>
             </div>
-            @canany(['update', 'delete'], \App\Models\TechStack::class)
+            @canany(['update', 'delete'], $techStack)
             <div class="flex space-x-3">
                 <a href="{{ route('tech-stacks.edit', $techStack->id) }}"
                    class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl">
@@ -93,7 +93,7 @@
                                 {{ $techStack->members->count() }}
                             </span>
                         </h2>
-                        @can('addMembers', \App\Models\TechStack::class)
+                        @can('addMembers', $techStack)
                             <button onclick="showAddMemberModal()"
                                     class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg">
                                 <i class="fas fa-plus mr-2"></i>Add Member
@@ -119,7 +119,7 @@
                                             @endif
                                         </div>
                                     </div>
-                                    @can('removeMember', \App\Models\TechStack::class)
+                                    @can('removeMember', $techStack)
                                         <button type="button"
                                                 onclick="removeMember({{ $techStack->id }}, {{ $member->id }}, '{{ $member->name }}')"
                                                 class="p-2 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-lg transition-all"
@@ -277,7 +277,7 @@
 </div>
 
 <!-- Add Member Modal -->
-@can('addMembers', \App\Models\TechStack::class)
+@can('addMembers', $techStack)
 <div id="addMemberModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50 flex items-center justify-center">
     <div class="relative mx-auto p-6 border-0 shadow-xl rounded-2xl bg-white w-full max-w-lg mx-4">
         <!-- Modal Header -->

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Order;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -20,7 +21,7 @@ return new class extends Migration
             $table->date('due_date')->nullable();
             $table->integer('estimated_hours')->nullable();
             $table->integer('actual_hours')->nullable();
-            $table->foreignId('project_id')->constrained()->onDelete('cascade');
+            $table->foreignIdFor(Order::class)->nullable()->constrained()->onDelete('set null');
             $table->foreignId('assigned_to')->nullable()->constrained('users')->onDelete('set null');
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->timestamps();

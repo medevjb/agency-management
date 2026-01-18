@@ -111,34 +111,35 @@
             </div>
         @endif
 
-        <!-- Date Filter -->
+        <!-- Month Filter -->
         <div class="bg-white rounded-xl shadow-md border border-gray-100 p-4 mb-6">
             <form method="GET" action="{{ route('orders.dashboard') }}" class="flex flex-wrap items-center gap-4">
                 <div class="flex items-center gap-2">
-                    <i class="fas fa-calendar text-indigo-500"></i>
-                    <span class="text-sm font-semibold text-gray-700">Date Range:</span>
+                    <i class="fas fa-calendar-alt text-indigo-500"></i>
+                    <span class="text-sm font-semibold text-gray-700">Select Month:</span>
                 </div>
                 <div class="relative">
-                    <input type="text" id="start_date" name="start_date" value="{{ $startDate }}"
-                        class="datepicker px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer"
-                        placeholder="Start date..." readonly>
-                </div>
-                <span class="text-gray-500">to</span>
-                <div class="relative">
-                    <input type="text" id="end_date" name="end_date" value="{{ $endDate }}"
-                        class="datepicker px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer"
-                        placeholder="End date..." readonly>
+                    <select name="month" id="monthFilter"
+                            class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white text-sm font-medium min-w-[200px]">
+                        @foreach($availableMonths as $value => $label)
+                            <option value="{{ $value }}" {{ $selectedMonth === $value ? 'selected' : '' }}>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
                 <button type="submit"
-                    class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg font-semibold transition-all">
-                    <i class="fas fa-filter mr-1"></i>
-                    Apply Filter
+                        class="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg font-semibold transition-all shadow-md hover:shadow-lg">
+                    <i class="fas fa-sync-alt mr-2"></i>
+                    Update Dashboard
                 </button>
-                <a href="{{ route('orders.dashboard') }}"
-                    class="px-4 py-2 text-gray-600 hover:text-gray-800 font-semibold transition-all">
-                    <i class="fas fa-times mr-1"></i>
-                    Clear
-                </a>
+                @if($selectedMonth !== now()->format('Y-m'))
+                    <a href="{{ route('orders.dashboard', ['month' => now()->format('Y-m')]) }}"
+                       class="px-4 py-2 text-gray-600 hover:text-gray-800 font-semibold transition-all">
+                        <i class="fas fa-redo mr-1"></i>
+                        Back to Current
+                    </a>
+                @endif
             </form>
         </div>
 
@@ -157,7 +158,7 @@
                 </div>
                 <div class="mt-4 flex items-center text-sm">
                     <i class="fas fa-calendar-alt mr-2"></i>
-                    <span class="text-purple-100">{{ $startDate }} to {{ $endDate }}</span>
+                    <span class="text-purple-100">{{ $availableMonths[$selectedMonth] ?? $startDate.' to '.$endDate }}</span>
                 </div>
             </div>
 
@@ -285,6 +286,179 @@
                 </h3>
                 <div class="chart-container">
                     <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly & Yearly Delivery Analytics -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-bold text-gray-900">
+                    <i class="fas fa-truck text-green-500 mr-2"></i>
+                    Delivery Analytics
+                </h3>
+                <div class="flex gap-2">
+                    <button onclick="showDeliveryView('monthly')" id="monthlyBtn"
+                        class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors">
+                        Monthly ({{ date('Y') }})
+                    </button>
+                    <button onclick="showDeliveryView('yearly')" id="yearlyBtn"
+                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-300 transition-colors">
+                        Yearly
+                    </button>
+                </div>
+            </div>
+
+            <!-- Monthly View -->
+            <div id="monthlyView" class="delivery-view">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Month</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Total Orders</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-green-600 uppercase tracking-wider">Delivered</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-green-700 uppercase tracking-wider">Delivered Amount</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-red-600 uppercase tracking-wider">Cancelled</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Delivery Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @php
+                                $monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                            @endphp
+                            @for($i = 1; $i <= 12; $i++)
+                                @php
+                                    $data = $monthlyDeliveredData[$i] ?? ['delivered_count' => 0, 'delivered_amount' => 0, 'cancelled_count' => 0, 'total_orders' => 0];
+                                    $deliveryRate = $data['total_orders'] > 0 ? round(($data['delivered_count'] / $data['total_orders']) * 100, 1) : 0;
+                                @endphp
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        {{ $monthNames[$i - 1] }}
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-700">
+                                        {{ $data['total_orders'] }}
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-center">
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                            {{ $data['delivered_count'] }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-center text-sm font-semibold text-green-700">
+                                        ${{ number_format($data['delivered_amount'], 2) }}
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-center">
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold {{ $data['cancelled_count'] > 0 ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-600' }}">
+                                            {{ $data['cancelled_count'] }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-center">
+                                        <div class="flex items-center justify-center gap-2">
+                                            <div class="w-16 bg-gray-200 rounded-full h-2">
+                                                <div class="h-2 rounded-full {{ $deliveryRate >= 80 ? 'bg-green-500' : ($deliveryRate >= 50 ? 'bg-yellow-500' : 'bg-red-500') }}"
+                                                    style="width: {{ $deliveryRate }}%"></div>
+                                            </div>
+                                            <span class="text-sm font-medium text-gray-700">{{ $deliveryRate }}%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endfor
+                        </tbody>
+                        <tfoot class="bg-gray-50 font-semibold">
+                            @php
+                                $yearlyTotal = array_sum(array_column($monthlyDeliveredData, 'total_orders'));
+                                $monthlyYearlyDelivered = array_sum(array_column($monthlyDeliveredData, 'delivered_count'));
+                                $yearlyDeliveredAmount = array_sum(array_column($monthlyDeliveredData, 'delivered_amount'));
+                                $yearlyCancelled = array_sum(array_column($monthlyDeliveredData, 'cancelled_count'));
+                                $yearlyRate = $yearlyTotal > 0 ? round(($monthlyYearlyDelivered / $yearlyTotal) * 100, 1) : 0;
+                            @endphp
+                            <tr>
+                                <td class="px-4 py-3 text-sm text-gray-900">Yearly Total</td>
+                                <td class="px-4 py-3 text-center text-sm text-gray-900">{{ $yearlyTotal }}</td>
+                                <td class="px-4 py-3 text-center">
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                        {{ $monthlyYearlyDelivered }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 text-center text-sm font-bold text-green-700">
+                                    ${{ number_format($yearlyDeliveredAmount, 2) }}
+                                </td>
+                                <td class="px-4 py-3 text-center">
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold {{ $yearlyCancelled > 0 ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-600' }}">
+                                        {{ $yearlyCancelled }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 text-center">
+                                    <span class="text-sm font-bold text-gray-900">{{ $yearlyRate }}%</span>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Yearly View -->
+            <div id="yearlyView" class="delivery-view hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Total Orders</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-green-600 uppercase tracking-wider">Delivered</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-green-700 uppercase tracking-wider">Delivered Amount</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-red-600 uppercase tracking-wider">Cancelled</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Delivery Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @if($yearlyDelivered->count() > 0)
+                                @foreach($yearlyDelivered as $year => $data)
+                                    @php
+                                        $totalOrders = (int)$data->total_orders;
+                                        $deliveryRate = $totalOrders > 0 ? round(((int)$data->delivered_count / $totalOrders) * 100, 1) : 0;
+                                    @endphp
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            {{ $data->year }}
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-700">
+                                            {{ $totalOrders }}
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-center">
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                                {{ $data->delivered_count }}
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-center text-sm font-semibold text-green-700">
+                                            ${{ number_format($data->delivered_amount, 2) }}
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-center">
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold {{ $data->cancelled_count > 0 ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-600' }}">
+                                                {{ $data->cancelled_count }}
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-center">
+                                            <div class="flex items-center justify-center gap-2">
+                                                <div class="w-16 bg-gray-200 rounded-full h-2">
+                                                    <div class="h-2 rounded-full {{ $deliveryRate >= 80 ? 'bg-green-500' : ($deliveryRate >= 50 ? 'bg-yellow-500' : 'bg-red-500') }}"
+                                                        style="width: {{ $deliveryRate }}%"></div>
+                                                </div>
+                                                <span class="text-sm font-medium text-gray-700">{{ $deliveryRate }}%</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @else
+                                <tr>
+                                    <td colspan="6" class="px-4 py-8 text-center text-gray-500">
+                                        <i class="fas fa-inbox text-4xl text-gray-300 mb-2"></i>
+                                        <p>No yearly data available</p>
+                                    </td>
+                                </tr>
+                            @endif
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -610,6 +784,30 @@ if ($diffInSeconds <= 0) {
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
+        // Toggle between monthly and yearly delivery views
+        function showDeliveryView(view) {
+            const monthlyView = document.getElementById('monthlyView');
+            const yearlyView = document.getElementById('yearlyView');
+            const monthlyBtn = document.getElementById('monthlyBtn');
+            const yearlyBtn = document.getElementById('yearlyBtn');
+
+            if (view === 'monthly') {
+                monthlyView.classList.remove('hidden');
+                yearlyView.classList.add('hidden');
+                monthlyBtn.classList.remove('bg-gray-200', 'text-gray-700');
+                monthlyBtn.classList.add('bg-indigo-600', 'text-white');
+                yearlyBtn.classList.remove('bg-indigo-600', 'text-white');
+                yearlyBtn.classList.add('bg-gray-200', 'text-gray-700');
+            } else {
+                monthlyView.classList.add('hidden');
+                yearlyView.classList.remove('hidden');
+                yearlyBtn.classList.remove('bg-gray-200', 'text-gray-700');
+                yearlyBtn.classList.add('bg-indigo-600', 'text-white');
+                monthlyBtn.classList.remove('bg-indigo-600', 'text-white');
+                monthlyBtn.classList.add('bg-gray-200', 'text-gray-700');
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Dashboard loaded, Chart.js available:', typeof Chart !== 'undefined');
 

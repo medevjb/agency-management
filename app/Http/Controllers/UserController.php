@@ -124,7 +124,7 @@ class UserController extends Controller
             })
             ->addColumn('status', function ($user) {
                 $isChecked = $user->is_active ? 'checked' : '';
-                $disabledPermission = ! auth()->user()->hasPermissionTo('manage users') ? 'disabled' : '';
+                $disabledPermission = ! auth()->user()->hasPermissionTo('edit users') ? 'disabled' : '';
 
                 // Color classes based on status
                 $bgColor = $user->is_active ? 'bg-green-600' : 'bg-red-600';
