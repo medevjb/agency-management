@@ -186,7 +186,8 @@ class AdminController extends Controller
 
         $role = Role::create(['name' => $request->name]);
         if ($request->has('permissions')) {
-            $role->syncPermissions($request->permissions);
+            $permissions = Permission::whereIn('id', $request->permissions)->get();
+            $role->syncPermissions($permissions);
         }
 
         return redirect()->route('admin.roles')
@@ -219,7 +220,8 @@ class AdminController extends Controller
             'permissions.*' => 'exists:permissions,id',
         ]);
 
-        $role->syncPermissions($request->permissions ?? []);
+        $permissions = Permission::whereIn('id', $request->permissions ?? [])->get();
+        $role->syncPermissions($permissions);
 
         return redirect()->route('admin.roles')
             ->with('success', 'Role permissions updated successfully.');
