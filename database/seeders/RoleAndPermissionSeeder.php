@@ -18,7 +18,25 @@ class RoleAndPermissionSeeder extends Seeder
 
         // 1. Create Permissions
         $permissions = [
+            // User management
             'manage users',
+            'view users',
+            'create users',
+            'edit users',
+            'delete users',
+            // Order management
+            'manage orders',
+            'view orders',
+            'create orders',
+            'edit orders',
+            'delete orders',
+            // Task management
+            'manage tasks',
+            'view tasks',
+            'create tasks',
+            'edit tasks',
+            'delete tasks',
+            // Project management
             'manage all projects',
             'view all projects',
             'manage team projects',
@@ -26,9 +44,11 @@ class RoleAndPermissionSeeder extends Seeder
             'edit stack projects',
             'view assigned projects',
             'edit assigned tasks',
+            // Team management
             'manage teams',
             'view teams',
             'manage team members',
+            // Tech stack management
             'manage tech stacks',
             'view tech stacks',
             'manage tech stack members',
@@ -44,6 +64,9 @@ class RoleAndPermissionSeeder extends Seeder
 
         $operationManager = Role::firstOrCreate(['name' => 'operation-manager']);
         $operationManager->givePermissionTo([
+            'manage users', 'view users', 'create users', 'edit users', 'delete users',
+            'manage orders', 'view orders', 'create orders', 'edit orders', 'delete orders',
+            'manage tasks', 'view tasks', 'create tasks', 'edit tasks', 'delete tasks',
             'manage all projects', 'view all projects',
             'manage teams', 'view teams', 'manage team members',
             'manage tech stacks', 'view tech stacks', 'manage tech stack members',
@@ -70,14 +93,19 @@ class RoleAndPermissionSeeder extends Seeder
         // Create additional roles with permissions
         $projectManager = Role::firstOrCreate(['name' => 'project-manager']);
         $projectManager->givePermissionTo([
+            'view users',
+            'manage orders', 'view orders', 'create orders', 'edit orders', 'delete orders',
+            'manage tasks', 'view tasks', 'create tasks', 'edit tasks', 'delete tasks',
             'manage all projects', 'view all projects',
             'manage team projects', 'view team projects',
-            'manage teams', 'view teams',
-            'manage team members',
+            'manage teams', 'view teams', 'manage team members',
         ]);
 
         $developer = Role::firstOrCreate(['name' => 'developer']);
         $developer->givePermissionTo([
+            'view users',
+            'view orders',
+            'view tasks',
             'view all projects',
             'view team projects',
             'edit assigned tasks',
@@ -86,6 +114,9 @@ class RoleAndPermissionSeeder extends Seeder
 
         $designer = Role::firstOrCreate(['name' => 'designer']);
         $designer->givePermissionTo([
+            'view users',
+            'view orders',
+            'view tasks',
             'view all projects',
             'view team projects',
             'edit assigned tasks',
@@ -94,6 +125,9 @@ class RoleAndPermissionSeeder extends Seeder
 
         $qa = Role::firstOrCreate(['name' => 'qa']);
         $qa->givePermissionTo([
+            'view users',
+            'view orders',
+            'view tasks',
             'view all projects',
             'view team projects',
             'edit assigned tasks',
