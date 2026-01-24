@@ -70,7 +70,7 @@
                         <!-- Stack Leader -->
                         <div>
                             <h2 class="text-lg font-bold text-gray-900 mb-6 flex items-center">
-                                <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center mr-3">
+                                <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
                                     <i class="fas fa-user-tie text-white"></i>
                                 </div>
                                 Stack Leader
@@ -80,46 +80,40 @@
                                 <label for="stack_leader_id" class="block text-sm font-semibold text-gray-700 mb-2">
                                     <i class="fas fa-crown mr-2 text-purple-500"></i>Select Leader
                                 </label>
-                                <div class="relative">
-                                    <input type="text" id="leaderSearch"
-                                           class="w-full border border-gray-300 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                                           placeholder="Search for a team leader..."
-                                           autocomplete="off">
-                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-search text-gray-400"></i>
-                                    </div>
-                                </div>
-                                <div id="leaderSearchResults" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg max-h-60 overflow-y-auto hidden">
-                                </div>
-                                <select id="stack_leader_id" name="stack_leader_id" class="hidden">
-                                    <option value="">Select a stack leader</option>
-                                    @foreach($users as $user)
-                                        <option value="{{ $user->id }}" data-name="{{ $user->name }}" data-employee-id="{{ $user->employee_id }}" {{ old('stack_leader_id', $techStack->stack_leader_id) == $user->id ? 'selected' : '' }}>
-                                            {{ $user->name }} ({{ $user->employee_id }})
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <div id="selectedLeader" class="mt-3">
-                                    @if($techStack->stack_leader_id)
-                                        @php $currentLeader = $users->firstWhere('id', $techStack->stack_leader_id) @endphp
-                                        @if($currentLeader)
-                                            <div class="flex items-center justify-between p-4 bg-purple-50 border border-purple-200 rounded-xl">
-                                                <div class="flex items-center">
-                                                    <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center mr-3">
-                                                        <i class="fas fa-user text-white text-sm"></i>
-                                                    </div>
-                                                    <div>
-                                                        <p class="font-semibold text-gray-900" id="selectedLeaderName">{{ $currentLeader->name }}</p>
-                                                        <p class="text-sm text-gray-600" id="selectedLeaderId">{{ $currentLeader->employee_id }}</p>
-                                                    </div>
-                                                </div>
-                                                <button type="button" onclick="clearLeader()" class="text-red-600 hover:text-red-800 transition-colors">
-                                                    <i class="fas fa-times-circle"></i>
-                                                </button>
+
+                                @if(auth()->user()->hasRole('team-leader'))
+                                    <!-- For team leaders, show selected user info (auto-assigned) -->
+                                    @php $currentLeader = $users->firstWhere('id', $techStack->stack_leader_id) ?? auth()->user(); @endphp
+                                    <div class="p-4 bg-purple-50 border border-purple-200 rounded-xl">
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                                <span class="text-white font-semibold text-sm">{{ strtoupper(substr($currentLeader->name, 0, 1)) }}</span>
                                             </div>
-                                        @endif
-                                    @endif
-                                </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="font-semibold text-gray-900 truncate">{{ $currentLeader->name }}</p>
+                                                <p class="text-sm text-gray-600">{{ $currentLeader->employee_id }}</p>
+                                            </div>
+                                            <input type="hidden" name="stack_leader_id" value="{{ $currentLeader->id }}">
+                                        </div>
+                                    </div>
+                                @else
+                                    <!-- For admins and managers, dropdown with all users -->
+                                    <div class="relative">
+                                        <select id="stack_leader_id" name="stack_leader_id"
+                                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all appearance-none bg-white">
+                                            <option value="">Select a stack leader</option>
+                                            @foreach($users as $user)
+                                                <option value="{{ $user->id }}" {{ old('stack_leader_id', $techStack->stack_leader_id) == $user->id ? 'selected' : '' }}>
+                                                    {{ $user->name }} ({{ $user->employee_id }})
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                            <i class="fas fa-chevron-down text-gray-400"></i>
+                                        </div>
+                                    </div>
+                                @endif
+
                                 @error('stack_leader_id')
                                     <p class="mt-2 text-sm text-red-600 flex items-center">
                                         <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
@@ -131,17 +125,17 @@
                         <!-- Stack Members -->
                         <div>
                             <h2 class="text-lg font-bold text-gray-900 mb-6 flex items-center">
-                                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center mr-3">
+                                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
                                     <i class="fas fa-users text-white"></i>
                                 </div>
                                 Stack Members
                             </h2>
 
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <label for="memberSearch" class="block text-sm font-semibold text-gray-700 mb-2">
                                     <i class="fas fa-user-plus mr-2 text-blue-500"></i>Search & Add Members
                                 </label>
-                                <div class="relative mb-3">
+                                <div class="relative">
                                     <input type="text" id="memberSearch"
                                            class="w-full border border-gray-300 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                            placeholder="Search for team members..."
@@ -150,7 +144,7 @@
                                         <i class="fas fa-search text-gray-400"></i>
                                     </div>
                                 </div>
-                                <div id="memberSearchResults" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg max-h-60 overflow-y-auto hidden">
+                                <div id="memberSearchResults" class="relative z-10 mt-1 bg-white border border-gray-300 rounded-xl shadow-lg max-h-60 overflow-y-auto hidden">
                                 </div>
 
                                 <!-- Selected Members -->
@@ -204,93 +198,7 @@
 @push('scripts')
 <script>
 const allUsers = @json($users);
-let selectedLeaderId = '{{ old('stack_leader_id', $techStack->stack_leader_id) }}';
-let selectedMemberIds = {{ old('members', $techStack->users->pluck('id')->toArray()) } || [];
-
-// Leader Search Functionality
-const leaderSearch = document.getElementById('leaderSearch');
-const leaderSearchResults = document.getElementById('leaderSearchResults');
-const stackLeaderId = document.getElementById('stack_leader_id');
-const selectedLeader = document.getElementById('selectedLeader');
-
-leaderSearch.addEventListener('input', function() {
-    const searchTerm = this.value.toLowerCase();
-
-    if (searchTerm.length < 2) {
-        leaderSearchResults.classList.add('hidden');
-        return;
-    }
-
-    const filtered = allUsers.filter(user =>
-        user.name.toLowerCase().includes(searchTerm) ||
-        user.employee_id.toLowerCase().includes(searchTerm)
-    );
-
-    if (filtered.length === 0) {
-        leaderSearchResults.innerHTML = '<div class="p-4 text-gray-500 text-center">No users found</div>';
-    } else {
-        leaderSearchResults.innerHTML = filtered.map(user => `
-            <div class="search-result-item p-4 border-b border-gray-100 last:border-b-0" onclick="selectLeader(${user.id}, '${user.name}', '${user.employee_id}')">
-                <div class="flex items-center">
-                    <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
-                        <span class="text-white font-semibold text-sm">${user.name.charAt(0)}</span>
-                    </div>
-                    <div>
-                        <p class="font-semibold text-gray-900">${user.name}</p>
-                        <p class="text-sm text-gray-600">${user.employee_id}</p>
-                    </div>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    leaderSearchResults.classList.remove('hidden');
-});
-
-leaderSearch.addEventListener('focus', function() {
-    if (this.value.length >= 2) {
-        leaderSearchResults.classList.remove('hidden');
-    }
-});
-
-document.addEventListener('click', function(e) {
-    if (!leaderSearch.contains(e.target) && !leaderSearchResults.contains(e.target)) {
-        leaderSearchResults.classList.add('hidden');
-    }
-});
-
-function selectLeader(id, name, employeeId) {
-    selectedLeaderId = id;
-    stackLeaderId.value = id;
-    leaderSearch.value = name;
-    leaderSearchResults.classList.add('hidden');
-
-    document.getElementById('selectedLeaderName').textContent = name;
-    document.getElementById('selectedLeaderId').textContent = employeeId;
-    selectedLeader.innerHTML = `
-        <div class="flex items-center justify-between p-4 bg-purple-50 border border-purple-200 rounded-xl">
-            <div class="flex items-center">
-                <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center mr-3">
-                    <i class="fas fa-user text-white text-sm"></i>
-                </div>
-                <div>
-                    <p class="font-semibold text-gray-900">${name}</p>
-                    <p class="text-sm text-gray-600">${employeeId}</p>
-                </div>
-            </div>
-            <button type="button" onclick="clearLeader()" class="text-red-600 hover:text-red-800 transition-colors">
-                <i class="fas fa-times-circle"></i>
-            </button>
-        </div>
-    `;
-}
-
-function clearLeader() {
-    selectedLeaderId = '';
-    stackLeaderId.value = '';
-    leaderSearch.value = '';
-    selectedLeader.innerHTML = '';
-}
+let selectedMemberIds = {{ old('members', $techStack->users->pluck('id')->toArray()) }};
 
 // Member Search Functionality
 const memberSearch = document.getElementById('memberSearch');
@@ -315,13 +223,13 @@ memberSearch.addEventListener('input', function() {
         memberSearchResults.innerHTML = '<div class="p-4 text-gray-500 text-center">No users found</div>';
     } else {
         memberSearchResults.innerHTML = filtered.map(user => `
-            <div class="search-result-item p-4 border-b border-gray-100 last:border-b-0" onclick="addMember(${user.id}, '${user.name}', '${user.employee_id}')">
+            <div class="search-result-item p-4 border-b border-gray-100 last:border-b-0 cursor-pointer hover:bg-gray-50" onclick="addMember(${user.id}, '${user.name.replace(/'/g, "\\'")}', '${user.employee_id}')">
                 <div class="flex items-center">
-                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mr-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
                         <span class="text-white font-semibold text-sm">${user.name.charAt(0)}</span>
                     </div>
-                    <div>
-                        <p class="font-semibold text-gray-900">${user.name}</p>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-gray-900 truncate">${user.name}</p>
                         <p class="text-sm text-gray-600">${user.employee_id}</p>
                     </div>
                 </div>
@@ -372,15 +280,15 @@ function renderSelectedMembers() {
         return `
             <div class="member-chip flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-xl">
                 <div class="flex items-center">
-                    <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center mr-3">
+                    <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
                         <span class="text-white font-semibold text-xs">${user.name.charAt(0)}</span>
                     </div>
-                    <div>
-                        <p class="font-medium text-gray-900 text-sm">${user.name}</p>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-medium text-gray-900 text-sm truncate">${user.name}</p>
                         <p class="text-xs text-gray-600">${user.employee_id}</p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-2">
+                <div class="flex items-center space-x-2 flex-shrink-0">
                     <input type="checkbox" name="members[]" value="${user.id}" checked class="sr-only">
                     <button type="button" onclick="removeMember(${user.id})" class="text-red-600 hover:text-red-800 transition-colors">
                         <i class="fas fa-times"></i>
