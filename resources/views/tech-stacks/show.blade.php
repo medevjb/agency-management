@@ -55,7 +55,7 @@
                         <div class="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl">
                             <div class="flex items-center">
                                 <div class="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-4 shadow-md">
-                                    <span class="text-white font-bold text-xl">{{ $techStack->stackLeader->name->charAt(0) }}</span>
+                                    <span class="text-white font-bold text-xl">{{ strtoupper(substr($techStack->stackLeader->name, 0, 1)) }}</span>
                                 </div>
                                 <div>
                                     <p class="font-bold text-gray-900 text-lg">{{ $techStack->stackLeader->name }}</p>
@@ -107,7 +107,7 @@
                                 <div class="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-xl hover:shadow-md transition-all">
                                     <div class="flex items-center">
                                         <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mr-4 shadow-md">
-                                            <span class="text-white font-bold">{{ $member->name->charAt(0) }}</span>
+                                            <span class="text-white font-bold">{{ strtoupper(substr($member->name, 0, 1)) }}</span>
                                         </div>
                                         <div>
                                             <p class="font-bold text-gray-900">{{ $member->name }}</p>
@@ -325,7 +325,7 @@
                                    class="mr-3 w-4 h-4 text-blue-600 focus:ring-blue-500 rounded">
                             <div class="flex items-center flex-1">
                                 <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mr-3">
-                                    <span class="text-white font-semibold text-sm">{{ $user->name->charAt(0) }}</span>
+                                    <span class="text-white font-semibold text-sm">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
                                 </div>
                                 <div>
                                     <div class="font-medium text-gray-900">{{ $user->name }}</div>

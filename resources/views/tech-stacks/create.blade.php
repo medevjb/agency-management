@@ -71,7 +71,7 @@
                             @endif
                         </div>
 
-                        <div>
+                        <div class="mt-4">
                             <label for="description" class="block text-sm font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-align-left mr-2 text-indigo-500"></i>Description
                             </label>
