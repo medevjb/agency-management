@@ -102,37 +102,20 @@
                                     <i class="fas fa-crown mr-2 text-purple-500"></i>Select Leader
                                 </label>
 
-                                @if(auth()->user()->hasRole('team-leader'))
-                                    <!-- For team leaders, show selected user info (auto-assigned) -->
-                                    <div class="p-4 bg-purple-50 border border-purple-200 rounded-xl">
-                                        <div class="flex items-center">
-                                            <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                                                <span class="text-white font-semibold text-sm">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
-                                            </div>
-                                            <div class="flex-1 min-w-0">
-                                                <p class="font-semibold text-gray-900 truncate">{{ auth()->user()->name }}</p>
-                                                <p class="text-sm text-gray-600">{{ auth()->user()->employee_id }}</p>
-                                            </div>
-                                            <input type="hidden" name="stack_leader_id" value="{{ auth()->user()->id }}">
-                                        </div>
+                                <div class="relative">
+                                    <select id="stack_leader_id" name="stack_leader_id"
+                                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all appearance-none bg-white">
+                                        <option value="">Select a stack leader</option>
+                                        @foreach($users as $user)
+                                            <option value="{{ $user->id }}" {{ old('stack_leader_id') == $user->id ? 'selected' : '' }}>
+                                                {{ $user->name }} ({{ $user->employee_id }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-chevron-down text-gray-400"></i>
                                     </div>
-                                @else
-                                    <!-- For admins and managers, dropdown with search -->
-                                    <div class="relative">
-                                        <select id="stack_leader_id" name="stack_leader_id"
-                                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all appearance-none bg-white">
-                                            <option value="">Select a stack leader</option>
-                                            @foreach($users as $user)
-                                                <option value="{{ $user->id }}" {{ old('stack_leader_id') == $user->id ? 'selected' : '' }}>
-                                                    {{ $user->name }} ({{ $user->employee_id }})
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                            <i class="fas fa-chevron-down text-gray-400"></i>
-                                        </div>
-                                    </div>
-                                @endif
+                                </div>
 
                                 @error('stack_leader_id')
                                     <p class="mt-2 text-sm text-red-600 flex items-center">
