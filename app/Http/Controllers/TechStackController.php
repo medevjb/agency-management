@@ -40,9 +40,7 @@ class TechStackController extends Controller
                         // Tech stacks created by this team leader
                         $query->where('stack_leader_id', $user->id)
                             // OR tech stacks assigned to their team
-                            ->orWhereHas('teams', function ($q) use ($user) {
-                                $q->where('teams.id', $user->team_id);
-                            });
+                            ->orWhere('team_id', $user->team_id);
                     });
                 } elseif ($user->hasRole('stack-leader')) {
                     // Stack leaders see tech stacks they lead
@@ -50,9 +48,7 @@ class TechStackController extends Controller
                 } else {
                     // Team members see tech stacks assigned to their team
                     if ($user->team_id) {
-                        $q->whereHas('teams', function ($query) use ($user) {
-                            $query->where('teams.id', $user->team_id);
-                        });
+                        $q->where('team_id', $user->team_id);
                     } else {
                         $q->whereRaw('1 = 0');
                     }
@@ -84,17 +80,13 @@ class TechStackController extends Controller
                 if ($user->hasRole('team-leader')) {
                     $q->where(function ($query) use ($user) {
                         $query->where('stack_leader_id', $user->id)
-                            ->orWhereHas('teams', function ($q) use ($user) {
-                                $q->where('teams.id', $user->team_id);
-                            });
+                            ->orWhere('team_id', $user->team_id);
                     });
                 } elseif ($user->hasRole('stack-leader')) {
                     $q->where('stack_leader_id', $user->id);
                 } else {
                     if ($user->team_id) {
-                        $q->whereHas('teams', function ($query) use ($user) {
-                            $query->where('teams.id', $user->team_id);
-                        });
+                        $q->where('team_id', $user->team_id);
                     } else {
                         $q->whereRaw('1 = 0');
                     }
