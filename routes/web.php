@@ -65,6 +65,9 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
 
     // Bug Reports routes
+    Route::get('/team-members', [UserController::class, 'teamMembers'])->name('users.team-members');
+    Route::patch('/team-members/{teamMember}', [UserController::class, 'updateTeamMember'])->name('users.update-team-member');
+
     Route::prefix('bug-reports')->name('bug-reports.')->group(function () {
         Route::get('/', [BugReportController::class, 'index'])->name('index');
         Route::get('/create', [BugReportController::class, 'create'])->name('create');

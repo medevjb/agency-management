@@ -266,11 +266,20 @@
                                 <i class="fas fa-tachometer-alt w-5 mr-2"></i>
                                 Admin Dashboard
                             </a>
-                            <a href="{{ route('users.index') }}"
-                                class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('users.*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
-                                <i class="fas fa-users-cog w-5 mr-2"></i>
-                                Manage Users
-                            </a>
+                            @role('admin|operation-manager')
+                                <a href="{{ route('users.index') }}"
+                                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('users.index') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
+                                    <i class="fas fa-users-cog w-5 mr-2"></i>
+                                    Manage All Users
+                                </a>
+                            @endrole
+                            @role('team-leader|stack-leader|project-manager')
+                                <a href="{{ route('users.team-members') }}"
+                                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('users.team-members') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
+                                    <i class="fas fa-users w-5 mr-2"></i>
+                                    My Team Members
+                                </a>
+                            @endrole
                             <a href="{{ route('admin.roles') }}"
                                 class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('admin.roles*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
                                 <i class="fas fa-key w-5 mr-2"></i>

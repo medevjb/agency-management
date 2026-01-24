@@ -6,6 +6,7 @@ use App\Http\Requests\StoreUserRequest;
 use App\Models\Team;
 use App\Models\TechStack;
 use App\Models\User;
+use App\Services\TeamMemberService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,13 @@ class UserController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['auth', 'role:admin']);
+        // Allow admin, operation manager, project manager, team leader, and stack leader
+        $this->middleware(['auth'])
+            ->only(['teamMembers', 'updateTeamMember']);
+
+        // Admin-only routes
+        $this->middleware(['auth', 'role:admin'])
+            ->except(['teamMembers', 'updateTeamMember']);
     }
 
     /**
@@ -971,5 +978,51 @@ class UserController extends Controller
         } while (User::where('employee_id', $employeeId)->exists());
 
         return $employeeId;
+    }
+
+    /**
+     * Display team members for team leaders and stack leaders.
+     */
+    public function teamMembers(Request $request): \Illuminate\View\View
+    {
+        $user = auth()->user();
+
+        // Get team members based on user role
+        $members = TeamMemberService::getTeamMembersForView($user);
+
+        return view('users.team-members', compact('members'));
+    }
+
+    /**
+     * Update team member information (for team leaders and stack leaders).
+     */
+    public function updateTeamMember(Request $request, User $teamMember): \Illuminate\Http\RedirectResponse
+    {
+        $user = auth()->user();
+
+        // Check if user can manage this team member
+        if (! TeamMemberService::canManageUser($user, $teamMember)) {
+            return back()->with('error', 'You are not authorized to manage this user.');
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,'.$teamMember->id,
+            'phone' => 'nullable|string|max:20',
+            'position' => 'nullable|string|max:255',
+            'department' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:1000',
+        ]);
+
+        $teamMember->update($request->only([
+            'name',
+            'email',
+            'phone',
+            'position',
+            'department',
+            'address',
+        ]));
+
+        return back()->with('success', 'Team member updated successfully.');
     }
 }
