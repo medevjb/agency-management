@@ -66,6 +66,8 @@ Route::middleware(['auth'])->group(function () {
 
     // Bug Reports routes
     Route::get('/team-members', [UserController::class, 'teamMembers'])->name('users.team-members');
+    Route::get('/team-members/create', [UserController::class, 'createTeamMember'])->name('users.create-team-member');
+    Route::post('/team-members', [UserController::class, 'storeTeamMember'])->name('users.store-team-member');
     Route::patch('/team-members/{teamMember}', [UserController::class, 'updateTeamMember'])->name('users.update-team-member');
 
     Route::prefix('bug-reports')->name('bug-reports.')->group(function () {

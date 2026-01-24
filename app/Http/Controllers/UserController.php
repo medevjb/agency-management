@@ -21,11 +21,11 @@ class UserController extends Controller
     {
         // Allow admin, operation manager, project manager, team leader, and stack leader
         $this->middleware(['auth'])
-            ->only(['teamMembers', 'updateTeamMember']);
+            ->only(['teamMembers', 'updateTeamMember', 'createTeamMember', 'storeTeamMember']);
 
         // Admin-only routes
         $this->middleware(['auth', 'role:admin'])
-            ->except(['teamMembers', 'updateTeamMember']);
+            ->except(['teamMembers', 'updateTeamMember', 'createTeamMember', 'storeTeamMember']);
     }
 
     /**
@@ -1024,5 +1024,87 @@ class UserController extends Controller
         ]));
 
         return back()->with('success', 'Team member updated successfully.');
+    }
+
+    /**
+     * Show the form for creating a new team member.
+     */
+    public function createTeamMember(Request $request): \Illuminate\View\View
+    {
+        $user = auth()->user();
+
+        // Get roles that can be assigned based on current user's role
+        $assignableRoles = collect();
+        if ($user->hasRole(['admin', 'operation-manager'])) {
+            $assignableRoles = \Spatie\Permission\Models\Role::all();
+        } elseif ($user->hasRole('project-manager')) {
+            $assignableRoles = \Spatie\Permission\Models\Role::whereIn('name', ['developer', 'designer', 'qa', 'team-member'])->get();
+        } elseif ($user->hasRole('team-leader')) {
+            $assignableRoles = \Spatie\Permission\Models\Role::whereIn('name', ['developer', 'designer', 'qa', 'team-member'])->get();
+        } elseif ($user->hasRole('stack-leader')) {
+            $assignableRoles = \Spatie\Permission\Models\Role::whereIn('name', ['developer', 'designer', 'qa', 'team-member'])->get();
+        }
+
+        // Get teams if user is team leader
+        $teams = collect();
+        $defaultTeam = null;
+        if ($user->hasRole('team-leader') && $user->team_id) {
+            $teams = \App\Models\Team::where('id', $user->team_id)->get();
+            $defaultTeam = $user->team_id;
+        } elseif ($user->hasRole(['admin', 'operation-manager'])) {
+            $teams = \App\Models\Team::all();
+        }
+
+        return view('users.create-team-member', compact('assignableRoles', 'teams', 'defaultTeam'));
+    }
+
+    /**
+     * Store a newly created team member.
+     */
+    public function storeTeamMember(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        $user = auth()->user();
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+            'phone' => 'nullable|string|max:20',
+            'position' => 'nullable|string|max:255',
+            'department' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:1000',
+            'role' => 'required|string|exists:roles,name',
+        ]);
+
+        // Generate unique employee ID
+        $employeeId = $this->generateUniqueEmployeeId();
+
+        // Create user
+        $newUser = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'employee_id' => $employeeId,
+            'phone' => $request->phone,
+            'position' => $request->position,
+            'department' => $request->department,
+            'address' => $request->address,
+            'is_active' => true,
+            'email_verified_at' => now(),
+        ]);
+
+        // Assign role
+        $newUser->assignRole($request->role);
+
+        // Assign to team (auto-assign to creator's team if team leader)
+        if ($user->hasRole('team-leader') && $user->team_id) {
+            $newUser->update(['team_id' => $user->team_id]);
+        } elseif ($request->filled('team_id') && $user->hasRole(['admin', 'operation-manager'])) {
+            $newUser->update(['team_id' => $request->team_id]);
+        }
+
+        return redirect()
+            ->route('users.team-members')
+            ->with('success', 'Team member created successfully.');
     }
 }
