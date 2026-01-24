@@ -151,25 +151,35 @@
                                 Stack Members
                             </h2>
 
-                            <div>
+                            <div id="memberSelectorContainer">
                                 <label for="memberSearch" class="block text-sm font-semibold text-gray-700 mb-2">
                                     <i class="fas fa-user-plus mr-2 text-blue-500"></i>Search & Add Members
                                 </label>
-                                <div class="relative">
-                                    <input type="text" id="memberSearch"
-                                           class="w-full border border-gray-300 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                           placeholder="Search for team members..."
-                                           autocomplete="off">
-                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-search text-gray-400"></i>
-                                    </div>
-                                </div>
-                                <div id="memberSearchResults" class="relative z-10 mt-1 bg-white border border-gray-300 rounded-xl shadow-lg max-h-60 overflow-y-auto hidden">
+
+                                <!-- Selected Members Display -->
+                                <div id="selectedMembersDisplay" class="border border-gray-300 rounded-xl p-3 min-h-[60px] bg-gray-50 mb-2">
+                                    <span class="text-gray-400 text-sm">No members selected</span>
                                 </div>
 
-                                <!-- Selected Members -->
-                                <div id="selectedMembers" class="mt-4 space-y-2 max-h-64 overflow-y-auto">
+                                <!-- Hidden inputs for selected members will be added dynamically -->
+
+                                <!-- Search and Add Members -->
+                                <div class="relative">
+                                    <input type="text" id="memberSearch"
+                                           class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                           placeholder="Search members by name or email..."
+                                           autocomplete="off">
+
+                                    <!-- Dropdown List -->
+                                    <div id="memberDropdown" class="hidden absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                                        <!-- Members will be populated here by JavaScript -->
+                                    </div>
                                 </div>
+
+                                <p class="mt-1 text-xs text-gray-500">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Start typing to search and add team members
+                                </p>
                                 @error('members')
                                     <p class="mt-2 text-sm text-red-600 flex items-center">
                                         <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
@@ -217,176 +227,226 @@
 
 @push('scripts')
 <script>
-const allUsers = @json($users);
-let selectedMemberIds = [];
-let currentTeamMembers = [];
+(function() {
+    // State
+    let selectedMembers = [];
+    let searchTimeout = null;
+    let currentMembers = []; // Store currently displayed members
 
-// Team selection handler (only for admin/managers)
-const teamSelect = document.getElementById('team_id');
-if (teamSelect) {
-    teamSelect.addEventListener('change', function() {
-        const teamId = this.value;
-        if (teamId) {
-            fetchTeamMembers(teamId);
+    // DOM Elements
+    const searchInput = document.getElementById('memberSearch');
+    const dropdown = document.getElementById('memberDropdown');
+    const selectedDisplay = document.getElementById('selectedMembersDisplay');
+
+    // Get team ID
+    const teamId = {{ auth()->user()->hasRole('team-leader') ? auth()->user()->team_id : 'null' }};
+    const teamSelect = document.getElementById('team_id');
+
+    // Fetch team members from server with search
+    async function fetchMembers(search = '') {
+        try {
+            const currentTeamId = teamId || (teamSelect ? teamSelect.value : null);
+
+            if (!currentTeamId) {
+                dropdown.innerHTML = '<div class="px-4 py-3 text-sm text-yellow-600 text-center"><i class="fas fa-exclamation-triangle mr-2"></i>Please select a team first</div>';
+                return [];
+            }
+
+            const excludeIds = selectedMembers.map(m => m.id);
+            const params = new URLSearchParams();
+            if (search) {
+                params.append('search', search);
+            }
+            if (excludeIds.length > 0) {
+                params.append('exclude', excludeIds.join(','));
+            }
+
+            const response = await axios.get(`/tech-stacks/search-members/${currentTeamId}?${params}`);
+            currentMembers = response.data.users;
+            return currentMembers;
+        } catch (error) {
+            console.error('Error fetching members:', error);
+            return [];
+        }
+    }
+
+    // Render dropdown with members
+    function renderDropdown(members) {
+        if (members.length === 0) {
+            dropdown.innerHTML = '<div class="px-4 py-3 text-sm text-gray-500 text-center">No team members found</div>';
         } else {
-            currentTeamMembers = [];
-            selectedMemberIds = [];
-            renderSelectedMembers();
+            dropdown.innerHTML = members.map(member => `
+                <div class="member-option flex items-center gap-3 p-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0 transition-colors"
+                     data-member-id="${member.id}"
+                     data-member-name="${member.name}"
+                     data-member-email="${member.email}"
+                     data-member-employee-id="${member.employee_id}">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                        ${member.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-0.5 flex-wrap">
+                            <div class="font-semibold text-sm text-gray-900 truncate">${member.name}</div>
+                            <span class="text-xs text-white bg-blue-500 px-2 py-0.5 rounded-full flex-shrink-0">${member.employee_id || 'N/A'}</span>
+                            ${member.position ? `<span class="text-xs text-gray-600 px-2 py-0.5 rounded-full bg-gray-100 flex-shrink-0">${member.position}</span>` : ''}
+                        </div>
+                        <div class="text-xs text-gray-500 truncate">
+                            ${member.email}
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 hover:bg-blue-200 flex items-center justify-center transition-colors">
+                            <i class="fas fa-plus text-blue-600 text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Add click handlers
+            dropdown.querySelectorAll('.member-option').forEach(option => {
+                option.addEventListener('click', function(e) {
+                    e.stopPropagation(); // Prevent closing dropdown
+                    const member = {
+                        id: parseInt(this.dataset.memberId),
+                        name: this.dataset.memberName,
+                        email: this.dataset.memberEmail,
+                        employee_id: this.dataset.memberEmployeeId
+                    };
+                    addMember(member);
+                });
+            });
+        }
+    }
+
+    // Add member to selected list
+    function addMember(member) {
+        if (!selectedMembers.find(m => m.id === member.id)) {
+            selectedMembers.push(member);
+            updateSelectedDisplay();
+
+            // Refresh search results but keep dropdown open
+            if (searchInput.value.trim()) {
+                searchMembers(searchInput.value);
+            } else {
+                // Just re-render current members excluding selected
+                const availableMembers = currentMembers.filter(m => !selectedMembers.find(s => s.id === m.id));
+                renderDropdown(availableMembers);
+            }
+        }
+    }
+
+    // Remove member from selected list
+    function removeMember(memberId) {
+        selectedMembers = selectedMembers.filter(m => m.id !== memberId);
+        updateSelectedDisplay();
+
+        // Refresh search results
+        if (searchInput.value.trim()) {
+            searchMembers(searchInput.value);
+        } else {
+            // Fetch fresh list
+            fetchMembers('').then(members => renderDropdown(members));
+        }
+    }
+
+    // Update selected members display
+    function updateSelectedDisplay() {
+        if (selectedMembers.length === 0) {
+            selectedDisplay.innerHTML = '<span class="text-gray-400 text-sm">No members selected</span>';
+        } else {
+            selectedDisplay.innerHTML = selectedMembers.map(member => `
+                <span class="inline-flex items-center gap-1 px-3 py-1 m-1 bg-blue-100 text-blue-800 rounded-lg text-sm">
+                    <span>${member.name}</span>
+                    <button type="button" class="remove-member-btn hover:text-red-600 transition-colors" data-member-id="${member.id}">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                </span>
+            `).join('');
+
+            // Add click handlers for remove buttons
+            selectedDisplay.querySelectorAll('.remove-member-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const memberId = parseInt(this.dataset.memberId);
+                    removeMember(memberId);
+                });
+            });
+        }
+
+        // Update hidden inputs
+        const container = document.getElementById('memberSelectorContainer');
+        const oldInputs = container.querySelectorAll('input[name="members[]"]');
+        oldInputs.forEach(input => input.remove());
+
+        // Add new inputs
+        selectedMembers.forEach(member => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'members[]';
+            input.value = member.id;
+            container.appendChild(input);
+        });
+    }
+
+    // Search and display members (debounced)
+    function searchMembers(query) {
+        // Clear previous timeout
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+
+        // Debounce search
+        searchTimeout = setTimeout(async () => {
+            const members = await fetchMembers(query);
+            renderDropdown(members);
+        }, 300);
+    }
+
+    // Event Listeners
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim();
+
+        // Always show dropdown when typing or focused
+        dropdown.classList.remove('hidden');
+
+        // Clear previous timeout
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+
+        // Debounce and fetch members
+        searchTimeout = setTimeout(async () => {
+            const members = await fetchMembers(query);
+            renderDropdown(members);
+        }, 300);
+    });
+
+    searchInput.addEventListener('focus', async function() {
+        // Show dropdown when focused - load default members
+        dropdown.classList.remove('hidden');
+        const members = await fetchMembers('');
+        renderDropdown(members);
+    });
+
+    // Team selection change handler (for admin/managers)
+    if (teamSelect) {
+        teamSelect.addEventListener('change', function() {
+            // Clear selected members when team changes
+            selectedMembers = [];
+            updateSelectedDisplay();
+            dropdown.classList.add('hidden');
+        });
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!dropdown.contains(e.target) && e.target !== searchInput) {
+            dropdown.classList.add('hidden');
         }
     });
-}
 
-@php
-    // For team leaders, auto-load their team members
-    if(auth()->user()->hasRole('team-leader') && auth()->user()->team_id) {
-        echo "const initialTeamId = ".auth()->user()->team_id.";";
-    } else {
-        echo "const initialTeamId = null;";
-    }
-@endphp
-
-// Fetch team members via AJAX
-async function fetchTeamMembers(teamId, search = '') {
-    try {
-        const excludeIds = selectedMemberIds;
-        const params = new URLSearchParams();
-        if (search) {
-            params.append('search', search);
-        }
-        if (excludeIds.length > 0) {
-            params.append('exclude', excludeIds.join(','));
-        }
-
-        const response = await axios.get(`/tech-stacks/search-members/${teamId}?${params}`);
-        currentTeamMembers = response.data.users;
-        renderMemberDropdown(currentTeamMembers);
-    } catch (error) {
-        console.error('Error fetching team members:', error);
-        currentTeamMembers = [];
-    }
-}
-
-// Render member dropdown
-function renderMemberDropdown(users) {
-    const memberSearchResults = document.getElementById('memberSearchResults');
-
-    if (users.length === 0) {
-        memberSearchResults.innerHTML = '<div class="p-4 text-gray-500 text-center">No team members found</div>';
-    } else {
-        memberSearchResults.innerHTML = users.map(user => `
-            <div class="search-result-item p-4 border-b border-gray-100 last:border-b-0 cursor-pointer hover:bg-gray-50" onclick="addMember(${user.id}, '${user.name.replace(/'/g, "\\'")}', '${user.employee_id}')">
-                <div class="flex items-center">
-                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                        <span class="text-white font-semibold text-sm">${user.name.charAt(0)}</span>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="font-semibold text-gray-900 truncate">${user.name}</p>
-                        <p class="text-sm text-gray-600">${user.employee_id}</p>
-                        ${user.position ? `<p class="text-xs text-blue-600 mt-0.5">${user.position}</p>` : ''}
-                    </div>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    memberSearchResults.classList.remove('hidden');
-}
-
-// Member Search Functionality
-const memberSearch = document.getElementById('memberSearch');
-const memberSearchResults = document.getElementById('memberSearchResults');
-const selectedMembersDiv = document.getElementById('selectedMembers');
-
-let searchTimeout = null;
-
-memberSearch.addEventListener('input', function() {
-    const searchTerm = this.value;
-    const teamId = {{ auth()->user()->hasRole('team-leader') ? auth()->user()->team_id : 'document.getElementById("team_id").value'}};
-
-    clearTimeout(searchTimeout);
-
-    searchTimeout = setTimeout(() => {
-        fetchTeamMembers(teamId, searchTerm);
-    }, 300);
-});
-
-memberSearch.addEventListener('focus', function() {
-    const teamId = {{ auth()->user()->hasRole('team-leader') ? auth()->user()->team_id : 'document.getElementById("team_id").value'}};
-    if (teamId && this.value.length >= 2) {
-        fetchTeamMembers(teamId, this.value);
-    } else if (teamId && this.value.length === 0) {
-        fetchTeamMembers(teamId, '');
-    }
-});
-
-document.addEventListener('click', function(e) {
-    if (!memberSearch.contains(e.target) && !memberSearchResults.contains(e.target)) {
-        memberSearchResults.classList.add('hidden');
-    }
-});
-
-function addMember(id, name, employeeId) {
-    if (selectedMemberIds.includes(id)) return;
-
-    selectedMemberIds.push(id);
-    memberSearch.value = '';
-    memberSearchResults.classList.add('hidden');
-
-    renderSelectedMembers();
-}
-
-function removeMember(id) {
-    selectedMemberIds = selectedMemberIds.filter(memberId => memberId !== id);
-    renderSelectedMembers();
-
-    // Refresh dropdown to show removed member
-    const teamId = {{ auth()->user()->hasRole('team-leader') ? auth()->user()->team_id : 'document.getElementById("team_id").value'}};
-    if (teamId) {
-        fetchTeamMembers(teamId, memberSearch.value);
-    }
-}
-
-function renderSelectedMembers() {
-    if (selectedMemberIds.length === 0) {
-        selectedMembersDiv.innerHTML = '<p class="text-sm text-gray-500 italic">No members selected yet</p>';
-        return;
-    }
-
-    selectedMembersDiv.innerHTML = selectedMemberIds.map(id => {
-        const user = allUsers.find(u => u.id === id);
-        if (!user) return '';
-
-        return `
-            <div class="member-chip flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-xl">
-                <div class="flex items-center">
-                    <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                        <span class="text-white font-semibold text-xs">${user.name.charAt(0)}</span>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="font-medium text-gray-900 text-sm truncate">${user.name}</p>
-                        <p class="text-xs text-gray-600">${user.employee_id}</p>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-2 flex-shrink-0">
-                    <input type="checkbox" name="members[]" value="${user.id}" checked class="sr-only">
-                    <button type="button" onclick="removeMember(${user.id})" class="text-red-600 hover:text-red-800 transition-colors">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-    renderSelectedMembers();
-
-    // Auto-load team members for team leaders
-    if (initialTeamId) {
-        fetchTeamMembers(initialTeamId, '');
-    }
-});
+    // Initialize
+    updateSelectedDisplay();
+})();
 </script>
 @endpush
 @endsection
