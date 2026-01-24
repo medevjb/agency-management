@@ -19,6 +19,7 @@ class Task extends Model
         'estimated_hours',
         'actual_hours',
         'order_id',
+        'team_id',
         'assigned_to',
         'created_by',
         'completed_at',
@@ -36,6 +37,11 @@ class Task extends Model
     public function order(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function team(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Team::class);
     }
 
     public function project(): \Illuminate\Database\Eloquent\Relations\BelongsTo
