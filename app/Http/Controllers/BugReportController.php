@@ -93,7 +93,7 @@ class BugReportController extends Controller
 
         $bugReport = BugReport::create([
             'user_id' => auth()->id(),
-            'bug_category_id' => $request->bug_category_id,
+            'bug_category_id' => null,
             'bug_priority_id' => $request->bug_priority_id,
             'title' => $request->title,
             'description' => $request->description,
@@ -154,7 +154,7 @@ class BugReportController extends Controller
         $this->authorize('update', $bugReport);
 
         $bugReport->update([
-            'bug_category_id' => $request->bug_category_id,
+            'bug_category_id' => null,
             'bug_priority_id' => $request->bug_priority_id,
             'title' => $request->title,
             'description' => $request->description,

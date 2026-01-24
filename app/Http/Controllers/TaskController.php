@@ -7,6 +7,8 @@ use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Order;
 use App\Models\Task;
 use App\Models\User;
+use App\Notifications\TaskAssignedNotification;
+use App\Notifications\TaskUpdatedNotification;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -156,6 +158,11 @@ class TaskController extends Controller
             'created_by' => auth()->id(),
         ]);
 
+        // Send notification to assigned user
+        if ($task->assigned_to && $task->assigned_to !== auth()->id()) {
+            $task->assignedTo->notify(new TaskAssignedNotification($task));
+        }
+
         // Load relationships for response
         $task->load('order', 'assignedTo', 'createdBy');
 
@@ -222,7 +229,25 @@ class TaskController extends Controller
     {
         $this->authorize('update', $task);
 
+        $oldAssignedTo = $task->assigned_to;
+
         $task->update($request->validated());
+
+        // Notify newly assigned user if assignment changed
+        if ($task->assigned_to && $task->assigned_to !== $oldAssignedTo && $task->assigned_to !== auth()->id()) {
+            $task->assignedTo->notify(new TaskAssignedNotification($task));
+        }
+
+        // Notify assigned user about important updates
+        if ($task->assigned_to && $task->assigned_to !== auth()->id()) {
+            if ($task->wasChanged('status')) {
+                $task->assignedTo->notify(new TaskUpdatedNotification($task, 'status'));
+            } elseif ($task->wasChanged('priority')) {
+                $task->assignedTo->notify(new TaskUpdatedNotification($task, 'priority'));
+            } elseif ($task->wasChanged('due_date')) {
+                $task->assignedTo->notify(new TaskUpdatedNotification($task, 'due_date'));
+            }
+        }
 
         // Return JSON for AJAX requests
         if ($request->expectsJson()) {
@@ -259,6 +284,11 @@ class TaskController extends Controller
         }
 
         $task->update($data);
+
+        // Notify assigned user about status change
+        if ($task->assigned_to && $task->assigned_to !== auth()->id()) {
+            $task->assignedTo->notify(new TaskUpdatedNotification($task, 'status'));
+        }
 
         // Return JSON for AJAX requests
         if ($request->expectsJson()) {

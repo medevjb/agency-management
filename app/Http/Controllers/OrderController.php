@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
+use App\Notifications\OrderStatusNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -475,6 +476,15 @@ class OrderController extends Controller
                 'notes' => $validated['notes'] ?? null,
                 'actual_revenue' => $order->actual_revenue,
             ]);
+        }
+
+        // Notify assigned users about status change
+        if ($oldStatus !== $order->status) {
+            $order->users->each(function ($user) use ($order, $oldStatus) {
+                if ($user->id !== auth()->id()) {
+                    $user->notify(new OrderStatusNotification($order, $oldStatus, $order->status));
+                }
+            });
         }
 
         return redirect()->route('orders.index')

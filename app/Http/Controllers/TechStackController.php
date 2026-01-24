@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Team;
 use App\Models\TechStack;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -24,7 +25,7 @@ class TechStackController extends Controller
 
         $user = auth()->user();
 
-        $techStacks = TechStack::with(['stackLeader', 'members', 'projects'])
+        $techStacks = TechStack::with(['stackLeader', 'users', 'team', 'projects'])
             ->when($request->filled('search'), function ($q) use ($request) {
                 $q->where('name', 'like', '%'.$request->search.'%')
                     ->orWhere('description', 'like', '%'.$request->search.'%');
@@ -67,7 +68,7 @@ class TechStackController extends Controller
 
         $user = auth()->user();
 
-        $query = TechStack::with(['stackLeader', 'members', 'projects'])
+        $query = TechStack::with(['stackLeader', 'users', 'projects'])
             ->when(! $user->hasRole(['admin', 'stack-leader']), function ($q) use ($user) {
                 // Team leaders see tech stacks used by their team's orders
                 if ($user->hasRole('team-leader') && $user->team_id) {
@@ -100,8 +101,8 @@ class TechStackController extends Controller
                 ] : null;
             })
             ->addColumn('members_count', function ($techStack) {
-                $count = $techStack->members->count();
-                $activeCount = $techStack->members->where('is_active', true)->count();
+                $count = $techStack->users->count();
+                $activeCount = $techStack->users->where('is_active', true)->count();
 
                 return $count.' '.$activeCount.' active';
             })
@@ -112,7 +113,7 @@ class TechStackController extends Controller
                 return $count.' '.$activeCount.' active';
             })
             ->orderColumn('members_count', function ($query, $order) {
-                $query->withCount('members')->orderBy('members_count', $order);
+                $query->withCount('users')->orderBy('users_count', $order);
             })
             ->orderColumn('projects_count', function ($query, $order) {
                 $query->withCount('projects')->orderBy('projects_count', $order);
@@ -129,8 +130,9 @@ class TechStackController extends Controller
         $this->authorize('create', TechStack::class);
 
         $users = User::where('is_active', true)->get();
+        $teams = Team::all();
 
-        return view('tech-stacks.create', compact('users'));
+        return view('tech-stacks.create', compact('users', 'teams'));
     }
 
     /**
@@ -140,7 +142,8 @@ class TechStackController extends Controller
     {
         $this->authorize('create', TechStack::class);
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:tech_stacks',
+            'name' => 'required|string|max:255',
+            'team_id' => 'required|exists:teams,id',
             'description' => 'nullable|string',
             'stack_leader_id' => 'nullable|exists:users,id',
             'members' => 'nullable|array',
@@ -149,6 +152,7 @@ class TechStackController extends Controller
 
         $techStack = TechStack::create([
             'name' => $validated['name'],
+            'team_id' => $validated['team_id'],
             'description' => $validated['description'],
             'stack_leader_id' => $validated['stack_leader_id'],
         ]);
@@ -178,7 +182,7 @@ class TechStackController extends Controller
      */
     public function show(string $id)
     {
-        $techStack = TechStack::with(['stackLeader', 'members', 'projects'])->findOrFail($id);
+        $techStack = TechStack::with(['stackLeader', 'users', 'projects'])->findOrFail($id);
 
         $this->authorize('view', $techStack);
 
@@ -190,7 +194,7 @@ class TechStackController extends Controller
      */
     public function edit(string $id)
     {
-        $techStack = TechStack::with(['stackLeader', 'members'])->findOrFail($id);
+        $techStack = TechStack::with(['stackLeader', 'users'])->findOrFail($id);
 
         $this->authorize('update', $techStack);
 
@@ -270,6 +274,49 @@ class TechStackController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Tech stack deleted successfully.',
+        ]);
+    }
+
+    /**
+     * Search members by team for tech stack assignment
+     */
+    public function searchMembers(Request $request, string $teamId): JsonResponse
+    {
+        $search = $request->get('search', '');
+        $exclude = $request->get('exclude', []);
+
+        $query = User::where('team_id', $teamId)
+            ->where('is_active', true)
+            ->when($search, function ($q) use ($search) {
+                $q->where(function ($query) use ($search) {
+                    $query->where('name', 'like', '%'.$search.'%')
+                        ->orWhere('email', 'like', '%'.$search.'%')
+                        ->orWhere('employee_id', 'like', '%'.$search.'%');
+                });
+            })
+            ->when(! empty($exclude), function ($q) use ($exclude) {
+                $q->whereNotIn('id', $exclude);
+            })
+            ->select('id', 'name', 'email', 'employee_id', 'position', 'team_id')
+            ->with('team:id,name')
+            ->limit(20);
+
+        $users = $query->get()->map(function ($user) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'employee_id' => $user->employee_id,
+                'position' => $user->position,
+                'team' => $user->team ? [
+                    'id' => $user->team->id,
+                    'name' => $user->team->name,
+                ] : null,
+            ];
+        });
+
+        return response()->json([
+            'users' => $users,
         ]);
     }
 

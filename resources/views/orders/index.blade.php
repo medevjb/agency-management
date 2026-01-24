@@ -846,7 +846,7 @@
                             name: 'delivered_at',
                             render: function(data, type, row) {
                                 // For non-delivered orders, show clickable placeholder
-                                if (row.status !== 'delivered') {
+                                if (row.status !== 'completed') {
                                     return `<input type="text"
                                                 class="delivered-date-input px-2 py-1 rounded-lg text-xs font-medium border border-gray-300 bg-gray-50 text-gray-400 whitespace-nowrap w-28 cursor-pointer"
                                                 data-order-id="${row.id}"

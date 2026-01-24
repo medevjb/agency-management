@@ -149,11 +149,18 @@
                 <div class="sidebar-content mt-1 space-y-1 ml-4 {{ $currentSection !== 'profile' ? 'hidden' : '' }}">
                     @canany(['manage profiles', 'view profiles'])
                         <a href="{{ route('freelance-profiles.index') }}"
-                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('freelance-profiles.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('freelance-profiles.index') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
                             <i class="fas fa-list w-5 mr-2"></i>
                             All Profiles
                         </a>
                     @endcanany
+                    @can('create profile')
+                        <a href="{{ route('freelance-profiles.create') }}"
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('freelance-profiles.create') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            <i class="fas fa-plus w-5 mr-2"></i>
+                            Add Profile
+                        </a>
+                    @endcan
                 </div>
             </div>
         @else

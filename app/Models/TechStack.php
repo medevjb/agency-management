@@ -11,19 +11,27 @@ class TechStack extends Model
     use HasFactory;
 
     protected $fillable = [
+        'team_id',
         'name',
         'description',
         'stack_leader_id',
     ];
+
+    public function team(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Team::class);
+    }
 
     public function stackLeader(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(User::class, 'stack_leader_id');
     }
 
-    public function members(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function users(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
-        return $this->hasMany(User::class, 'tech_stack_id');
+        return $this->belongsToMany(User::class, 'tech_stack_user')
+            ->withPivot('role')
+            ->withTimestamps();
     }
 
     public function projects(): \Illuminate\Database\Eloquent\Relations\HasMany

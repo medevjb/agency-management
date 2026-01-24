@@ -102,7 +102,7 @@
                                 </div>
                                 <div>
                                     <p class="text-xs text-gray-500 uppercase font-semibold">Active Orders</p>
-                                    <p class="text-sm font-semibold text-gray-900">{{ $stats['activeOrders'] }} orders</p>
+                                    <p class="text-sm font-semibold text-gray-900">{{ $stats['workloadOrders'] }} orders</p>
                                 </div>
                             </div>
                         </div>
@@ -179,12 +179,12 @@
                 </div>
             </div>
 
-            <!-- Active Orders -->
+            <!-- Workload Orders -->
             <div class="stat-card bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl shadow-xl p-6 text-white">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-blue-100 text-sm font-medium mb-1">Active Orders</p>
-                        <p class="text-4xl font-bold">{{ $stats['activeOrders'] }}</p>
+                        <p class="text-blue-100 text-sm font-medium mb-1">Workload</p>
+                        <p class="text-4xl font-bold">{{ $stats['workloadOrders'] }}</p>
                     </div>
                     <div class="bg-white/20 p-4 rounded-2xl">
                         <i class="fas fa-spinner text-3xl"></i>
@@ -193,7 +193,8 @@
                 <div class="mt-4 flex items-center text-sm">
                     <i class="fas fa-tasks mr-2"></i>
                     <span class="text-blue-100">{{ $stats['pendingOrders'] }} pending,
-                        {{ $stats['activeOrders'] - $stats['pendingOrders'] }} in progress</span>
+                        {{ $stats['inProgressOrders'] }} in progress,
+                        {{ $stats['onHoldOrders'] }} on hold</span>
                 </div>
             </div>
 
@@ -217,12 +218,12 @@
 
         <!-- Secondary Stats -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-            <!-- Completed -->
+            <!-- Delivered -->
             <div class="bg-white rounded-xl shadow-md border border-gray-100 p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-gray-600 text-sm font-medium mb-1">Completed</p>
-                        <p class="text-3xl font-bold text-green-600">{{ $stats['completedOrders'] }}</p>
+                        <p class="text-gray-600 text-sm font-medium mb-1">Delivered</p>
+                        <p class="text-3xl font-bold text-green-600">{{ $stats['deliveredOrders'] }}</p>
                     </div>
                     <div class="bg-green-100 p-3 rounded-xl">
                         <i class="fas fa-check-circle text-green-600 text-2xl"></i>
@@ -252,7 +253,7 @@
                             @php
                                 $rate =
                                     $stats['totalOrders'] > 0
-                                        ? round(($stats['completedOrders'] / $stats['totalOrders']) * 100, 1)
+                                        ? round(($stats['deliveredOrders'] / $stats['totalOrders']) * 100, 1)
                                         : 0;
                             @endphp
                             {{ $rate }}%

@@ -33,22 +33,106 @@
             <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
             <p class="text-gray-600 mt-1">Welcome back, {{ Auth::user()->name }}! Here's your order overview.</p>
         </div>
-        <div class="flex gap-3">
+        <div class="flex flex-wrap gap-3 items-center">
+            <!-- Month Filter -->
+            <div class="relative">
+                <select id="monthFilter" class="appearance-none bg-white border border-gray-200 text-gray-700 py-2.5 pl-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer shadow-sm font-medium text-sm">
+                    @foreach($availableMonths as $value => $label)
+                        <option value="{{ $value }}" {{ $selectedMonth === $value ? 'selected' : '' }}>
+                            {{ $label }}
+                        </option>
+                    @endforeach
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                    <i class="fas fa-calendar-alt text-sm"></i>
+                </div>
+            </div>
             <a href="{{ route('orders.create') }}" class="inline-flex items-center px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-indigo-200 hover:shadow-xl">
                 <i class="fas fa-plus mr-2"></i>New Order
             </a>
         </div>
     </div>
 
+    <!-- Analytics Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Revenue Change -->
+        <div class="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-md p-5 text-white">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-green-100 text-sm font-medium">Revenue vs Last Month</span>
+                <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                    <i class="fas fa-chart-line text-white"></i>
+                </div>
+            </div>
+            <div class="flex items-end gap-2">
+                <span class="text-3xl font-bold">{{ number_format(abs($analytics['revenueChange']), 1) }}%</span>
+                <span class="text-lg mb-1">
+                    @if($analytics['revenueChange'] > 0)
+                        <i class="fas fa-arrow-up"></i>
+                    @elseif($analytics['revenueChange'] < 0)
+                        <i class="fas fa-arrow-down"></i>
+                    @else
+                        <i class="fas fa-minus"></i>
+                    @endif
+                </span>
+            </div>
+            <p class="text-green-100 text-xs mt-2">{{ $analytics['actualRevenue'] > 0 ? '$' . number_format($analytics['actualRevenue']) : '$0' }} this month</p>
+        </div>
+
+        <!-- Orders Change -->
+        <div class="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-md p-5 text-white">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-blue-100 text-sm font-medium">Orders vs Last Month</span>
+                <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                    <i class="fas fa-shopping-cart text-white"></i>
+                </div>
+            </div>
+            <div class="flex items-end gap-2">
+                <span class="text-3xl font-bold">{{ number_format(abs($analytics['ordersChange']), 1) }}%</span>
+                <span class="text-lg mb-1">
+                    @if($analytics['ordersChange'] > 0)
+                        <i class="fas fa-arrow-up"></i>
+                    @elseif($analytics['ordersChange'] < 0)
+                        <i class="fas fa-arrow-down"></i>
+                    @else
+                        <i class="fas fa-minus"></i>
+                    @endif
+                </span>
+            </div>
+            <p class="text-blue-100 text-xs mt-2">{{ $stats['total'] }} orders this month</p>
+        </div>
+
+        <!-- Completion Rate -->
+        <div class="bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl shadow-md p-5 text-white">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-purple-100 text-sm font-medium">Completion Rate</span>
+                <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                    <i class="fas fa-check-double text-white"></i>
+                </div>
+            </div>
+            <div class="flex items-end gap-2">
+                <span class="text-3xl font-bold">{{ $stats['total'] > 0 ? number_format(($stats['delivered'] / $stats['total']) * 100, 1) : 0 }}%</span>
+            </div>
+            <p class="text-purple-100 text-xs mt-2">{{ $stats['delivered'] }} of {{ $stats['total'] }} delivered</p>
+        </div>
+
+        <!-- High Priority Alert -->
+        <div class="bg-gradient-to-br from-red-500 to-rose-600 rounded-2xl shadow-md p-5 text-white">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-red-100 text-sm font-medium">High Priority</span>
+                <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                    <i class="fas fa-exclamation-triangle text-white"></i>
+                </div>
+            </div>
+            <div class="flex items-end gap-2">
+                <span class="text-3xl font-bold">{{ $analytics['highPriorityCount'] }}</span>
+            </div>
+            <p class="text-red-100 text-xs mt-2">{{ $analytics['overdueCount'] }} overdue</p>
+        </div>
+    </div>
+
     <!-- Quick Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         @php
-            $stats = [
-                'total' => \App\Models\Order::count(),
-                'active' => \App\Models\Order::whereIn('status', ['pending', 'in-progress'])->count(),
-                'completed' => \App\Models\Order::where('status', 'completed')->count(),
-                'revenue' => \App\Models\Order::where('status', 'completed')->whereNotNull('actual_revenue')->sum('actual_revenue'),
-            ];
             $myTasks = \App\Models\Task::where('assigned_to', Auth::id())->where('status', '!=', 'completed')->count();
         @endphp
 
@@ -66,30 +150,30 @@
             </div>
         </div>
 
-        <!-- Active Orders -->
+        <!-- Delivered Orders (Revenue Generating) -->
         <div class="stat-card bg-white rounded-2xl shadow-md p-6 border border-gray-100">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-500 mb-1">Active Orders</p>
-                    <p class="text-3xl font-bold text-gray-900">{{ number_format($stats['active']) }}</p>
-                    <p class="text-xs text-green-600 mt-2"><i class="fas fa-arrow-up mr-1"></i>In progress</p>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Delivered</p>
+                    <p class="text-3xl font-bold text-gray-900">{{ number_format($stats['delivered']) }}</p>
+                    <p class="text-xs text-green-600 mt-2"><i class="fas fa-check-circle mr-1"></i>Revenue earned</p>
                 </div>
                 <div class="gradient-icon w-14 h-14 rounded-2xl flex items-center justify-center" style="--icon-from: #10b981; --icon-to: #34d399;">
-                    <i class="fas fa-spinner text-white text-xl"></i>
+                    <i class="fas fa-check-circle text-white text-xl"></i>
                 </div>
             </div>
         </div>
 
-        <!-- Completed Orders -->
+        <!-- Workload (Active Orders) -->
         <div class="stat-card bg-white rounded-2xl shadow-md p-6 border border-gray-100">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-500 mb-1">Completed</p>
-                    <p class="text-3xl font-bold text-gray-900">{{ number_format($stats['completed']) }}</p>
-                    <p class="text-xs text-blue-600 mt-2"><i class="fas fa-check mr-1"></i>Done</p>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Workload</p>
+                    <p class="text-3xl font-bold text-gray-900">{{ number_format($stats['workload']) }}</p>
+                    <p class="text-xs text-blue-600 mt-2"><i class="fas fa-spinner mr-1"></i>Active orders</p>
                 </div>
                 <div class="gradient-icon w-14 h-14 rounded-2xl flex items-center justify-center" style="--icon-from: #3b82f6; --icon-to: #60a5fa;">
-                    <i class="fas fa-check-circle text-white text-xl"></i>
+                    <i class="fas fa-spinner text-white text-xl"></i>
                 </div>
             </div>
         </div>
@@ -100,7 +184,7 @@
                 <div>
                     <p class="text-sm font-medium text-gray-500 mb-1">Total Revenue</p>
                     <p class="text-3xl font-bold text-gray-900">${{ number_format($stats['revenue'], 0) }}</p>
-                    <p class="text-xs text-purple-600 mt-2"><i class="fas fa-dollar-sign mr-1"></i>Collected</p>
+                    <p class="text-xs text-purple-600 mt-2"><i class="fas fa-dollar-sign mr-1"></i>From delivered</p>
                 </div>
                 <div class="gradient-icon w-14 h-14 rounded-2xl flex items-center justify-center" style="--icon-from: #8b5cf6; --icon-to: #a78bfa;">
                     <i class="fas fa-chart-line text-white text-xl"></i>
@@ -113,30 +197,46 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Left Column - 2/3 width -->
         <div class="lg:col-span-2 space-y-6">
-            <!-- Revenue Chart & Status Distribution -->
+            <!-- Daily Revenue Chart - Full Width -->
+            <div class="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Delivered Revenue</h3>
+                        <p class="text-sm text-gray-500">{{ $availableMonths[$selectedMonth] ?? 'Selected Month' }} - Daily (Days 1-{{ $daysInMonth }})</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+                        <i class="fas fa-dollar-sign text-green-600"></i>
+                    </div>
+                </div>
+                <div class="chart-container" style="position: relative; height: 250px; width: 100%;">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Daily Orders & Delivered vs Workload - Side by Side -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Monthly Revenue Chart -->
+                <!-- Daily Orders Chart -->
                 <div class="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
                     <div class="flex justify-between items-center mb-4">
                         <div>
-                            <h3 class="text-lg font-semibold text-gray-900">Monthly Revenue</h3>
-                            <p class="text-sm text-gray-500">Last 6 months</p>
+                            <h3 class="text-lg font-semibold text-gray-900">Daily Orders</h3>
+                            <p class="text-sm text-gray-500">{{ $availableMonths[$selectedMonth] ?? 'Selected Month' }} - All Orders</p>
                         </div>
-                        <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
-                            <i class="fas fa-dollar-sign text-green-600"></i>
+                        <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                            <i class="fas fa-shopping-cart text-blue-600"></i>
                         </div>
                     </div>
                     <div class="chart-container" style="position: relative; height: 200px; width: 100%;">
-                        <canvas id="revenueChart"></canvas>
+                        <canvas id="ordersChart"></canvas>
                     </div>
                 </div>
 
-                <!-- Order Status Distribution -->
+                <!-- Delivered vs Workload -->
                 <div class="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
                     <div class="flex justify-between items-center mb-4">
                         <div>
-                            <h3 class="text-lg font-semibold text-gray-900">Order Status</h3>
-                            <p class="text-sm text-gray-500">Current distribution</p>
+                            <h3 class="text-lg font-semibold text-gray-900">Delivered vs Workload</h3>
+                            <p class="text-sm text-gray-500">Revenue-generating vs Active</p>
                         </div>
                         <div class="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
                             <i class="fas fa-chart-pie text-indigo-600"></i>
@@ -148,66 +248,110 @@
                 </div>
             </div>
 
-            <!-- Recent Orders Table -->
+            <!-- Recent Orders Table - Delivered & Workload -->
             <div class="bg-white rounded-2xl shadow-md border border-gray-100 ">
                 <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900">Recent Orders</h3>
-                        <p class="text-sm text-gray-500">Latest order updates</p>
+                        <h3 class="text-lg font-semibold text-gray-900">Recent Delivered</h3>
+                        <p class="text-sm text-gray-500">Revenue-generating orders</p>
                     </div>
-                    <a href="{{ route('orders.index') }}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                    <a href="{{ route('orders.index') }}?status=completed" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 text-sm font-medium">
                         View All <i class="fas fa-arrow-right ml-2"></i>
                     </a>
                 </div>
                 <div class="divide-y divide-gray-100">
-                    @php
-                        $recentOrders = \App\Models\Order::with(['team', 'techStack', 'creator'])
-                            ->latest()
-                            ->take(6)
-                            ->get();
-                    @endphp
-                    @forelse($recentOrders as $order)
+                    @forelse($recentDelivered as $order)
                         <a href="{{ route('orders.show', $order->id) }}" class="order-card block px-6 py-4 hover:bg-gray-50 transition-colors">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-4 flex-1">
-                                    <div class="w-12 h-12 rounded-xl flex items-center justify-center
-                                        @if($order->status === 'completed') bg-green-100
-                                        @elseif($order->status === 'in-progress') bg-blue-100
-                                        @elseif($order->status === 'planning') bg-purple-100
-                                        @elseif($order->priority === 'urgent') bg-red-100
-                                        @else bg-gray-100 @endif">
-                                        <i class="fas fa-folder
-                                            @if($order->status === 'completed') text-green-600
-                                            @elseif($order->status === 'in-progress') text-blue-600
-                                            @elseif($order->status === 'planning') text-purple-600
-                                            @elseif($order->priority === 'urgent') text-red-600
-                                            @else text-gray-600 @endif"></i>
+                                    <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-green-100">
+                                        <i class="fas fa-check-circle text-green-600"></i>
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <div class="flex items-center gap-2 mb-1">
                                             <p class="text-sm font-semibold text-gray-900 truncate">{{ $order->name }}</p>
-                                            @if($order->priority === 'urgent')
-                                                <span class="flex-shrink-0 px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded-full">Urgent</span>
+                                            @if($order->priority === 'high')
+                                                <span class="flex-shrink-0 px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded-full">High</span>
                                             @endif
                                         </div>
                                         <div class="flex items-center gap-3 text-xs text-gray-500">
                                             @if($order->team)
                                                 <span><i class="fas fa-users mr-1"></i>{{ $order->team->name }}</span>
                                             @endif
-                                            @if($order->techStack)
-                                                <span><i class="fas fa-code mr-1"></i>{{ $order->techStack->name }}</span>
+                                            @if($order->actual_revenue && $order->actual_revenue > 0)
+                                                <span><i class="fas fa-dollar-sign mr-1"></i>{{ number_format($order->actual_revenue) }}</span>
                                             @endif
-                                            @if($order->value && $order->value > 0)
-                                                <span><i class="fas fa-dollar-sign mr-1"></i>{{ number_format($order->value) }}</span>
+                                            @if($order->end_date)
+                                                <span><i class="far fa-calendar mr-1"></i>{{ $order->end_date->format('M d') }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3 ml-4">
+                                    <span class="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                        Delivered
+                                    </span>
+                                    <i class="fas fa-chevron-right text-gray-400"></i>
+                                </div>
+                            </div>
+                        </a>
+                    @empty
+                        <div class="px-6 py-8 text-center">
+                            <i class="fas fa-check-circle text-4xl text-gray-200 mb-3"></i>
+                            <p class="text-gray-500">No delivered orders yet</p>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+
+            <!-- Workload Orders -->
+            <div class="bg-white rounded-2xl shadow-md border border-gray-100">
+                <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Current Workload</h3>
+                        <p class="text-sm text-gray-500">Active orders in progress</p>
+                    </div>
+                    <a href="{{ route('orders.index') }}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                        View All <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+                <div class="divide-y divide-gray-100">
+                    @forelse($recentWorkload as $order)
+                        <a href="{{ route('orders.show', $order->id) }}" class="order-card block px-6 py-4 hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-4 flex-1">
+                                    <div class="w-12 h-12 rounded-xl flex items-center justify-center
+                                        @if($order->status === 'in-progress') bg-blue-100
+                                        @elseif($order->status === 'on-hold') bg-yellow-100
+                                        @else bg-gray-100 @endif">
+                                        <i class="fas fa-spinner
+                                            @if($order->status === 'in-progress') text-blue-600
+                                            @elseif($order->status === 'on-hold') text-yellow-600
+                                            @else text-gray-600 @endif"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <p class="text-sm font-semibold text-gray-900 truncate">{{ $order->name }}</p>
+                                            @if($order->priority === 'high')
+                                                <span class="flex-shrink-0 px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded-full">High</span>
+                                            @endif
+                                        </div>
+                                        <div class="flex items-center gap-3 text-xs text-gray-500">
+                                            @if($order->team)
+                                                <span><i class="fas fa-users mr-1"></i>{{ $order->team->name }}</span>
+                                            @endif
+                                            @if($order->end_date)
+                                                <span><i class="far fa-calendar mr-1"></i>{{ $order->end_date->format('M d') }}</span>
+                                                @if($order->end_date->isPast())
+                                                    <span class="text-red-600"><i class="fas fa-exclamation-triangle mr-1"></i>Overdue</span>
+                                                @endif
                                             @endif
                                         </div>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-3 ml-4">
                                     <span class="px-3 py-1 text-xs font-medium rounded-full
-                                        @if($order->status === 'completed') bg-green-100 text-green-800
-                                        @elseif($order->status === 'in-progress') bg-blue-100 text-blue-800
-                                        @elseif($order->status === 'planning') bg-purple-100 text-purple-800
+                                        @if($order->status === 'in-progress') bg-blue-100 text-blue-800
                                         @elseif($order->status === 'on-hold') bg-yellow-100 text-yellow-800
                                         @else bg-gray-100 text-gray-800 @endif">
                                         {{ ucfirst(str_replace('-', ' ', $order->status)) }}
@@ -217,12 +361,9 @@
                             </div>
                         </a>
                     @empty
-                        <div class="px-6 py-12 text-center">
-                            <i class="fas fa-folder-open text-5xl text-gray-200 mb-4"></i>
-                            <p class="text-gray-500 mb-2">No orders yet</p>
-                            <a href="{{ route('orders.create') }}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 text-sm font-medium">
-                                <i class="fas fa-plus mr-2"></i>Create your first order
-                            </a>
+                        <div class="px-6 py-8 text-center">
+                            <i class="fas fa-spinner text-4xl text-gray-200 mb-3"></i>
+                            <p class="text-gray-500">No active orders</p>
                         </div>
                     @endforelse
                 </div>
@@ -450,17 +591,34 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
+// Month filter functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const monthFilter = document.getElementById('monthFilter');
+    if (monthFilter) {
+        monthFilter.addEventListener('change', function() {
+            const url = new URL(window.location);
+            url.searchParams.set('month', this.value);
+            window.location = url.toString();
+        });
+    }
+});
 // Global chart instances to prevent duplicates
 let revenueChartInstance = null;
+let ordersChartInstance = null;
 let statusChartInstance = null;
 
-// Store order status data in a data attribute to avoid multiple PHP executions
+// Store order status data
 const orderStatusData = {
-    completed: {{ \App\Models\Order::where('status', 'completed')->count() }},
-    inProgress: {{ \App\Models\Order::where('status', 'in-progress')->count() }},
-    planning: {{ \App\Models\Order::where('status', 'planning')->count() }},
-    onHold: {{ \App\Models\Order::where('status', 'on-hold')->count() }}
+    delivered: {{ $ordersByStatus['delivered'] ?? 0 }},
+    pending: {{ $ordersByStatus['pending'] ?? 0 }},
+    inProgress: {{ $ordersByStatus['in-progress'] ?? 0 }},
+    onHold: {{ $ordersByStatus['on-hold'] ?? 0 }}
 };
+
+// Daily revenue data
+const dailyRevenueData = {{ Js::from($dailyRevenue) }};
+const dailyOrdersData = {{ Js::from($dailyOrders) }};
+const daysInMonth = {{ $daysInMonth }};
 
 document.addEventListener('DOMContentLoaded', function() {
     // Check if Chart.js is loaded
@@ -473,9 +631,15 @@ document.addEventListener('DOMContentLoaded', function() {
     if (revenueChartInstance) {
         revenueChartInstance.destroy();
     }
+    if (ordersChartInstance) {
+        ordersChartInstance.destroy();
+    }
     if (statusChartInstance) {
         statusChartInstance.destroy();
     }
+
+    // Generate day labels for the selected month
+    const dayLabels = Array.from({length: daysInMonth}, (_, i) => i + 1);
 
     // Revenue Chart
     const revenueCtx = document.getElementById('revenueChart');
@@ -483,10 +647,10 @@ document.addEventListener('DOMContentLoaded', function() {
         revenueChartInstance = new Chart(revenueCtx, {
             type: 'line',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                labels: dayLabels,
                 datasets: [{
-                    label: 'Revenue',
-                    data: [12000, 19000, 15000, 25000, 22000, 30000],
+                    label: 'Delivered Revenue',
+                    data: dailyRevenueData,
                     borderColor: '#10b981',
                     backgroundColor: 'rgba(16, 185, 129, 0.1)',
                     borderWidth: 2,
@@ -507,7 +671,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     tooltip: {
                         backgroundColor: '#1f2937',
-                        padding: 10
+                        padding: 10,
+                        callbacks: {
+                            title: function(context) {
+                                return 'Day ' + context[0].label;
+                            },
+                            label: function(context) {
+                                return 'Revenue: $' + (context.parsed.y || 0).toLocaleString();
+                            }
+                        }
                     }
                 },
                 scales: {
@@ -516,39 +688,101 @@ document.addEventListener('DOMContentLoaded', function() {
                         grid: { color: 'rgba(0, 0, 0, 0.05)' },
                         ticks: {
                             callback: function(value) {
-                                return '$' + (value / 1000) + 'k';
+                                return '$' + (value >= 1000 ? (value / 1000).toFixed(0) + 'k' : value);
                             },
                             font: { size: 10 }
                         }
                     },
                     x: {
                         grid: { display: false },
-                        ticks: { font: { size: 10 } }
+                        ticks: {
+                            font: { size: 10 },
+                            maxRotation: 0,
+                            autoSkip: true,
+                            autoSkipPadding: 20
+                        }
                     }
                 }
             }
         });
     }
 
-    // Status Chart
+    // Daily Orders Chart
+    const ordersCtx = document.getElementById('ordersChart');
+    if (ordersCtx) {
+        ordersChartInstance = new Chart(ordersCtx, {
+            type: 'bar',
+            data: {
+                labels: dayLabels,
+                datasets: [{
+                    label: 'Orders',
+                    data: dailyOrdersData,
+                    backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                    borderColor: '#3b82f6',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 750
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#1f2937',
+                        padding: 10,
+                        callbacks: {
+                            title: function(context) {
+                                return 'Day ' + context[0].label;
+                            },
+                            label: function(context) {
+                                return 'Orders: ' + (context.parsed.y || 0);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                        ticks: {
+                            stepSize: 1,
+                            font: { size: 10 }
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            font: { size: 10 },
+                            maxTicksLimit: 10
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Status Chart - Delivered vs Workload
     const statusCtx = document.getElementById('statusChart');
     if (statusCtx) {
-        const total = orderStatusData.completed + orderStatusData.inProgress + orderStatusData.planning + orderStatusData.onHold;
+        const delivered = orderStatusData.delivered;
+        const workload = orderStatusData.pending + orderStatusData.inProgress + orderStatusData.onHold;
+        const total = delivered + workload;
 
         // Only show chart if there's data
         if (total > 0) {
             statusChartInstance = new Chart(statusCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Completed', 'In Progress', 'Planning', 'On Hold'],
+                    labels: ['Delivered (Revenue)', 'Workload (Active)'],
                     datasets: [{
-                        data: [
-                            orderStatusData.completed,
-                            orderStatusData.inProgress,
-                            orderStatusData.planning,
-                            orderStatusData.onHold
-                        ],
-                        backgroundColor: ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b'],
+                        data: [delivered, workload],
+                        backgroundColor: ['#10b981', '#3b82f6'],
                         borderWidth: 0
                     }]
                 },
@@ -565,12 +799,20 @@ document.addEventListener('DOMContentLoaded', function() {
                                 padding: 12,
                                 usePointStyle: true,
                                 pointStyle: 'circle',
-                                font: { size: 10 }
+                                font: { size: 11 }
                             }
                         },
                         tooltip: {
                             backgroundColor: '#1f2937',
-                            padding: 10
+                            padding: 10,
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return label + ': ' + value + ' (' + percentage + '%)';
+                                }
+                            }
                         }
                     },
                     cutout: '65%'
@@ -583,6 +825,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Cleanup on page unload
 window.addEventListener('beforeunload', function() {
     if (revenueChartInstance) revenueChartInstance.destroy();
+    if (ordersChartInstance) ordersChartInstance.destroy();
     if (statusChartInstance) statusChartInstance.destroy();
 });
 </script>

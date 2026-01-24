@@ -154,9 +154,58 @@ class AdminController extends Controller
     public function roles()
     {
         $roles = Role::with('permissions')->withCount('users')->get();
+
+        // Group permissions by module
         $permissions = Permission::all()->groupBy(function ($permission) {
-            return explode(' ', $permission->name)[0];
-        });
+            $name = $permission->name;
+
+            // Order Management
+            if (str_contains($name, 'order')) {
+                return 'Orders';
+            }
+
+            // User Management
+            if (str_contains($name, 'user')) {
+                return 'Users';
+            }
+
+            // Team Management
+            if (str_contains($name, 'team')) {
+                return 'Teams';
+            }
+
+            // Task Management
+            if (str_contains($name, 'task')) {
+                return 'Tasks';
+            }
+
+            // Profile Management
+            if (str_contains($name, 'profile')) {
+                return 'Profiles';
+            }
+
+            // Bug Report Management
+            if (str_contains($name, 'bug report')) {
+                return 'Bug Reports';
+            }
+
+            // Tech Stack Management
+            if (str_contains($name, 'tech stack')) {
+                return 'Tech Stacks';
+            }
+
+            // Portfolio Management
+            if (str_contains($name, 'portfolio')) {
+                return 'Portfolios';
+            }
+
+            // Settings
+            if (str_contains($name, 'setting')) {
+                return 'Settings';
+            }
+
+            return 'Other';
+        })->sortKeys();
 
         return view('admin.roles', compact('roles', 'permissions'));
     }
@@ -166,9 +215,57 @@ class AdminController extends Controller
      */
     public function createRole()
     {
+        // Group permissions by module
         $permissions = Permission::all()->groupBy(function ($permission) {
-            return explode(' ', $permission->name)[0];
-        });
+            $name = $permission->name;
+
+            // Order Management
+            if (str_contains($name, 'order')) {
+                return 'Orders';
+            }
+
+            // User Management
+            if (str_contains($name, 'user')) {
+                return 'Users';
+            }
+
+            // Team Management
+            if (str_contains($name, 'team')) {
+                return 'Teams';
+            }
+
+            // Task Management
+            if (str_contains($name, 'task')) {
+                return 'Tasks';
+            }
+
+            // Profile Management
+            if (str_contains($name, 'profile')) {
+                return 'Profiles';
+            }
+
+            // Bug Report Management
+            if (str_contains($name, 'bug report')) {
+                return 'Bug Reports';
+            }
+
+            // Tech Stack Management
+            if (str_contains($name, 'tech stack')) {
+                return 'Tech Stacks';
+            }
+
+            // Portfolio Management
+            if (str_contains($name, 'portfolio')) {
+                return 'Portfolios';
+            }
+
+            // Settings
+            if (str_contains($name, 'setting')) {
+                return 'Settings';
+            }
+
+            return 'Other';
+        })->sortKeys();
 
         return view('admin.create-role', compact('permissions'));
     }
@@ -201,9 +298,58 @@ class AdminController extends Controller
     {
         $role = Role::where('name', $roleName)->firstOrFail();
         $role->load('permissions');
+
+        // Group permissions by module
         $permissions = Permission::all()->groupBy(function ($permission) {
-            return explode(' ', $permission->name)[0];
-        });
+            $name = $permission->name;
+
+            // Order Management
+            if (str_contains($name, 'order')) {
+                return 'Orders';
+            }
+
+            // User Management
+            if (str_contains($name, 'user')) {
+                return 'Users';
+            }
+
+            // Team Management
+            if (str_contains($name, 'team')) {
+                return 'Teams';
+            }
+
+            // Task Management
+            if (str_contains($name, 'task')) {
+                return 'Tasks';
+            }
+
+            // Profile Management
+            if (str_contains($name, 'profile')) {
+                return 'Profiles';
+            }
+
+            // Bug Report Management
+            if (str_contains($name, 'bug report')) {
+                return 'Bug Reports';
+            }
+
+            // Tech Stack Management
+            if (str_contains($name, 'tech stack')) {
+                return 'Tech Stacks';
+            }
+
+            // Portfolio Management
+            if (str_contains($name, 'portfolio')) {
+                return 'Portfolios';
+            }
+
+            // Settings
+            if (str_contains($name, 'setting')) {
+                return 'Settings';
+            }
+
+            return 'Other';
+        })->sortKeys();
 
         return view('admin.edit-role', compact('role', 'permissions'));
     }

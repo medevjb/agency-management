@@ -10,7 +10,10 @@
       "Bash(composer show:*)",
       "Bash(curl:*)",
       "Bash(git commit:*)",
-      "Bash(npm run dev)"
+      "Bash(npm run dev)",
+      "Bash(git mv:*)",
+      "Bash(ls:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

@@ -12,18 +12,27 @@ class OrderPolicy
      */
     public function viewAny(User $user): bool
     {
-        // Admins can view all orders
-        if ($user->hasRole('admin')) {
+        // Admin, Operation Manager, Project Manager can view all orders
+        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             return true;
         }
 
-        // Managers can view orders from teams they manage
-        if ($user->isManager()) {
+        // Team leaders can view their team's orders
+        if ($user->hasRole('team-leader') && $user->team_id) {
             return true;
         }
 
-        // Team leaders, stack leaders, and members can view orders from their team
-        return $user->team_id !== null;
+        // Stack leaders can view orders using their tech stack
+        if ($user->hasRole('stack-leader') && $user->tech_stack_id) {
+            return true;
+        }
+
+        // Team members can view their team's orders
+        if ($user->team_id) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -31,27 +40,22 @@ class OrderPolicy
      */
     public function view(User $user, Order $order): bool
     {
-        // Admins can view any order
-        if ($user->hasRole('admin')) {
+        // Admin, Operation Manager, Project Manager can view any order
+        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             return true;
         }
 
-        // Managers can view orders from teams they manage
-        if ($user->isManager() && $order->team && $user->isManagerOfTeam($order->team)) {
-            return true;
-        }
-
-        // Team leaders can view orders from their team
+        // Team leaders can view their team's orders
         if ($user->hasRole('team-leader') && $user->team_id === $order->team_id) {
             return true;
         }
 
-        // Stack leaders can view orders that use their tech stack
+        // Stack leaders can view orders using their tech stack
         if ($user->hasRole('stack-leader') && $user->tech_stack_id === $order->tech_stack_id) {
             return true;
         }
 
-        // Team members can view orders from their team
+        // Team members can view their team's orders
         if ($user->team_id === $order->team_id) {
             return true;
         }
@@ -69,13 +73,8 @@ class OrderPolicy
      */
     public function create(User $user): bool
     {
-        // Admins can create orders
-        if ($user->hasRole('admin')) {
-            return true;
-        }
-
-        // Managers can create orders
-        if ($user->isManager()) {
+        // Admin, Operation Manager, Project Manager can create orders
+        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             return true;
         }
 
@@ -84,8 +83,8 @@ class OrderPolicy
             return true;
         }
 
-        // Team members can create orders for their team
-        return $user->team_id !== null;
+        // Team members cannot create orders
+        return false;
     }
 
     /**
@@ -93,26 +92,22 @@ class OrderPolicy
      */
     public function update(User $user, Order $order): bool
     {
-        // Admins can update any order
-        if ($user->hasRole('admin')) {
+        // Admin, Operation Manager, Project Manager can update any order
+        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             return true;
         }
 
-        // Managers can update orders from teams they manage
-        if ($user->isManager() && $order->team && $user->isManagerOfTeam($order->team)) {
-            return true;
-        }
-
-        // Team leaders can update orders from their team
+        // Team leaders can update their team's orders
         if ($user->hasRole('team-leader') && $user->team_id === $order->team_id) {
             return true;
         }
 
-        // Stack leaders can update orders that use their tech stack
+        // Stack leaders can manage orders using their tech stack
         if ($user->hasRole('stack-leader') && $user->tech_stack_id === $order->tech_stack_id) {
             return true;
         }
 
+        // Team members cannot update orders
         return false;
     }
 
@@ -121,26 +116,22 @@ class OrderPolicy
      */
     public function delete(User $user, Order $order): bool
     {
-        // Admins can delete any order
-        if ($user->hasRole('admin')) {
+        // Admin, Operation Manager, Project Manager can delete any order
+        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             return true;
         }
 
-        // Managers can delete orders from teams they manage
-        if ($user->isManager() && $order->team && $user->isManagerOfTeam($order->team)) {
-            return true;
-        }
-
-        // Team leaders can delete orders from their team
+        // Team leaders can delete their team's orders
         if ($user->hasRole('team-leader') && $user->team_id === $order->team_id) {
             return true;
         }
 
-        // Stack leaders can delete orders that use their tech stack
+        // Stack leaders can delete orders using their tech stack
         if ($user->hasRole('stack-leader') && $user->tech_stack_id === $order->tech_stack_id) {
             return true;
         }
 
+        // Team members cannot delete orders
         return false;
     }
 
@@ -149,8 +140,8 @@ class OrderPolicy
      */
     public function restore(User $user, Order $order): bool
     {
-        // Only admins can restore orders
-        return $user->hasRole('admin');
+        // Admin, Operation Manager, Project Manager can restore orders
+        return $user->hasRole(['admin', 'operation-manager', 'project-manager']);
     }
 
     /**
@@ -158,7 +149,7 @@ class OrderPolicy
      */
     public function forceDelete(User $user, Order $order): bool
     {
-        // Only admins can force delete orders
+        // Only admin can force delete orders
         return $user->hasRole('admin');
     }
 }

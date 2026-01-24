@@ -94,6 +94,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/tech-stacks', [TechStackController::class, 'store'])->name('tech-stacks.store');
     Route::get('/tech-stacks/{id}', [TechStackController::class, 'show'])->name('tech-stacks.show');
     Route::get('/tech-stacks/{id}/edit', [TechStackController::class, 'edit'])->name('tech-stacks.edit');
+    Route::get('/tech-stacks/search-members/{teamId}', [TechStackController::class, 'searchMembers'])->name('tech-stacks.search-members');
     Route::patch('/tech-stacks/{id}', [TechStackController::class, 'update'])->name('tech-stacks.update');
     Route::delete('/tech-stacks/{id}', [TechStackController::class, 'destroy'])->name('tech-stacks.destroy');
     Route::post('/tech-stacks/{id}/add-members', [TechStackController::class, 'addMembers'])->name('tech-stacks.add-members');

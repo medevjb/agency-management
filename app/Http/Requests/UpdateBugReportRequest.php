@@ -24,7 +24,6 @@ class UpdateBugReportRequest extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'bug_category_id' => 'required|exists:bug_categories,id',
             'bug_priority_id' => 'required|exists:bug_priorities,id',
             'status' => 'required|in:pending,in_progress,resolved,published',
             'admin_notes' => 'nullable|string',
@@ -43,7 +42,6 @@ class UpdateBugReportRequest extends FormRequest
         return [
             'title.required' => 'Please provide a title for the bug report.',
             'description.required' => 'Please provide a description of the bug.',
-            'bug_category_id.required' => 'Please select a category for the bug.',
             'bug_priority_id.required' => 'Please select a priority level.',
             'status.required' => 'Please select a status.',
             'status.in' => 'Invalid status selected.',

@@ -24,7 +24,6 @@ class StoreBugReportRequest extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'bug_category_id' => 'required|exists:bug_categories,id',
             'bug_priority_id' => 'required|exists:bug_priorities,id',
             'images' => 'nullable|array|max:5',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // 5MB max per image
@@ -41,7 +40,6 @@ class StoreBugReportRequest extends FormRequest
         return [
             'title.required' => 'Please provide a title for the bug report.',
             'description.required' => 'Please provide a description of the bug.',
-            'bug_category_id.required' => 'Please select a category for the bug.',
             'bug_priority_id.required' => 'Please select a priority level.',
             'images.max' => 'You can upload a maximum of 5 images.',
             'images.*.image' => 'All files must be images.',

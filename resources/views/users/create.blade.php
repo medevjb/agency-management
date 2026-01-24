@@ -274,53 +274,6 @@
                                     @enderror
                                 </div>
 
-                                <div>
-                                    <label for="hire_date" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                                        <i class="fas fa-calendar mr-2 text-indigo-500 text-sm"></i>
-                                        Hire Date
-                                    </label>
-                                    <div class="relative">
-                                        <input type="text" id="hire_date" name="hire_date"
-                                               value="{{ old('hire_date') }}"
-                                               class="datepicker w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base cursor-pointer"
-                                               placeholder="Select hire date..."
-                                               readonly>
-                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                            <i class="fas fa-calendar text-gray-400 text-sm"></i>
-                                        </div>
-                                    </div>
-                                    @error('hire_date')
-                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
-                                            <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
-                                            {{ $message }}
-                                        </p>
-                                    @enderror
-                                </div>
-
-                                <div>
-                                    <label for="salary" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                                        <i class="fas fa-dollar-sign mr-2 text-indigo-500 text-sm"></i>
-                                        Salary
-                                    </label>
-                                    <div class="relative">
-                                        <input type="text" id="salary" name="salary"
-                                               value="{{ old('salary') }}"
-                                               inputmode="decimal"
-                                               class="w-full px-4 py-2.5 pl-7 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
-                                               placeholder="0.00">
-                                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                            <span class="text-gray-500 font-medium text-sm">$</span>
-                                        </div>
-                                    </div>
-                                    <p class="mt-1 text-xs text-gray-500">Annual salary in USD (optional)</p>
-                                    @error('salary')
-                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
-                                            <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
-                                            {{ $message }}
-                                        </p>
-                                    @enderror
-                                </div>
-
                                 <div class="lg:col-span-2">
                                     <label for="address" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
                                         <i class="fas fa-map-marker-alt mr-2 text-indigo-500 text-sm"></i>
@@ -503,16 +456,25 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div>
-                                    <label class="flex items-center p-3 border-2 border-gray-200 rounded-lg hover:border-indigo-300 transition-colors duration-200">
+                            <!-- Account Status Section -->
+                            <div class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-toggle-on text-2xl text-green-600 mr-3" id="activeStatusIcon"></i>
+                                        <div>
+                                            <h4 class="text-sm font-semibold text-gray-900">Account Status</h4>
+                                            <p class="text-xs text-gray-500" id="activeStatusText">User can login and access the system</p>
+                                        </div>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
                                         <input type="checkbox" id="is_active" name="is_active" value="1"
                                                {{ old('is_active', '1') ? 'checked' : '' }}
-                                               class="mr-3 w-4 h-4 text-green-600 bg-green-100 border-green-300 rounded focus:ring-green-500 focus:ring-2">
-                                        <div>
-                                            <span class="text-sm font-semibold text-gray-700 block">Active User</span>
-                                            <span class="text-xs text-gray-500">Can login and access the system</span>
-                                        </div>
+                                               class="sr-only peer"
+                                               onchange="toggleActiveStatus()">
+                                        <div class="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:transition-all peer-checked:bg-green-600"></div>
+                                        <span class="ml-3 text-sm font-medium text-gray-700" id="activeStatusLabel">Active</span>
                                     </label>
                                 </div>
                             </div>
@@ -520,10 +482,13 @@
                             <!-- Additional Permissions -->
                             <div class="mt-6">
                                 <div class="flex items-center justify-between mb-4">
-                                    <h4 class="text-base font-semibold text-gray-900 flex items-center">
+                                    <button type="button"
+                                            class="flex items-center text-base font-semibold text-gray-900 hover:text-indigo-600 transition-colors"
+                                            onclick="toggleAdditionalPermissions()">
                                         <i class="fas fa-key mr-2 text-indigo-500 text-sm"></i>
                                         Additional Permissions
-                                    </h4>
+                                        <i class="fas fa-chevron-down ml-2 text-sm transition-transform duration-200" id="additionalPermissionsIcon"></i>
+                                    </button>
                                     <button type="button"
                                             class="text-xs text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
                                             onclick="toggleAllAccordions()">
@@ -531,7 +496,7 @@
                                         <span id="toggleAllText">Expand All</span>
                                     </button>
                                 </div>
-                                <div class="space-y-2" id="permissionsAccordion">
+                                <div class="space-y-2 hidden" id="permissionsAccordion">
                                     @foreach($permissions as $group => $groupPermissions)
                                         <div class="permissions-accordion-item border border-gray-200 rounded-lg overflow-hidden transition-all duration-200">
                                             <button type="button"
@@ -596,7 +561,7 @@
                                 <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                                     <p class="text-xs text-blue-700 flex items-center">
                                         <i class="fas fa-info-circle mr-2 text-blue-500"></i>
-                                        Permissions are additional access rights beyond the primary role. Select only what the user needs for their job function.
+                                        Default permissions are automatically assigned based on the selected role. Additional permissions are optional extras beyond the role defaults.
                                     </p>
                                 </div>
                             </div>
@@ -835,10 +800,60 @@
 
 @push('scripts')
 <script>
+// Define default permissions for each role
+const roleDefaultPermissions = {
+    'admin': [
+        // Admin gets most permissions by default
+        'view users', 'create users', 'edit users', 'delete users',
+        'view profiles', 'create profile', 'edit profile', 'delete profile',
+        'view teams', 'create teams', 'edit teams', 'delete teams',
+        'view orders', 'create orders', 'edit orders', 'delete orders',
+        'view tasks', 'create tasks', 'edit tasks', 'delete tasks', 'assign tasks',
+        'view bug reports', 'create bug reports', 'edit bug reports', 'delete bug reports',
+        'view tech stacks', 'create tech stacks', 'edit tech stacks', 'delete tech stacks'
+    ],
+    'operation-manager': [
+        // Operation manager permissions
+        'view users', 'create users', 'edit users',
+        'view profiles', 'create profile', 'edit profile',
+        'view teams', 'create teams', 'edit teams',
+        'view orders', 'create orders', 'edit orders',
+        'view tasks', 'create tasks', 'edit tasks', 'assign tasks',
+        'view bug reports', 'create bug reports', 'edit bug reports',
+        'view tech stacks', 'create tech stacks', 'edit tech stacks'
+    ],
+    'project-manager': [
+        // Project manager permissions
+        'view users',
+        'view profiles',
+        'view teams',
+        'view orders', 'create orders', 'edit orders',
+        'view tasks', 'create tasks', 'edit tasks', 'assign tasks',
+        'view bug reports',
+        'view tech stacks'
+    ],
+    'team-lead': [
+        // Team lead permissions
+        'view users',
+        'view profiles',
+        'view teams',
+        'view orders',
+        'view tasks', 'create tasks', 'edit tasks',
+        'view bug reports', 'create bug reports',
+        'view tech stacks'
+    ],
+    'employee': [
+        // Employee permissions
+        'view tasks',
+        'view bug reports', 'create bug reports',
+        'view tech stacks'
+    ]
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Create user page loaded');
 
-    // Handle role change to show/hide managed teams section
+    // Handle role change to show/hide managed teams section and auto-assign permissions
     const roleSelect = document.getElementById('role');
     const managedTeamsSection = document.getElementById('managedTeamsSection');
 
@@ -855,11 +870,51 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function autoAssignPermissions() {
+        const selectedRole = roleSelect.value;
+        if (!selectedRole || !roleDefaultPermissions[selectedRole]) {
+            return;
+        }
+
+        // Get all permission checkboxes
+        const permissionCheckboxes = document.querySelectorAll('input[name="permissions[]"]');
+
+        // Only proceed if permissions exist
+        if (permissionCheckboxes.length === 0) {
+            return;
+        }
+
+        // Uncheck all permissions first
+        permissionCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+
+        // Check permissions that match the role defaults
+        permissionCheckboxes.forEach(checkbox => {
+            const permissionLabel = checkbox.closest('label').querySelector('.text-gray-400')?.textContent || '';
+            const permissionName = permissionLabel.toLowerCase().replace(/ /g, '-');
+
+            // Check if this permission should be enabled for the role
+            if (roleDefaultPermissions[selectedRole].some(perm => {
+                const permLower = perm.toLowerCase().replace(/ /g, '-');
+                return permissionName.includes(permLower) || permLower.includes(permissionName);
+            })) {
+                checkbox.checked = true;
+            }
+        });
+
+        // Update counters
+        updatePermissionCounters();
+    }
+
     // Initial check
     toggleManagedTeamsSection();
 
     // Listen for role changes
-    roleSelect.addEventListener('change', toggleManagedTeamsSection);
+    roleSelect.addEventListener('change', function() {
+        toggleManagedTeamsSection();
+        autoAssignPermissions();
+    });
 
     // Test if all step elements exist
     for (let i = 1; i <= 4; i++) {
@@ -884,9 +939,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Initialize first step
+    // Initialize first step and active status
     goToStep(1);
+    toggleActiveStatus();
 });
+
+// Toggle active status visual feedback
+function toggleActiveStatus() {
+    const isActive = document.getElementById('is_active').checked;
+    const icon = document.getElementById('activeStatusIcon');
+    const text = document.getElementById('activeStatusText');
+    const label = document.getElementById('activeStatusLabel');
+
+    if (isActive) {
+        icon.className = 'fas fa-toggle-on text-2xl text-green-600 mr-3';
+        text.textContent = 'User can login and access the system';
+        label.textContent = 'Active';
+    } else {
+        icon.className = 'fas fa-toggle-off text-2xl text-gray-400 mr-3';
+        text.textContent = 'User account is disabled and cannot login';
+        label.textContent = 'Inactive';
+    }
+}
 
 function goToStep(stepNumber) {
     console.log('Going to step:', stepNumber);
@@ -1025,6 +1099,28 @@ function togglePasswordVisibility(fieldId) {
         passwordField.type = 'password';
         toggleIcon.classList.remove('fa-eye-slash');
         toggleIcon.classList.add('fa-eye');
+    }
+}
+
+// Toggle additional permissions section
+function toggleAdditionalPermissions() {
+    const permissionsAccordion = document.getElementById('permissionsAccordion');
+    const icon = document.getElementById('additionalPermissionsIcon');
+
+    if (permissionsAccordion.classList.contains('hidden')) {
+        permissionsAccordion.classList.remove('hidden');
+        icon.classList.add('rotate-180');
+    } else {
+        permissionsAccordion.classList.add('hidden');
+        icon.classList.remove('rotate-180');
+
+        // Close all individual accordions when closing the main section
+        document.querySelectorAll('.accordion-content').forEach(item => {
+            item.classList.add('hidden');
+        });
+        document.querySelectorAll('.accordion-icon').forEach(item => {
+            item.classList.remove('rotate-180');
+        });
     }
 }
 
@@ -1312,7 +1408,7 @@ function submitUserForm() {
                     if (fieldElement) {
                         // Determine which step contains this field
                         const step1Fields = ['name', 'email', 'employee_id', 'phone', 'password'];
-                        const step2Fields = ['department', 'position', 'hire_date', 'salary', 'address'];
+                        const step2Fields = ['department', 'position', 'address'];
                         const step3Fields = ['team_id', 'tech_stack_id'];
                         const step4Fields = ['role'];
 

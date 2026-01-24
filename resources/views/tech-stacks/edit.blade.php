@@ -205,7 +205,7 @@
 <script>
 const allUsers = @json($users);
 let selectedLeaderId = '{{ old('stack_leader_id', $techStack->stack_leader_id) }}';
-let selectedMemberIds = {{ old('members', $techStack->members->pluck('id')->toArray()) } || [];
+let selectedMemberIds = {{ old('members', $techStack->users->pluck('id')->toArray()) } || [];
 
 // Leader Search Functionality
 const leaderSearch = document.getElementById('leaderSearch');

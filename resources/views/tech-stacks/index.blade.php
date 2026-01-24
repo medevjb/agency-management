@@ -139,7 +139,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 shadow-sm">
                                     <i class="fas fa-users mr-1"></i>
-                                    {{ $techStack->members->count() }}
+                                    {{ $techStack->users->count() ?? 0 }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">

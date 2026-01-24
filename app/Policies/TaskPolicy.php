@@ -12,18 +12,27 @@ class TaskPolicy
      */
     public function viewAny(User $user): bool
     {
-        // Admins can view all tasks
-        if ($user->hasRole('admin')) {
+        // Admin, Operation Manager, Project Manager can view all tasks
+        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             return true;
         }
 
-        // Managers can view tasks from teams they manage
-        if ($user->isManager()) {
+        // Team leaders can view their team's tasks
+        if ($user->hasRole('team-leader') && $user->team_id) {
             return true;
         }
 
-        // Team leaders, stack leaders, and members can view tasks from their team
-        return $user->team_id !== null;
+        // Stack leaders can view tasks using their tech stack
+        if ($user->hasRole('stack-leader') && $user->tech_stack_id) {
+            return true;
+        }
+
+        // Team members can view their team's tasks
+        if ($user->team_id) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -31,8 +40,8 @@ class TaskPolicy
      */
     public function view(User $user, Task $task): bool
     {
-        // Admins can view any task
-        if ($user->hasRole('admin')) {
+        // Admin, Operation Manager, Project Manager can view any task
+        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             return true;
         }
 
@@ -41,11 +50,6 @@ class TaskPolicy
 
         if (! $order) {
             return false;
-        }
-
-        // Managers can view tasks from teams they manage
-        if ($user->isManager() && $order->team && $user->isManagerOfTeam($order->team)) {
-            return true;
         }
 
         // Team leaders can view tasks from their team's orders
@@ -81,23 +85,22 @@ class TaskPolicy
      */
     public function create(User $user): bool
     {
-        // Admins can create tasks
-        if ($user->hasRole('admin')) {
+        // Admin, Operation Manager, Project Manager can create tasks
+        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             return true;
         }
 
-        // Managers can create tasks
-        if ($user->isManager()) {
-            return true;
-        }
-
-        // Team leaders can create tasks
+        // Team leaders can create tasks for their team
         if ($user->hasRole('team-leader')) {
             return true;
         }
 
-        // Team members can create tasks
-        return $user->team_id !== null;
+        // Team members can create their own tasks
+        if ($user->hasRole('team-member') && $user->team_id) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -105,35 +108,26 @@ class TaskPolicy
      */
     public function update(User $user, Task $task): bool
     {
-        // Admins can update any task
-        if ($user->hasRole('admin')) {
+        // Admin, Operation Manager, Project Manager can update any task
+        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             return true;
         }
 
         // Get the order for this task
         $order = $task->order;
 
-        if (! $order) {
-            return false;
-        }
-
-        // Managers can update tasks from teams they manage
-        if ($user->isManager() && $order->team && $user->isManagerOfTeam($order->team)) {
-            return true;
-        }
-
         // Team leaders can update tasks from their team's orders
-        if ($user->hasRole('team-leader') && $user->team_id === $order->team_id) {
+        if ($user->hasRole('team-leader') && $order && $user->team_id === $order->team_id) {
             return true;
         }
 
         // Stack leaders can update tasks from orders that use their tech stack
-        if ($user->hasRole('stack-leader') && $user->tech_stack_id === $order->tech_stack_id) {
+        if ($user->hasRole('stack-leader') && $order && $user->tech_stack_id === $order->tech_stack_id) {
             return true;
         }
 
-        // Users assigned to the task can update it
-        if ($task->assigned_to === $user->id) {
+        // Team members can update their own tasks only
+        if ($user->hasRole('team-member') && $task->assigned_to === $user->id) {
             return true;
         }
 
@@ -145,33 +139,25 @@ class TaskPolicy
      */
     public function delete(User $user, Task $task): bool
     {
-        // Admins can delete any task
-        if ($user->hasRole('admin')) {
+        // Admin, Operation Manager, Project Manager can delete any task
+        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             return true;
         }
 
         // Get the order for this task
         $order = $task->order;
 
-        if (! $order) {
-            return false;
-        }
-
-        // Managers can delete tasks from teams they manage
-        if ($user->isManager() && $order->team && $user->isManagerOfTeam($order->team)) {
-            return true;
-        }
-
         // Team leaders can delete tasks from their team's orders
-        if ($user->hasRole('team-leader') && $user->team_id === $order->team_id) {
+        if ($user->hasRole('team-leader') && $order && $user->team_id === $order->team_id) {
             return true;
         }
 
         // Stack leaders can delete tasks from orders that use their tech stack
-        if ($user->hasRole('stack-leader') && $user->tech_stack_id === $order->tech_stack_id) {
+        if ($user->hasRole('stack-leader') && $order && $user->tech_stack_id === $order->tech_stack_id) {
             return true;
         }
 
+        // Team members cannot delete tasks
         return false;
     }
 
@@ -180,8 +166,8 @@ class TaskPolicy
      */
     public function restore(User $user, Task $task): bool
     {
-        // Only admins can restore tasks
-        return $user->hasRole('admin');
+        // Admin, Operation Manager, Project Manager can restore tasks
+        return $user->hasRole(['admin', 'operation-manager', 'project-manager']);
     }
 
     /**
@@ -189,7 +175,7 @@ class TaskPolicy
      */
     public function forceDelete(User $user, Task $task): bool
     {
-        // Only admins can force delete tasks
+        // Only admin can force delete tasks
         return $user->hasRole('admin');
     }
 }

@@ -48,25 +48,6 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Category -->
-                    <div>
-                        <label for="bug_category_id" class="block text-sm font-medium text-gray-700 mb-1">
-                            Category <span class="text-red-500">*</span>
-                        </label>
-                        <select name="bug_category_id" id="bug_category_id" required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">Select a category</option>
-                            @foreach($categories as $category)
-                                <option value="{{ $category->id }}" {{ old('bug_category_id') == $category->id ? 'selected' : '' }}>
-                                    {{ $category->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('bug_category_id')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
                     <!-- Priority -->
                     <div>
                         <label for="bug_priority_id" class="block text-sm font-medium text-gray-700 mb-1">
@@ -126,28 +107,60 @@
 </div>
 
 <script>
+let selectedFiles = [];
+
 function previewImages(event) {
+    const preview = document.getElementById('image-preview');
+    const files = Array.from(event.target.files);
+
+    // Add new files to the array (max 5 total)
+    files.forEach(file => {
+        if (selectedFiles.length < 5 && file.type.startsWith('image/')) {
+            selectedFiles.push(file);
+        }
+    });
+
+    // Limit to 5 files
+    if (selectedFiles.length > 5) {
+        selectedFiles = selectedFiles.slice(0, 5);
+    }
+
+    renderPreview();
+}
+
+function renderPreview() {
     const preview = document.getElementById('image-preview');
     preview.innerHTML = '';
 
-    const files = event.target.files;
-    if (files && files.length > 0) {
-        Array.from(files).slice(0, 5).forEach((file, index) => {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const div = document.createElement('div');
-                div.className = 'relative';
-                div.innerHTML = `
-                    <img src="${e.target.result}" class="w-full h-32 object-cover rounded-lg border border-gray-300">
-                    <span class="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
-                        Image ${index + 1}
-                    </span>
-                `;
-                preview.appendChild(div);
-            }
-            reader.readAsDataURL(file);
-        });
-    }
+    selectedFiles.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const div = document.createElement('div');
+            div.className = 'relative group';
+            div.innerHTML = `
+                <img src="${e.target.result}" class="w-full h-32 object-cover rounded-lg border border-gray-300">
+                <button type="button" onclick="removeImage(${index})" class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+                <span class="absolute bottom-2 left-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
+                    ${file.name.length > 15 ? file.name.substring(0, 12) + '...' : file.name}
+                </span>
+            `;
+            preview.appendChild(div);
+        }
+        reader.readAsDataURL(file);
+    });
+}
+
+function removeImage(index) {
+    selectedFiles.splice(index, 1);
+    renderPreview();
+
+    // Update the file input to reflect removed files
+    const fileInput = document.getElementById('images');
+    const dataTransfer = new DataTransfer();
+    selectedFiles.forEach(file => dataTransfer.items.add(file));
+    fileInput.files = dataTransfer.files;
 }
 </script>
 @endsection

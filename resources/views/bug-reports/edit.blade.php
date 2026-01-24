@@ -70,24 +70,6 @@
 
                     <!-- Right Column -->
                     <div class="space-y-6">
-                        <!-- Category -->
-                        <div>
-                            <label for="bug_category_id" class="block text-sm font-medium text-gray-700 mb-1">
-                                Category <span class="text-red-500">*</span>
-                            </label>
-                            <select name="bug_category_id" id="bug_category_id" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                @foreach($categories as $category)
-                                    <option value="{{ $category->id }}" {{ old('bug_category_id', $bugReport->bug_category_id) == $category->id ? 'selected' : '' }}>
-                                        {{ $category->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('bug_category_id')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
                         <!-- Priority -->
                         <div>
                             <label for="bug_priority_id" class="block text-sm font-medium text-gray-700 mb-1">
@@ -185,25 +167,57 @@
 </div>
 
 <script>
+let selectedFiles = [];
+
 function previewImages(event) {
+    const preview = document.getElementById('image-preview');
+    const files = Array.from(event.target.files);
+
+    // Add new files to the array (max 5 total)
+    files.forEach(file => {
+        if (selectedFiles.length < 5 && file.type.startsWith('image/')) {
+            selectedFiles.push(file);
+        }
+    });
+
+    // Limit to 5 files
+    if (selectedFiles.length > 5) {
+        selectedFiles = selectedFiles.slice(0, 5);
+    }
+
+    renderPreview();
+}
+
+function renderPreview() {
     const preview = document.getElementById('image-preview');
     preview.innerHTML = '';
 
-    const files = event.target.files;
-    if (files && files.length > 0) {
-        Array.from(files).slice(0, 5).forEach((file, index) => {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const div = document.createElement('div');
-                div.className = 'relative';
-                div.innerHTML = `
-                    <img src="${e.target.result}" class="w-full h-20 object-cover rounded border border-gray-300">
-                `;
-                preview.appendChild(div);
-            }
-            reader.readAsDataURL(file);
-        });
-    }
+    selectedFiles.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const div = document.createElement('div');
+            div.className = 'relative group';
+            div.innerHTML = `
+                <img src="${e.target.result}" class="w-full h-20 object-cover rounded border border-gray-300">
+                <button type="button" onclick="removeImage(${index})" class="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+                    <i class="fas fa-times text-xs"></i>
+                </button>
+            `;
+            preview.appendChild(div);
+        }
+        reader.readAsDataURL(file);
+    });
+}
+
+function removeImage(index) {
+    selectedFiles.splice(index, 1);
+    renderPreview();
+
+    // Update the file input to reflect removed files
+    const fileInput = document.getElementById('images');
+    const dataTransfer = new DataTransfer();
+    selectedFiles.forEach(file => dataTransfer.items.add(file));
+    fileInput.files = dataTransfer.files;
 }
 </script>
 @endsection

@@ -166,28 +166,6 @@
                                            class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
                                            placeholder="Senior Developer">
                                 </div>
-
-                                <div>
-                                    <label for="hire_date" class="block text-sm font-semibold text-gray-700 mb-2">
-                                        Hire Date
-                                    </label>
-                                    <input type="text" id="hire_date" name="hire_date"
-                                           value="{{ old('hire_date', $user->hire_date ? $user->hire_date->format('Y-m-d') : '') }}"
-                                           class="datepicker w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base cursor-pointer"
-                                           placeholder="Select hire date..."
-                                           readonly>
-                                </div>
-
-                                <div>
-                                    <label for="salary" class="block text-sm font-semibold text-gray-700 mb-2">
-                                        Salary
-                                    </label>
-                                    <input type="number" id="salary" name="salary" step="0.01" min="0"
-                                           value="{{ old('salary', $user->salary) }}"
-                                           class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
-                                           placeholder="75000.00">
-                                </div>
-
                                 <div class="lg:col-span-2">
                                     <label for="address" class="block text-sm font-semibold text-gray-700 mb-2">
                                         Address
@@ -732,7 +710,7 @@ function submitUserForm() {
 
                     if (fieldElement) {
                         const step1Fields = ['name', 'email', 'employee_id', 'phone', 'password'];
-                        const step2Fields = ['department', 'position', 'hire_date', 'salary', 'address'];
+                        const step2Fields = ['department', 'position', 'address'];
                         const step3Fields = ['team_id', 'tech_stack_id'];
                         const step4Fields = ['role'];
 

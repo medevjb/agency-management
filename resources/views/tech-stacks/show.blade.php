@@ -90,7 +90,7 @@
                             </div>
                             Stack Members
                             <span class="ml-3 px-2.5 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                {{ $techStack->members->count() }}
+                                {{ $techStack->users->count() ?? 0 }}
                             </span>
                         </h2>
                         @can('addMembers', $techStack)
@@ -101,9 +101,9 @@
                         @endcan
                     </div>
 
-                    @if($techStack->members->count() > 0)
+                    @if($techStack->users->count() > 0)
                         <div class="grid grid-cols-1 gap-3">
-                            @foreach($techStack->members as $member)
+                            @foreach($techStack->users as $member)
                                 <div class="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-xl hover:shadow-md transition-all">
                                     <div class="flex items-center">
                                         <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mr-4 shadow-md">
@@ -211,7 +211,7 @@
                             </div>
                             <span class="font-medium text-gray-700">Total Members</span>
                         </div>
-                        <span class="text-2xl font-bold text-blue-700">{{ $techStack->members->count() }}</span>
+                        <span class="text-2xl font-bold text-blue-700">{{ $techStack->users->count() ?? 0 }}</span>
                     </div>
 
                     <!-- Active Projects -->
@@ -315,7 +315,7 @@
             <div class="max-h-80 overflow-y-auto border border-gray-200 rounded-xl p-2">
                 <div id="memberList">
                     @php
-                        $availableUsers = \App\Models\User::whereNotIn('id', $techStack->members->pluck('id'))
+                        $availableUsers = \App\Models\User::whereNotIn('id', $techStack->users->pluck('id') ?? [])
                             ->where('is_active', true)
                             ->get();
                     @endphp

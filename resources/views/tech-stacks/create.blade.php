@@ -32,7 +32,7 @@
                             Tech Stack Information
                         </h2>
 
-                        <div class="grid grid-cols-1 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
                                     <i class="fas fa-tag mr-2 text-indigo-500"></i>Tech Stack Name <span class="text-red-500">*</span>
@@ -48,18 +48,36 @@
                             </div>
 
                             <div>
-                                <label for="description" class="block text-sm font-semibold text-gray-700 mb-2">
-                                    <i class="fas fa-align-left mr-2 text-indigo-500"></i>Description
+                                <label for="team_id" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fas fa-users mr-2 text-indigo-500"></i>Team <span class="text-red-500">*</span>
                                 </label>
-                                <textarea id="description" name="description" rows="4"
-                                          class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-none"
-                                          placeholder="Describe the technologies and focus of this stack..."></textarea>
-                                @error('description')
+                                <select id="team_id" name="team_id" required
+                                        class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                                    <option value="">Select a team</option>
+                                    @foreach($teams as $team)
+                                        <option value="{{ $team->id }}">{{ $team->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('team_id')
                                     <p class="mt-2 text-sm text-red-600 flex items-center">
                                         <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
                                     </p>
                                 @enderror
                             </div>
+                        </div>
+
+                        <div>
+                            <label for="description" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-align-left mr-2 text-indigo-500"></i>Description
+                            </label>
+                            <textarea id="description" name="description" rows="4"
+                                      class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-none"
+                                      placeholder="Describe the technologies and focus of this stack..."></textarea>
+                            @error('description')
+                                <p class="mt-2 text-sm text-red-600 flex items-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                </p>
+                            @enderror
                         </div>
                     </div>
 
@@ -197,6 +215,69 @@
 const allUsers = @json($users);
 let selectedLeaderId = '';
 let selectedMemberIds = [];
+let currentTeamMembers = [];
+
+// Team selection handler
+const teamSelect = document.getElementById('team_id');
+if (teamSelect) {
+    teamSelect.addEventListener('change', function() {
+        const teamId = this.value;
+        if (teamId) {
+            fetchTeamMembers(teamId);
+        } else {
+            currentTeamMembers = [];
+            selectedMemberIds = [];
+            renderSelectedMembers();
+        }
+    });
+}
+
+// Fetch team members via AJAX
+async function fetchTeamMembers(teamId, search = '') {
+    try {
+        const excludeIds = selectedMemberIds;
+        const params = new URLSearchParams();
+        if (search) {
+            params.append('search', search);
+        }
+        if (excludeIds.length > 0) {
+            params.append('exclude', excludeIds.join(','));
+        }
+
+        const response = await axios.get(`/tech-stacks/search-members/${teamId}?${params}`);
+        currentTeamMembers = response.data.users;
+        renderMemberDropdown(currentTeamMembers);
+    } catch (error) {
+        console.error('Error fetching team members:', error);
+        currentTeamMembers = [];
+    }
+}
+
+// Render member dropdown
+function renderMemberDropdown(users) {
+    const memberSearchResults = document.getElementById('memberSearchResults');
+
+    if (users.length === 0) {
+        memberSearchResults.innerHTML = '<div class="p-4 text-gray-500 text-center">No team members found</div>';
+    } else {
+        memberSearchResults.innerHTML = users.map(user => `
+            <div class="search-result-item p-4 border-b border-gray-100 last:border-b-0" onclick="addMember(${user.id}, '${user.name.replace(/'/g, "\\'")}', '${user.employee_id}')">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mr-3">
+                        <span class="text-white font-semibold text-sm">${user.name.charAt(0)}</span>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-semibold text-gray-900">${user.name}</p>
+                        <p class="text-sm text-gray-600">${user.employee_id}</p>
+                        ${user.position ? `<p class="text-xs text-blue-600 mt-0.5">${user.position}</p>` : ''}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    memberSearchResults.classList.remove('hidden');
+}
 
 // Leader Search Functionality
 const leaderSearch = document.getElementById('leaderSearch');
@@ -212,16 +293,17 @@ leaderSearch.addEventListener('input', function() {
         return;
     }
 
-    const filtered = allUsers.filter(user =>
+    const filtered = currentTeamMembers.length > 0 ? currentTeamMembers : allUsers;
+    const searchResults = filtered.filter(user =>
         user.name.toLowerCase().includes(searchTerm) ||
         user.employee_id.toLowerCase().includes(searchTerm)
     );
 
-    if (filtered.length === 0) {
+    if (searchResults.length === 0) {
         leaderSearchResults.innerHTML = '<div class="p-4 text-gray-500 text-center">No users found</div>';
     } else {
-        leaderSearchResults.innerHTML = filtered.map(user => `
-            <div class="search-result-item p-4 border-b border-gray-100 last:border-b-0" onclick="selectLeader(${user.id}, '${user.name}', '${user.employee_id}')">
+        leaderSearchResults.innerHTML = searchResults.map(user => `
+            <div class="search-result-item p-4 border-b border-gray-100 last:border-b-0" onclick="selectLeader(${user.id}, '${user.name.replace(/'/g, "\\'")}', '${user.employee_id}')">
                 <div class="flex items-center">
                     <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
                         <span class="text-white font-semibold text-sm">${user.name.charAt(0)}</span>
@@ -273,44 +355,31 @@ const memberSearch = document.getElementById('memberSearch');
 const memberSearchResults = document.getElementById('memberSearchResults');
 const selectedMembersDiv = document.getElementById('selectedMembers');
 
-memberSearch.addEventListener('input', function() {
-    const searchTerm = this.value.toLowerCase();
+let searchTimeout = null;
 
-    if (searchTerm.length < 2) {
-        memberSearchResults.classList.add('hidden');
+memberSearch.addEventListener('input', function() {
+    const searchTerm = this.value;
+    const teamId = document.getElementById('team_id').value;
+
+    clearTimeout(searchTimeout);
+
+    if (!teamId) {
+        memberSearchResults.innerHTML = '<div class="p-4 text-yellow-600 text-center"><i class="fas fa-exclamation-triangle mr-2"></i>Please select a team first</div>';
+        memberSearchResults.classList.remove('hidden');
         return;
     }
 
-    const filtered = allUsers.filter(user =>
-        !selectedMemberIds.includes(user.id) &&
-        (user.name.toLowerCase().includes(searchTerm) ||
-        user.employee_id.toLowerCase().includes(searchTerm))
-    );
-
-    if (filtered.length === 0) {
-        memberSearchResults.innerHTML = '<div class="p-4 text-gray-500 text-center">No users found</div>';
-    } else {
-        memberSearchResults.innerHTML = filtered.map(user => `
-            <div class="search-result-item p-4 border-b border-gray-100 last:border-b-0" onclick="addMember(${user.id}, '${user.name}', '${user.employee_id}')">
-                <div class="flex items-center">
-                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mr-3">
-                        <span class="text-white font-semibold text-sm">${user.name.charAt(0)}</span>
-                    </div>
-                    <div>
-                        <p class="font-semibold text-gray-900">${user.name}</p>
-                        <p class="text-sm text-gray-600">${user.employee_id}</p>
-                    </div>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    memberSearchResults.classList.remove('hidden');
+    searchTimeout = setTimeout(() => {
+        fetchTeamMembers(teamId, searchTerm);
+    }, 300);
 });
 
 memberSearch.addEventListener('focus', function() {
-    if (this.value.length >= 2) {
-        memberSearchResults.classList.remove('hidden');
+    const teamId = document.getElementById('team_id').value;
+    if (teamId && this.value.length >= 2) {
+        fetchTeamMembers(teamId, this.value);
+    } else if (teamId && this.value.length === 0) {
+        fetchTeamMembers(teamId, '');
     }
 });
 
@@ -333,6 +402,12 @@ function addMember(id, name, employeeId) {
 function removeMember(id) {
     selectedMemberIds = selectedMemberIds.filter(memberId => memberId !== id);
     renderSelectedMembers();
+
+    // Refresh dropdown to show removed member
+    const teamId = document.getElementById('team_id').value;
+    if (teamId) {
+        fetchTeamMembers(teamId, memberSearch.value);
+    }
 }
 
 function renderSelectedMembers() {

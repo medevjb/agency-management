@@ -112,6 +112,13 @@ class User extends Authenticatable
         return $this->belongsTo(TechStack::class);
     }
 
+    public function techStacks(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(TechStack::class, 'tech_stack_user')
+            ->withPivot('role')
+            ->withTimestamps();
+    }
+
     public function projects(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Project::class);
