@@ -12,8 +12,8 @@ class TechStackPolicy
      */
     public function viewAny(User $user): bool
     {
-        // Only admins and managers can view tech stacks
-        return $user->hasRole(['admin', 'operation-manager', 'project-manager']);
+        // Admins, managers, team leaders, and stack leaders can view tech stacks
+        return $user->hasRole(['admin', 'operation-manager', 'project-manager', 'team-leader', 'stack-leader']);
     }
 
     /**
@@ -21,8 +21,23 @@ class TechStackPolicy
      */
     public function view(User $user, TechStack $techStack): bool
     {
-        // Only admins and managers can view tech stacks
-        return $user->hasRole(['admin', 'operation-manager', 'project-manager']);
+        // Admins and managers can view any tech stack
+        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
+            return true;
+        }
+
+        // Team leaders can view tech stacks created by them or assigned to their team
+        if ($user->hasRole('team-leader')) {
+            return $techStack->stack_leader_id === $user->id
+                || $techStack->team_id === $user->team_id;
+        }
+
+        // Stack leaders can view tech stacks they lead
+        if ($user->hasRole('stack-leader')) {
+            return $techStack->stack_leader_id === $user->id;
+        }
+
+        return false;
     }
 
     /**
@@ -30,8 +45,8 @@ class TechStackPolicy
      */
     public function create(User $user): bool
     {
-        // Only admins and managers can create tech stacks
-        return $user->hasRole(['admin', 'operation-manager', 'project-manager']);
+        // Admins, operation managers, project managers, and team leaders can create tech stacks
+        return $user->hasRole(['admin', 'operation-manager', 'project-manager', 'team-leader']);
     }
 
     /**
@@ -39,8 +54,22 @@ class TechStackPolicy
      */
     public function update(User $user, TechStack $techStack): bool
     {
-        // Only admins and managers can update tech stacks
-        return $user->hasRole(['admin', 'operation-manager', 'project-manager']);
+        // Admins and operation managers can update any tech stack
+        if ($user->hasRole(['admin', 'operation-manager'])) {
+            return true;
+        }
+
+        // Team leaders can update tech stacks created by them
+        if ($user->hasRole('team-leader')) {
+            return $techStack->stack_leader_id === $user->id;
+        }
+
+        // Stack leaders can update their tech stacks
+        if ($user->hasRole('stack-leader')) {
+            return $techStack->stack_leader_id === $user->id;
+        }
+
+        return false;
     }
 
     /**
@@ -75,8 +104,22 @@ class TechStackPolicy
      */
     public function addMembers(User $user, TechStack $techStack): bool
     {
-        // Only admins and managers can add members to tech stacks
-        return $user->hasRole(['admin', 'operation-manager', 'project-manager']);
+        // Admins and managers can add any members
+        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
+            return true;
+        }
+
+        // Team leaders can add their team members
+        if ($user->hasRole('team-leader')) {
+            return $techStack->stack_leader_id === $user->id;
+        }
+
+        // Stack leaders can add members to their tech stack
+        if ($user->hasRole('stack-leader')) {
+            return $techStack->stack_leader_id === $user->id;
+        }
+
+        return false;
     }
 
     /**
@@ -84,7 +127,21 @@ class TechStackPolicy
      */
     public function removeMember(User $user, TechStack $techStack): bool
     {
-        // Only admins and managers can remove members from tech stacks
-        return $user->hasRole(['admin', 'operation-manager', 'project-manager']);
+        // Admins and managers can remove any members
+        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
+            return true;
+        }
+
+        // Team leaders can remove their team members
+        if ($user->hasRole('team-leader')) {
+            return $techStack->stack_leader_id === $user->id;
+        }
+
+        // Stack leaders can remove members from their tech stack
+        if ($user->hasRole('stack-leader')) {
+            return $techStack->stack_leader_id === $user->id;
+        }
+
+        return false;
     }
 }

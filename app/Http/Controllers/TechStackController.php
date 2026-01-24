@@ -33,18 +33,28 @@ class TechStackController extends Controller
             ->when($request->filled('leader'), function ($q) use ($request) {
                 $q->where('stack_leader_id', $request->leader);
             })
-            ->when(! $user->hasRole(['admin', 'stack-leader']), function ($q) use ($user) {
-                // Team leaders see tech stacks used by their team's orders
-                if ($user->hasRole('team-leader') && $user->team_id) {
-                    $q->whereHas('orders', function ($query) use ($user) {
-                        $query->where('team_id', $user->team_id);
+            ->when(! $user->hasRole(['admin', 'operation-manager']), function ($q) use ($user) {
+                // Team leaders see tech stacks created by them OR tech stacks assigned to their team
+                if ($user->hasRole('team-leader')) {
+                    $q->where(function ($query) use ($user) {
+                        // Tech stacks created by this team leader
+                        $query->where('stack_leader_id', $user->id)
+                            // OR tech stacks assigned to their team
+                            ->orWhereHas('teams', function ($q) use ($user) {
+                                $q->where('teams.id', $user->team_id);
+                            });
                     });
+                } elseif ($user->hasRole('stack-leader')) {
+                    // Stack leaders see tech stacks they lead
+                    $q->where('stack_leader_id', $user->id);
                 } else {
-                    // Team members see their assigned tech stack
-                    if ($user->tech_stack_id) {
-                        $q->where('id', $user->tech_stack_id);
+                    // Team members see tech stacks assigned to their team
+                    if ($user->team_id) {
+                        $q->whereHas('teams', function ($query) use ($user) {
+                            $query->where('teams.id', $user->team_id);
+                        });
                     } else {
-                        $q->whereRaw('1 = 0'); // Show nothing if no tech stack assigned
+                        $q->whereRaw('1 = 0');
                     }
                 }
             })
@@ -69,18 +79,24 @@ class TechStackController extends Controller
         $user = auth()->user();
 
         $query = TechStack::with(['stackLeader', 'users', 'projects'])
-            ->when(! $user->hasRole(['admin', 'stack-leader']), function ($q) use ($user) {
-                // Team leaders see tech stacks used by their team's orders
-                if ($user->hasRole('team-leader') && $user->team_id) {
-                    $q->whereHas('orders', function ($query) use ($user) {
-                        $query->where('team_id', $user->team_id);
+            ->when(! $user->hasRole(['admin', 'operation-manager']), function ($q) use ($user) {
+                // Team leaders see tech stacks created by them OR tech stacks assigned to their team
+                if ($user->hasRole('team-leader')) {
+                    $q->where(function ($query) use ($user) {
+                        $query->where('stack_leader_id', $user->id)
+                            ->orWhereHas('teams', function ($q) use ($user) {
+                                $q->where('teams.id', $user->team_id);
+                            });
                     });
+                } elseif ($user->hasRole('stack-leader')) {
+                    $q->where('stack_leader_id', $user->id);
                 } else {
-                    // Team members see their assigned tech stack
-                    if ($user->tech_stack_id) {
-                        $q->where('id', $user->tech_stack_id);
+                    if ($user->team_id) {
+                        $q->whereHas('teams', function ($query) use ($user) {
+                            $query->where('teams.id', $user->team_id);
+                        });
                     } else {
-                        $q->whereRaw('1 = 0'); // Show nothing if no tech stack assigned
+                        $q->whereRaw('1 = 0');
                     }
                 }
             });
@@ -129,8 +145,17 @@ class TechStackController extends Controller
     {
         $this->authorize('create', TechStack::class);
 
-        $users = User::where('is_active', true)->get();
-        $teams = Team::all();
+        $user = auth()->user();
+
+        // For team leaders, only show their team members
+        if ($user->hasRole('team-leader') && $user->team_id) {
+            $users = User::where('team_id', $user->team_id)->where('is_active', true)->get();
+            $teams = collect([Team::find($user->team_id)]);
+        } else {
+            // Admin and operation manager see all
+            $users = User::where('is_active', true)->get();
+            $teams = Team::all();
+        }
 
         return view('tech-stacks.create', compact('users', 'teams'));
     }
@@ -141,35 +166,73 @@ class TechStackController extends Controller
     public function store(Request $request)
     {
         $this->authorize('create', TechStack::class);
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'team_id' => 'required|exists:teams,id',
-            'description' => 'nullable|string',
-            'stack_leader_id' => 'nullable|exists:users,id',
-            'members' => 'nullable|array',
-            'members.*' => 'exists:users,id',
-        ]);
 
-        $techStack = TechStack::create([
-            'name' => $validated['name'],
-            'team_id' => $validated['team_id'],
-            'description' => $validated['description'],
-            'stack_leader_id' => $validated['stack_leader_id'],
-        ]);
+        $user = auth()->user();
 
-        // Assign stack leader role if specified
-        if ($validated['stack_leader_id']) {
-            $leader = User::find($validated['stack_leader_id']);
-            $leader->update(['tech_stack_id' => $techStack->id]);
-            if (! $leader->hasRole('stack-leader')) {
-                $leader->assignRole('stack-leader');
+        // For team leaders, auto-assign their team and themselves as stack leader
+        if ($user->hasRole('team-leader') && $user->team_id) {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'members' => 'nullable|array',
+                'members.*' => 'exists:users,id',
+            ]);
+
+            $techStack = TechStack::create([
+                'name' => $validated['name'],
+                'team_id' => $user->team_id,
+                'description' => $validated['description'] ?? null,
+                'stack_leader_id' => $user->id,
+            ]);
+
+            // Assign stack leader role to the team leader
+            if (! $user->hasRole('stack-leader')) {
+                $user->assignRole('stack-leader');
             }
-        }
+            $user->update(['tech_stack_id' => $techStack->id]);
 
-        // Add tech stack members
-        if (! empty($validated['members'])) {
-            foreach ($validated['members'] as $memberId) {
-                User::where('id', $memberId)->update(['tech_stack_id' => $techStack->id]);
+            // Add tech stack members
+            if (! empty($validated['members'])) {
+                foreach ($validated['members'] as $memberId) {
+                    $member = User::find($memberId);
+                    // Only allow adding team members
+                    if ($member->team_id === $user->team_id) {
+                        $member->update(['tech_stack_id' => $techStack->id]);
+                    }
+                }
+            }
+        } else {
+            // Admin and operation manager
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'team_id' => 'required|exists:teams,id',
+                'description' => 'nullable|string',
+                'stack_leader_id' => 'nullable|exists:users,id',
+                'members' => 'nullable|array',
+                'members.*' => 'exists:users,id',
+            ]);
+
+            $techStack = TechStack::create([
+                'name' => $validated['name'],
+                'team_id' => $validated['team_id'],
+                'description' => $validated['description'] ?? null,
+                'stack_leader_id' => $validated['stack_leader_id'] ?? null,
+            ]);
+
+            // Assign stack leader role if specified
+            if (! empty($validated['stack_leader_id'])) {
+                $leader = User::find($validated['stack_leader_id']);
+                $leader->update(['tech_stack_id' => $techStack->id]);
+                if (! $leader->hasRole('stack-leader')) {
+                    $leader->assignRole('stack-leader');
+                }
+            }
+
+            // Add tech stack members
+            if (! empty($validated['members'])) {
+                foreach ($validated['members'] as $memberId) {
+                    User::where('id', $memberId)->update(['tech_stack_id' => $techStack->id]);
+                }
             }
         }
 
