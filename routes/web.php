@@ -53,6 +53,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/tasks-data', [TaskController::class, 'getTasks'])->name('tasks.data');
     Route::post('/tasks/bulk-update', [TaskController::class, 'bulkUpdate'])->name('tasks.bulk-update');
     Route::get('/tasks/archived', [TaskController::class, 'archived'])->name('tasks.archived');
+    Route::get('/tasks/assignable-users', [TaskController::class, 'getAssignableUsers'])->name('tasks.assignable-users');
     Route::get('/tasks/create', [TaskController::class, 'create'])->name('tasks.create');
     Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
     Route::get('/tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');

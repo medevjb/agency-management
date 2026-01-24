@@ -9,6 +9,7 @@ use App\Models\Task;
 use App\Models\User;
 use App\Notifications\TaskAssignedNotification;
 use App\Notifications\TaskUpdatedNotification;
+use App\Services\TaskAssignmentService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -132,8 +133,9 @@ class TaskController extends Controller
     {
         $this->authorize('create', Task::class);
 
+        $user = auth()->user();
         $orders = Order::all();
-        $users = User::all();
+        $users = TaskAssignmentService::getAssignableUsers($user);
 
         return view('tasks.create', compact('orders', 'users'));
     }
@@ -145,6 +147,17 @@ class TaskController extends Controller
     {
         $this->authorize('create', Task::class);
 
+        $user = auth()->user();
+        $assignedTo = $request->assigned_to ?? $user->id;
+
+        // Validate assignment
+        if ($assignedTo != $user->id) {
+            $assignee = User::find($assignedTo);
+            if (! TaskAssignmentService::canAssignTo($user, $assignee)) {
+                return back()->with('error', 'You are not authorized to assign tasks to this user.');
+            }
+        }
+
         $task = Task::create([
             'title' => $request->title,
             'description' => $request->description,
@@ -154,12 +167,13 @@ class TaskController extends Controller
             'estimated_hours' => $request->estimated_hours,
             'actual_hours' => $request->actual_hours,
             'order_id' => $request->order_id,
-            'assigned_to' => $request->assigned_to ?? auth()->id(),
-            'created_by' => auth()->id(),
+            'team_id' => TaskAssignmentService::getDefaultTeamId($user),
+            'assigned_to' => $assignedTo,
+            'created_by' => $user->id,
         ]);
 
         // Send notification to assigned user
-        if ($task->assigned_to && $task->assigned_to !== auth()->id()) {
+        if ($task->assigned_to && $task->assigned_to !== $user->id) {
             $task->assignedTo->notify(new TaskAssignedNotification($task));
         }
 
@@ -207,17 +221,18 @@ class TaskController extends Controller
     {
         $this->authorize('update', $task);
 
+        $user = auth()->user();
+        $orders = Order::all();
+        $users = TaskAssignmentService::getAssignableUsers($user);
+
         // Return JSON for AJAX requests (modal)
         if (request()->expectsJson()) {
             return response()->json([
                 'task' => $task,
-                'orders' => Order::all(),
-                'users' => User::all(),
+                'orders' => $orders,
+                'users' => $users,
             ]);
         }
-
-        $orders = Order::all();
-        $users = User::all();
 
         return view('tasks.edit', compact('task', 'orders', 'users'));
     }
@@ -229,17 +244,27 @@ class TaskController extends Controller
     {
         $this->authorize('update', $task);
 
+        $user = auth()->user();
         $oldAssignedTo = $task->assigned_to;
+        $data = $request->validated();
 
-        $task->update($request->validated());
+        // Validate reassignment
+        if (isset($data['assigned_to']) && $data['assigned_to'] != $oldAssignedTo) {
+            $assignee = User::find($data['assigned_to']);
+            if (! TaskAssignmentService::canAssignTo($user, $assignee)) {
+                return back()->with('error', 'You are not authorized to assign tasks to this user.');
+            }
+        }
+
+        $task->update($data);
 
         // Notify newly assigned user if assignment changed
-        if ($task->assigned_to && $task->assigned_to !== $oldAssignedTo && $task->assigned_to !== auth()->id()) {
+        if ($task->assigned_to && $task->assigned_to !== $oldAssignedTo && $task->assigned_to !== $user->id) {
             $task->assignedTo->notify(new TaskAssignedNotification($task));
         }
 
         // Notify assigned user about important updates
-        if ($task->assigned_to && $task->assigned_to !== auth()->id()) {
+        if ($task->assigned_to && $task->assigned_to !== $user->id) {
             if ($task->wasChanged('status')) {
                 $task->assignedTo->notify(new TaskUpdatedNotification($task, 'status'));
             } elseif ($task->wasChanged('priority')) {
@@ -429,6 +454,25 @@ class TaskController extends Controller
         return redirect()
             ->route('tasks.index')
             ->with('success', 'Task deleted successfully.');
+    }
+
+    /**
+     * Get assignable users for the current user.
+     */
+    public function getAssignableUsers(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $user = auth()->user();
+        $users = TaskAssignmentService::getAssignableUsers($user);
+
+        return response()->json([
+            'users' => $users->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ];
+            }),
+        ]);
     }
 
     /**
