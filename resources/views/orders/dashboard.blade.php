@@ -166,7 +166,7 @@
             <div class="stat-card bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-xl p-6 text-white">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-green-100 text-sm font-medium mb-1">Total Revenue</p>
+                        <p class="text-green-100 text-sm font-medium mb-1">Total Value</p>
                         <p class="text-4xl font-bold">${{ number_format($stats['totalRevenue'], 2) }}</p>
                     </div>
                     <div class="bg-white/20 p-4 rounded-2xl">
@@ -202,7 +202,7 @@
             <div class="stat-card bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl shadow-xl p-6 text-white">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-orange-100 text-sm font-medium mb-1">Avg Revenue</p>
+                        <p class="text-orange-100 text-sm font-medium mb-1">Avg Value</p>
                         <p class="text-4xl font-bold">${{ number_format($stats['averageRevenue'], 2) }}</p>
                     </div>
                     <div class="bg-white/20 p-4 rounded-2xl">
@@ -272,7 +272,7 @@
             <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
                 <h3 class="text-lg font-bold text-gray-900 mb-4">
                     <i class="fas fa-chart-area text-indigo-500 mr-2"></i>
-                    Monthly Revenue ({{ date('Y') }})
+                    Monthly Value ({{ date('Y') }})
                 </h3>
                 <div class="chart-container">
                     <canvas id="revenueChart"></canvas>
@@ -319,7 +319,7 @@
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Month</th>
                                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Total Orders</th>
                                 <th class="px-4 py-3 text-center text-xs font-medium text-green-600 uppercase tracking-wider">Delivered</th>
-                                <th class="px-4 py-3 text-center text-xs font-medium text-green-700 uppercase tracking-wider">Delivered Amount</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-green-700 uppercase tracking-wider">Delivered Value</th>
                                 <th class="px-4 py-3 text-center text-xs font-medium text-red-600 uppercase tracking-wider">Cancelled</th>
                                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Delivery Rate</th>
                             </tr>
@@ -407,7 +407,7 @@
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year</th>
                                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Total Orders</th>
                                 <th class="px-4 py-3 text-center text-xs font-medium text-green-600 uppercase tracking-wider">Delivered</th>
-                                <th class="px-4 py-3 text-center text-xs font-medium text-green-700 uppercase tracking-wider">Delivered Amount</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-green-700 uppercase tracking-wider">Delivered Value</th>
                                 <th class="px-4 py-3 text-center text-xs font-medium text-red-600 uppercase tracking-wider">Cancelled</th>
                                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Delivery Rate</th>
                             </tr>
@@ -763,7 +763,7 @@ if ($diffInSeconds <= 0) {
             <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-8">
                 <h3 class="text-lg font-bold text-gray-900 mb-4">
                     <i class="fas fa-users text-indigo-500 mr-2"></i>
-                    Revenue by Team
+                    Value by Team
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     @foreach ($revenueByTeam->take(8) as $team)
@@ -832,7 +832,7 @@ if ($diffInSeconds <= 0) {
                     data: {
                         labels: monthLabels,
                         datasets: [{
-                            label: 'Revenue',
+                            label: 'Value',
                             data: Object.values(monthlyRevenue),
                             borderColor: '#6366f1',
                             backgroundColor: 'rgba(99, 102, 241, 0.1)',
@@ -856,7 +856,7 @@ if ($diffInSeconds <= 0) {
                             tooltip: {
                                 callbacks: {
                                     label: function(context) {
-                                        return 'Revenue: $' + context.parsed.y.toLocaleString();
+                                        return 'Value: $' + context.parsed.y.toLocaleString();
                                     }
                                 }
                             }

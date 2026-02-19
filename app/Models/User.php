@@ -158,6 +158,6 @@ class User extends Authenticatable
 
     public function isManager(): bool
     {
-        return $this->hasAnyRole(['operation-manager', 'project-manager']);
+        return $this->hasAnyRole(['admin', 'operation-manager', 'project-manager']);
     }
 }

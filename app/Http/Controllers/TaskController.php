@@ -280,7 +280,25 @@ class TaskController extends Controller
      */
     public function updateStatus(Request $request, Task $task): \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
     {
-        $this->authorize('update', $task);
+        $this->authorize('updateStatus', $task);
+
+        $user = auth()->user();
+
+        // Team members (not leaders) can only submit or mark in-progress their own assigned tasks
+        if ($user->hasRole('team-member') &&
+            ! $user->hasRole(['team-leader', 'stack-leader']) &&
+            $task->assigned_to === $user->id) {
+            if ($request->status !== 'completed' && $request->status !== 'in-progress') {
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'You can only submit tasks as completed or mark them as in progress.',
+                    ], 403);
+                }
+
+                return back()->with('error', 'You can only submit tasks as completed or mark them as in progress.');
+            }
+        }
 
         $request->validate([
             'status' => 'required|in:pending,in-progress,completed,on-hold,archived',

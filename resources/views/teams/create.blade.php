@@ -138,40 +138,44 @@
                                         <p class="text-sm text-gray-600">Choose who will lead and coordinate this team</p>
                                     </div>
                                 </div>
-                                <div>
-                                    <label for="team_leader_id" class="block text-sm font-bold text-gray-700 mb-3">
-                                        Select Team Leader
-                                    </label>
-                                    <div class="relative mb-2">
-                                        <input type="text" id="team_leader_search" placeholder="Search team leader..."
-                                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm"
-                                               onkeyup="filterTeamLeader()">
-                                        <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
-                                    </div>
-                                    <div class="relative">
-                                        <select id="team_leader_id" name="team_leader_id"
-                                                class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm appearance-none transition-all duration-200 text-lg">
-                                            <option value="">Choose a team leader...</option>
-                                            @foreach($users as $user)
-                                                <option value="{{ $user->id }}"
-                                                        data-name="{{ $user->name }}"
-                                                        data-employee="{{ $user->employee_id }}"
-                                                        {{ old('team_leader_id') == $user->id ? 'selected' : '' }}>
-                                                    {{ $user->name }} @if($user->employee_id) ({{ $user->employee_id }}) @endif
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                            <i class="fas fa-chevron-down text-gray-400"></i>
+
+                                <!-- Custom Searchable Leader Dropdown -->
+                                <div class="relative" id="leaderDropdownContainer">
+                                    <input type="hidden" name="team_leader_id" id="team_leader_id" value="{{ old('team_leader_id') }}">
+
+                                    <button type="button" id="leaderDropdownTrigger"
+                                            class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-left flex items-center justify-between">
+                                        <div id="leaderDisplay" class="flex items-center flex-1 min-w-0">
+                                            <span class="text-gray-400 text-lg">Choose a team leader...</span>
+                                        </div>
+                                        <i class="fas fa-chevron-down text-gray-400 transition-transform duration-200 ml-2" id="leaderChevron"></i>
+                                    </button>
+
+                                    <div id="leaderDropdown" class="hidden absolute z-50 w-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
+                                        <div class="p-3 border-b border-gray-100">
+                                            <div class="relative">
+                                                <input type="text" id="leaderSearchInput" placeholder="Search by name or employee ID..."
+                                                       class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                                                       autocomplete="off">
+                                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                            </div>
+                                        </div>
+                                        <div id="leaderOptions" class="max-h-64 overflow-y-auto p-2"></div>
+                                        <div class="p-2 border-t border-gray-100">
+                                            <button type="button" id="clearLeaderBtn"
+                                                    class="w-full px-3 py-2 text-sm text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                                <i class="fas fa-times mr-2"></i>Clear selection
+                                            </button>
                                         </div>
                                     </div>
-                                    @error('team_leader_id')
-                                        <p class="mt-3 text-sm text-red-600 flex items-center font-medium">
-                                            <i class="fas fa-exclamation-circle mr-2"></i>
-                                            {{ $message }}
-                                        </p>
-                                    @enderror
                                 </div>
+
+                                @error('team_leader_id')
+                                    <p class="mt-3 text-sm text-red-600 flex items-center font-medium">
+                                        <i class="fas fa-exclamation-circle mr-2"></i>
+                                        {{ $message }}
+                                    </p>
+                                @enderror
                             </div>
                         </div>
 
@@ -216,12 +220,13 @@
                                 </div>
                                 <div class="relative mb-4">
                                     <input type="text" id="members_search" placeholder="Search members..."
-                                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm"
-                                           onkeyup="filterTeamMembers()">
-                                    <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
+                                           class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm text-sm"
+                                           autocomplete="off">
+                                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                                 </div>
                                 <div class="max-h-80 overflow-y-auto space-y-2 border-2 border-purple-100 rounded-xl p-4 bg-white">
                                     @foreach($users as $user)
+                                        @if($user->id !== auth()->id())
                                         <label class="member-item flex items-center p-4 rounded-xl hover:bg-purple-50 cursor-pointer transition-all duration-200 border-2 border-transparent hover:border-purple-200"
                                                data-name="{{ strtolower($user->name) }}"
                                                data-employee="{{ strtolower($user->employee_id ?? '') }}"
@@ -241,13 +246,14 @@
                                                         No ID
                                                     @endif
                                                     @if($user->position)
-                                                        <span class="mx-2">•</span>
+                                                        <span class="mx-2">&bull;</span>
                                                         <i class="fas fa-briefcase mr-1 text-purple-500"></i>
                                                         {{ $user->position }}
                                                     @endif
                                                 </div>
                                             </div>
                                         </label>
+                                        @endif
                                     @endforeach
                                 </div>
                                 @error('members')
@@ -260,7 +266,7 @@
                                     <span class="text-sm font-medium text-gray-600">
                                         <span id="selectedCount">0</span> members selected
                                     </span>
-                                    <span class="text-xs text-gray-500">{{ $users->count() }} available users</span>
+                                    <span class="text-xs text-gray-500">{{ $users->where('id', '!=', auth()->id())->count() }} available users</span>
                                 </div>
                             </div>
                         </div>
@@ -294,105 +300,30 @@
 
 @push('styles')
 <style>
-    /* Custom scrollbar for members list */
-    .max-h-80::-webkit-scrollbar {
+    .max-h-80::-webkit-scrollbar,
+    .max-h-64::-webkit-scrollbar {
         width: 6px;
     }
-    .max-h-80::-webkit-scrollbar-track {
+    .max-h-80::-webkit-scrollbar-track,
+    .max-h-64::-webkit-scrollbar-track {
         background: #f1f1f1;
         border-radius: 10px;
     }
-    .max-h-80::-webkit-scrollbar-thumb {
+    .max-h-80::-webkit-scrollbar-thumb,
+    .max-h-64::-webkit-scrollbar-thumb {
         background: #9333ea;
         border-radius: 10px;
     }
-    .max-h-80::-webkit-scrollbar-thumb:hover {
-        background: #7c3aed;
-    }
 
-    /* Checkbox styling */
-    input[type="checkbox"]:checked + label {
-        background-color: #faf5ff;
-        border-color: #9333ea;
+    .leader-option {
+        transition: all 0.15s ease;
     }
-
-    /* Smooth transitions */
-    .transition-all {
-        transition-property: all;
-        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-        transition-duration: 200ms;
+    .leader-option:hover {
+        background-color: #eef2ff;
     }
-
-    /* Toast Notifications */
-    .toast {
-        transform: translateX(400px);
-        transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        min-width: 320px;
-        max-width: 480px;
-    }
-
-    .toast.show {
-        transform: translateX(0);
-    }
-
-    .toast-success {
-        background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-        border-left: 4px solid #047857;
-    }
-
-    .toast-error {
-        background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
-        border-left: 4px solid #B91C1C;
-    }
-
-    .toast-warning {
-        background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-        border-left: 4px solid #B45309;
-    }
-
-    .toast-info {
-        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
-        border-left: 4px solid #1D4ED8;
-    }
-
-    .toast-progress {
-        animation: toast-progress 5s linear;
-    }
-
-    @keyframes toast-progress {
-        from { width: 100%; }
-        to { width: 0%; }
-    }
-
-    /* Toast animations */
-    @keyframes slide-in-right {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-
-    @keyframes slide-out-right {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-    }
-
-    .toast-enter {
-        animation: slide-in-right 0.3s ease-out;
-    }
-
-    .toast-exit {
-        animation: slide-out-right 0.3s ease-in;
+    .leader-option.selected {
+        background-color: #e0e7ff;
+        border-color: #6366f1;
     }
 </style>
 @endpush
@@ -400,45 +331,187 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Create team page loaded');
+    // --- Leader Searchable Dropdown ---
+    var leaderUsers = @json($usersJson);
+    var leaderSelectedId = '{{ old("team_leader_id", "") }}';
+    var leaderDropdownOpen = false;
 
-    // Character counter for description
-    const descriptionTextarea = document.getElementById('description');
-    const charCount = document.getElementById('charCount');
+    var triggerBtn = document.getElementById('leaderDropdownTrigger');
+    var dropdown = document.getElementById('leaderDropdown');
+    var searchInput = document.getElementById('leaderSearchInput');
+    var optionsContainer = document.getElementById('leaderOptions');
+    var hiddenInput = document.getElementById('team_leader_id');
+    var displayEl = document.getElementById('leaderDisplay');
+    var chevron = document.getElementById('leaderChevron');
+    var clearBtn = document.getElementById('clearLeaderBtn');
 
-    if (descriptionTextarea && charCount) {
-        descriptionTextarea.addEventListener('input', function() {
-            const count = this.value.length;
-            charCount.textContent = count + '/500';
+    function renderLeaderOptions(filter) {
+        var search = (filter || '').toLowerCase();
+        var html = '';
+        var count = 0;
 
-            if (count > 500) {
-                charCount.classList.add('text-red-500');
-                charCount.classList.remove('text-gray-400');
-            } else {
-                charCount.classList.remove('text-red-500');
-                charCount.classList.add('text-gray-400');
+        leaderUsers.forEach(function(user) {
+            var name = user.name.toLowerCase();
+            var empId = (user.employee_id || '').toLowerCase();
+            var position = (user.position || '').toLowerCase();
+
+            if (search && !name.includes(search) && !empId.includes(search) && !position.includes(search)) {
+                return;
             }
+
+            var isSelected = String(user.id) === String(leaderSelectedId);
+            var selectedClass = isSelected ? 'selected bg-indigo-50 border-indigo-200' : 'border-transparent';
+            var checkIcon = isSelected ? '<i class="fas fa-check text-indigo-600 ml-auto"></i>' : '';
+
+            html += '<div class="leader-option flex items-center p-3 rounded-lg cursor-pointer border-2 ' + selectedClass + ' mb-1" data-id="' + user.id + '">' +
+                '<img src="https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name) + '&background=4F46E5&color=fff&size=40" class="w-10 h-10 rounded-full mr-3 flex-shrink-0">' +
+                '<div class="flex-1 min-w-0">' +
+                    '<div class="font-semibold text-gray-900 truncate">' + user.name + '</div>' +
+                    '<div class="text-sm text-gray-500">' + (user.employee_id || 'No ID') + (user.position ? ' &bull; ' + user.position : '') + '</div>' +
+                '</div>' +
+                checkIcon +
+            '</div>';
+            count++;
+        });
+
+        if (count === 0) {
+            html = '<div class="p-4 text-center text-gray-500"><i class="fas fa-search mr-2"></i>No users found</div>';
+        }
+
+        optionsContainer.innerHTML = html;
+
+        optionsContainer.querySelectorAll('.leader-option').forEach(function(el) {
+            el.addEventListener('click', function() {
+                var userId = this.getAttribute('data-id');
+                selectLeader(userId);
+            });
         });
     }
 
-    // Initialize selected count
+    function selectLeader(userId) {
+        leaderSelectedId = userId;
+        hiddenInput.value = userId;
+
+        var user = leaderUsers.find(function(u) { return String(u.id) === String(userId); });
+        if (user) {
+            displayEl.innerHTML =
+                '<img src="https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name) + '&background=4F46E5&color=fff&size=40" class="w-8 h-8 rounded-full mr-3 flex-shrink-0">' +
+                '<div class="min-w-0">' +
+                    '<div class="font-semibold text-gray-900 truncate">' + user.name + '</div>' +
+                    '<div class="text-xs text-gray-500">' + (user.employee_id || 'No ID') + '</div>' +
+                '</div>';
+        }
+
+        closeLeaderDropdown();
+    }
+
+    function clearLeader() {
+        leaderSelectedId = '';
+        hiddenInput.value = '';
+        displayEl.innerHTML = '<span class="text-gray-400 text-lg">Choose a team leader...</span>';
+        closeLeaderDropdown();
+    }
+
+    function openLeaderDropdown() {
+        leaderDropdownOpen = true;
+        dropdown.classList.remove('hidden');
+        chevron.classList.add('rotate-180');
+        searchInput.value = '';
+        renderLeaderOptions('');
+        setTimeout(function() { searchInput.focus(); }, 50);
+    }
+
+    function closeLeaderDropdown() {
+        leaderDropdownOpen = false;
+        dropdown.classList.add('hidden');
+        chevron.classList.remove('rotate-180');
+    }
+
+    triggerBtn.addEventListener('click', function() {
+        if (leaderDropdownOpen) {
+            closeLeaderDropdown();
+        } else {
+            openLeaderDropdown();
+        }
+    });
+
+    searchInput.addEventListener('input', function() {
+        renderLeaderOptions(this.value);
+    });
+
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeLeaderDropdown();
+        }
+    });
+
+    clearBtn.addEventListener('click', function() {
+        clearLeader();
+    });
+
+    document.addEventListener('click', function(e) {
+        var container = document.getElementById('leaderDropdownContainer');
+        if (!container.contains(e.target)) {
+            closeLeaderDropdown();
+        }
+    });
+
+    if (leaderSelectedId) {
+        selectLeader(leaderSelectedId);
+    }
+
+    // --- Character counter ---
+    var descriptionTextarea = document.getElementById('description');
+    var charCount = document.getElementById('charCount');
+
+    if (descriptionTextarea && charCount) {
+        descriptionTextarea.addEventListener('input', function() {
+            var count = this.value.length;
+            charCount.textContent = count + '/500';
+            charCount.classList.toggle('text-red-500', count > 500);
+            charCount.classList.toggle('text-gray-400', count <= 500);
+        });
+    }
+
     updateSelectedCount();
 
-    // Test step navigation
-    console.log('Step 1 content:', document.getElementById('step1Content'));
-    console.log('Step 2 content:', document.getElementById('step2Content'));
-    console.log('Step 3 content:', document.getElementById('step3Content'));
+    // --- Members search ---
+    document.getElementById('members_search').addEventListener('input', function() {
+        filterTeamMembers(this.value);
+    });
+
+    // --- Form submission ---
+    var form = document.getElementById('createTeamForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            var teamName = document.getElementById('name').value.trim();
+            if (!teamName) {
+                showToast('Please enter a team name', 'error');
+                goToStep(1);
+                document.getElementById('name').focus();
+                return;
+            }
+
+            if (teamName.length < 3) {
+                showToast('Team name must be at least 3 characters long', 'error');
+                goToStep(1);
+                document.getElementById('name').focus();
+                return;
+            }
+
+            submitTeamForm();
+        });
+    }
 });
 
 function goToStep(stepNumber) {
-    console.log('Going to step:', stepNumber); // Debug log
-
-    // Hide all steps and reset their styling
-    for (let i = 1; i <= 3; i++) {
-        const stepContent = document.getElementById('step' + i + 'Content');
-        const stepIndicator = document.getElementById('step' + i);
-        const stepLabel = stepIndicator.nextElementSibling;
-        const progress = document.getElementById('progress' + i);
+    for (var i = 1; i <= 3; i++) {
+        var stepContent = document.getElementById('step' + i + 'Content');
+        var stepIndicator = document.getElementById('step' + i);
+        var stepLabel = stepIndicator ? stepIndicator.nextElementSibling : null;
+        var progress = document.getElementById('progress' + i);
 
         if (stepContent) stepContent.classList.add('hidden');
         if (stepIndicator) {
@@ -455,282 +528,147 @@ function goToStep(stepNumber) {
         }
     }
 
-    // Show current step
-    const currentStepContent = document.getElementById('step' + stepNumber + 'Content');
-    const currentStepIndicator = document.getElementById('step' + stepNumber);
-    const currentStepLabel = currentStepIndicator.nextElementSibling;
+    var currentStepContent = document.getElementById('step' + stepNumber + 'Content');
+    var currentStepIndicator = document.getElementById('step' + stepNumber);
+    var currentStepLabel = currentStepIndicator ? currentStepIndicator.nextElementSibling : null;
 
-    if (currentStepContent) {
-        currentStepContent.classList.remove('hidden');
-        console.log('Step content shown:', currentStepContent.id);
-    } else {
-        console.error('Step content not found: step' + stepNumber + 'Content');
-    }
-
+    if (currentStepContent) currentStepContent.classList.remove('hidden');
     if (currentStepIndicator) {
         currentStepIndicator.classList.remove('bg-gray-300', 'text-gray-600');
         currentStepIndicator.classList.add('bg-indigo-600', 'text-white');
     }
-
     if (currentStepLabel) {
         currentStepLabel.classList.remove('text-gray-500');
         currentStepLabel.classList.add('text-gray-900');
     }
 
-    // Update progress bar for completed steps
-    for (let i = 1; i < stepNumber; i++) {
-        const progress = document.getElementById('progress' + i);
-        if (progress) {
-            progress.classList.remove('bg-gray-300');
-            progress.classList.add('bg-indigo-600');
+    for (var j = 1; j < stepNumber; j++) {
+        var p = document.getElementById('progress' + j);
+        if (p) {
+            p.classList.remove('bg-gray-300');
+            p.classList.add('bg-indigo-600');
         }
     }
 
-    // Scroll to top of form
-    const form = document.getElementById('createTeamForm');
-    if (form) {
-        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    var formEl = document.getElementById('createTeamForm');
+    if (formEl) {
+        formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 }
 
 function selectAllMembers() {
-    const checkboxes = document.querySelectorAll('input[name="members[]"]');
-    checkboxes.forEach(checkbox => checkbox.checked = true);
+    document.querySelectorAll('input[name="members[]"]').forEach(function(cb) { cb.checked = true; });
     updateSelectedCount();
 }
 
 function deselectAllMembers() {
-    const checkboxes = document.querySelectorAll('input[name="members[]"]');
-    checkboxes.forEach(checkbox => checkbox.checked = false);
+    document.querySelectorAll('input[name="members[]"]').forEach(function(cb) { cb.checked = false; });
     updateSelectedCount();
 }
 
 function updateSelectedCount() {
-    const checkboxes = document.querySelectorAll('input[name="members[]"]:checked');
-    const count = checkboxes.length;
-    document.getElementById('selectedCount').textContent = count;
+    var count = document.querySelectorAll('input[name="members[]"]:checked').length;
+    var el = document.getElementById('selectedCount');
+    if (el) el.textContent = count;
 }
 
-// Toast Notification Functions
-function showToast(message, type = 'info', duration = 5000) {
-    const toastContainer = document.getElementById('toastContainer');
+function filterTeamMembers(searchValue) {
+    var search = (searchValue || '').toLowerCase();
+    var members = document.getElementsByClassName('member-item');
 
-    // Create toast element
-    const toast = document.createElement('div');
-    toast.className = `toast ${type} rounded-lg shadow-2xl p-4 text-white flex items-center space-x-3 toast-enter`;
+    for (var i = 0; i < members.length; i++) {
+        var member = members[i];
+        var text = (member.getAttribute('data-name') || '') + ' ' +
+                   (member.getAttribute('data-employee') || '') + ' ' +
+                   (member.getAttribute('data-position') || '');
 
-    // Get icon based on type
-    let icon = '';
-    switch(type) {
-        case 'success':
-            icon = '<i class="fas fa-check-circle text-xl"></i>';
-            break;
-        case 'error':
-            icon = '<i class="fas fa-exclamation-circle text-xl"></i>';
-            break;
-        case 'warning':
-            icon = '<i class="fas fa-exclamation-triangle text-xl"></i>';
-            break;
-        default:
-            icon = '<i class="fas fa-info-circle text-xl"></i>';
-    }
-
-    toast.innerHTML = `
-        <div class="flex items-center space-x-3 flex-1">
-            <div class="flex-shrink-0">
-                ${icon}
-            </div>
-            <div class="flex-1">
-                <p class="font-semibold text-sm">${message}</p>
-            </div>
-            <div class="flex-shrink-0">
-                <button onclick="closeToast(this)" class="text-white hover:text-gray-200 transition-colors duration-200">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        </div>
-        <div class="absolute bottom-0 left-0 h-1 bg-white/20 rounded-b-lg toast-progress" style="width: 100%;"></div>
-    `;
-
-    // Add relative positioning for progress bar
-    toast.style.position = 'relative';
-    toast.style.overflow = 'hidden';
-
-    // Add to container
-    toastContainer.appendChild(toast);
-
-    // Trigger animation
-    setTimeout(() => {
-        toast.classList.remove('toast-enter');
-        toast.classList.add('show');
-    }, 10);
-
-    // Auto remove after duration
-    if (duration > 0) {
-        setTimeout(() => {
-            closeToast(toast.querySelector('button'));
-        }, duration);
+        member.style.display = text.includes(search) ? '' : 'none';
     }
 }
-
-function closeToast(button) {
-    const toast = button.closest('.toast');
-    if (toast) {
-        toast.classList.remove('show');
-        toast.classList.add('toast-exit');
-
-        setTimeout(() => {
-            toast.remove();
-        }, 300);
-    }
-}
-
-// Form validation and submission
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('createTeamForm');
-
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            // Client-side validation
-            const teamName = document.getElementById('name').value.trim();
-            const teamLeader = document.getElementById('team_leader_id').value;
-            const selectedMembers = document.querySelectorAll('input[name="members[]"]:checked');
-
-            // Validation checks
-            if (!teamName) {
-                showToast('Please enter a team name', 'error');
-                goToStep(1);
-                document.getElementById('name').focus();
-                return;
-            }
-
-            if (teamName.length < 3) {
-                showToast('Team name must be at least 3 characters long', 'error');
-                goToStep(1);
-                document.getElementById('name').focus();
-                return;
-            }
-
-            if (teamName.length > 100) {
-                showToast('Team name cannot exceed 100 characters', 'error');
-                goToStep(1);
-                document.getElementById('name').focus();
-                return;
-            }
-
-            // Check if team leader is selected as member (conflict)
-            if (teamLeader && selectedMembers.length > 0) {
-                const leaderIsMember = Array.from(selectedMembers).some(checkbox => checkbox.value === teamLeader);
-                if (leaderIsMember) {
-                    showToast('Team leader cannot also be selected as a team member', 'warning');
-                    goToStep(2);
-                    return;
-                }
-            }
-
-            // If validation passes, submit form
-            submitTeamForm();
-        });
-    }
-});
 
 function submitTeamForm() {
-    const form = document.getElementById('createTeamForm');
-    const formData = new FormData(form);
-    const submitButton = form.querySelector('button[type="submit"]');
+    var form = document.getElementById('createTeamForm');
+    var formData = new FormData(form);
+    var submitButton = form.querySelector('button[type="submit"]');
 
-    // Show loading state
-    const originalText = submitButton.innerHTML;
+    var originalText = submitButton.innerHTML;
     submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating Team...';
     submitButton.disabled = true;
 
-    // Submit via Axios for better UX
-    axios.post(form.action, formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        }
-    })
-    .then(response => {
-        const html = response.data;
-        // Check if redirected (success) or returned validation errors
-        if (html.includes('teams.index')) {
-            showToast('Team created successfully!', 'success');
-            setTimeout(() => {
-                window.location.href = '/teams';
-            }, 1500);
-        } else {
-            // Parse validation errors from returned HTML
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = html;
-            const errorElements = tempDiv.querySelectorAll('.text-red-600');
+    axios.post(form.action, formData)
+        .then(function(response) {
+            if (response.data && response.data.success) {
+                showToast(response.data.message || 'Team created successfully!', 'success');
+                setTimeout(function() {
+                    window.location.href = response.data.redirect || '{{ route("teams.index") }}';
+                }, 1000);
+            } else {
+                showToast('Team created successfully!', 'success');
+                setTimeout(function() {
+                    window.location.href = '{{ route("teams.index") }}';
+                }, 1000);
+            }
+        })
+        .catch(function(error) {
+            if (error.response && error.response.status === 422) {
+                var errors = error.response.data.errors || {};
+                var errorKeys = Object.keys(errors);
 
-            if (errorElements.length > 0) {
-                const errors = Array.from(errorElements).map(el => el.textContent.trim()).filter(text => text);
-                errors.forEach(error => {
-                    showToast(error, 'error');
+                errorKeys.forEach(function(key) {
+                    errors[key].forEach(function(msg) {
+                        showToast(msg, 'error');
+                    });
                 });
 
-                // Find which step has errors and navigate to it
-                if (tempDiv.querySelector('#name')?.closest('.text-red-600')) {
+                if (errors.name) {
                     goToStep(1);
-                } else if (tempDiv.querySelector('#team_leader_id')?.closest('.text-red-600')) {
+                } else if (errors.team_leader_id) {
                     goToStep(2);
-                } else if (tempDiv.querySelector('input[name="members[]"]')?.closest('.text-red-600')) {
+                } else if (errors.members) {
                     goToStep(3);
                 }
             } else {
-                showToast('An unexpected error occurred. Please try again.', 'error');
+                showToast('An error occurred. Please try again.', 'error');
             }
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showToast('Network error. Please check your connection and try again.', 'error');
-    })
-    .finally(() => {
-        // Restore button state
-        submitButton.innerHTML = originalText;
-        submitButton.disabled = false;
-    });
+        })
+        .finally(function() {
+            submitButton.innerHTML = originalText;
+            submitButton.disabled = false;
+        });
 }
 
-function filterTeamLeader() {
-    const searchValue = document.getElementById('team_leader_search').value.toLowerCase();
-    const select = document.getElementById('team_leader_id');
-    const options = select.getElementsByTagName('option');
+// --- Toast Notifications ---
+function showToast(message, type, duration) {
+    type = type || 'info';
+    duration = duration || 5000;
+    var toastContainer = document.getElementById('toastContainer');
+    if (!toastContainer) return;
 
-    for (let i = 1; i < options.length; i++) {
-        const option = options[i];
-        const name = option.getAttribute('data-name') ? option.getAttribute('data-name').toLowerCase() : '';
-        const employee = option.getAttribute('data-employee') ? option.getAttribute('data-employee').toLowerCase() : '';
-        const text = name + ' ' + employee;
+    var toast = document.createElement('div');
+    toast.className = 'toast rounded-lg shadow-2xl p-4 text-white flex items-start space-x-3';
+    toast.style.cssText = 'min-width:320px;max-width:480px;transform:translateX(400px);transition:all 0.3s cubic-bezier(0.68,-0.55,0.265,1.55);position:relative;overflow:hidden;';
 
-        if (text.includes(searchValue)) {
-            option.style.display = '';
-        } else {
-            option.style.display = 'none';
-        }
-    }
-}
+    var icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
+    var bgColors = { success: 'background:linear-gradient(135deg,#10B981,#059669);border-left:4px solid #047857;',
+                     error: 'background:linear-gradient(135deg,#EF4444,#DC2626);border-left:4px solid #B91C1C;',
+                     warning: 'background:linear-gradient(135deg,#F59E0B,#D97706);border-left:4px solid #B45309;',
+                     info: 'background:linear-gradient(135deg,#3B82F6,#2563EB);border-left:4px solid #1D4ED8;' };
+    var icon = icons[type] || icons.info;
+    toast.style.cssText += bgColors[type] || bgColors.info;
 
-function filterTeamMembers() {
-    const searchValue = document.getElementById('members_search').value.toLowerCase();
-    const members = document.getElementsByClassName('member-item');
+    toast.innerHTML =
+        '<div class="flex-shrink-0 mt-0.5"><i class="fas ' + icon + ' text-xl"></i></div>' +
+        '<div class="flex-1"><p class="font-semibold text-sm">' + message + '</p></div>' +
+        '<button onclick="this.closest(\'.toast\').remove()" class="flex-shrink-0 text-white hover:text-gray-200"><i class="fas fa-times"></i></button>';
 
-    for (let i = 0; i < members.length; i++) {
-        const member = members[i];
-        const name = member.getAttribute('data-name') || '';
-        const employee = member.getAttribute('data-employee') || '';
-        const position = member.getAttribute('data-position') || '';
-        const text = name + ' ' + employee + ' ' + position;
+    toastContainer.appendChild(toast);
 
-        if (text.includes(searchValue)) {
-            member.style.display = '';
-        } else {
-            member.style.display = 'none';
-        }
+    setTimeout(function() { toast.style.transform = 'translateX(0)'; }, 10);
+    if (duration > 0) {
+        setTimeout(function() {
+            toast.style.transform = 'translateX(400px)';
+            setTimeout(function() { toast.remove(); }, 300);
+        }, duration);
     }
 }
 </script>

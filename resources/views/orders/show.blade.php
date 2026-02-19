@@ -369,9 +369,9 @@
         <div class="stat-card">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 mb-2 font-semibold uppercase tracking-wide">Value</p>
-                    <p class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">${{ number_format($order->value ?: ($order->actual_revenue / 0.80), 2) }}</p>
-                    <p class="text-xs text-gray-500 mt-1">Before 20% split</p>
+                    <p class="text-sm text-gray-600 mb-2 font-semibold uppercase tracking-wide">Order Amount</p>
+                    <p class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">${{ number_format($order->value ?: ($order->actual_revenue ? $order->actual_revenue / 0.80 : 0), 2) }}</p>
+                    <p class="text-xs text-gray-500 mt-1">Fiverr price</p>
                 </div>
                 <div class="bg-gradient-to-br from-blue-100 to-indigo-100 p-3 rounded-xl">
                     <i class="fas fa-coins text-2xl text-blue-600"></i>
@@ -382,9 +382,9 @@
         <div class="stat-card">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 mb-2 font-semibold uppercase tracking-wide">Amount</p>
-                    <p class="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">${{ number_format($order->actual_revenue, 2) }}</p>
-                    <p class="text-xs text-gray-500 mt-1">After 20% split</p>
+                    <p class="text-sm text-gray-600 mb-2 font-semibold uppercase tracking-wide">Net Value</p>
+                    <p class="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">${{ number_format($order->actual_revenue ?? 0, 2) }}</p>
+                    <p class="text-xs text-gray-500 mt-1">After 20% Fiverr fee</p>
                 </div>
                 <div class="bg-gradient-to-br from-green-100 to-emerald-100 p-3 rounded-xl">
                     <i class="fas fa-dollar-sign text-2xl text-green-600"></i>

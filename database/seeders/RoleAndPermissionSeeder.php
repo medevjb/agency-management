@@ -9,139 +9,193 @@ use Spatie\Permission\Models\Role;
 
 class RoleAndPermissionSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // 1. Create Permissions
+        // 1. Define all permissions grouped by module
         $permissions = [
-            // User management
-            'manage users',
+            // User Management
             'view users',
             'create users',
             'edit users',
             'delete users',
-            // Order management
-            'manage orders',
+            'manage team members',
+
+            // Order Management
             'view orders',
             'create orders',
             'edit orders',
             'delete orders',
-            // Task management
-            'manage tasks',
+            'view order amounts',
+
+            // Task Management
             'view tasks',
             'create tasks',
             'edit tasks',
             'delete tasks',
-            // Project management
-            'manage all projects',
-            'view all projects',
-            'manage team projects',
-            'view team projects',
-            'edit stack projects',
-            'view assigned projects',
-            'edit assigned tasks',
-            // Team management
-            'manage teams',
+            'edit task status',
+            'submit tasks',
+            'view assigned tasks',
+
+            // Team Management
             'view teams',
-            'manage team members',
-            // Tech stack management
-            'manage tech stacks',
+            'create teams',
+            'edit teams',
+            'delete teams',
+            'manage teams',
+            'view all teams',
+
+            // Tech Stack Management
             'view tech stacks',
+            'create tech stacks',
+            'edit tech stacks',
+            'delete tech stacks',
             'manage tech stack members',
+
+            // Profiles
+            'view profiles',
+            'create profile',
+            'edit profile',
+            'delete profile',
+            'manage profiles',
+
+            // Freelance Profiles
+            'view freelance profiles',
+            'create freelance profile',
+            'edit freelance profile',
+            'delete freelance profile',
+
+            // Bug Reports
+            'view bug reports',
+            'create bug reports',
+            'edit bug reports',
+            'delete bug reports',
+            'manage bug reports',
+
+            // Portfolio
+            'view any portfolio',
+            'view own portfolio',
+            'create portfolio',
+            'edit any portfolio',
+            'edit own portfolio',
+            'delete any portfolio',
+            'delete own portfolio',
+            'feature portfolio',
+
+            // Dashboard & Settings
+            'view dashboard',
+            'view team dashboard',
+            'manage settings',
         ];
 
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission]);
         }
 
-        // 2. Create Roles and Assign Permissions (using kebab-case)
+        // 2. Create Roles and Assign Permissions
+
+        // ADMIN — Full access to everything
         $admin = Role::firstOrCreate(['name' => 'admin']);
-        $admin->givePermissionTo(Permission::all());
+        $admin->syncPermissions(Permission::all());
 
+        // OPERATION MANAGER — Everything except admin settings / roles management
         $operationManager = Role::firstOrCreate(['name' => 'operation-manager']);
-        $operationManager->givePermissionTo([
-            'manage users', 'view users', 'create users', 'edit users', 'delete users',
-            'manage orders', 'view orders', 'create orders', 'edit orders', 'delete orders',
-            'manage tasks', 'view tasks', 'create tasks', 'edit tasks', 'delete tasks',
-            'manage all projects', 'view all projects',
-            'manage teams', 'view teams', 'manage team members',
-            'manage tech stacks', 'view tech stacks', 'manage tech stack members',
+        $operationManager->syncPermissions([
+            'view users', 'create users', 'edit users', 'delete users', 'manage team members',
+            'view orders', 'create orders', 'edit orders', 'delete orders', 'view order amounts',
+            'view tasks', 'create tasks', 'edit tasks', 'delete tasks', 'edit task status', 'submit tasks', 'view assigned tasks',
+            'view teams', 'create teams', 'edit teams', 'delete teams', 'manage teams', 'view all teams',
+            'view tech stacks', 'create tech stacks', 'edit tech stacks', 'delete tech stacks', 'manage tech stack members',
+            'view profiles', 'create profile', 'edit profile', 'delete profile', 'manage profiles',
+            'view freelance profiles', 'create freelance profile', 'edit freelance profile', 'delete freelance profile',
+            'view bug reports', 'create bug reports', 'edit bug reports', 'delete bug reports', 'manage bug reports',
+            'view any portfolio', 'view own portfolio', 'create portfolio', 'edit any portfolio', 'edit own portfolio', 'delete any portfolio', 'delete own portfolio', 'feature portfolio',
+            'view dashboard', 'view team dashboard',
         ]);
 
-        $teamLeader = Role::firstOrCreate(['name' => 'team-leader']);
-        $teamLeader->givePermissionTo([
-            'manage team projects', 'view team projects',
-            'view teams', 'manage team members',
-        ]);
-
-        $stackLeader = Role::firstOrCreate(['name' => 'stack-leader']);
-        $stackLeader->givePermissionTo([
-            'view team projects', 'edit stack projects',
-            'view tech stacks', 'manage tech stack members',
-        ]);
-
-        $teamMember = Role::firstOrCreate(['name' => 'team-member']);
-        $teamMember->givePermissionTo([
-            'view assigned projects', 'edit assigned tasks',
-            'view teams', 'view tech stacks',
-        ]);
-
-        // Create additional roles with permissions
+        // PROJECT MANAGER — Same as Operation Manager
         $projectManager = Role::firstOrCreate(['name' => 'project-manager']);
-        $projectManager->givePermissionTo([
-            'view users',
-            'manage orders', 'view orders', 'create orders', 'edit orders', 'delete orders',
-            'manage tasks', 'view tasks', 'create tasks', 'edit tasks', 'delete tasks',
-            'manage all projects', 'view all projects',
-            'manage team projects', 'view team projects',
-            'manage teams', 'view teams', 'manage team members',
+        $projectManager->syncPermissions([
+            'view users', 'create users', 'edit users', 'delete users', 'manage team members',
+            'view orders', 'create orders', 'edit orders', 'delete orders', 'view order amounts',
+            'view tasks', 'create tasks', 'edit tasks', 'delete tasks', 'edit task status', 'submit tasks', 'view assigned tasks',
+            'view teams', 'create teams', 'edit teams', 'delete teams', 'manage teams', 'view all teams',
+            'view tech stacks', 'create tech stacks', 'edit tech stacks', 'delete tech stacks', 'manage tech stack members',
+            'view profiles', 'create profile', 'edit profile', 'delete profile', 'manage profiles',
+            'view freelance profiles', 'create freelance profile', 'edit freelance profile', 'delete freelance profile',
+            'view bug reports', 'create bug reports', 'edit bug reports', 'delete bug reports', 'manage bug reports',
+            'view any portfolio', 'view own portfolio', 'create portfolio', 'edit any portfolio', 'edit own portfolio', 'delete any portfolio', 'delete own portfolio', 'feature portfolio',
+            'view dashboard', 'view team dashboard',
         ]);
 
-        $developer = Role::firstOrCreate(['name' => 'developer']);
-        $developer->givePermissionTo([
-            'view users',
-            'view orders',
-            'view tasks',
-            'view all projects',
-            'view team projects',
-            'edit assigned tasks',
-            'view teams', 'view tech stacks',
+        // TEAM LEADER — Manage own team, create orders/tasks for team, see team revenue
+        $teamLeader = Role::firstOrCreate(['name' => 'team-leader']);
+        $teamLeader->syncPermissions([
+            'manage team members', 'create users',
+            'view orders', 'create orders', 'edit orders', 'delete orders', 'view order amounts',
+            'view tasks', 'create tasks', 'edit tasks', 'delete tasks', 'edit task status', 'submit tasks',
+            'view teams', 'edit teams',
+            'view tech stacks', 'create tech stacks', 'edit tech stacks', 'delete tech stacks', 'manage tech stack members',
+            'view profiles', 'view freelance profiles',
+            'view bug reports', 'create bug reports',
+            'view any portfolio', 'view own portfolio', 'create portfolio', 'edit own portfolio', 'delete own portfolio',
+            'view dashboard', 'view team dashboard',
         ]);
 
-        $designer = Role::firstOrCreate(['name' => 'designer']);
-        $designer->givePermissionTo([
-            'view users',
-            'view orders',
-            'view tasks',
-            'view all projects',
-            'view team projects',
-            'edit assigned tasks',
-            'view teams', 'view tech stacks',
+        // STACK LEADER — Manage own tech stack, read team data, create tasks for stack members
+        $stackLeader = Role::firstOrCreate(['name' => 'stack-leader']);
+        $stackLeader->syncPermissions([
+            'view orders', 'view order amounts',
+            'view tasks', 'create tasks', 'edit tasks', 'edit task status', 'submit tasks',
+            'view teams',
+            'view tech stacks', 'edit tech stacks', 'manage tech stack members',
+            'view profiles', 'view freelance profiles',
+            'view bug reports', 'create bug reports',
+            'view any portfolio', 'view own portfolio', 'create portfolio', 'edit own portfolio', 'delete own portfolio',
+            'view dashboard', 'view team dashboard',
         ]);
 
-        $qa = Role::firstOrCreate(['name' => 'qa']);
-        $qa->givePermissionTo([
-            'view users',
-            'view orders',
-            'view tasks',
-            'view all projects',
-            'view team projects',
-            'edit assigned tasks',
-            'view teams', 'view tech stacks',
+        // TEAM MEMBER — View team data, see all orders (with badge), manage own tasks
+        $teamMember = Role::firstOrCreate(['name' => 'team-member']);
+        $teamMember->syncPermissions([
+            'view orders', 'view order amounts',
+            'view tasks', 'create tasks', 'edit tasks', 'submit tasks', 'edit task status',
+            'view teams',
+            'view tech stacks',
+            'view profiles', 'view freelance profiles',
+            'view bug reports', 'create bug reports',
+            'view own portfolio', 'create portfolio', 'edit own portfolio', 'delete own portfolio',
+            'view dashboard', 'view team dashboard',
         ]);
 
-        // 3. Create a default Admin user for testing
+        // 3. Migrate old roles to team-member
+        $oldRoles = ['developer', 'designer', 'qa'];
+        foreach ($oldRoles as $oldRoleName) {
+            $oldRole = Role::where('name', $oldRoleName)->first();
+            if ($oldRole) {
+                $usersWithOldRole = User::role($oldRoleName)->get();
+                foreach ($usersWithOldRole as $user) {
+                    $user->removeRole($oldRoleName);
+                    if (! $user->hasRole('team-member')) {
+                        $user->assignRole('team-member');
+                    }
+                }
+                $oldRole->delete();
+            }
+        }
+
+        // 4. Create default admin user
         User::firstOrCreate(
-            ['email' => 'admin@test.com'],
+            ['email' => 'admin@pmt.com'],
             [
-                'employee_id' => 'EMP0001',
-                'name' => 'Admin User',
+                'employee_id' => 'ADMIN001',
+                'name' => 'Super Admin',
                 'password' => bcrypt('password'),
+                'is_active' => true,
             ]
         )->assignRole('admin');
+
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
     }
 }

@@ -8,27 +8,76 @@ use App\Models\User;
 class TaskPolicy
 {
     /**
-     * Determine whether the user can view any models.
+     * Check if the task's assignee belongs to the user's team.
+     */
+    private function assigneeIsInUserTeam(User $user, Task $task): bool
+    {
+        if (! $user->team_id || ! $task->assigned_to) {
+            return false;
+        }
+
+        $assignee = $task->assignedTo;
+
+        return $assignee && $assignee->team_id === $user->team_id;
+    }
+
+    /**
+     * All authenticated users can access the tasks list.
+     * Data scoping is handled in the controller.
      */
     public function viewAny(User $user): bool
     {
-        // Admin, Operation Manager, Project Manager can view all tasks
+        return true;
+    }
+
+    /**
+     * Admin/OM/PM see all tasks.
+     * Team leader sees tasks from their team (by task team_id, order team_id, or assignee team).
+     * Stack leader sees tasks from their tech stack orders.
+     * Team member sees tasks assigned to them, created by them, or from their team.
+     */
+    public function view(User $user, Task $task): bool
+    {
         if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             return true;
         }
 
-        // Team leaders can view their team's tasks
+        if ($task->assigned_to === $user->id || $task->created_by === $user->id) {
+            return true;
+        }
+
+        $order = $task->order;
+
         if ($user->hasRole('team-leader') && $user->team_id) {
+            if ($task->team_id === $user->team_id) {
+                return true;
+            }
+            if ($order && $order->team_id === $user->team_id) {
+                return true;
+            }
+            if ($this->assigneeIsInUserTeam($user, $task)) {
+                return true;
+            }
+        }
+
+        if ($user->hasRole('stack-leader')) {
+            if ($order && $order->tech_stack_id) {
+                $userStackIds = $user->techStacks()->pluck('tech_stacks.id')->toArray();
+                if (in_array($order->tech_stack_id, $userStackIds)) {
+                    return true;
+                }
+            }
+        }
+
+        if ($user->team_id && $task->team_id === $user->team_id) {
             return true;
         }
 
-        // Stack leaders can view tasks using their tech stack
-        if ($user->hasRole('stack-leader') && $user->tech_stack_id) {
+        if ($user->team_id && $order && $order->team_id === $user->team_id) {
             return true;
         }
 
-        // Team members can view their team's tasks
-        if ($user->team_id) {
+        if ($this->assigneeIsInUserTeam($user, $task)) {
             return true;
         }
 
@@ -36,43 +85,96 @@ class TaskPolicy
     }
 
     /**
-     * Determine whether the user can view the model.
+     * Admin/OM/PM can create tasks for anyone.
+     * Team leader can create for themselves and team members.
+     * Stack leader can create for themselves and stack members.
+     * Team member can create for themselves.
      */
-    public function view(User $user, Task $task): bool
+    public function create(User $user): bool
     {
-        // Admin, Operation Manager, Project Manager can view any task
+        return true;
+    }
+
+    /**
+     * Admin/OM/PM can update any task.
+     * Team leader can update tasks in their team (by task team_id, order team_id, or assignee team).
+     * Stack leader can update tasks related to their stack.
+     * Creator/assignee can update their own task.
+     * Team members can update tasks within their own team.
+     */
+    public function update(User $user, Task $task): bool
+    {
         if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             return true;
         }
 
-        // Get the order for this task
+        if ($task->created_by === $user->id || $task->assigned_to === $user->id) {
+            return true;
+        }
+
         $order = $task->order;
 
-        if (! $order) {
-            return false;
+        if ($user->hasRole('team-leader') && $user->team_id) {
+            if ($task->team_id === $user->team_id) {
+                return true;
+            }
+            if ($order && $order->team_id === $user->team_id) {
+                return true;
+            }
+            if ($this->assigneeIsInUserTeam($user, $task)) {
+                return true;
+            }
         }
 
-        // Team leaders can view tasks from their team's orders
-        if ($user->hasRole('team-leader') && $user->team_id === $order->team_id) {
+        if ($user->hasRole('stack-leader')) {
+            if ($order && $order->tech_stack_id) {
+                $userStackIds = $user->techStacks()->pluck('tech_stacks.id')->toArray();
+                if (in_array($order->tech_stack_id, $userStackIds)) {
+                    return true;
+                }
+            }
+        }
+
+        if ($user->team_id && $task->team_id === $user->team_id) {
             return true;
         }
 
-        // Stack leaders can view tasks from orders that use their tech stack
-        if ($user->hasRole('stack-leader') && $user->tech_stack_id === $order->tech_stack_id) {
+        if ($user->team_id && $order && $order->team_id === $user->team_id) {
             return true;
         }
 
-        // Team members can view tasks from their team's orders
-        if ($user->team_id === $order->team_id) {
+        if ($this->assigneeIsInUserTeam($user, $task)) {
             return true;
         }
 
-        // Users assigned to the task can view it
-        if ($task->assigned_to === $user->id) {
+        return false;
+    }
+
+    /**
+     * Admin/OM/PM can delete any task.
+     * Team leader can delete tasks in their team.
+     * Creator can delete their own task.
+     */
+    public function delete(User $user, Task $task): bool
+    {
+        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             return true;
         }
 
-        // Users who created the task can view it
+        $order = $task->order;
+
+        if ($user->hasRole('team-leader') && $user->team_id) {
+            if ($task->team_id === $user->team_id) {
+                return true;
+            }
+            if ($order && $order->team_id === $user->team_id) {
+                return true;
+            }
+            if ($this->assigneeIsInUserTeam($user, $task)) {
+                return true;
+            }
+        }
+
         if ($task->created_by === $user->id) {
             return true;
         }
@@ -81,101 +183,23 @@ class TaskPolicy
     }
 
     /**
-     * Determine whether the user can create models.
+     * Admin/OM/PM can change any status.
+     * Team leader can change status for team tasks.
+     * Stack leader can change status for stack tasks.
+     * Creator/assignee can update status on their own tasks.
      */
-    public function create(User $user): bool
+    public function updateStatus(User $user, Task $task): bool
     {
-        // Admin, Operation Manager, Project Manager can create tasks
-        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
-            return true;
-        }
-
-        // Team leaders can create tasks for their team
-        if ($user->hasRole('team-leader')) {
-            return true;
-        }
-
-        // Team members can create their own tasks
-        if ($user->hasRole('team-member') && $user->team_id) {
-            return true;
-        }
-
-        return false;
+        return $this->update($user, $task);
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Task $task): bool
-    {
-        // Admin, Operation Manager, Project Manager can update any task
-        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
-            return true;
-        }
-
-        // Get the order for this task
-        $order = $task->order;
-
-        // Team leaders can update tasks from their team's orders
-        if ($user->hasRole('team-leader') && $order && $user->team_id === $order->team_id) {
-            return true;
-        }
-
-        // Stack leaders can update tasks from orders that use their tech stack
-        if ($user->hasRole('stack-leader') && $order && $user->tech_stack_id === $order->tech_stack_id) {
-            return true;
-        }
-
-        // Team members can update their own tasks only
-        if ($user->hasRole('team-member') && $task->assigned_to === $user->id) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Task $task): bool
-    {
-        // Admin, Operation Manager, Project Manager can delete any task
-        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
-            return true;
-        }
-
-        // Get the order for this task
-        $order = $task->order;
-
-        // Team leaders can delete tasks from their team's orders
-        if ($user->hasRole('team-leader') && $order && $user->team_id === $order->team_id) {
-            return true;
-        }
-
-        // Stack leaders can delete tasks from orders that use their tech stack
-        if ($user->hasRole('stack-leader') && $order && $user->tech_stack_id === $order->tech_stack_id) {
-            return true;
-        }
-
-        // Team members cannot delete tasks
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
     public function restore(User $user, Task $task): bool
     {
-        // Admin, Operation Manager, Project Manager can restore tasks
         return $user->hasRole(['admin', 'operation-manager', 'project-manager']);
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
     public function forceDelete(User $user, Task $task): bool
     {
-        // Only admin can force delete tasks
         return $user->hasRole('admin');
     }
 }

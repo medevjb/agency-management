@@ -501,7 +501,7 @@
                             <th>Profile</th>
                             <th>Status</th>
                             <th>Priority</th>
-                            <th>Amount</th>
+                            <th>Value</th>
                             <th>Team</th>
                             <th>Users</th>
                             <th>Started</th>
@@ -845,18 +845,28 @@
                             data: 'delivered_at',
                             name: 'delivered_at',
                             render: function(data, type, row) {
-                                // For non-delivered orders, show clickable placeholder
-                                if (row.status !== 'completed') {
+                                // Has a saved date — show it regardless of status
+                                if (data) {
+                                    const date = new Date(data);
+                                    const formattedDate = date.toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric'
+                                    });
+                                    const dbDate = data;
+
                                     return `<input type="text"
-                                                class="delivered-date-input px-2 py-1 rounded-lg text-xs font-medium border border-gray-300 bg-gray-50 text-gray-400 whitespace-nowrap w-28 cursor-pointer"
+                                                class="delivered-date-input px-2 py-1 rounded-lg text-xs font-medium border border-green-300 bg-green-50 text-green-700 whitespace-nowrap w-28 cursor-pointer"
+                                                value="${formattedDate}"
                                                 data-order-id="${row.id}"
-                                                data-original-value=""
-                                                placeholder="Set date"
+                                                data-original-value="${dbDate}"
+                                                data-current-value="${dbDate}"
+                                                title="${dbDate}"
                                                 readonly onclick="handleDeliveredDateClick(this)">`;
                                 }
 
-                                // For delivered orders, show editable date
-                                if (!data) {
+                                // Delivered status but no date yet
+                                if (row.status === 'delivered') {
                                     return `<input type="text"
                                                 class="delivered-date-input px-2 py-1 rounded-lg text-xs font-medium border border-green-300 bg-green-50 text-green-700 whitespace-nowrap w-28 cursor-pointer"
                                                 data-order-id="${row.id}"
@@ -865,21 +875,12 @@
                                                 readonly onclick="handleDeliveredDateClick(this)">`;
                                 }
 
-                                const date = new Date(data);
-                                const formattedDate = date.toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'short',
-                                    day: 'numeric'
-                                });
-                                const dbDate = data; // Keep original format for database
-
+                                // Non-delivered orders
                                 return `<input type="text"
-                                            class="delivered-date-input px-2 py-1 rounded-lg text-xs font-medium border border-green-300 bg-green-50 text-green-700 whitespace-nowrap w-28 cursor-pointer"
-                                            value="${formattedDate}"
+                                            class="delivered-date-input px-2 py-1 rounded-lg text-xs font-medium border border-gray-300 bg-gray-50 text-gray-400 whitespace-nowrap w-28 cursor-pointer"
                                             data-order-id="${row.id}"
-                                            data-original-value="${dbDate}"
-                                            data-current-value="${dbDate}"
-                                            title="${dbDate}"
+                                            data-original-value=""
+                                            placeholder="Set date"
                                             readonly onclick="handleDeliveredDateClick(this)">`;
                             }
                         },
@@ -1348,35 +1349,26 @@
                 const orderId = inputElement.dataset.orderId;
                 const originalValue = inputElement.dataset.originalValue || '';
 
-                // Initialize Flatpickr if not available
                 if (typeof flatpickr === 'undefined') {
                     console.error('Flatpickr is not loaded');
                     return;
                 }
 
-                // Create a temporary div for the picker
-                const tempDiv = document.createElement('div');
-                tempDiv.style.position = 'fixed';
-                tempDiv.style.top = '0';
-                tempDiv.style.left = '0';
-                tempDiv.style.zIndex = '9999';
-                document.body.appendChild(tempDiv);
+                if (inputElement._flatpickr) {
+                    inputElement._flatpickr.destroy();
+                }
 
-                // Initialize Flatpickr with datetime
-                const picker = flatpickr(tempDiv, {
+                const picker = flatpickr(inputElement, {
                     enableTime: true,
                     dateFormat: 'Y-m-d H:i:S',
                     time_24hr: true,
                     defaultDate: originalValue ? new Date(originalValue) : new Date(),
+                    static: false,
                     appendTo: document.body,
-                    position: 'below',
                     onClose: function(selectedDates, dateStr, instance) {
-                        // Remove temporary div
-                        document.body.removeChild(tempDiv);
+                        instance.destroy();
 
                         if (selectedDates.length > 0) {
-                            const newDate = dateStr;
-
                             Swal.fire({
                                 title: 'Update Delivered Date?',
                                 text: `Change delivered date to "${dateStr}"?`,
@@ -1391,7 +1383,7 @@
                                     Swal.showLoading();
 
                                     const formData = new FormData();
-                                    formData.append('delivered_at', newDate);
+                                    formData.append('delivered_at', dateStr);
 
                                     axios.post(`/orders/${orderId}/quick-update`, formData)
                                         .then(response => {
@@ -1420,7 +1412,6 @@
                     }
                 });
 
-                // Open the picker
                 picker.open();
             }
 
@@ -1428,34 +1419,25 @@
                 const orderId = inputElement.dataset.orderId;
                 const originalValue = inputElement.dataset.originalValue || '';
 
-                // Initialize Flatpickr if not available
                 if (typeof flatpickr === 'undefined') {
                     console.error('Flatpickr is not loaded');
                     return;
                 }
 
-                // Create a temporary div for the picker
-                const tempDiv = document.createElement('div');
-                tempDiv.style.position = 'fixed';
-                tempDiv.style.top = '0';
-                tempDiv.style.left = '0';
-                tempDiv.style.zIndex = '9999';
-                document.body.appendChild(tempDiv);
+                if (inputElement._flatpickr) {
+                    inputElement._flatpickr.destroy();
+                }
 
-                // Initialize Flatpickr with date only (no time for start date)
-                const picker = flatpickr(tempDiv, {
+                const picker = flatpickr(inputElement, {
                     enableTime: false,
                     dateFormat: 'Y-m-d',
                     defaultDate: originalValue ? new Date(originalValue) : new Date(),
+                    static: false,
                     appendTo: document.body,
-                    position: 'below',
                     onClose: function(selectedDates, dateStr, instance) {
-                        // Remove temporary div
-                        document.body.removeChild(tempDiv);
+                        instance.destroy();
 
                         if (selectedDates.length > 0) {
-                            const newDate = dateStr;
-
                             Swal.fire({
                                 title: 'Update Start Date?',
                                 text: `Change start date to "${dateStr}"?`,
@@ -1470,7 +1452,7 @@
                                     Swal.showLoading();
 
                                     const formData = new FormData();
-                                    formData.append('start_date', newDate);
+                                    formData.append('start_date', dateStr);
 
                                     axios.post(`/orders/${orderId}/quick-update`, formData)
                                         .then(response => {
@@ -1499,7 +1481,6 @@
                     }
                 });
 
-                // Open the picker
                 picker.open();
             }
 
@@ -1588,7 +1569,7 @@
                                     ${user.team ? `<span class="text-xs text-white bg-purple-500 px-2 py-0.5 rounded-full flex-shrink-0"><i class="fas fa-users mr-1"></i>${user.team.name}</span>` : ''}
                                 </div>
                                 <div class="text-xs text-gray-500 truncate">
-                                    ${user.email}
+                                    ${user.position ? `<span class="font-medium text-gray-600">${user.position}</span> &bull; ` : ''}${user.email}
                                 </div>
                             </div>
                             <div class="flex-shrink-0">

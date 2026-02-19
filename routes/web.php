@@ -132,8 +132,8 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{profile}', [FreelanceProfileController::class, 'destroy'])->name('destroy');
     });
 
-    // Users Management Routes - Only for users with admin role
-    Route::middleware(['auth', 'role:admin'])->prefix('users')->name('users.')->group(function () {
+    // Users Management Routes - Admin, OM, PM have full access
+    Route::middleware(['auth', 'role:admin|operation-manager|project-manager'])->prefix('users')->name('users.')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');
         Route::get('/data', [UserController::class, 'getUsers'])->name('data');
         Route::get('/create', [UserController::class, 'create'])->name('create');

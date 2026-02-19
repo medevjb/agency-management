@@ -33,7 +33,7 @@
             }
         @endphp
 
-        <!-- Dashboard Section - Only for management -->
+        <!-- Dashboard Section - Only for admin/OM/PM -->
         @role(['admin', 'operation-manager', 'project-manager'])
             <div class="mb-2 sidebar-section" data-section="dashboard">
                 <button
@@ -77,11 +77,13 @@
                     <i class="fas fa-list w-5 mr-2"></i>
                     All Orders
                 </a>
-                <a href="{{ route('orders.create') }}"
-                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('orders.create') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
-                    <i class="fas fa-plus w-5 mr-2"></i>
-                    Add Order
-                </a>
+                @can('create', \App\Models\Order::class)
+                    <a href="{{ route('orders.create') }}"
+                        class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('orders.create') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                        <i class="fas fa-plus w-5 mr-2"></i>
+                        Add Order
+                    </a>
+                @endcan
             </div>
         </div>
 
@@ -105,7 +107,7 @@
             </div>
         </div>
 
-        <!-- Bug Reports Section - Available to all authenticated users -->
+        <!-- Bug Reports Section -->
         <div class="mb-2 sidebar-section" data-section="bug-reports">
             <button
                 class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
@@ -133,7 +135,6 @@
         </div>
 
         <!-- Profile Management Section -->
-
         @role(['admin', 'operation-manager', 'project-manager'])
             <div class="mb-2 sidebar-section" data-section="profile">
                 <button
@@ -147,14 +148,12 @@
                         class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron {{ $currentSection === 'profile' ? 'rotate-180' : '' }}"></i>
                 </button>
                 <div class="sidebar-content mt-1 space-y-1 ml-4 {{ $currentSection !== 'profile' ? 'hidden' : '' }}">
-                    @canany(['manage profiles', 'view profiles'])
-                        <a href="{{ route('freelance-profiles.index') }}"
-                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('freelance-profiles.index') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
-                            <i class="fas fa-list w-5 mr-2"></i>
-                            All Profiles
-                        </a>
-                    @endcanany
-                    @can('create profile')
+                    <a href="{{ route('freelance-profiles.index') }}"
+                        class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('freelance-profiles.index') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                        <i class="fas fa-list w-5 mr-2"></i>
+                        All Profiles
+                    </a>
+                    @can('create freelance profile')
                         <a href="{{ route('freelance-profiles.create') }}"
                             class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('freelance-profiles.create') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
                             <i class="fas fa-plus w-5 mr-2"></i>
@@ -164,26 +163,27 @@
                 </div>
             </div>
         @else
-            <!-- Regular users view-only -->
-            <div class="mb-2 sidebar-section" data-section="profile">
-                <button
-                    class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
-                    <div class="flex items-center">
+            @can('view freelance profiles')
+                <div class="mb-2 sidebar-section" data-section="profile">
+                    <button
+                        class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                        <div class="flex items-center">
+                            <i
+                                class="fas fa-address-card w-5 text-purple-400 group-hover:text-purple-300 transition-colors"></i>
+                            <span class="ml-3">Profiles</span>
+                        </div>
                         <i
-                            class="fas fa-address-card w-5 text-purple-400 group-hover:text-purple-300 transition-colors"></i>
-                        <span class="ml-3">Profiles</span>
+                            class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron {{ $currentSection === 'profile' ? 'rotate-180' : '' }}"></i>
+                    </button>
+                    <div class="sidebar-content mt-1 space-y-1 ml-4 {{ $currentSection !== 'profile' ? 'hidden' : '' }}">
+                        <a href="{{ route('freelance-profiles.index') }}"
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('freelance-profiles.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            <i class="fas fa-list w-5 mr-2"></i>
+                            View Profiles
+                        </a>
                     </div>
-                    <i
-                        class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron {{ $currentSection === 'profile' ? 'rotate-180' : '' }}"></i>
-                </button>
-                <div class="sidebar-content mt-1 space-y-1 ml-4 {{ $currentSection !== 'profile' ? 'hidden' : '' }}">
-                    <a href="{{ route('freelance-profiles.index') }}"
-                        class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('freelance-profiles.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
-                        <i class="fas fa-list w-5 mr-2"></i>
-                        View Profiles
-                    </a>
                 </div>
-            </div>
+            @endcan
         @endrole
 
         <!-- Portfolio Section -->
@@ -218,38 +218,31 @@
         @endcanany
 
         <!-- Team Management Section -->
-        @if (auth()->user()->can('viewAny', \App\Models\Team::class) ||
-                auth()->user()->can('viewAny', \App\Models\TechStack::class))
-            <div class="mb-2 sidebar-section" data-section="team">
-                <button
-                    class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
-                    <div class="flex items-center">
-                        <i class="fas fa-users w-5 text-green-400 group-hover:text-green-300 transition-colors"></i>
-                        <span class="ml-3">Team</span>
-                    </div>
-                    <i
-                        class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron {{ $currentSection === 'team' ? 'rotate-180' : '' }}"></i>
-                </button>
-                <div class="sidebar-content mt-1 space-y-1 ml-4 {{ $currentSection !== 'team' ? 'hidden' : '' }}">
-                    @can('viewAny', \App\Models\Team::class)
-                        <a href="{{ route('teams.index') }}"
-                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('teams.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
-                            <i class="fas fa-users w-5 mr-2"></i>
-                            Teams
-                        </a>
-                    @endcan
-                    @can('viewAny', \App\Models\TechStack::class)
-                        <a href="{{ route('tech-stacks.index') }}"
-                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tech-stacks.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
-                            <i class="fas fa-layer-group w-5 mr-2"></i>
-                            Tech Stacks
-                        </a>
-                    @endcan
+        <div class="mb-2 sidebar-section" data-section="team">
+            <button
+                class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                <div class="flex items-center">
+                    <i class="fas fa-users w-5 text-green-400 group-hover:text-green-300 transition-colors"></i>
+                    <span class="ml-3">Team</span>
                 </div>
+                <i
+                    class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron {{ $currentSection === 'team' ? 'rotate-180' : '' }}"></i>
+            </button>
+            <div class="sidebar-content mt-1 space-y-1 ml-4 {{ $currentSection !== 'team' ? 'hidden' : '' }}">
+                <a href="{{ route('teams.index') }}"
+                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('teams.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                    <i class="fas fa-users w-5 mr-2"></i>
+                    Teams
+                </a>
+                <a href="{{ route('tech-stacks.index') }}"
+                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tech-stacks.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                    <i class="fas fa-layer-group w-5 mr-2"></i>
+                    Tech Stacks
+                </a>
             </div>
-        @endif
+        </div>
 
-        <!-- Admin Section -->
+        <!-- Admin Section - Only for admin -->
         @role('admin')
             <div class="mb-2 sidebar-section" data-section="admin">
                 <button
@@ -263,19 +256,15 @@
                 </button>
                 <div class="sidebar-content mt-1 space-y-1 ml-4 {{ $currentSection !== 'admin' ? 'hidden' : '' }}">
                     <a href="{{ route('admin.dashboard') }}"
-                        class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('admin.*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
+                        class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('admin.dashboard') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
                         <i class="fas fa-tachometer-alt w-5 mr-2"></i>
                         Admin Dashboard
                     </a>
-                    @role('admin|operation-manager')
-                        <a href="{{ route('users.index') }}"
-                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('users.index') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
-                            <i class="fas fa-users-cog w-5 mr-2"></i>
-                            Manage All Users
-                        </a>
-                    @endrole
-
-
+                    <a href="{{ route('users.index') }}"
+                        class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('users.index') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
+                        <i class="fas fa-users-cog w-5 mr-2"></i>
+                        Manage All Users
+                    </a>
                     <a href="{{ route('admin.roles') }}"
                         class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('admin.roles*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
                         <i class="fas fa-key w-5 mr-2"></i>
@@ -290,14 +279,44 @@
             </div>
         @endrole
 
-        @role('team-leader|stack-leader|project-manager')
+        <!-- User Management for OM/PM (not admin section, separate) -->
+        @role(['operation-manager', 'project-manager'])
             <div class="mb-2 sidebar-section" data-section="admin">
-                <a href="{{ route('users.team-members') }}"
-                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('users.team-members') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
-                    <i class="fas fa-users w-5 mr-2"></i>
-                    My Team Members
-                </a>
+                <button
+                    class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                    <div class="flex items-center">
+                        <i class="fas fa-users-cog w-5 text-pink-400 group-hover:text-pink-300 transition-colors"></i>
+                        <span class="ml-3">User Management</span>
+                    </div>
+                    <i
+                        class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron {{ $currentSection === 'admin' ? 'rotate-180' : '' }}"></i>
+                </button>
+                <div class="sidebar-content mt-1 space-y-1 ml-4 {{ $currentSection !== 'admin' ? 'hidden' : '' }}">
+                    <a href="{{ route('users.index') }}"
+                        class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('users.index') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                        <i class="fas fa-users-cog w-5 mr-2"></i>
+                        Manage All Users
+                    </a>
+                    <a href="{{ route('users.team-members') }}"
+                        class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('users.team-members') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                        <i class="fas fa-users w-5 mr-2"></i>
+                        My Team Members
+                    </a>
+                </div>
             </div>
+        @endrole
+
+        <!-- Team Members link for team-leader/stack-leader -->
+        @role(['team-leader', 'stack-leader'])
+            @unlessrole(['admin', 'operation-manager', 'project-manager'])
+                <div class="mb-2 sidebar-section" data-section="admin">
+                    <a href="{{ route('users.team-members') }}"
+                        class="flex items-center px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 {{ request()->routeIs('users.team-members') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                        <i class="fas fa-users w-5 mr-2 text-pink-400"></i>
+                        My Team Members
+                    </a>
+                </div>
+            @endunlessrole
         @endrole
     </nav>
 

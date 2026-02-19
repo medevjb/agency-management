@@ -1334,14 +1334,26 @@ async function handleDrop(event, newStatus) {
     try {
         const response = await axios.patch(`/tasks/${taskId}/status`, { status: newStatus });
 
-        showToast('Success!', 'Task status updated successfully!', 'success');
+        showToast('Success!', response.data.message || 'Task status updated!', 'success');
     } catch (error) {
         // Rollback on error
         task.status = oldStatus;
         task.completed_at = null;
         renderTasks();
         updateStats();
-        showToast('Error!', 'Failed to update task status.', 'error');
+
+        let errorMsg = 'Failed to update task status.';
+        if (error.response) {
+            if (error.response.status === 403) {
+                errorMsg = error.response.data.message || 'You do not have permission to change this task status.';
+            } else if (error.response.status === 422) {
+                const errors = error.response.data.errors;
+                errorMsg = errors ? Object.values(errors).flat().join(' ') : (error.response.data.message || errorMsg);
+            } else if (error.response.data && error.response.data.message) {
+                errorMsg = error.response.data.message;
+            }
+        }
+        showToast('Error!', errorMsg, 'error');
     }
 
     draggedTask = null;

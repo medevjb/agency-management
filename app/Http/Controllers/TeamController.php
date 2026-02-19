@@ -36,15 +36,8 @@ class TeamController extends Controller
 
         $query = Team::with(['teamLeader', 'members', 'projects'])
             ->when(! $user->hasRole(['admin', 'operation-manager', 'project-manager']), function ($q) use ($user) {
-                if ($user->hasRole('stack-leader') && $user->tech_stack_id) {
-                    // Stack leaders see teams that use their tech stack
-                    $q->whereHas('orders', function ($query) use ($user) {
-                        $query->where('tech_stack_id', $user->tech_stack_id);
-                    });
-                } else {
-                    // Team leaders and members only see their own team
-                    $q->where('id', $user->team_id);
-                }
+                // Team leaders, stack leaders, and team members only see their own team
+                $q->where('id', $user->team_id);
             })
             ->latest();
 
@@ -82,7 +75,16 @@ class TeamController extends Controller
 
         $users = User::where('is_active', true)->get();
 
-        return view('teams.create', compact('users'));
+        $usersJson = $users->map(function ($u) {
+            return [
+                'id' => $u->id,
+                'name' => $u->name,
+                'employee_id' => $u->employee_id ?? '',
+                'position' => $u->position ?? '',
+            ];
+        })->values();
+
+        return view('teams.create', compact('users', 'usersJson'));
     }
 
     /**
@@ -121,6 +123,14 @@ class TeamController extends Controller
             }
         }
 
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Team created successfully.',
+                'redirect' => route('teams.index'),
+            ]);
+        }
+
         return redirect()->route('teams.index')
             ->with('success', 'Team created successfully.');
     }
@@ -148,7 +158,16 @@ class TeamController extends Controller
 
         $users = User::where('is_active', true)->get();
 
-        return view('teams.edit', compact('team', 'users'));
+        $usersJson = $users->map(function ($u) {
+            return [
+                'id' => $u->id,
+                'name' => $u->name,
+                'employee_id' => $u->employee_id ?? '',
+                'position' => $u->position ?? '',
+            ];
+        })->values();
+
+        return view('teams.edit', compact('team', 'users', 'usersJson'));
     }
 
     /**
@@ -184,12 +203,29 @@ class TeamController extends Controller
         }
 
         // Update team members - remove all current members and add new ones
-        User::where('team_id', $team->id)->update(['team_id' => null]);
+        // But keep the team leader
+        User::where('team_id', $team->id)
+            ->where('id', '!=', $validated['team_leader_id'] ?? null)
+            ->update(['team_id' => null]);
 
+        // Add team leader first
+        if (! empty($validated['team_leader_id'])) {
+            User::where('id', $validated['team_leader_id'])->update(['team_id' => $team->id]);
+        }
+
+        // Add selected members
         if (! empty($validated['members'])) {
             foreach ($validated['members'] as $memberId) {
                 User::where('id', $memberId)->update(['team_id' => $team->id]);
             }
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Team updated successfully.',
+                'redirect' => route('teams.index'),
+            ]);
         }
 
         return redirect()->route('teams.index')

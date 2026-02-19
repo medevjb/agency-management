@@ -8,138 +8,141 @@ use App\Models\User;
 class TechStackPolicy
 {
     /**
-     * Determine whether the user can view any models.
+     * All authenticated users can view the tech stacks list.
      */
     public function viewAny(User $user): bool
     {
-        // Admins, managers, team leaders, and stack leaders can view tech stacks
-        return $user->hasRole(['admin', 'operation-manager', 'project-manager', 'team-leader', 'stack-leader']);
+        return true;
     }
 
     /**
-     * Determine whether the user can view the model.
+     * Admin/OM/PM can view any tech stack.
+     * Team leader can view tech stacks from their team.
+     * Stack leader can view tech stacks they lead or belong to.
+     * Team member can view their team's tech stacks.
      */
     public function view(User $user, TechStack $techStack): bool
     {
-        // Admins and managers can view any tech stack
         if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             return true;
         }
 
-        // Team leaders can view tech stacks created by them or assigned to their team
-        if ($user->hasRole('team-leader')) {
-            return $techStack->stack_leader_id === $user->id
-                || $techStack->team_id === $user->team_id;
+        if ($user->hasRole('team-leader') && $techStack->team_id === $user->team_id) {
+            return true;
         }
 
-        // Stack leaders can view tech stacks they lead
         if ($user->hasRole('stack-leader')) {
-            return $techStack->stack_leader_id === $user->id;
+            if ($techStack->stack_leader_id === $user->id) {
+                return true;
+            }
+            if ($techStack->team_id === $user->team_id) {
+                return true;
+            }
+        }
+
+        if ($techStack->team_id === $user->team_id) {
+            return true;
         }
 
         return false;
     }
 
     /**
-     * Determine whether the user can create models.
+     * Admin, OM, PM, team leader can create tech stacks.
      */
     public function create(User $user): bool
     {
-        // Admins, operation managers, project managers, and team leaders can create tech stacks
         return $user->hasRole(['admin', 'operation-manager', 'project-manager', 'team-leader']);
     }
 
     /**
-     * Determine whether the user can update the model.
+     * Admin/OM/PM can update any tech stack.
+     * Team leader can update tech stacks from their team.
+     * Stack leader can update tech stacks they lead.
      */
     public function update(User $user, TechStack $techStack): bool
     {
-        // Admins and operation managers can update any tech stack
-        if ($user->hasRole(['admin', 'operation-manager'])) {
+        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             return true;
         }
 
-        // Team leaders can update tech stacks created by them
-        if ($user->hasRole('team-leader')) {
-            return $techStack->stack_leader_id === $user->id;
+        if ($user->hasRole('team-leader') && $techStack->team_id === $user->team_id) {
+            return true;
         }
 
-        // Stack leaders can update their tech stacks
-        if ($user->hasRole('stack-leader')) {
-            return $techStack->stack_leader_id === $user->id;
+        if ($user->hasRole('stack-leader') && $techStack->stack_leader_id === $user->id) {
+            return true;
         }
 
         return false;
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * Admin/OM/PM can delete any tech stack.
+     * Team leader can delete tech stacks from their team.
      */
     public function delete(User $user, TechStack $techStack): bool
     {
-        // Only admins can delete tech stacks
-        return $user->hasRole('admin');
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, TechStack $techStack): bool
-    {
-        // Only admins can restore tech stacks
-        return $user->hasRole('admin');
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, TechStack $techStack): bool
-    {
-        // Only admins can force delete tech stacks
-        return $user->hasRole('admin');
-    }
-
-    /**
-     * Determine whether the user can add members to the tech stack.
-     */
-    public function addMembers(User $user, TechStack $techStack): bool
-    {
-        // Admins and managers can add any members
         if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             return true;
         }
 
-        // Team leaders can add their team members
-        if ($user->hasRole('team-leader')) {
-            return $techStack->stack_leader_id === $user->id;
+        if ($user->hasRole('team-leader') && $techStack->team_id === $user->team_id) {
+            return true;
         }
 
-        // Stack leaders can add members to their tech stack
-        if ($user->hasRole('stack-leader')) {
-            return $techStack->stack_leader_id === $user->id;
+        return false;
+    }
+
+    public function restore(User $user, TechStack $techStack): bool
+    {
+        return $user->hasRole('admin');
+    }
+
+    public function forceDelete(User $user, TechStack $techStack): bool
+    {
+        return $user->hasRole('admin');
+    }
+
+    /**
+     * Admin/OM/PM can add members to any tech stack.
+     * Team leader can add members to their team's tech stacks.
+     * Stack leader can add members to their own tech stack.
+     */
+    public function addMembers(User $user, TechStack $techStack): bool
+    {
+        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
+            return true;
+        }
+
+        if ($user->hasRole('team-leader') && $techStack->team_id === $user->team_id) {
+            return true;
+        }
+
+        if ($user->hasRole('stack-leader') && $techStack->stack_leader_id === $user->id) {
+            return true;
         }
 
         return false;
     }
 
     /**
-     * Determine whether the user can remove members from the tech stack.
+     * Admin/OM/PM can remove members from any tech stack.
+     * Team leader can remove members from their team's tech stacks.
+     * Stack leader can remove members from their own tech stack.
      */
     public function removeMember(User $user, TechStack $techStack): bool
     {
-        // Admins and managers can remove any members
         if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             return true;
         }
 
-        // Team leaders can remove their team members
-        if ($user->hasRole('team-leader')) {
-            return $techStack->stack_leader_id === $user->id;
+        if ($user->hasRole('team-leader') && $techStack->team_id === $user->team_id) {
+            return true;
         }
 
-        // Stack leaders can remove members from their tech stack
-        if ($user->hasRole('stack-leader')) {
-            return $techStack->stack_leader_id === $user->id;
+        if ($user->hasRole('stack-leader') && $techStack->stack_leader_id === $user->id) {
+            return true;
         }
 
         return false;

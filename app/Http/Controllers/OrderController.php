@@ -42,41 +42,25 @@ class OrderController extends Controller
             $availableMonths->put($date->format('Y-m'), $date->format('F Y'));
         }
 
-        // Filter teams based on user role
-        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
-            $teams = \App\Models\Team::all();
-        } elseif ($user->hasRole('stack-leader')) {
-            // Stack leaders see teams that use their tech stack
-            $teams = \App\Models\Team::whereHas('orders', function ($query) use ($user) {
-                $query->where('tech_stack_id', $user->tech_stack_id);
-            })->get();
-        } else {
-            // Team leaders and members only see their team
-            $teams = \App\Models\Team::where('id', $user->team_id)->get();
-        }
-
         $statuses = \App\Models\OrderStatus::orderBy('sort_order')->get();
 
-        // Filter tech stacks based on user role
-        if ($user->hasRole(['admin', 'operation-manager', 'project-manager', 'stack-leader'])) {
-            $techStacks = \App\Models\TechStack::all();
+        // Scope filter options based on role
+        if ($user->hasRole(['team-leader', 'stack-leader'])) {
+            $teams = \App\Models\Team::where('id', $user->team_id)->get();
+            $techStacks = \App\Models\TechStack::where('team_id', $user->team_id)->get();
+            $profiles = \App\Models\Profile::active()->get();
         } else {
-            // Team leaders and members see tech stacks used by their team's orders
-            $techStacks = \App\Models\TechStack::whereHas('orders', function ($query) use ($user) {
-                $query->where('team_id', $user->team_id);
-            })->get();
+            $teams = \App\Models\Team::all();
+            $techStacks = \App\Models\TechStack::all();
+            $profiles = \App\Models\Profile::active()->get();
         }
 
-        $profiles = \App\Models\Profile::active()->get();
-
-        // Filter users for assignment modal
+        // Filter users for assignment modal based on role
         if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             $users = \App\Models\User::all();
-        } elseif ($user->hasRole('stack-leader')) {
-            // Stack leaders see users assigned to their tech stack
-            $users = \App\Models\User::where('tech_stack_id', $user->tech_stack_id)->get();
+        } elseif ($user->hasRole('team-leader')) {
+            $users = \App\Models\User::where('team_id', $user->team_id)->get();
         } else {
-            // Team leaders and members see their team members
             $users = \App\Models\User::where('team_id', $user->team_id)->get();
         }
 
@@ -89,17 +73,14 @@ class OrderController extends Controller
 
         $query = Order::query()->with(['team', 'techStack', 'freelanceProfile', 'creator', 'users']);
 
-        // Filter by user's role and team/tech stack
         $user = auth()->user();
-        if (! $user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
-            if ($user->hasRole('stack-leader')) {
-                // Stack leaders see orders that use their tech stack
-                $query->where('tech_stack_id', $user->tech_stack_id);
-            } else {
-                // Team leaders and members see orders from their team
-                $query->where('team_id', $user->team_id);
-            }
+
+        // Team leaders and stack leaders only see their own team's orders
+        if ($user->hasRole(['team-leader', 'stack-leader'])) {
+            $query->where('team_id', $user->team_id);
         }
+        // Team members see all orders (with badge for assigned ones)
+        // Admin, OM, PM see all orders
 
         // Filter by month (only in created_at)
         if ($request->filled('month') && $request->month !== '') {
@@ -167,6 +148,7 @@ class OrderController extends Controller
         $orders = $query->skip($start)->take($length)->get();
 
         $data = [];
+        $currentUserId = auth()->id();
         foreach ($orders as $order) {
             $data[] = [
                 'id' => $order->id,
@@ -186,6 +168,8 @@ class OrderController extends Controller
                 'freelance_profile' => $order->freelanceProfile ? $order->freelanceProfile->username : 'N/A',
                 'freelance_profile_id' => $order->freelance_profile_id,
                 'order_sheet_url' => $order->order_sheet_url,
+                'is_assigned' => $order->users->contains('id', $currentUserId),
+                'is_my_team' => $order->team_id === auth()->user()->team_id,
                 'users' => $order->users->map(function ($user) {
                     return [
                         'id' => $user->id,
@@ -215,35 +199,28 @@ class OrderController extends Controller
 
         $query = \App\Models\User::query();
 
-        // Filter based on user role
         if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
-            // Managers can search all users, optionally filtered by team
-            if ($teamId) {
-                $query->where('team_id', $teamId);
-            }
-        } elseif ($user->hasRole('stack-leader')) {
-            // Stack leaders see users with their tech stack
-            $query->where('tech_stack_id', $user->tech_stack_id);
             if ($teamId) {
                 $query->where('team_id', $teamId);
             }
         } else {
-            // Team leaders only see their team members
             $query->where('team_id', $user->team_id);
         }
 
-        // Search by name or email
+        // Search by name, email, employee_id, or position
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('employee_id', 'like', "%{$search}%")
+                    ->orWhere('position', 'like', "%{$search}%");
             });
         }
 
         $members = $query->orderBy('created_at', 'desc')
             ->with('team')
             ->limit(10)
-            ->get(['id', 'name', 'email', 'employee_id', 'team_id']);
+            ->get(['id', 'name', 'email', 'employee_id', 'position', 'team_id']);
 
         return response()->json([
             'results' => $members->map(function ($member) {
@@ -251,6 +228,7 @@ class OrderController extends Controller
                     'id' => $member->id,
                     'text' => $member->name.' ('.$member->email.')',
                     'employee_id' => $member->employee_id,
+                    'position' => $member->position,
                     'team_name' => $member->team?->name,
                 ];
             }),
@@ -263,43 +241,18 @@ class OrderController extends Controller
 
         $user = auth()->user();
 
-        // Filter teams based on user role
         if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             $teams = \App\Models\Team::all();
-        } elseif ($user->hasRole('stack-leader')) {
-            // Stack leaders see teams that use their tech stack
-            $teams = \App\Models\Team::whereHas('orders', function ($query) use ($user) {
-                $query->where('tech_stack_id', $user->tech_stack_id);
-            })->get();
-        } else {
-            // Team leaders and members only see their team
-            $teams = \App\Models\Team::where('id', $user->team_id)->get();
-        }
-
-        // Filter tech stacks based on user role
-        if ($user->hasRole(['admin', 'operation-manager', 'project-manager', 'stack-leader'])) {
             $techStacks = \App\Models\TechStack::all();
-        } else {
-            // Team leaders and members see tech stacks used by their team's orders
-            $techStacks = \App\Models\TechStack::whereHas('orders', function ($query) use ($user) {
-                $query->where('team_id', $user->team_id);
-            })->get();
-        }
-
-        $statuses = \App\Models\OrderStatus::orderBy('sort_order')->get();
-
-        // Filter users for assignment
-        $isTeamLeader = $user->hasRole('team-leader');
-        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             $users = \App\Models\User::all();
-        } elseif ($user->hasRole('stack-leader')) {
-            // Stack leaders see users assigned to their tech stack
-            $users = \App\Models\User::where('tech_stack_id', $user->tech_stack_id)->get();
         } else {
-            // Team leaders and members see their team members
+            $teams = \App\Models\Team::where('id', $user->team_id)->get();
+            $techStacks = \App\Models\TechStack::where('team_id', $user->team_id)->get();
             $users = \App\Models\User::where('team_id', $user->team_id)->get();
         }
 
+        $statuses = \App\Models\OrderStatus::orderBy('sort_order')->get();
+        $isTeamLeader = $user->hasRole('team-leader');
         $profiles = \App\Models\Profile::active()->get();
 
         return view('orders.create', compact('teams', 'techStacks', 'statuses', 'users', 'profiles', 'isTeamLeader'));
@@ -307,6 +260,7 @@ class OrderController extends Controller
 
     public function store(Request $request)
     {
+
         $this->authorize('create', Order::class);
 
         $user = auth()->user();
@@ -334,8 +288,9 @@ class OrderController extends Controller
             $validated['team_id'] = $user->team_id;
         }
 
-        // Calculate revenue after 20% split
-        $actualRevenue = $validated['actual_revenue'] ?? null;
+        // Auto-calculate net revenue (80% of order amount after Fiverr's 20% fee)
+        $orderValue = $validated['value'] ?? null;
+        $actualRevenue = $orderValue ? round($orderValue * 0.80, 2) : ($validated['actual_revenue'] ?? null);
 
         $order = Order::create([
             'order_id' => $validated['order_id'] ?? null,
@@ -343,7 +298,7 @@ class OrderController extends Controller
             'description' => $validated['description'] ?? null,
             'status' => $validated['status'],
             'priority' => $validated['priority'],
-            'value' => $validated['value'] ?? null,
+            'value' => $orderValue,
             'start_date' => $validated['start_date'] ?? null,
             'end_date' => $validated['end_date'] ?? null,
             'actual_revenue' => $actualRevenue,
@@ -386,33 +341,17 @@ class OrderController extends Controller
 
         $user = auth()->user();
 
-        // Filter teams based on user role
-        if ($user->hasRole('admin')) {
+        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             $teams = \App\Models\Team::all();
-        } else {
-            // Team leaders only see their team
-            $teams = \App\Models\Team::where('id', $user->team_id)->get();
-        }
-
-        // Filter tech stacks based on user role
-        if ($user->hasRole(['admin', 'stack-leader'])) {
             $techStacks = \App\Models\TechStack::all();
-        } else {
-            // Team leaders see tech stacks used by their team's orders
-            $techStacks = \App\Models\TechStack::whereHas('orders', function ($query) use ($user) {
-                $query->where('team_id', $user->team_id);
-            })->get();
-        }
-
-        $statuses = \App\Models\OrderStatus::orderBy('sort_order')->get();
-
-        // Filter users - team leaders only see their team members
-        if ($user->hasRole('admin')) {
             $users = \App\Models\User::all();
         } else {
+            $teams = \App\Models\Team::where('id', $user->team_id)->get();
+            $techStacks = \App\Models\TechStack::where('team_id', $user->team_id)->get();
             $users = \App\Models\User::where('team_id', $user->team_id)->get();
         }
 
+        $statuses = \App\Models\OrderStatus::orderBy('sort_order')->get();
         $profiles = \App\Models\Profile::active()->get();
         $order->load('users');
 
@@ -444,7 +383,9 @@ class OrderController extends Controller
         $oldStatus = $order->status;
         $oldRevenue = $order->actual_revenue;
 
-        $actualRevenue = $validated['actual_revenue'] ?? null;
+        // Auto-calculate net revenue (80% of order amount after Fiverr's 20% fee)
+        $orderValue = $validated['value'] ?? null;
+        $actualRevenue = $orderValue ? round($orderValue * 0.80, 2) : ($validated['actual_revenue'] ?? null);
 
         $order->update([
             'order_id' => $validated['order_id'] ?? null,
@@ -452,7 +393,7 @@ class OrderController extends Controller
             'description' => $validated['description'] ?? null,
             'status' => $validated['status'],
             'priority' => $validated['priority'],
-            'value' => $validated['value'] ?? null,
+            'value' => $orderValue,
             'start_date' => $validated['start_date'] ?? null,
             'end_date' => $validated['end_date'] ?? null,
             'actual_revenue' => $actualRevenue,
@@ -504,15 +445,13 @@ class OrderController extends Controller
 
         $orders = Order::whereIn('id', $ids);
 
-        // Filter by user's role and team/tech stack
+        // Only admin/OM/PM and team leaders (for their team) can perform bulk actions
         $user = auth()->user();
         if (! $user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
-            if ($user->hasRole('stack-leader')) {
-                // Stack leaders can only bulk action on orders with their tech stack
-                $orders->where('tech_stack_id', $user->tech_stack_id);
-            } else {
-                // Team leaders and members can only bulk action on their team's orders
+            if ($user->hasRole('team-leader')) {
                 $orders->where('team_id', $user->team_id);
+            } else {
+                return response()->json(['message' => 'You do not have permission to perform bulk actions.'], 403);
             }
         }
 
@@ -621,16 +560,11 @@ class OrderController extends Controller
 
         $user = auth()->user();
 
-        // Build query based on role
         $query = \App\Models\User::query();
 
         if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             // Can see all users
-        } elseif ($user->hasRole('stack-leader')) {
-            // Stack leaders see users with their tech stack
-            $query->where('tech_stack_id', $user->tech_stack_id);
         } else {
-            // Team leaders and members see their team members
             $query->where('team_id', $user->team_id);
         }
 
@@ -639,18 +573,19 @@ class OrderController extends Controller
             $query->whereNotIn('id', $excludeIds);
         }
 
-        // Apply search filter - search by name, email, employee_id
+        // Apply search filter - search by name, email, employee_id, position
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('employee_id', 'like', "%{$search}%");
+                    ->orWhere('employee_id', 'like', "%{$search}%")
+                    ->orWhere('position', 'like', "%{$search}%");
             });
         }
 
         // Limit results and include team relationship
         $users = $query->with('team:id,name')
-            ->select('id', 'name', 'email', 'employee_id', 'team_id')
+            ->select('id', 'name', 'email', 'employee_id', 'position', 'team_id')
             ->orderBy('name')
             ->limit(20)
             ->get();

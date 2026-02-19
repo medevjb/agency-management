@@ -9,7 +9,7 @@ class PortfolioPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->can('view any portfolio');
+        return $user->can('view any portfolio') || $user->can('view own portfolio');
     }
 
     public function view(User $user, Portfolio $portfolio): bool

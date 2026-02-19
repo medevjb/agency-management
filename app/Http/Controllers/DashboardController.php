@@ -14,9 +14,9 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Only allow admin, operation manager, and project manager to view dashboard
+        // Admin, OM, PM get the full dashboard. Team leader gets redirected to orders dashboard (which has team progress).
+        // Stack leader and team member also go to orders dashboard.
         if (! $user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
-            // Redirect team users to orders dashboard
             return redirect()->route('orders.dashboard');
         }
 

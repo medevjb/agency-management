@@ -190,7 +190,7 @@
 @push('scripts')
 <script>
 const allUsers = @json($users);
-const techStackMembers = {{ $techStack->users->pluck('id')->toArray() }};
+const techStackMembers = @json($techStack->users->pluck('id'));
 
 (function() {
     // State - initialize with existing tech stack members

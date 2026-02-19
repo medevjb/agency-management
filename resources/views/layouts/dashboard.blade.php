@@ -264,6 +264,280 @@
                 transform: translateY(0);
             }
         }
+        /* ===== Custom SweetAlert2 Styling ===== */
+        .swal2-popup {
+            font-family: 'Figtree', system-ui, -apple-system, sans-serif !important;
+            border-radius: 20px !important;
+            padding: 2rem 1.75rem 1.5rem !important;
+            border: 1px solid #e5e7eb !important;
+            box-shadow:
+                0 25px 50px -12px rgba(0, 0, 0, 0.15),
+                0 0 0 1px rgba(0, 0, 0, 0.03) !important;
+            max-width: 420px !important;
+        }
+
+        .swal2-popup.swal2-toast {
+            border-radius: 14px !important;
+            padding: 0.75rem 1rem !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        /* Backdrop */
+        .swal2-container {
+            backdrop-filter: blur(4px) !important;
+            -webkit-backdrop-filter: blur(4px) !important;
+        }
+
+        .swal2-container.swal2-backdrop-show {
+            background: rgba(17, 24, 39, 0.4) !important;
+        }
+
+        /* Icon ring overrides */
+        .swal2-icon {
+            border-width: 3px !important;
+            width: 64px !important;
+            height: 64px !important;
+            margin: 0 auto 1rem !important;
+        }
+
+        .swal2-icon .swal2-icon-content {
+            font-size: 2rem !important;
+        }
+
+        .swal2-icon.swal2-success {
+            border-color: #22c55e !important;
+            color: #22c55e !important;
+        }
+
+        .swal2-icon.swal2-success [class^='swal2-success-line'] {
+            background-color: #22c55e !important;
+        }
+
+        .swal2-icon.swal2-success .swal2-success-ring {
+            border-color: rgba(34, 197, 94, 0.25) !important;
+        }
+
+        .swal2-icon.swal2-warning {
+            border-color: #f59e0b !important;
+            color: #f59e0b !important;
+        }
+
+        .swal2-icon.swal2-error {
+            border-color: #ef4444 !important;
+            color: #ef4444 !important;
+        }
+
+        .swal2-icon.swal2-error [class^='swal2-x-mark-line'] {
+            background-color: #ef4444 !important;
+        }
+
+        .swal2-icon.swal2-info {
+            border-color: #6366f1 !important;
+            color: #6366f1 !important;
+        }
+
+        .swal2-icon.swal2-question {
+            border-color: #6366f1 !important;
+            color: #6366f1 !important;
+        }
+
+        /* Title */
+        .swal2-title {
+            font-size: 1.25rem !important;
+            font-weight: 700 !important;
+            color: #111827 !important;
+            padding: 0 !important;
+            margin-bottom: 0.35rem !important;
+            line-height: 1.4 !important;
+        }
+
+        /* Text / HTML content */
+        .swal2-html-container {
+            font-size: 0.875rem !important;
+            color: #6b7280 !important;
+            line-height: 1.6 !important;
+            margin: 0 0 0.25rem !important;
+            padding: 0 !important;
+        }
+
+        /* Actions / Buttons container */
+        .swal2-actions {
+            margin-top: 1.25rem !important;
+            gap: 0.625rem !important;
+        }
+
+        /* Shared button base */
+        .swal2-popup .swal2-styled {
+            font-family: 'Figtree', system-ui, -apple-system, sans-serif !important;
+            font-weight: 600 !important;
+            font-size: 0.875rem !important;
+            padding: 0.625rem 1.5rem !important;
+            border-radius: 10px !important;
+            letter-spacing: 0.01em !important;
+            transition: all 0.15s ease !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+            border: none !important;
+            min-width: 100px !important;
+        }
+
+        .swal2-popup .swal2-styled:focus {
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3) !important;
+        }
+
+        /* Confirm button */
+        .swal2-popup .swal2-styled.swal2-confirm {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+            color: #ffffff !important;
+        }
+
+        .swal2-popup .swal2-styled.swal2-confirm:hover {
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35) !important;
+        }
+
+        .swal2-popup .swal2-styled.swal2-confirm:active {
+            transform: translateY(0) !important;
+        }
+
+        /* Deny / Destructive button */
+        .swal2-popup .swal2-styled.swal2-deny {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+            color: #ffffff !important;
+        }
+
+        .swal2-popup .swal2-styled.swal2-deny:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35) !important;
+        }
+
+        /* Cancel button */
+        .swal2-popup .swal2-styled.swal2-cancel {
+            background: #ffffff !important;
+            color: #374151 !important;
+            border: 1px solid #d1d5db !important;
+        }
+
+        .swal2-popup .swal2-styled.swal2-cancel:hover {
+            background: #f9fafb !important;
+            border-color: #9ca3af !important;
+            transform: translateY(-1px) !important;
+        }
+
+        .swal2-popup .swal2-styled.swal2-cancel:focus {
+            box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.2) !important;
+        }
+
+        /* Input fields */
+        .swal2-input,
+        .swal2-textarea,
+        .swal2-select {
+            border: 1px solid #d1d5db !important;
+            border-radius: 10px !important;
+            font-size: 0.875rem !important;
+            padding: 0.625rem 0.875rem !important;
+            color: #111827 !important;
+            font-family: 'Figtree', system-ui, -apple-system, sans-serif !important;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+        }
+
+        .swal2-input:focus,
+        .swal2-textarea:focus,
+        .swal2-select:focus {
+            border-color: #6366f1 !important;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+            outline: none !important;
+        }
+
+        .swal2-input::placeholder,
+        .swal2-textarea::placeholder {
+            color: #9ca3af !important;
+        }
+
+        /* Validation message */
+        .swal2-validation-message {
+            background: #fef2f2 !important;
+            color: #dc2626 !important;
+            border-radius: 10px !important;
+            font-size: 0.8125rem !important;
+            font-weight: 500 !important;
+            padding: 0.625rem 1rem !important;
+            margin-top: 0.5rem !important;
+            border: 1px solid #fecaca !important;
+        }
+
+        .swal2-validation-message::before {
+            background: #ef4444 !important;
+        }
+
+        /* Close button */
+        .swal2-close {
+            font-size: 1.5rem !important;
+            color: #9ca3af !important;
+            width: 32px !important;
+            height: 32px !important;
+            border-radius: 8px !important;
+            transition: all 0.15s ease !important;
+            top: 0.875rem !important;
+            right: 0.875rem !important;
+        }
+
+        .swal2-close:hover {
+            color: #374151 !important;
+            background: #f3f4f6 !important;
+        }
+
+        /* Loading spinner */
+        .swal2-loading .swal2-styled.swal2-confirm {
+            border-color: transparent !important;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+            opacity: 0.8 !important;
+        }
+
+        /* Timer progress bar */
+        .swal2-timer-progress-bar {
+            background: linear-gradient(90deg, #6366f1, #8b5cf6) !important;
+            height: 4px !important;
+            border-radius: 0 0 20px 20px !important;
+        }
+
+        /* Footer */
+        .swal2-footer {
+            border-top: 1px solid #f3f4f6 !important;
+            color: #9ca3af !important;
+            font-size: 0.8125rem !important;
+            padding-top: 0.75rem !important;
+            margin-top: 0.75rem !important;
+        }
+
+        .swal2-footer a {
+            color: #6366f1 !important;
+            font-weight: 500 !important;
+        }
+
+        .swal2-footer a:hover {
+            color: #4f46e5 !important;
+        }
+
+        /* Popup animation overrides */
+        .swal2-popup.swal2-show {
+            animation: swalPopIn 0.25s cubic-bezier(0.21, 1.02, 0.73, 1) !important;
+        }
+
+        .swal2-popup.swal2-hide {
+            animation: swalPopOut 0.15s ease-in forwards !important;
+        }
+
+        @keyframes swalPopIn {
+            0% { opacity: 0; transform: scale(0.92) translateY(8px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        @keyframes swalPopOut {
+            0% { opacity: 1; transform: scale(1) translateY(0); }
+            100% { opacity: 0; transform: scale(0.92) translateY(8px); }
+        }
     </style>
     @stack('styles')
 </head>
@@ -443,6 +717,43 @@
 
     <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const SwalDefault = Swal.mixin({
+            customClass: {
+                popup: 'swal2-popup',
+                confirmButton: 'swal2-styled swal2-confirm',
+                cancelButton: 'swal2-styled swal2-cancel',
+                denyButton: 'swal2-styled swal2-deny',
+            },
+            buttonsStyling: false,
+            reverseButtons: true,
+            showClass: { popup: 'swal2-show' },
+            hideClass: { popup: 'swal2-hide' },
+        });
+    </script>
+
+    <!-- Flash Message Handler -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: @json(session('success')),
+                timer: 2500,
+                timerProgressBar: true,
+                showConfirmButton: false,
+            });
+        @endif
+        @if(session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: @json(session('error')),
+            });
+        @endif
+    });
+    </script>
 
     <!-- Sidebar Accordion Script -->
     <script>

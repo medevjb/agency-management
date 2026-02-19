@@ -108,44 +108,82 @@
                     </div>
                 </div>
 
-                <!-- Row 4: Amount & Dates -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Row 4: Amount Split & Dates -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Amount Section -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Amount ($)
+                            Order Amount ($) <span class="text-gray-400 font-normal">— Fiverr price</span>
                         </label>
-                        <input type="number" name="actual_revenue" step="0.01" min="0" value="{{ $order->actual_revenue }}"
+                        <input type="number" name="value" id="orderAmount" step="0.01" min="0"
+                               value="{{ old('value', $order->value) }}"
                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm"
                                placeholder="0.00">
-                        @error('actual_revenue')
+                        @error('value')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
+
+                        <!-- Visual Split -->
+                        <div id="amountSplit" class="mt-3 hidden">
+                            <div class="bg-gray-50 rounded-lg border border-gray-200 p-3 space-y-2">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-gray-600 flex items-center gap-1.5">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block"></span>
+                                        Order Amount
+                                    </span>
+                                    <span class="font-semibold text-gray-900" id="splitAmount">$0.00</span>
+                                </div>
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-gray-600 flex items-center gap-1.5">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-red-400 inline-block"></span>
+                                        Fiverr Fee (20%)
+                                    </span>
+                                    <span class="font-semibold text-red-500" id="splitFee">-$0.00</span>
+                                </div>
+                                <div class="border-t border-gray-200 pt-2 flex items-center justify-between text-sm">
+                                    <span class="text-gray-900 font-semibold flex items-center gap-1.5">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-green-500 inline-block"></span>
+                                        Net Value (80%)
+                                    </span>
+                                    <span class="font-bold text-green-600 text-base" id="splitNet">$0.00</span>
+                                </div>
+                                <!-- Progress bar -->
+                                <div class="flex h-2 rounded-full overflow-hidden bg-gray-200 mt-1">
+                                    <div class="bg-green-500 transition-all duration-300" style="width: 80%"></div>
+                                    <div class="bg-red-400 transition-all duration-300" style="width: 20%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="actual_revenue" id="actualRevenue" value="{{ old('actual_revenue', $order->actual_revenue) }}">
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Start Date
-                        </label>
-                        <input type="text" name="start_date" id="start_date" readonly
-                               value="{{ $order->start_date ? $order->start_date->format('Y-m-d') : '' }}"
-                               class="datepicker w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm cursor-pointer bg-white"
-                               placeholder="Select start date">
-                        @error('start_date')
-                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    <!-- Dates -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Start Date
+                            </label>
+                            <input type="text" name="start_date" id="start_date" readonly
+                                   value="{{ $order->start_date ? $order->start_date->format('Y-m-d') : '' }}"
+                                   class="datepicker w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm cursor-pointer bg-white"
+                                   placeholder="Select start date">
+                            @error('start_date')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            End Date
-                        </label>
-                        <input type="text" name="end_date" id="end_date" readonly
-                               value="{{ $order->end_date ? $order->end_date->format('Y-m-d') : '' }}"
-                               class="datepicker w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm cursor-pointer bg-white"
-                               placeholder="Select end date">
-                        @error('end_date')
-                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                End Date
+                            </label>
+                            <input type="text" name="end_date" id="end_date" readonly
+                                   value="{{ $order->end_date ? $order->end_date->format('Y-m-d') : '' }}"
+                                   class="datepicker w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm cursor-pointer bg-white"
+                                   placeholder="Select end date">
+                            @error('end_date')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
                 </div>
 
@@ -290,7 +328,7 @@
                                                 ${user.team ? `<span class="text-xs text-white bg-purple-500 px-2 py-0.5 rounded-full flex-shrink-0"><i class="fas fa-users mr-1"></i>${user.team.name}</span>` : ''}
                                             </div>
                                             <div class="text-xs text-gray-500 truncate">
-                                                ${user.email}
+                                                ${user.position ? `<span class="font-medium text-gray-600">${user.position}</span> &bull; ` : ''}${user.email}
                                             </div>
                                         </div>
                                         <div class="flex-shrink-0">
@@ -489,6 +527,35 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // --- Amount Split Auto-Calculation ---
+            const orderAmountInput = document.getElementById('orderAmount');
+            const actualRevenueInput = document.getElementById('actualRevenue');
+            const splitContainer = document.getElementById('amountSplit');
+            const splitAmount = document.getElementById('splitAmount');
+            const splitFee = document.getElementById('splitFee');
+            const splitNet = document.getElementById('splitNet');
+
+            function calculateSplit() {
+                const amount = parseFloat(orderAmountInput.value) || 0;
+                if (amount > 0) {
+                    const fee = amount * 0.20;
+                    const net = amount * 0.80;
+
+                    splitAmount.textContent = '$' + amount.toFixed(2);
+                    splitFee.textContent = '-$' + fee.toFixed(2);
+                    splitNet.textContent = '$' + net.toFixed(2);
+                    actualRevenueInput.value = net.toFixed(2);
+
+                    splitContainer.classList.remove('hidden');
+                } else {
+                    splitContainer.classList.add('hidden');
+                    actualRevenueInput.value = '';
+                }
+            }
+
+            orderAmountInput.addEventListener('input', calculateSplit);
+            calculateSplit();
+
             const statusSelect = document.getElementById('status');
             const deliveredDateContainer = document.getElementById('deliveredDateContainer');
             const deliveredDateInput = document.getElementById('delivered_at');

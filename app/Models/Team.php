@@ -40,4 +40,9 @@ class Team extends Model
     {
         return $this->belongsToMany(User::class, 'manager_team');
     }
+
+    public function techStacks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(TechStack::class, 'team_id');
+    }
 }

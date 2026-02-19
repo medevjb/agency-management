@@ -19,12 +19,10 @@ class UserController extends Controller
 {
     public function __construct()
     {
-        // Allow admin, operation manager, project manager, team leader, and stack leader
         $this->middleware(['auth'])
             ->only(['teamMembers', 'updateTeamMember', 'createTeamMember', 'storeTeamMember']);
 
-        // Admin-only routes
-        $this->middleware(['auth', 'role:admin'])
+        $this->middleware(['auth', 'role:admin|operation-manager|project-manager'])
             ->except(['teamMembers', 'updateTeamMember', 'createTeamMember', 'storeTeamMember']);
     }
 
@@ -487,6 +485,12 @@ class UserController extends Controller
             'managed_teams.*' => 'exists:teams,id',
         ]);
 
+        // Ensure permissions array exists (empty array if not provided)
+        $validated['permissions'] = $validated['permissions'] ?? [];
+
+        // Ensure managed_teams array exists (empty array if not provided)
+        $validated['managed_teams'] = $validated['managed_teams'] ?? [];
+
         try {
             // Use database transaction to ensure atomicity
             $user = DB::transaction(function () use ($user, $validated) {
@@ -522,16 +526,17 @@ class UserController extends Controller
                     $user->syncRoles([$validated['role']]);
                 }
 
-                // Update permissions
-                if (isset($validated['permissions'])) {
+                // Update permissions - always sync, even if empty
+                if (! empty($validated['permissions'])) {
                     $permissions = Permission::whereIn('id', $validated['permissions'])->get();
                     $user->syncPermissions($permissions);
                 } else {
-                    $user->syncPermissions([]);
+                    // Explicitly remove all direct permissions
+                    $user->permissions()->detach();
                 }
 
                 // Update managed teams (only for managers)
-                if (isset($validated['managed_teams'])) {
+                if (! empty($validated['managed_teams'])) {
                     $user->managedTeams()->sync($validated['managed_teams']);
                 } else {
                     $user->managedTeams()->sync([]);
@@ -990,7 +995,19 @@ class UserController extends Controller
         // Get team members based on user role
         $members = TeamMemberService::getTeamMembersForView($user);
 
-        return view('users.team-members', compact('members'));
+        $membersJson = $members->mapWithKeys(function ($m) {
+            return [$m->id => [
+                'id' => $m->id,
+                'name' => $m->name,
+                'email' => $m->email,
+                'phone' => $m->phone,
+                'position' => $m->position,
+                'department' => $m->department,
+                'address' => $m->address,
+            ]];
+        });
+
+        return view('users.team-members', compact('members', 'membersJson'));
     }
 
     /**
@@ -1033,16 +1050,13 @@ class UserController extends Controller
     {
         $user = auth()->user();
 
-        // Get roles that can be assigned based on current user's role
         $assignableRoles = collect();
-        if ($user->hasRole(['admin', 'operation-manager'])) {
+        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             $assignableRoles = \Spatie\Permission\Models\Role::all();
-        } elseif ($user->hasRole('project-manager')) {
-            $assignableRoles = \Spatie\Permission\Models\Role::whereIn('name', ['developer', 'designer', 'qa', 'team-member'])->get();
         } elseif ($user->hasRole('team-leader')) {
-            $assignableRoles = \Spatie\Permission\Models\Role::whereIn('name', ['developer', 'designer', 'qa', 'team-member'])->get();
+            $assignableRoles = \Spatie\Permission\Models\Role::whereIn('name', ['team-member', 'stack-leader'])->get();
         } elseif ($user->hasRole('stack-leader')) {
-            $assignableRoles = \Spatie\Permission\Models\Role::whereIn('name', ['developer', 'designer', 'qa', 'team-member'])->get();
+            $assignableRoles = \Spatie\Permission\Models\Role::whereIn('name', ['team-member'])->get();
         }
 
         // Get teams if user is team leader
