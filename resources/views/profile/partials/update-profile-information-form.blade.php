@@ -1,10 +1,11 @@
 <section>
-    <header>
-        <h2 class="text-lg font-medium text-gray-900">
+    <header class="mb-6">
+        <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+            <i class="fas fa-user-circle text-indigo-500"></i>
             {{ __('Profile Information') }}
         </h2>
 
-        <p class="mt-1 text-sm text-gray-600">
+        <p class="mt-1 text-sm text-gray-500">
             {{ __("Update your account's profile information and email address.") }}
         </p>
     </header>
@@ -48,7 +49,9 @@
         </div>
 
         <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
+            <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold hover:from-indigo-600 hover:to-purple-700 transition-all shadow-md hover:shadow-lg">
+                {{ __('Save Changes') }}
+            </button>
 
             @if (session('status') === 'profile-updated')
                 <p
