@@ -15,6 +15,6 @@ jobs:
       with:
         server: ftp.thesyndicates.team
         username: erp-management@erp-management.thesyndicates.team
-        password: Gitlab@4321
+        password: Github@432!
         port: 21
         protocol: "ftp"
