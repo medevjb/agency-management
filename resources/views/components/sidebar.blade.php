@@ -2,7 +2,7 @@
 <aside class="fixed top-0 left-0 h-screen w-64 bg-indigo-900 text-white hidden lg:flex flex-col shadow-2xl z-50">
     <!-- Logo Section -->
     <div class="flex items-center justify-center h-16 px-6 border-b border-indigo-700/50 flex-shrink-0">
-        <img src="{{ asset('image/svalpha.png') }}" alt="Logo" class="h-10 w-auto mr-3" style="border-radius:5px">
+        <img src="{{ asset('image/svalpha.png') }}" alt="Logo" class="h-10 w-auto mr-3" style="border-radius:5px; height:53px">
         <!-- <h1 class="text-xl font-bold tracking-wide">{{ config('app.name', 'PMT') }}</h1> -->
     </div>
 
