@@ -178,7 +178,7 @@ class UsersWithRolesSeeder extends Seeder
         $designationUsers = [
             ['email' => 'tonmoy@gmail.com', 'name' => 'Tonmoy', 'role' => 'admin', 'designation' => 'GM'],
             ['email' => 'jb@gmail.com', 'name' => 'JB', 'role' => 'operation-manager', 'designation' => 'OP'],
-            ['email' => 'Saifur@gmail.com', 'name' => 'Saifur', 'role' => 'project-manager', 'designation' => 'PM'],
+            ['email' => 'saidur@gmail.com', 'name' => 'Saidur', 'role' => 'project-manager', 'designation' => 'PM'],
             ['email' => 'tarek@gmail.com', 'name' => 'Tarek', 'role' => 'team-leader', 'designation' => 'T.L'],
             ['email' => 'helal@gmail.com', 'name' => 'Helal', 'role' => 'stack-leader', 'designation' => 'Stack Leader'],
             ['email' => 'emon@gmail.com', 'name' => 'Emon', 'role' => 'team-member', 'designation' => 'Team Member'],
