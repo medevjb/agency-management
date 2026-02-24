@@ -273,7 +273,7 @@
                                 </div>
                                 <div>
                                     <p class="text-sm font-medium text-gray-900">{{ $order->name }}</p>
-                                    <p class="text-xs text-gray-500">by {{ $order->creator->name }}</p>
+                                    <p class="text-xs text-gray-500">by {{ $order->creator?->name ?? 'System' }}</p>
                                 </div>
                             </div>
                             <div class="text-right">
@@ -316,7 +316,7 @@
                         </div>
                         <div class="flex-1">
                             <p class="text-sm text-gray-900">
-                                <span class="font-medium">{{ $activity->createdBy->name }}</span>
+                                <span class="font-medium">{{ $activity->createdBy?->name ?? 'System' }}</span>
                                 created project
                                 <a href="{{ route('projects.show', $activity->id) }}" class="text-indigo-600 hover:underline font-medium">{{ $activity->name }}</a>
                             </p>
