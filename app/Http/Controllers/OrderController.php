@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\OrderAssignmentNotification;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
 use App\Notifications\OrderStatusNotification;
+use App\Services\EmailService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -312,6 +314,19 @@ class OrderController extends Controller
         // Attach users
         if (! empty($validated['users'])) {
             $order->users()->attach($validated['users']);
+
+            // Send notifications to assigned users
+            foreach ($validated['users'] as $userId) {
+                $assignedUser = \App\Models\User::find($userId);
+                if ($assignedUser) {
+                    EmailService::sendTo($assignedUser->email, new OrderAssignmentNotification($order, $assignedUser, false));
+                }
+            }
+        }
+
+        // Send notification to team leader if team is assigned
+        if ($order->team && $order->team->teamLeader) {
+            EmailService::sendTo($order->team->teamLeader->email, new OrderAssignmentNotification($order, $order->team->teamLeader, true));
         }
 
         // Create initial status history
@@ -534,6 +549,14 @@ class OrderController extends Controller
 
         // Sync users to the order
         $order->users()->sync($validated['users']);
+
+        // Send notifications to newly assigned users
+        foreach ($validated['users'] as $userId) {
+            $assignedUser = \App\Models\User::find($userId);
+            if ($assignedUser) {
+                EmailService::sendTo($assignedUser->email, new OrderAssignmentNotification($order, $assignedUser, false));
+            }
+        }
 
         return response()->json([
             'message' => 'User assignments updated successfully.',

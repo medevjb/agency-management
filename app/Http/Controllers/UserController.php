@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreUserRequest;
+use App\Mail\WelcomeEmail;
 use App\Models\Team;
 use App\Models\TechStack;
 use App\Models\User;
+use App\Services\EmailService;
 use App\Services\TeamMemberService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -333,6 +335,9 @@ class UserController extends Controller
 
                 return $user;
             });
+
+            // Send welcome email with credentials
+            EmailService::sendTo($user->email, new WelcomeEmail($user, $validated['password']));
 
             // Check if request expects JSON (AJAX)
             if ($request->expectsJson()) {
@@ -826,6 +831,9 @@ class UserController extends Controller
                         $user->assignRole($role);
                     }
 
+                    // Send welcome email with credentials
+                    EmailService::sendTo($user->email, new WelcomeEmail($user, 'password123'));
+
                     $importedUsers[] = $user->name;
 
                 } catch (\Exception $e) {
@@ -1116,6 +1124,9 @@ class UserController extends Controller
         } elseif ($request->filled('team_id') && $user->hasRole(['admin', 'operation-manager'])) {
             $newUser->update(['team_id' => $request->team_id]);
         }
+
+        // Send welcome email with credentials
+        EmailService::sendTo($newUser->email, new WelcomeEmail($newUser, $request->password));
 
         return redirect()
             ->route('users.team-members')

@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
+use App\Mail\TaskAssignmentNotification;
 use App\Models\Order;
 use App\Models\Task;
 use App\Models\User;
-use App\Notifications\TaskAssignedNotification;
 use App\Notifications\TaskUpdatedNotification;
+use App\Services\EmailService;
 use App\Services\TaskAssignmentService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -159,9 +160,9 @@ class TaskController extends Controller
             'created_by' => $user->id,
         ]);
 
-        // Send notification to assigned user
-        if ($task->assigned_to && $task->assigned_to !== $user->id) {
-            $task->assignedTo->notify(new TaskAssignedNotification($task));
+        // Send email notification to assigned user
+        if ($task->assigned_to && $task->assignedTo) {
+            EmailService::sendTo($task->assignedTo->email, new TaskAssignmentNotification($task, $task->assignedTo));
         }
 
         // Load relationships for response
@@ -245,9 +246,9 @@ class TaskController extends Controller
 
         $task->update($data);
 
-        // Notify newly assigned user if assignment changed
-        if ($task->assigned_to && $task->assigned_to !== $oldAssignedTo && $task->assigned_to !== $user->id) {
-            $task->assignedTo->notify(new TaskAssignedNotification($task));
+        // Send email notification to newly assigned user if assignment changed
+        if ($task->assigned_to && $task->assigned_to !== $oldAssignedTo && $task->assignedTo) {
+            EmailService::sendTo($task->assignedTo->email, new TaskAssignmentNotification($task, $task->assignedTo));
         }
 
         // Notify assigned user about important updates
