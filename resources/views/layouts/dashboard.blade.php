@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <!-- Flatpickr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <!-- Trix Editor CSS -->
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/trix@2.0.0/dist/trix.css">
     <!-- Axios CDN -->
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.8/dist/axios.min.js"></script>
     <script>
@@ -539,6 +541,101 @@
             0% { opacity: 1; transform: scale(1) translateY(0); }
             100% { opacity: 0; transform: scale(0.92) translateY(8px); }
         }
+
+        /* ===== Trix Editor Styling ===== */
+        trix-editor {
+            border: 1px solid #d1d5db;
+            border-radius: 0 0 0.5rem 0.5rem;
+            padding: 0.75rem 1rem;
+            min-height: 200px;
+            font-family: 'Figtree', system-ui, -apple-system, sans-serif;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            color: #374151;
+            background: #fff;
+        }
+
+        trix-editor:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
+        trix-toolbar {
+            border: 1px solid #d1d5db;
+            border-bottom: none;
+            border-radius: 0.5rem 0.5rem 0 0;
+            background: #f9fafb;
+            padding: 0.5rem;
+        }
+
+        trix-toolbar .trix-button-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2px;
+        }
+
+        trix-toolbar .trix-button-group {
+            display: flex;
+            gap: 1px;
+            margin-right: 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        trix-toolbar .trix-button {
+            background: #fff;
+            border: none;
+            padding: 6px 10px;
+            color: #4b5563;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        trix-toolbar .trix-button:hover {
+            background: #e0e7ff;
+            color: #4f46e5;
+        }
+
+        trix-toolbar .trix-button.trix-active {
+            background: #6366f1;
+            color: #fff;
+        }
+
+        trix-toolbar .trix-button--icon {
+            width: 32px;
+            height: 32px;
+        }
+
+        /* Hide file attachment button (we have separate image upload) */
+        trix-toolbar .trix-button-group--file-tools {
+            display: none !important;
+        }
+
+        /* Trix content display styling */
+        .trix-content h1 { font-size: 1.5rem; font-weight: 700; margin: 1rem 0 0.5rem; }
+        .trix-content ul { list-style-type: disc; padding-left: 1.5rem; }
+        .trix-content ol { list-style-type: decimal; padding-left: 1.5rem; }
+        .trix-content blockquote {
+            border-left: 3px solid #6366f1;
+            padding-left: 1rem;
+            margin: 0.75rem 0;
+            color: #6b7280;
+            font-style: italic;
+        }
+        .trix-content pre {
+            background: #1f2937;
+            color: #e5e7eb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            font-size: 0.8125rem;
+        }
+        .trix-content a {
+            color: #6366f1;
+            text-decoration: underline;
+        }
     </style>
     @stack('styles')
 </head>
@@ -718,6 +815,9 @@
     </div>
 
     <script src="{{ Vite::asset('resources/js/app.js') }}" type="module" defer></script>
+
+    <!-- Trix Editor JS -->
+    <script type="text/javascript" src="https://unpkg.com/trix@2.0.0/dist/trix.umd.min.js"></script>
 
     <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

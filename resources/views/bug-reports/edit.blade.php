@@ -47,8 +47,9 @@
                             <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
                                 Description <span class="text-red-500">*</span>
                             </label>
-                            <textarea name="description" id="description" rows="8" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">{{ old('description', $bugReport->description) }}</textarea>
+                            <input id="description" type="hidden" name="description" value="{{ old('description', $bugReport->description) }}">
+                            <trix-editor input="description"
+                                class="trix-content prose max-w-none border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-h-[200px]"></trix-editor>
                             @error('description')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -111,21 +112,17 @@
                         @if($bugReport->images->count() > 0)
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Existing Images</label>
-                            <div class="grid grid-cols-3 gap-2">
+                            <div class="grid grid-cols-3 gap-2" id="existing-images">
                                 @foreach($bugReport->images as $image)
-                                    <div class="relative group">
+                                    <div class="relative group" id="image-container-{{ $image->id }}">
                                         <img src="{{ asset('storage/' . $image->image_path) }}"
                                              alt="{{ $image->image_name }}"
                                              class="w-full h-20 object-cover rounded border border-gray-300">
-                                        <form method="POST" action="{{ route('bug-reports.images.delete', [$bugReport, $image]) }}"
-                                              class="absolute top-1 right-1"
-                                              onsubmit="return confirm('Delete this image?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition hover:bg-red-600">
-                                                <i class="fas fa-times text-xs"></i>
-                                            </button>
-                                        </form>
+                                        <button type="button"
+                                                onclick="deleteExistingImage({{ $bugReport->id }}, {{ $image->id }})"
+                                                class="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition hover:bg-red-600">
+                                            <i class="fas fa-times text-xs"></i>
+                                        </button>
                                     </div>
                                 @endforeach
                             </div>
@@ -220,6 +217,40 @@ function removeImage(index) {
     const dataTransfer = new DataTransfer();
     selectedFiles.forEach(file => dataTransfer.items.add(file));
     fileInput.files = dataTransfer.files;
+}
+
+function deleteExistingImage(bugReportId, imageId) {
+    if (!confirm('Delete this image?')) {
+        return;
+    }
+
+    fetch(`/bug-reports/${bugReportId}/images/${imageId}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json',
+        },
+    })
+    .then(response => {
+        if (response.ok) {
+            const container = document.getElementById(`image-container-${imageId}`);
+            if (container) {
+                container.remove();
+            }
+
+            // If no more images, remove the entire existing images section
+            const existingImages = document.getElementById('existing-images');
+            if (existingImages && existingImages.children.length === 0) {
+                existingImages.closest('div').remove();
+            }
+        } else {
+            alert('Failed to delete image. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to delete image. Please try again.');
+    });
 }
 </script>
 @endsection
