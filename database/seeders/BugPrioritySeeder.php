@@ -13,11 +13,13 @@ class BugPrioritySeeder extends Seeder
     public function run(): void
     {
         $priorities = [
+            
+            
             [
-                'name' => 'Low',
-                'slug' => 'low',
-                'color' => '#10B981', // Green
-                'level' => 0,
+                'name' => 'High',
+                'slug' => 'high',
+                'color' => '#EF4444', // Red
+                'level' => 2,
             ],
             [
                 'name' => 'Medium',
@@ -26,17 +28,11 @@ class BugPrioritySeeder extends Seeder
                 'level' => 1,
             ],
             [
-                'name' => 'High',
-                'slug' => 'high',
-                'color' => '#EF4444', // Red
-                'level' => 2,
-            ],
-            [
-                'name' => 'Critical',
-                'slug' => 'critical',
-                'color' => '#7C3AED', // Purple
-                'level' => 3,
-            ],
+                'name' => 'Low',
+                'slug' => 'low',
+                'color' => '#10B981', // Green
+                'level' => 0,
+            ]
         ];
 
         foreach ($priorities as $priority) {
