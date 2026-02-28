@@ -24,7 +24,7 @@ class BugReportController extends Controller
 
         $user = auth()->user();
 
-        $bugReports = BugReport::with(['user', 'category', 'priority', 'images'])
+        $bugReports = BugReport::with(['user', 'priority', 'images'])
             ->when(! $user->hasRole('admin'), function ($query) use ($user) {
                 // Non-admin users only see their own bug reports
                 $query->where('user_id', $user->id);
@@ -32,9 +32,7 @@ class BugReportController extends Controller
             ->when($request->status, function ($query, $status) {
                 $query->where('status', $status);
             })
-            ->when($request->category, function ($query, $category) {
-                $query->where('bug_category_id', $category);
-            })
+
             ->when($request->priority, function ($query, $priority) {
                 $query->where('bug_priority_id', $priority);
             })
@@ -47,7 +45,7 @@ class BugReportController extends Controller
             ->latest()
             ->paginate(10);
 
-        $categories = BugCategory::all();
+
         $priorities = BugPriority::orderBy('level')->get();
 
         $stats = [
@@ -68,7 +66,7 @@ class BugReportController extends Controller
             })->where('status', 'published')->count(),
         ];
 
-        return view('bug-reports.index', compact('bugReports', 'categories', 'priorities', 'stats'));
+        return view('bug-reports.index', compact('bugReports', 'priorities', 'stats'));
     }
 
     /**
@@ -78,10 +76,10 @@ class BugReportController extends Controller
     {
         $this->authorize('create', BugReport::class);
 
-        $categories = BugCategory::all();
+
         $priorities = BugPriority::orderBy('level')->get();
 
-        return view('bug-reports.create', compact('categories', 'priorities'));
+        return view('bug-reports.create', compact('priorities'));
     }
 
     /**
@@ -127,7 +125,7 @@ class BugReportController extends Controller
     {
         $this->authorize('view', $bugReport);
 
-        $bugReport->load(['user', 'category', 'priority', 'images', 'resolvedBy']);
+        $bugReport->load(['user', 'priority', 'images', 'resolvedBy']);
 
         return view('bug-reports.show', compact('bugReport'));
     }
@@ -140,10 +138,10 @@ class BugReportController extends Controller
         $this->authorize('update', $bugReport);
 
         $bugReport->load(['images']);
-        $categories = BugCategory::all();
+
         $priorities = BugPriority::orderBy('level')->get();
 
-        return view('bug-reports.edit', compact('bugReport', 'categories', 'priorities'));
+        return view('bug-reports.edit', compact('bugReport', 'priorities'));
     }
 
     /**

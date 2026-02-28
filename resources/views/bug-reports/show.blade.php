@@ -126,10 +126,6 @@
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">Details</h3>
                     <div class="space-y-4">
                         <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                            <span class="text-sm font-medium text-gray-500">Category</span>
-                            <span class="text-sm text-gray-900">{{ $bugReport->category->name }}</span>
-                        </div>
-                        <div class="flex justify-between items-center py-2 border-b border-gray-100">
                             <span class="text-sm font-medium text-gray-500">Priority</span>
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                                   style="background-color: {{ $bugReport->priority->color }}20; color: {{ $bugReport->priority->color }}">
@@ -175,7 +171,7 @@
                             @csrf
                             @method('PATCH')
                             <input type="hidden" name="status" value="in_progress">
-                            <input type="hidden" name="bug_category_id" value="{{ $bugReport->bug_category_id }}">
+
                             <input type="hidden" name="bug_priority_id" value="{{ $bugReport->bug_priority_id }}">
                             <input type="hidden" name="title" value="{{ $bugReport->title }}">
                             <input type="hidden" name="description" value="{{ $bugReport->description }}">
@@ -190,7 +186,7 @@
                             @csrf
                             @method('PATCH')
                             <input type="hidden" name="status" value="resolved">
-                            <input type="hidden" name="bug_category_id" value="{{ $bugReport->bug_category_id }}">
+
                             <input type="hidden" name="bug_priority_id" value="{{ $bugReport->bug_priority_id }}">
                             <input type="hidden" name="title" value="{{ $bugReport->title }}">
                             <input type="hidden" name="description" value="{{ $bugReport->description }}">
@@ -205,7 +201,7 @@
                             @csrf
                             @method('PATCH')
                             <input type="hidden" name="status" value="published">
-                            <input type="hidden" name="bug_category_id" value="{{ $bugReport->bug_category_id }}">
+
                             <input type="hidden" name="bug_priority_id" value="{{ $bugReport->bug_priority_id }}">
                             <input type="hidden" name="title" value="{{ $bugReport->title }}">
                             <input type="hidden" name="description" value="{{ $bugReport->description }}">
