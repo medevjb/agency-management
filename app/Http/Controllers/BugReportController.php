@@ -217,7 +217,7 @@ class BugReportController extends Controller
     /**
      * Remove a specific image from a bug report.
      */
-    public function deleteImage(BugReport $bugReport, BugImage $image): RedirectResponse
+    public function deleteImage(Request $request, BugReport $bugReport, BugImage $image): RedirectResponse|\Illuminate\Http\JsonResponse
     {
         $this->authorize('update', $bugReport);
 
@@ -227,6 +227,10 @@ class BugReportController extends Controller
 
         Storage::disk('public')->delete($image->image_path);
         $image->delete();
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Image deleted successfully.']);
+        }
 
         return redirect()->back()
             ->with('success', 'Image deleted successfully.');
