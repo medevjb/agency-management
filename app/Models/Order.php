@@ -24,6 +24,8 @@ class Order extends Model
         'tech_stack_id',
         'freelance_profile_id',
         'order_sheet_url',
+        'special_status',
+        'last_update_date',
         'created_by',
     ];
 
@@ -35,6 +37,8 @@ class Order extends Model
             'value' => 'decimal:2',
             'actual_revenue' => 'decimal:2',
             'delivered_at' => 'datetime',
+            'special_status' => \App\SpecialStatus::class,
+            'last_update_date' => 'datetime',
         ];
     }
 

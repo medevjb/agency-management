@@ -321,11 +321,18 @@
                     <h1 class="text-3xl font-bold text-gray-900">Orders</h1>
                     <p class="mt-2 text-sm text-gray-600">Manage orders and track their status</p>
                 </div>
-                <a href="{{ route('orders.dashboard') }}"
-                    class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-semibold transition-all shadow-lg">
-                    <i class="fas fa-chart-line mr-2"></i>
-                    View Dashboard
-                </a>
+                <div class="flex items-center gap-3">
+                    <button onclick="exportOrders()"
+                        class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-semibold transition-all shadow-lg">
+                        <i class="fas fa-file-export mr-2"></i>
+                        Export CSV
+                    </button>
+                    <a href="{{ route('orders.dashboard') }}"
+                        class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-semibold transition-all shadow-lg">
+                        <i class="fas fa-chart-line mr-2"></i>
+                        View Dashboard
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -496,7 +503,6 @@
                                 <input type="checkbox" id="checkAll"
                                     class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                             </th>
-                            <th>Order ID</th>
                             <th>Client</th>
                             <th>Profile</th>
                             <th>Status</th>
@@ -508,6 +514,8 @@
                             <th>Delivered</th>
                             <th>Deadline</th>
                             <th class="text-center">Docs</th>
+                            <th>Special</th>
+                            <th>Last Update</th>
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
@@ -669,13 +677,6 @@
                             }
                         },
                         {
-                            data: 'order_id',
-                            name: 'order_id',
-                            render: function(data, type, row) {
-                                return data ? data : '<span class="text-gray-400 text-xs">N/A</span>';
-                            }
-                        },
-                        {
                             data: 'name',
                             name: 'name',
                             render: function(data, type, row) {
@@ -786,7 +787,7 @@
                             render: function(data) {
                                 if (!data || data === 'N/A')
                                     return '<span class="text-gray-400 text-xs">No team</span>';
-                                return `<span class="px-2 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 truncate max-w-[120px] inline-block">${data}</span>`;
+                                return `<span class="px-2 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 inline-block whitespace-nowrap">${data}</span>`;
                             }
                         },
 
@@ -916,6 +917,75 @@
                                         <span>Docs</span>
                                     </a>
                                 `;
+                            }
+                        },
+                        {
+                            data: 'special_status',
+                            name: 'special_status',
+                            render: function(data, type, row) {
+                                const statusConfig = {
+                                    'selected_for_delivery': {
+                                        color: 'bg-green-100 text-green-800',
+                                        label: 'Sel'
+                                    },
+                                    'continue_for_next': {
+                                        color: 'bg-blue-100 text-blue-800',
+                                        label: 'Cont'
+                                    },
+                                    'stuck_order': {
+                                        color: 'bg-red-100 text-red-800',
+                                        label: 'Stuck'
+                                    }
+                                };
+
+                                const currentStatus = data || '';
+                                const config = statusConfig[currentStatus];
+                                const bgClass = config ? config.color : 'bg-gray-100 text-gray-800';
+
+                                return `
+                                    <select class="inline-select px-2 py-1 rounded text-xs font-semibold border-0 cursor-pointer focus:ring-1 focus:ring-offset-1 focus:ring-purple-500 min-w-[70px] max-w-[80px] specialStatusDropdown ${bgClass}"
+                                            data-order-id="${row.id}"
+                                            data-field="special_status"
+                                            data-original-value="${currentStatus}"
+                                            onchange="handleQuickUpdate(this)">
+                                        <option value="" ${!data ? 'selected' : ''}> None</option>
+                                        <option value="selected_for_delivery" ${data === 'selected_for_delivery' ? 'selected' : ''}> Sel</option>
+                                        <option value="continue_for_next" ${data === 'continue_for_next' ? 'selected' : ''}> Cont</option>
+                                        <option value="stuck_order" ${data === 'stuck_order' ? 'selected' : ''}> Stuck</option>
+                                    </select>
+                                `;
+                            }
+                        },
+                        {
+                            data: 'updated_at',
+                            name: 'updated_at',
+                            render: function(data, type, row) {
+                                // Has a saved date — show it regardless
+                                if (row.last_update_date) {
+                                    const date = new Date(row.last_update_date);
+                                    const formattedDate = date.toLocaleDateString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric'
+                                    });
+                                    const dbDate = row.last_update_date;
+
+                                    return `<input type="text"
+                                                class="last-update-date-input px-2 py-1 rounded-lg text-xs font-medium border border-purple-300 bg-purple-50 text-purple-700 whitespace-nowrap w-28 cursor-pointer"
+                                                value="${formattedDate}"
+                                                data-order-id="${row.id}"
+                                                data-original-value="${dbDate}"
+                                                data-current-value="${dbDate}"
+                                                title="${dbDate}"
+                                                readonly onclick="handleLastUpdateClick(this)">`;
+                                }
+
+                                // No date set yet
+                                return `<input type="text"
+                                            class="last-update-date-input px-2 py-1 rounded-lg text-xs font-medium border border-gray-300 bg-gray-50 text-gray-400 whitespace-nowrap w-28 cursor-pointer"
+                                            data-order-id="${row.id}"
+                                            data-original-value=""
+                                            placeholder="Set date"
+                                            readonly onclick="handleLastUpdateClick(this)">`;
                             }
                         },
                         {
@@ -1283,7 +1353,9 @@
 
                 const fieldLabels = {
                     'status': 'Status',
-                    'priority': 'Priority'
+                    'priority': 'Priority',
+                    'special_status': 'Special Status',
+                    'last_update_date': 'Last Update Date'
                 };
 
                 const valueLabels = {
@@ -1295,7 +1367,11 @@
                     'cancelled': 'Cancelled',
                     'low': 'Low',
                     'medium': 'Medium',
-                    'high': 'High'
+                    'high': 'High',
+                    '': 'None',
+                    'selected_for_delivery': 'Selected for delivery',
+                    'continue_for_next': 'Continue for next',
+                    'stuck_order': 'Stuck order'
                 };
 
                 Swal.fire({
@@ -1459,6 +1535,76 @@
                                             Swal.fire({
                                                 title: 'Updated!',
                                                 text: response.data.message || 'Start date updated successfully.',
+                                                icon: 'success',
+                                                confirmButtonColor: '#9333ea',
+                                                timer: 1500,
+                                                showConfirmButton: false
+                                            }).then(() => {
+                                                $('#ordersTable').DataTable().ajax.reload();
+                                            });
+                                        })
+                                        .catch(error => {
+                                            Swal.fire({
+                                                title: 'Error!',
+                                                text: error.response?.data?.message || 'Something went wrong.',
+                                                icon: 'error',
+                                                confirmButtonColor: '#dc2626'
+                                            });
+                                        });
+                                }
+                            });
+                        }
+                    }
+                });
+
+                picker.open();
+            }
+
+            function handleLastUpdateClick(inputElement) {
+                const orderId = inputElement.dataset.orderId;
+                const originalValue = inputElement.dataset.originalValue || '';
+
+                if (typeof flatpickr === 'undefined') {
+                    console.error('Flatpickr is not loaded');
+                    return;
+                }
+
+                if (inputElement._flatpickr) {
+                    inputElement._flatpickr.destroy();
+                }
+
+                const picker = flatpickr(inputElement, {
+                    enableTime: true,
+                    dateFormat: 'Y-m-d H:i:S',
+                    time_24hr: true,
+                    defaultDate: originalValue ? new Date(originalValue) : new Date(),
+                    static: false,
+                    appendTo: document.body,
+                    onClose: function(selectedDates, dateStr, instance) {
+                        instance.destroy();
+
+                        if (selectedDates.length > 0) {
+                            Swal.fire({
+                                title: 'Update Last Update Date?',
+                                text: `Change last update date to "${dateStr}"?`,
+                                icon: 'question',
+                                showCancelButton: true,
+                                confirmButtonColor: '#9333ea',
+                                cancelButtonColor: '#6b7280',
+                                confirmButtonText: 'Yes, update!',
+                                cancelButtonText: 'Cancel'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    Swal.showLoading();
+
+                                    const formData = new FormData();
+                                    formData.append('last_update_date', dateStr);
+
+                                    axios.post(`/orders/${orderId}/quick-update`, formData)
+                                        .then(response => {
+                                            Swal.fire({
+                                                title: 'Updated!',
+                                                text: response.data.message || 'Last update date updated successfully.',
                                                 icon: 'success',
                                                 confirmButtonColor: '#9333ea',
                                                 timer: 1500,
@@ -1760,6 +1906,150 @@
                     }
                 });
             });
+
+            // Export orders to CSV
+            function exportOrders() {
+                Swal.fire({
+                    title: 'Export Orders',
+                    text: 'Do you want to export all orders or just the filtered results?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    showDenyButton: true,
+                    confirmButtonText: 'Export All',
+                    denyButtonText: 'Export Filtered',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#9333ea',
+                    denyButtonColor: '#3b82f6',
+                    cancelButtonColor: '#6b7280'
+                }).then((result) => {
+                    if (result.isConfirmed || result.isDenied) {
+                        const exportFiltered = result.isDenied;
+                        exportOrdersToCSV(exportFiltered);
+                    }
+                });
+            }
+
+            function exportOrdersToCSV(filteredOnly = false) {
+                Swal.showLoading();
+
+                // Build query parameters
+                const params = new URLSearchParams();
+
+                // Only apply filters if exporting filtered results
+                if (filteredOnly) {
+                    const filters = {
+                        search: $('#filterSearch').val(),
+                        status: $('#filterStatus').val(),
+                        team_id: $('#filterTeam').val(),
+                        tech_stack_id: $('#filterTechStack').val(),
+                        freelance_profile_id: $('#filterProfile').val(),
+                        month: $('#filterMonth').val(),
+                    };
+
+                    Object.keys(filters).forEach(key => {
+                        if (filters[key]) {
+                            params.append(key, filters[key]);
+                        }
+                    });
+                }
+
+                // For export all, we need to fetch without pagination limits
+                // Set length to -1 to get all records
+                params.append('start', '0');
+                params.append('length', '-1');
+
+                // Fetch orders data
+                axios.get('{{ route('orders.data') }}?' + params.toString())
+                    .then(response => {
+                        const orders = response.data.data;
+
+                        if (orders.length === 0) {
+                            Swal.fire({
+                                title: 'No Data',
+                                text: 'No orders found to export.',
+                                icon: 'info',
+                                confirmButtonColor: '#9333ea'
+                            });
+                            return;
+                        }
+
+                        // Define CSV headers
+                        const headers = [
+                            'Order Name',
+                            'Profile',
+                            'Status',
+                            'Special Status',
+                            'Value',
+                            'Actual Revenue',
+                            'Team',
+                            'Users',
+                            'Start Date',
+                            'End Date',
+                            'Delivered At',
+                            'Order Sheet URL'
+                        ];
+
+                        // Convert orders to CSV format
+                        const csvRows = [headers.join(',')];
+
+                        orders.forEach(order => {
+                            const row = [
+                                `"${(order.name || '').replace(/"/g, '""')}"`,
+                                `"${(order.freelance_profile || '').replace(/"/g, '""')}"`,
+                                `"${order.status || ''}"`,
+                                `"${getSpecialStatusLabel(order.special_status) || ''}"`,
+                                `"${order.value || ''}"`,
+                                `"${order.actual_revenue || ''}"`,
+                                `"${(order.team || '').replace(/"/g, '""')}"`,
+                                `"${(order.users_names || '').replace(/"/g, '""')}"`,
+                                `"${order.start_date || ''}"`,
+                                `"${order.end_date || ''}"`,
+                                `"${order.delivered_at || ''}"`,
+                                `"${(order.order_sheet_url || '').replace(/"/g, '""')}"`
+                            ];
+                            csvRows.push(row.join(','));
+                        });
+
+                        // Create CSV blob and download
+                        const csvContent = csvRows.join('\n');
+                        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                        const link = document.createElement('a');
+                        const url = URL.createObjectURL(blob);
+
+                        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+                        link.setAttribute('href', url);
+                        link.setAttribute('download', `orders-export-${timestamp}.csv`);
+                        link.style.visibility = 'hidden';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+
+                        Swal.fire({
+                            title: 'Export Complete!',
+                            text: `Successfully exported ${orders.length} order(s).`,
+                            icon: 'success',
+                            confirmButtonColor: '#9333ea'
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Export error:', error);
+                        Swal.fire({
+                            title: 'Export Failed',
+                            text: error.response?.data?.message || 'Failed to export orders.',
+                            icon: 'error',
+                            confirmButtonColor: '#dc2626'
+                        });
+                    });
+            }
+
+            function getSpecialStatusLabel(status) {
+                const labels = {
+                    'selected_for_delivery': 'Selected for delivery',
+                    'continue_for_next': 'Continue for next',
+                    'stuck_order': 'Stuck order'
+                };
+                return labels[status] || '';
+            }
         </script>
     @endpush
 @endsection
