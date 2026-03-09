@@ -314,6 +314,142 @@
 
 @section('content')
     <div class="px-4 sm:px-6 lg:px-8 py-8">
+        @php
+            $dueSoonOrders = \App\Models\Order::with(['team', 'users'])
+                ->whereNotIn('status', ['delivered', 'cancelled'])
+                ->whereNotNull('end_date')
+                ->where('end_date', '>=', now())
+                ->where('end_date', '<=', now()->addDays(7))
+                ->orderBy('end_date')
+                ->take(6)
+                ->get();
+
+            $urgentCount = \App\Models\Order::whereNotIn('status', ['delivered', 'cancelled'])
+                ->whereNotNull('end_date')
+                ->where('end_date', '<=', now()->addDays(3))
+                ->where('end_date', '>=', now())
+                ->count();
+        @endphp
+
+        <!-- Due Soon Alert Section -->
+        @if($dueSoonOrders->count() > 0)
+            <div class="mb-6 bg-gradient-to-r from-red-50 via-orange-50 to-amber-50 rounded-2xl shadow-lg border-2 border-red-200 overflow-hidden">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="relative">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center shadow-lg animate-pulse">
+                                    <i class="fas fa-exclamation-triangle text-white text-xl"></i>
+                                </div>
+                                <span class="absolute -top-1 -right-1 w-6 h-6 bg-red-600 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-md">
+                                    {{ $urgentCount }}
+                                </span>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                                    Due Soon Alert
+                                    <span class="px-3 py-1 bg-red-600 text-white text-sm font-semibold rounded-full">
+                                        {{ $dueSoonOrders->count() }} Order{{ $dueSoonOrders->count() > 1 ? 's' : '' }}
+                                    </span>
+                                </h2>
+                                <p class="text-sm text-gray-600 mt-1">
+                                    <i class="fas fa-clock text-red-500 mr-1"></i>
+                                    Orders ending within 7 days - {{ $urgentCount }} urgent (within 3 days)
+                                </p>
+                            </div>
+                        </div>
+                        <button onclick="this.parentElement.parentElement.nextElementSibling.classList.toggle('hidden')" class="text-gray-400 hover:text-gray-600 transition-colors p-2">
+                            <i class="fas fa-chevron-down text-lg"></i>
+                        </button>
+                    </div>
+
+                    <!-- Collapsible Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        @foreach($dueSoonOrders as $order)
+                            @php
+                                $daysUntilDue = $order->end_date->diffInDays(now());
+                                $isUrgent = $daysUntilDue <= 3;
+                                $hoursUntilDue = $order->end_date->diffInHours(now());
+                            @endphp
+
+                            <a href="{{ route('orders.show', $order->id) }}"
+                               class="group relative overflow-hidden rounded-xl bg-white shadow-md hover:shadow-xl transition-all duration-300 border-2 {{ $isUrgent ? 'border-red-300 hover:border-red-500' : 'border-orange-200 hover:border-orange-400' }}">
+                                <!-- Progress Bar Background -->
+                                <div class="absolute top-0 left-0 w-full h-1 {{ $isUrgent ? 'bg-red-500' : 'bg-orange-400' }}"></div>
+
+                                <div class="p-4">
+                                    <div class="flex items-start justify-between mb-3">
+                                        <div class="flex-1 min-w-0">
+                                            <h4 class="text-sm font-bold text-gray-900 truncate group-hover:text-red-600 transition-colors">
+                                                {{ $order->name }}
+                                            </h4>
+                                            @if($order->team)
+                                                <p class="text-xs text-gray-500 mt-1">
+                                                    <i class="fas fa-users mr-1"></i>{{ $order->team->name }}
+                                                </p>
+                                            @endif
+                                        </div>
+                                        <div class="ml-3 flex-shrink-0">
+                                            @if($isUrgent)
+                                                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-md animate-pulse">
+                                                    <i class="fas fa-fire text-white"></i>
+                                                </div>
+                                            @else
+                                                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center shadow-md">
+                                                    <i class="fas fa-hourglass-half text-white"></i>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            @if($daysUntilDue == 0)
+                                                <span class="px-2 py-1 bg-red-600 text-white text-xs font-bold rounded-lg">
+                                                    TODAY
+                                                </span>
+                                            @elseif($daysUntilDue == 1)
+                                                <span class="px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-lg">
+                                                    Tomorrow
+                                                </span>
+                                            @elseif($hoursUntilDue < 48)
+                                                <span class="px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded-lg">
+                                                    {{ $daysUntilDue }} days
+                                                </span>
+                                            @else
+                                                <span class="px-2 py-1 bg-amber-500 text-white text-xs font-bold rounded-lg">
+                                                    {{ $daysUntilDue }} days
+                                                </span>
+                                            @endif
+                                            <span class="text-xs text-gray-500">{{ $order->end_date->format('M d') }}</span>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            @if($order->users->count() > 0)
+                                                <div class="flex -space-x-2">
+                                                    @foreach($order->users->take(3) as $user)
+                                                        <div class="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 border-2 border-white flex items-center justify-center text-white text-xs font-bold" title="{{ $user->name }}">
+                                                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                                                        </div>
+                                                    @endforeach
+                                                    @if($order->users->count() > 3)
+                                                        <div class="w-6 h-6 rounded-full bg-gray-300 border-2 border-white flex items-center justify-center text-gray-600 text-xs font-bold">
+                                                            +{{ $order->users->count() - 3 }}
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            @else
+                                                <span class="text-xs text-gray-400">Unassigned</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <!-- Page Header -->
         <div class="mb-4">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
