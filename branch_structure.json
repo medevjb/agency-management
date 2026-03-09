@@ -1,0 +1,24 @@
+{
+  "default_branch": "jboffice",
+  "branches": [
+    "dev",
+    "emon",
+    "feature/order-management-and-sales",
+    "jboffice",
+    "origin"
+  ],
+  "parent": {
+    "dev": "jboffice",
+    "emon": "jboffice",
+    "feature/order-management-and-sales": "jboffice",
+    "jboffice": null,
+    "origin": "jboffice"
+  },
+  "order": [
+    "jboffice",
+    "dev",
+    "emon",
+    "feature/order-management-and-sales",
+    "origin"
+  ]
+}
