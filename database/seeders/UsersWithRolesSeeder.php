@@ -174,6 +174,43 @@ class UsersWithRolesSeeder extends Seeder
             $user->assignRole('team-member');
         }
 
+        // Designation users: GM, OP, PM, T.L, Stack Leader, Team Member (6 roles)
+        $designationUsers = [
+            ['email' => 'tonmoy@gmail.com', 'name' => 'Tonmoy', 'role' => 'admin', 'designation' => 'GM'],
+            ['email' => 'jb@gmail.com', 'name' => 'JB', 'role' => 'operation-manager', 'designation' => 'OP'],
+            ['email' => 'saidur@gmail.com', 'name' => 'Saidur', 'role' => 'project-manager', 'designation' => 'PM'],
+            ['email' => 'tarek@gmail.com', 'name' => 'Tarek', 'role' => 'team-leader', 'designation' => 'T.L'],
+            ['email' => 'helal@gmail.com', 'name' => 'Helal', 'role' => 'stack-leader', 'designation' => 'Stack Leader'],
+            ['email' => 'emon@gmail.com', 'name' => 'Emon', 'role' => 'team-member', 'designation' => 'Team Member'],
+        ];
+
+        foreach ($designationUsers as $d) {
+            $user = User::firstOrCreate(
+                ['email' => $d['email']],
+                [
+                    'name' => $d['name'],
+                    'password' => Hash::make('password'),
+                    'role' => $d['role'],
+                    'team_id' => null,
+                    'tech_stack_id' => null,
+                ]
+            );
+            $user->syncRoles([$d['role']]);
+            $user->update(['role' => $d['role']]);
+
+            if ($d['role'] === 'team-leader') {
+                $user->update(['team_id' => $devTeam->id]);
+                $devTeam->update(['team_leader_id' => $user->id]);
+            }
+            if ($d['role'] === 'stack-leader') {
+                $user->update(['tech_stack_id' => $laravelStack->id]);
+                $laravelStack->update(['stack_leader_id' => $user->id]);
+            }
+            if ($d['role'] === 'team-member') {
+                $user->update(['team_id' => $devTeam->id]);
+            }
+        }
+
         $this->command->info('✅ Users with roles created successfully!');
         $this->command->info('Login Credentials:');
         $this->command->info('Super Admin: superadmin@test.com / password');
@@ -188,5 +225,13 @@ class UsersWithRolesSeeder extends Seeder
         $this->command->info('Team Member 3: dev3@test.com / password');
         $this->command->info('Team Member 4: designer1@test.com / password');
         $this->command->info('Team Member 5: designer2@test.com / password');
+        $this->command->newLine();
+        $this->command->info('Designation users (password: password):');
+        $this->command->info('  GM: tonmoy@gmail.com');
+        $this->command->info('  OP: jb@gmail.com');
+        $this->command->info('  PM: Saifur@gmail.com');
+        $this->command->info('  T.L: tarek@gmail.com');
+        $this->command->info('  Stack Leader: helal@gmail.com');
+        $this->command->info('  Team Member: emon@gmail.com');
     }
 }

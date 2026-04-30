@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\OrderAssignmentNotification;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
 use App\Notifications\OrderStatusNotification;
+use App\Services\EmailService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -162,12 +164,15 @@ class OrderController extends Controller
                 'start_date' => $order->start_date ? $order->start_date->format('Y-m-d') : null,
                 'end_date' => $order->end_date ? $order->end_date->format('Y-m-d') : null,
                 'created_at' => $order->created_at ? $order->created_at->format('Y-m-d H:i:s') : null,
+                'updated_at' => $order->updated_at ? $order->updated_at->format('Y-m-d H:i:s') : null,
                 'delivered_at' => $order->delivered_at ? $order->delivered_at->format('Y-m-d H:i:s') : null,
                 'team' => $order->team ? $order->team->name : 'N/A',
                 'tech_stack' => $order->techStack ? $order->techStack->name : 'N/A',
                 'freelance_profile' => $order->freelanceProfile ? $order->freelanceProfile->username : 'N/A',
                 'freelance_profile_id' => $order->freelance_profile_id,
                 'order_sheet_url' => $order->order_sheet_url,
+                'special_status' => $order->special_status?->value,
+                'last_update_date' => $order->last_update_date ? $order->last_update_date->format('Y-m-d H:i:s') : null,
                 'is_assigned' => $order->users->contains('id', $currentUserId),
                 'is_my_team' => $order->team_id === auth()->user()->team_id,
                 'users' => $order->users->map(function ($user) {
@@ -279,6 +284,7 @@ class OrderController extends Controller
             'tech_stack_id' => 'nullable|exists:tech_stacks,id',
             'freelance_profile_id' => 'nullable|exists:profiles,id',
             'order_sheet_url' => 'nullable|url|max:2048',
+            'special_status' => 'nullable|in:selected_for_delivery,continue_for_next,stuck_order',
             'users' => 'nullable|array',
             'users.*' => 'exists:users,id',
         ]);
@@ -306,12 +312,26 @@ class OrderController extends Controller
             'tech_stack_id' => $validated['tech_stack_id'] ?? null,
             'freelance_profile_id' => $validated['freelance_profile_id'] ?? null,
             'order_sheet_url' => $validated['order_sheet_url'] ?? null,
+            'special_status' => $validated['special_status'] ?? null,
             'created_by' => auth()->id(),
         ]);
 
         // Attach users
         if (! empty($validated['users'])) {
             $order->users()->attach($validated['users']);
+
+            // Send notifications to assigned users
+            foreach ($validated['users'] as $userId) {
+                $assignedUser = \App\Models\User::find($userId);
+                if ($assignedUser) {
+                    EmailService::sendTo($assignedUser->email, new OrderAssignmentNotification($order, $assignedUser, false));
+                }
+            }
+        }
+
+        // Send notification to team leader if team is assigned
+        if ($order->team && $order->team->teamLeader) {
+            EmailService::sendTo($order->team->teamLeader->email, new OrderAssignmentNotification($order, $order->team->teamLeader, true));
         }
 
         // Create initial status history
@@ -375,6 +395,7 @@ class OrderController extends Controller
             'tech_stack_id' => 'nullable|exists:tech_stacks,id',
             'freelance_profile_id' => 'nullable|exists:profiles,id',
             'order_sheet_url' => 'nullable|url|max:2048',
+            'special_status' => 'nullable|in:selected_for_delivery,continue_for_next,stuck_order',
             'users' => 'nullable|array',
             'users.*' => 'exists:users,id',
             'notes' => 'nullable|string',
@@ -401,6 +422,7 @@ class OrderController extends Controller
             'tech_stack_id' => $validated['tech_stack_id'] ?? null,
             'freelance_profile_id' => $validated['freelance_profile_id'] ?? null,
             'order_sheet_url' => $validated['order_sheet_url'] ?? null,
+            'special_status' => $validated['special_status'] ?? null,
         ]);
 
         // Sync users
@@ -502,6 +524,8 @@ class OrderController extends Controller
             'priority' => 'nullable|in:low,medium,high',
             'delivered_at' => 'nullable|date',
             'start_date' => 'nullable|date',
+            'special_status' => 'nullable|in:selected_for_delivery,continue_for_next,stuck_order',
+            'last_update_date' => 'nullable|date',
         ]);
 
         $order->update($validated);
@@ -534,6 +558,14 @@ class OrderController extends Controller
 
         // Sync users to the order
         $order->users()->sync($validated['users']);
+
+        // Send notifications to newly assigned users
+        foreach ($validated['users'] as $userId) {
+            $assignedUser = \App\Models\User::find($userId);
+            if ($assignedUser) {
+                EmailService::sendTo($assignedUser->email, new OrderAssignmentNotification($order, $assignedUser, false));
+            }
+        }
 
         return response()->json([
             'message' => 'User assignments updated successfully.',

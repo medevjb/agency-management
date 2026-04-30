@@ -314,6 +314,156 @@
 
 @section('content')
     <div class="px-4 sm:px-6 lg:px-8 py-8">
+        @php
+            $dueSoonOrders = \App\Models\Order::with(['team', 'users'])
+                ->whereNotIn('status', ['delivered', 'cancelled'])
+                ->whereNotNull('end_date')
+                ->where('end_date', '>=', now())
+                ->where('end_date', '<=', now()->addDays(4))
+                ->orderBy('end_date')
+                ->take(6)
+                ->get();
+
+            $urgentCount = \App\Models\Order::whereNotIn('status', ['delivered', 'cancelled'])
+                ->whereNotNull('end_date')
+                ->where('end_date', '<=', now()->addDays(4))
+                ->where('end_date', '>=', now())
+                ->count();
+        @endphp
+
+        <!-- Due Soon Alert Section -->
+        @if ($dueSoonOrders->count() > 0)
+            <div
+                class="mb-6 bg-gradient-to-r from-red-50 via-orange-50 to-amber-50 rounded-2xl shadow-lg border-2 border-red-200 overflow-hidden">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="relative">
+                                <div
+                                    class="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center shadow-lg animate-pulse">
+                                    <i class="fas fa-exclamation-triangle text-white text-xl"></i>
+                                </div>
+                                <span
+                                    class="absolute -top-1 -right-1 w-6 h-6 bg-red-600 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-md">
+                                    {{ $urgentCount }}
+                                </span>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                                    Due Soon Alert
+                                    <span class="px-3 py-1 bg-red-600 text-white text-sm font-semibold rounded-full">
+                                        {{ $dueSoonOrders->count() }} Order{{ $dueSoonOrders->count() > 1 ? 's' : '' }}
+                                    </span>
+                                </h2>
+                                <p class="text-sm text-gray-600 mt-1">
+                                    <i class="fas fa-clock text-red-500 mr-1"></i>
+                                    Orders ending within 4 days - {{ $urgentCount }} urgent (within 4 days)
+                                </p>
+                            </div>
+                        </div>
+                        <button onclick="this.parentElement.parentElement.nextElementSibling.classList.toggle('hidden')"
+                            class="text-gray-400 hover:text-gray-600 transition-colors p-2">
+                            <i class="fas fa-chevron-down text-lg"></i>
+                        </button>
+                    </div>
+
+                    <!-- Collapsible Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        @foreach ($dueSoonOrders as $order)
+                            @php
+                                $daysUntilDue = $order->end_date->diffInDays(now());
+                                $isUrgent = $daysUntilDue <= 3;
+                                $hoursUntilDue = $order->end_date->diffInHours(now());
+                            @endphp
+
+                            <a href="{{ route('orders.show', $order->id) }}"
+                                class="group relative overflow-hidden rounded-xl bg-white shadow-md hover:shadow-xl transition-all duration-300 border-2 {{ $isUrgent ? 'border-red-300 hover:border-red-500' : 'border-orange-200 hover:border-orange-400' }}">
+                                <!-- Progress Bar Background -->
+                                <div
+                                    class="absolute top-0 left-0 w-full h-1 {{ $isUrgent ? 'bg-red-500' : 'bg-orange-400' }}">
+                                </div>
+
+                                <div class="p-4">
+                                    <div class="flex items-start justify-between mb-3">
+                                        <div class="flex-1 min-w-0">
+                                            <h4
+                                                class="text-sm font-bold text-gray-900 truncate group-hover:text-red-600 transition-colors">
+                                                {{ $order->name }}
+                                            </h4>
+                                            @if ($order->team)
+                                                <p class="text-xs text-gray-500 mt-1">
+                                                    <i class="fas fa-users mr-1"></i>{{ $order->team->name }}
+                                                </p>
+                                            @endif
+                                        </div>
+                                        <div class="ml-3 flex-shrink-0">
+                                            @if ($isUrgent)
+                                                <div
+                                                    class="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-md animate-pulse">
+                                                    <i class="fas fa-fire text-white"></i>
+                                                </div>
+                                            @else
+                                                <div
+                                                    class="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center shadow-md">
+                                                    <i class="fas fa-hourglass-half text-white"></i>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            @if ($daysUntilDue == 0)
+                                                <span class="px-2 py-1 bg-red-600 text-white text-xs font-bold rounded-lg">
+                                                    TODAY
+                                                </span>
+                                            @elseif($daysUntilDue == 1)
+                                                <span class="px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-lg">
+                                                    Tomorrow
+                                                </span>
+                                            @elseif($hoursUntilDue < 48)
+                                                <span
+                                                    class="px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded-lg">
+                                                    {{ $daysUntilDue }} days
+                                                </span>
+                                            @else
+                                                <span
+                                                    class="px-2 py-1 bg-amber-500 text-white text-xs font-bold rounded-lg">
+                                                    {{ $daysUntilDue }} days
+                                                </span>
+                                            @endif
+                                            <span
+                                                class="text-xs text-gray-500">{{ $order->end_date->format('M d') }}</span>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            @if ($order->users->count() > 0)
+                                                <div class="flex -space-x-2">
+                                                    @foreach ($order->users->take(3) as $user)
+                                                        <div class="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 border-2 border-white flex items-center justify-center text-white text-xs font-bold"
+                                                            title="{{ $user->name }}">
+                                                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                                                        </div>
+                                                    @endforeach
+                                                    @if ($order->users->count() > 3)
+                                                        <div
+                                                            class="w-6 h-6 rounded-full bg-gray-300 border-2 border-white flex items-center justify-center text-gray-600 text-xs font-bold">
+                                                            +{{ $order->users->count() - 3 }}
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            @else
+                                                <span class="text-xs text-gray-400">Unassigned</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <!-- Page Header -->
         <div class="mb-4">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -321,11 +471,18 @@
                     <h1 class="text-3xl font-bold text-gray-900">Orders</h1>
                     <p class="mt-2 text-sm text-gray-600">Manage orders and track their status</p>
                 </div>
-                <a href="{{ route('orders.dashboard') }}"
-                    class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-semibold transition-all shadow-lg">
-                    <i class="fas fa-chart-line mr-2"></i>
-                    View Dashboard
-                </a>
+                <div class="flex items-center gap-3">
+                    <button onclick="exportOrders()"
+                        class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-semibold transition-all shadow-lg">
+                        <i class="fas fa-file-export mr-2"></i>
+                        Export CSV
+                    </button>
+                    <a href="{{ route('orders.dashboard') }}"
+                        class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-semibold transition-all shadow-lg">
+                        <i class="fas fa-chart-line mr-2"></i>
+                        View Dashboard
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -496,7 +653,6 @@
                                 <input type="checkbox" id="checkAll"
                                     class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                             </th>
-                            <th>Order ID</th>
                             <th>Client</th>
                             <th>Profile</th>
                             <th>Status</th>
@@ -508,6 +664,8 @@
                             <th>Delivered</th>
                             <th>Deadline</th>
                             <th class="text-center">Docs</th>
+                            <th>Special</th>
+                            <th>Last Update</th>
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
@@ -518,14 +676,17 @@
     </div>
 
     <!-- User Assignment Modal -->
-    <div id="userAssignmentModal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div id="userAssignmentModal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog"
+        aria-modal="true">
         <!-- Backdrop -->
-        <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" onclick="closeUserAssignmentModal()"></div>
+        <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" onclick="closeUserAssignmentModal()">
+        </div>
 
         <!-- Modal Panel -->
         <div class="fixed inset-0 z-10 overflow-y-auto">
             <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                <div class="relative transform  rounded-xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
+                <div
+                    class="relative transform  rounded-xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
                     <!-- Modal Header -->
                     <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-3 sm:px-6">
                         <div class="flex items-center justify-between">
@@ -533,7 +694,8 @@
                                 <i class="fas fa-users mr-2"></i>
                                 Assign Users to Order
                             </h3>
-                            <button type="button" onclick="closeUserAssignmentModal()" class="text-white hover:text-gray-200 transition-colors">
+                            <button type="button" onclick="closeUserAssignmentModal()"
+                                class="text-white hover:text-gray-200 transition-colors">
                                 <i class="fas fa-times text-lg"></i>
                             </button>
                         </div>
@@ -547,7 +709,8 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Assigned Users
                             </label>
-                            <div id="modalSelectedUsersDisplay" class="border border-gray-300 rounded-lg p-3 min-h-[60px] bg-gray-50 mb-3">
+                            <div id="modalSelectedUsersDisplay"
+                                class="border border-gray-300 rounded-lg p-3 min-h-[60px] bg-gray-50 mb-3">
                                 <span class="text-gray-400 text-sm">No users assigned</span>
                             </div>
                         </div>
@@ -559,11 +722,12 @@
                             </label>
                             <div class="relative">
                                 <input type="text" id="modalUserSearchInput"
-                                       placeholder="Search users by name or email..."
-                                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm">
+                                    placeholder="Search users by name or email..."
+                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm">
 
                                 <!-- Dropdown List -->
-                                <div id="modalUserDropdown" class="hidden absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                <div id="modalUserDropdown"
+                                    class="hidden absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                                     <!-- Users will be populated here by JavaScript -->
                                 </div>
                             </div>
@@ -578,12 +742,12 @@
                     <!-- Modal Footer -->
                     <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                         <button type="button" onclick="saveUserAssignments()"
-                                class="inline-flex w-full justify-center rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:from-indigo-700 hover:to-purple-700 sm:ml-3 sm:w-auto transition-all">
+                            class="inline-flex w-full justify-center rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:from-indigo-700 hover:to-purple-700 sm:ml-3 sm:w-auto transition-all">
                             <i class="fas fa-save mr-2"></i>
                             Save Assignments
                         </button>
                         <button type="button" onclick="closeUserAssignmentModal()"
-                                class="mt-3 inline-flex w-full justify-center rounded-lg bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto transition-all">
+                            class="mt-3 inline-flex w-full justify-center rounded-lg bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto transition-all">
                             Cancel
                         </button>
                     </div>
@@ -666,13 +830,6 @@
                             className: 'text-center',
                             render: function(data) {
                                 return `<input type="checkbox" class="row-checkbox w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" data-id="${data.id}">`;
-                            }
-                        },
-                        {
-                            data: 'order_id',
-                            name: 'order_id',
-                            render: function(data, type, row) {
-                                return data ? data : '<span class="text-gray-400 text-xs">N/A</span>';
                             }
                         },
                         {
@@ -786,7 +943,7 @@
                             render: function(data) {
                                 if (!data || data === 'N/A')
                                     return '<span class="text-gray-400 text-xs">No team</span>';
-                                return `<span class="px-2 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 truncate max-w-[120px] inline-block">${data}</span>`;
+                                return `<span class="px-2 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 inline-block whitespace-nowrap">${data}</span>`;
                             }
                         },
 
@@ -892,7 +1049,7 @@
                                 if (row.status === 'delivered') {
                                     return '<span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-green-100 text-green-600"><i class="fas fa-check"></i></span>';
                                 }
-                                if(row.status === 'cancelled') {
+                                if (row.status === 'cancelled') {
                                     return '<span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 text-red-600"><i class="fas fa-times"></i></span>';
                                 }
 
@@ -916,6 +1073,75 @@
                                         <span>Docs</span>
                                     </a>
                                 `;
+                            }
+                        },
+                        {
+                            data: 'special_status',
+                            name: 'special_status',
+                            render: function(data, type, row) {
+                                const statusConfig = {
+                                    'selected_for_delivery': {
+                                        color: 'bg-green-100 text-green-800',
+                                        label: 'Sel'
+                                    },
+                                    'continue_for_next': {
+                                        color: 'bg-blue-100 text-blue-800',
+                                        label: 'Cont'
+                                    },
+                                    'stuck_order': {
+                                        color: 'bg-red-100 text-red-800',
+                                        label: 'Stuck'
+                                    }
+                                };
+
+                                const currentStatus = data || '';
+                                const config = statusConfig[currentStatus];
+                                const bgClass = config ? config.color : 'bg-gray-100 text-gray-800';
+
+                                return `
+                                    <select class="inline-select px-2 py-1 rounded text-xs font-semibold border-0 cursor-pointer focus:ring-1 focus:ring-offset-1 focus:ring-purple-500 min-w-[70px] max-w-[80px] specialStatusDropdown ${bgClass}"
+                                            data-order-id="${row.id}"
+                                            data-field="special_status"
+                                            data-original-value="${currentStatus}"
+                                            onchange="handleQuickUpdate(this)">
+                                        <option value="" ${!data ? 'selected' : ''}> None</option>
+                                        <option value="selected_for_delivery" ${data === 'selected_for_delivery' ? 'selected' : ''}> Sel</option>
+                                        <option value="continue_for_next" ${data === 'continue_for_next' ? 'selected' : ''}> Cont</option>
+                                        <option value="stuck_order" ${data === 'stuck_order' ? 'selected' : ''}> Stuck</option>
+                                    </select>
+                                `;
+                            }
+                        },
+                        {
+                            data: 'updated_at',
+                            name: 'updated_at',
+                            render: function(data, type, row) {
+                                // Has a saved date — show it regardless
+                                if (row.last_update_date) {
+                                    const date = new Date(row.last_update_date);
+                                    const formattedDate = date.toLocaleDateString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric'
+                                    });
+                                    const dbDate = row.last_update_date;
+
+                                    return `<input type="text"
+                                                class="last-update-date-input px-2 py-1 rounded-lg text-xs font-medium border border-purple-300 bg-purple-50 text-purple-700 whitespace-nowrap w-28 cursor-pointer"
+                                                value="${formattedDate}"
+                                                data-order-id="${row.id}"
+                                                data-original-value="${dbDate}"
+                                                data-current-value="${dbDate}"
+                                                title="${dbDate}"
+                                                readonly onclick="handleLastUpdateClick(this)">`;
+                                }
+
+                                // No date set yet
+                                return `<input type="text"
+                                            class="last-update-date-input px-2 py-1 rounded-lg text-xs font-medium border border-gray-300 bg-gray-50 text-gray-400 whitespace-nowrap w-28 cursor-pointer"
+                                            data-order-id="${row.id}"
+                                            data-original-value=""
+                                            placeholder="Set date"
+                                            readonly onclick="handleLastUpdateClick(this)">`;
                             }
                         },
                         {
@@ -1043,7 +1269,7 @@
                     let colorClass = 'bg-green-100 text-green-700';
                     if (days <= 1) {
                         colorClass = 'bg-red-100 text-red-700 animate-pulse';
-                    } else if (days <= 7) {
+                    } else if (days <= 4) {
                         colorClass = 'bg-yellow-100 text-yellow-800';
                     } else if (days <= 30) {
                         colorClass = 'bg-blue-100 text-blue-700';
@@ -1283,7 +1509,9 @@
 
                 const fieldLabels = {
                     'status': 'Status',
-                    'priority': 'Priority'
+                    'priority': 'Priority',
+                    'special_status': 'Special Status',
+                    'last_update_date': 'Last Update Date'
                 };
 
                 const valueLabels = {
@@ -1295,7 +1523,11 @@
                     'cancelled': 'Cancelled',
                     'low': 'Low',
                     'medium': 'Medium',
-                    'high': 'High'
+                    'high': 'High',
+                    '': 'None',
+                    'selected_for_delivery': 'Selected for delivery',
+                    'continue_for_next': 'Continue for next',
+                    'stuck_order': 'Stuck order'
                 };
 
                 Swal.fire({
@@ -1389,7 +1621,8 @@
                                         .then(response => {
                                             Swal.fire({
                                                 title: 'Updated!',
-                                                text: response.data.message || 'Delivered date updated successfully.',
+                                                text: response.data.message ||
+                                                    'Delivered date updated successfully.',
                                                 icon: 'success',
                                                 confirmButtonColor: '#9333ea',
                                                 timer: 1500,
@@ -1401,7 +1634,8 @@
                                         .catch(error => {
                                             Swal.fire({
                                                 title: 'Error!',
-                                                text: error.response?.data?.message || 'Something went wrong.',
+                                                text: error.response?.data?.message ||
+                                                    'Something went wrong.',
                                                 icon: 'error',
                                                 confirmButtonColor: '#dc2626'
                                             });
@@ -1458,7 +1692,8 @@
                                         .then(response => {
                                             Swal.fire({
                                                 title: 'Updated!',
-                                                text: response.data.message || 'Start date updated successfully.',
+                                                text: response.data.message ||
+                                                    'Start date updated successfully.',
                                                 icon: 'success',
                                                 confirmButtonColor: '#9333ea',
                                                 timer: 1500,
@@ -1470,7 +1705,80 @@
                                         .catch(error => {
                                             Swal.fire({
                                                 title: 'Error!',
-                                                text: error.response?.data?.message || 'Something went wrong.',
+                                                text: error.response?.data?.message ||
+                                                    'Something went wrong.',
+                                                icon: 'error',
+                                                confirmButtonColor: '#dc2626'
+                                            });
+                                        });
+                                }
+                            });
+                        }
+                    }
+                });
+
+                picker.open();
+            }
+
+            function handleLastUpdateClick(inputElement) {
+                const orderId = inputElement.dataset.orderId;
+                const originalValue = inputElement.dataset.originalValue || '';
+
+                if (typeof flatpickr === 'undefined') {
+                    console.error('Flatpickr is not loaded');
+                    return;
+                }
+
+                if (inputElement._flatpickr) {
+                    inputElement._flatpickr.destroy();
+                }
+
+                const picker = flatpickr(inputElement, {
+                    enableTime: true,
+                    dateFormat: 'Y-m-d H:i:S',
+                    time_24hr: true,
+                    defaultDate: originalValue ? new Date(originalValue) : new Date(),
+                    static: false,
+                    appendTo: document.body,
+                    onClose: function(selectedDates, dateStr, instance) {
+                        instance.destroy();
+
+                        if (selectedDates.length > 0) {
+                            Swal.fire({
+                                title: 'Update Last Update Date?',
+                                text: `Change last update date to "${dateStr}"?`,
+                                icon: 'question',
+                                showCancelButton: true,
+                                confirmButtonColor: '#9333ea',
+                                cancelButtonColor: '#6b7280',
+                                confirmButtonText: 'Yes, update!',
+                                cancelButtonText: 'Cancel'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    Swal.showLoading();
+
+                                    const formData = new FormData();
+                                    formData.append('last_update_date', dateStr);
+
+                                    axios.post(`/orders/${orderId}/quick-update`, formData)
+                                        .then(response => {
+                                            Swal.fire({
+                                                title: 'Updated!',
+                                                text: response.data.message ||
+                                                    'Last update date updated successfully.',
+                                                icon: 'success',
+                                                confirmButtonColor: '#9333ea',
+                                                timer: 1500,
+                                                showConfirmButton: false
+                                            }).then(() => {
+                                                $('#ordersTable').DataTable().ajax.reload();
+                                            });
+                                        })
+                                        .catch(error => {
+                                            Swal.fire({
+                                                title: 'Error!',
+                                                text: error.response?.data?.message ||
+                                                    'Something went wrong.',
                                                 icon: 'error',
                                                 confirmButtonColor: '#dc2626'
                                             });
@@ -1705,7 +2013,8 @@
                             .catch(error => {
                                 Swal.fire({
                                     title: 'Error!',
-                                    text: error.response?.data?.message || 'Failed to update user assignments.',
+                                    text: error.response?.data?.message ||
+                                        'Failed to update user assignments.',
                                     icon: 'error',
                                     confirmButtonColor: '#dc2626'
                                 });
@@ -1760,6 +2069,152 @@
                     }
                 });
             });
+
+            // Export orders to CSV
+            function exportOrders() {
+                Swal.fire({
+                    title: 'Export Orders',
+                    text: 'Do you want to export all orders or just the filtered results?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    showDenyButton: true,
+                    confirmButtonText: 'Export All',
+                    denyButtonText: 'Export Filtered',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#9333ea',
+                    denyButtonColor: '#3b82f6',
+                    cancelButtonColor: '#6b7280'
+                }).then((result) => {
+                    if (result.isConfirmed || result.isDenied) {
+                        const exportFiltered = result.isDenied;
+                        exportOrdersToCSV(exportFiltered);
+                    }
+                });
+            }
+
+            function exportOrdersToCSV(filteredOnly = false) {
+                Swal.showLoading();
+
+                // Build query parameters
+                const params = new URLSearchParams();
+
+                // Only apply filters if exporting filtered results
+                if (filteredOnly) {
+                    const filters = {
+                        search: $('#filterSearch').val(),
+                        status: $('#filterStatus').val(),
+                        team_id: $('#filterTeam').val(),
+                        tech_stack_id: $('#filterTechStack').val(),
+                        freelance_profile_id: $('#filterProfile').val(),
+                        month: $('#filterMonth').val(),
+                    };
+
+                    Object.keys(filters).forEach(key => {
+                        if (filters[key]) {
+                            params.append(key, filters[key]);
+                        }
+                    });
+                }
+
+                // For export all, we need to fetch without pagination limits
+                // Set length to -1 to get all records
+                params.append('start', '0');
+                params.append('length', '-1');
+
+                // Fetch orders data
+                axios.get('{{ route('orders.data') }}?' + params.toString())
+                    .then(response => {
+                        const orders = response.data.data;
+
+                        if (orders.length === 0) {
+                            Swal.fire({
+                                title: 'No Data',
+                                text: 'No orders found to export.',
+                                icon: 'info',
+                                confirmButtonColor: '#9333ea'
+                            });
+                            return;
+                        }
+
+                        // Define CSV headers
+                        const headers = [
+                            'Order Name',
+                            'Profile',
+                            'Status',
+                            'Special Status',
+                            'Value',
+                            'Actual Revenue',
+                            'Team',
+                            'Users',
+                            'Start Date',
+                            'End Date',
+                            'Delivered At',
+                            'Order Sheet URL'
+                        ];
+
+                        // Convert orders to CSV format
+                        const csvRows = [headers.join(',')];
+
+                        orders.forEach(order => {
+                            const row = [
+                                `"${(order.name || '').replace(/"/g, '""')}"`,
+                                `"${(order.freelance_profile || '').replace(/"/g, '""')}"`,
+                                `"${order.status || ''}"`,
+                                `"${getSpecialStatusLabel(order.special_status) || ''}"`,
+                                `"${order.value || ''}"`,
+                                `"${order.actual_revenue || ''}"`,
+                                `"${(order.team || '').replace(/"/g, '""')}"`,
+                                `"${(order.users_names || '').replace(/"/g, '""')}"`,
+                                `"${order.start_date || ''}"`,
+                                `"${order.end_date || ''}"`,
+                                `"${order.delivered_at || ''}"`,
+                                `"${(order.order_sheet_url || '').replace(/"/g, '""')}"`
+                            ];
+                            csvRows.push(row.join(','));
+                        });
+
+                        // Create CSV blob and download
+                        const csvContent = csvRows.join('\n');
+                        const blob = new Blob([csvContent], {
+                            type: 'text/csv;charset=utf-8;'
+                        });
+                        const link = document.createElement('a');
+                        const url = URL.createObjectURL(blob);
+
+                        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+                        link.setAttribute('href', url);
+                        link.setAttribute('download', `orders-export-${timestamp}.csv`);
+                        link.style.visibility = 'hidden';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+
+                        Swal.fire({
+                            title: 'Export Complete!',
+                            text: `Successfully exported ${orders.length} order(s).`,
+                            icon: 'success',
+                            confirmButtonColor: '#9333ea'
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Export error:', error);
+                        Swal.fire({
+                            title: 'Export Failed',
+                            text: error.response?.data?.message || 'Failed to export orders.',
+                            icon: 'error',
+                            confirmButtonColor: '#dc2626'
+                        });
+                    });
+            }
+
+            function getSpecialStatusLabel(status) {
+                const labels = {
+                    'selected_for_delivery': 'Selected for delivery',
+                    'continue_for_next': 'Continue for next',
+                    'stuck_order': 'Stuck order'
+                };
+                return labels[status] || '';
+            }
         </script>
     @endpush
 @endsection

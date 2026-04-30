@@ -4,7 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'Laravel') }} - Dashboard</title>
+    <title>{{ config('app.name', 'PMT') }} - Dashboard</title>
+    <link rel="icon" type="image/png/jpg" href="{{ asset('image/stv.jpg') }}">
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -552,7 +553,10 @@
     <aside id="mobileSidebar" class="hidden fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-indigo-600 to-indigo-800 text-white lg:hidden">
         <div class="flex flex-col h-full">
             <div class="flex items-center justify-between h-16 px-4 border-b border-indigo-700">
-                <h1 class="text-xl font-bold">{{ config('app.name', 'Dashboard') }}</h1>
+                <div class="flex items-center">
+                    <img src="{{ asset('image/stv.png') }}" alt="Logo" class="h-8 w-auto mr-2">
+                    <h1 class="text-xl font-bold">{{ config('app.name', 'Dashboard') }}</h1>
+                </div>
                 <button id="closeMobileSidebar" class="text-white hover:text-gray-300">
                     <i class="fas fa-times"></i>
                 </button>

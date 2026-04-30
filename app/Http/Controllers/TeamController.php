@@ -187,15 +187,17 @@ class TeamController extends Controller
             'members.*' => 'exists:users,id',
         ]);
 
+        $teamLeaderId = $request->filled('team_leader_id') ? $validated['team_leader_id'] : null;
+
         $team->update([
             'name' => $validated['name'],
             'description' => $validated['description'],
-            'team_leader_id' => $validated['team_leader_id'],
+            'team_leader_id' => $teamLeaderId,
         ]);
 
         // Update team leader
-        if ($validated['team_leader_id']) {
-            $leader = User::find($validated['team_leader_id']);
+        if ($teamLeaderId) {
+            $leader = User::find($teamLeaderId);
             $leader->update(['team_id' => $team->id]);
             if (! $leader->hasRole('team-leader')) {
                 $leader->assignRole('team-leader');
@@ -205,12 +207,12 @@ class TeamController extends Controller
         // Update team members - remove all current members and add new ones
         // But keep the team leader
         User::where('team_id', $team->id)
-            ->where('id', '!=', $validated['team_leader_id'] ?? null)
+            ->where('id', '!=', $teamLeaderId)
             ->update(['team_id' => null]);
 
         // Add team leader first
-        if (! empty($validated['team_leader_id'])) {
-            User::where('id', $validated['team_leader_id'])->update(['team_id' => $team->id]);
+        if ($teamLeaderId) {
+            User::where('id', $teamLeaderId)->update(['team_id' => $team->id]);
         }
 
         // Add selected members

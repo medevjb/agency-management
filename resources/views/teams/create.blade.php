@@ -22,7 +22,7 @@
 
     <!-- Create Team Form -->
     <div class="max-w-6xl mx-auto">
-        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-visible">
             <!-- Form Header -->
             <div class="bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 p-8 text-center">
                 <div class="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl mb-4">
@@ -151,8 +151,8 @@
                                         <i class="fas fa-chevron-down text-gray-400 transition-transform duration-200 ml-2" id="leaderChevron"></i>
                                     </button>
 
-                                    <div id="leaderDropdown" class="hidden absolute z-50 w-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
-                                        <div class="p-3 border-b border-gray-100">
+                                    <div id="leaderDropdown" class="hidden absolute z-50 w-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-visible">
+                                        <div class="p-3 border-b border-gray-100 rounded-t-xl bg-white">
                                             <div class="relative">
                                                 <input type="text" id="leaderSearchInput" placeholder="Search by name or employee ID..."
                                                        class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
@@ -160,8 +160,8 @@
                                                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                                             </div>
                                         </div>
-                                        <div id="leaderOptions" class="max-h-64 overflow-y-auto p-2"></div>
-                                        <div class="p-2 border-t border-gray-100">
+                                        <div id="leaderOptions" class="min-h-[12rem] max-h-80 overflow-y-auto overflow-x-hidden p-2 pb-3 border-b border-gray-100" style="overscroll-behavior: contain;"></div>
+                                        <div class="p-2 border-t border-gray-100 rounded-b-xl bg-white">
                                             <button type="button" id="clearLeaderBtn"
                                                     class="w-full px-3 py-2 text-sm text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                                                 <i class="fas fa-times mr-2"></i>Clear selection

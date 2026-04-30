@@ -28,7 +28,7 @@
     </div>
 
     <!-- Edit Team Form -->
-    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-visible">
         <div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 border-b border-gray-200">
             <div class="flex items-center space-x-3">
                 <div class="bg-indigo-100 rounded-lg p-3">
@@ -120,8 +120,8 @@
                                             <i class="fas fa-chevron-down text-gray-400 transition-transform duration-200 ml-2" id="leaderChevron"></i>
                                         </button>
 
-                                        <div id="leaderDropdown" class="hidden absolute z-50 w-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
-                                            <div class="p-3 border-b border-gray-100">
+                                        <div id="leaderDropdown" class="hidden absolute z-50 w-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-visible">
+                                            <div class="p-3 border-b border-gray-100 rounded-t-xl bg-white">
                                                 <div class="relative">
                                                     <input type="text" id="leaderSearchInput" placeholder="Search by name or employee ID..."
                                                            class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
@@ -129,8 +129,8 @@
                                                     <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                                                 </div>
                                             </div>
-                                            <div id="leaderOptions" class="max-h-64 overflow-y-auto p-2"></div>
-                                            <div class="p-2 border-t border-gray-100">
+                                            <div id="leaderOptions" class="min-h-[12rem] max-h-80 overflow-y-auto overflow-x-hidden p-2 pb-3 border-b border-gray-100" style="overscroll-behavior: contain;"></div>
+                                            <div class="p-2 border-t border-gray-100 rounded-b-xl bg-white">
                                                 <button type="button" id="clearLeaderBtn"
                                                         class="w-full px-3 py-2 text-sm text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                                                     <i class="fas fa-times mr-2"></i>Clear selection
@@ -187,62 +187,62 @@
                                         </p>
                                     @enderror
                                 </div>
-
-                                <!-- Current Team Members Display -->
-                                @if($team->members->where('id', '!=', auth()->id())->count() > 0)
-                                <div class="mt-6">
-                                    <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                                        <i class="fas fa-users mr-2 text-blue-500"></i>
-                                        Current Members ({{ $team->members->where('id', '!=', auth()->id())->count() }})
-                                    </label>
-                                    <div class="space-y-2">
-                                        @foreach($team->members as $member)
-                                            @if($member->id !== auth()->id())
-                                            <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                                <div class="flex items-center">
-                                                    <img class="h-10 w-10 rounded-full object-cover mr-3"
-                                                         src="https://ui-avatars.com/api/?name={{ urlencode($member->name) }}&background=3B82F6&color=fff"
-                                                         alt="{{ $member->name }}">
-                                                    <div>
-                                                        <div class="font-medium text-gray-900">{{ $member->name }}</div>
-                                                        <div class="text-sm text-gray-500">{{ $member->employee_id }}</div>
-                                                    </div>
-                                                </div>
-                                                <form action="{{ route('teams.remove-member', [$team->id, $member->id]) }}"
-                                                      method="POST" onsubmit="return confirm('Remove {{ $member->name }} from team?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit"
-                                                            class="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-colors duration-200"
-                                                            title="Remove member">
-                                                        <i class="fas fa-user-minus"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                            @endif
-                                        @endforeach
-                                    </div>
-                                </div>
-                                @endif
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Form Actions -->
+                <!-- Form Actions (must be inside form; no nested forms above) -->
                 <div class="mt-8 flex flex-col sm:flex-row justify-end gap-4 pt-6 border-t border-gray-200">
                     <a href="{{ route('teams.index') }}"
                        class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors duration-200">
                         <i class="fas fa-arrow-left mr-2"></i>
                         Cancel
                     </a>
-                    <button type="submit"
+                    <button type="submit" id="editTeamSubmitBtn"
                             class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform transition-all duration-200 hover:scale-105">
                         <i class="fas fa-save mr-2"></i>
                         Update Team
                     </button>
                 </div>
             </form>
+
+            <!-- Current Team Members (outside form to avoid nested form breaking submit) -->
+            @if($team->members->where('id', '!=', auth()->id())->count() > 0)
+            <div class="mt-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                    <i class="fas fa-users mr-2 text-blue-500"></i>
+                    Current Members ({{ $team->members->where('id', '!=', auth()->id())->count() }})
+                </label>
+                <div class="space-y-2">
+                    @foreach($team->members as $member)
+                        @if($member->id !== auth()->id())
+                        <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <div class="flex items-center">
+                                <img class="h-10 w-10 rounded-full object-cover mr-3"
+                                     src="https://ui-avatars.com/api/?name={{ urlencode($member->name) }}&background=3B82F6&color=fff"
+                                     alt="{{ $member->name }}">
+                                <div>
+                                    <div class="font-medium text-gray-900">{{ $member->name }}</div>
+                                    <div class="text-sm text-gray-500">{{ $member->employee_id }}</div>
+                                </div>
+                            </div>
+                            <form action="{{ route('teams.remove-member', [$team->id, $member->id]) }}"
+                                  method="POST" class="inline" onsubmit="return confirm('Remove {{ $member->name }} from team?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit"
+                                        class="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-colors duration-200"
+                                        title="Remove member">
+                                    <i class="fas fa-user-minus"></i>
+                                </button>
+                            </form>
+                        </div>
+                        @endif
+                    @endforeach
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 </div>
@@ -427,6 +427,9 @@ document.addEventListener('DOMContentLoaded', function() {
             var originalText = submitButton.innerHTML;
             submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Updating Team...';
             submitButton.disabled = true;
+
+            // Ensure selected team leader ID is submitted (sync from JS state)
+            document.getElementById('team_leader_id').value = leaderSelectedId || '';
 
             var formData = new FormData(form);
 
