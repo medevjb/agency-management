@@ -55,7 +55,7 @@
                 </div>
             </div>
             <div class="flex gap-3">
-                @can('update', \App\Models\Team::class)
+                @can('update', $team)
                 <a href="{{ route('teams.edit', $team->id) }}" class="inline-flex items-center px-4 py-2.5 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-semibold transition-all">
                     <i class="fas fa-edit mr-2"></i>Edit Team
                 </a>
@@ -196,7 +196,7 @@
                             </div>
                             Team Members ({{ $team->members->count() }})
                         </h2>
-                        @can('addMembers', \App\Models\Team::class)
+                        @can('addMembers', $team)
                         <button onclick="showAddMemberModal()"
                                 class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-md transition-all">
                             <i class="fas fa-plus mr-2"></i>Add Members
@@ -240,7 +240,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    @can('removeMember', \App\Models\Team::class)
+                                    @can('removeMember', $team)
                                         @if($member->id !== $team->team_leader_id)
                                         <form action="{{ route('teams.remove-member', [$team->id, $member->id]) }}"
                                               method="POST" onsubmit="return confirm('Remove {{ $member->name }} from this team?')">
@@ -432,7 +432,7 @@
             </div>
 
             <!-- Quick Actions -->
-            @can('update', \App\Models\Team::class)
+            @can('update', $team)
             <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
                 <div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 border-b border-indigo-100">
                     <h2 class="text-xl font-bold text-gray-900 flex items-center">
@@ -447,7 +447,7 @@
                        class="flex items-center w-full px-4 py-3 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl font-medium transition-all">
                         <i class="fas fa-edit mr-3"></i>Edit Team
                     </a>
-                    @can('delete', \App\Models\Team::class)
+                    @can('delete', $team)
                     <form action="{{ route('teams.destroy', $team->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this team? This action cannot be undone.')">
                         @csrf
                         @method('DELETE')
@@ -465,7 +465,7 @@
 </div>
 
 <!-- Add Member Modal -->
-@can('addMembers', \App\Models\Team::class)
+@can('addMembers', $team)
 <div id="addMemberModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
     <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl">
         <div class="p-6 border-b border-gray-200">
@@ -484,7 +484,10 @@
             @csrf
             <div class="p-6">
                 <div class="max-h-96 overflow-y-auto border-2 border-gray-200 rounded-xl p-4">
-                    @if($availableUsers = \App\Models\User::whereNotIn('id', $team->members->pluck('id'))->where('is_active', true)->get()->count() > 0)
+                    @php
+                        $availableUsers = \App\Models\User::whereNotIn('id', $team->members->pluck('id'))->where('is_active', true)->get();
+                    @endphp
+                    @if($availableUsers->count() > 0)
                         <div class="space-y-3">
                             @foreach($availableUsers as $user)
                                 <label class="flex items-center p-4 rounded-xl border-2 border-gray-200 cursor-pointer hover:border-indigo-300 hover:bg-indigo-50 transition-all">

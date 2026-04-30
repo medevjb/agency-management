@@ -180,6 +180,14 @@ class ComprehensiveDataSeeder extends Seeder
                 'team' => null,
                 'position' => 'Project Manager',
             ],
+
+            // Designation users: GM, OP, PM, T.L, Stack Leader, Team Member
+            ['name' => 'Tonmoy', 'email' => 'tonmoy@gmail.com', 'employee_id' => 'GM001', 'role' => 'admin', 'team' => null, 'position' => 'GM'],
+            ['name' => 'JB', 'email' => 'jb@gmail.com', 'employee_id' => 'OP002', 'role' => 'operation-manager', 'team' => null, 'position' => 'OP'],
+            ['name' => 'Saifur', 'email' => 'Saifur@gmail.com', 'employee_id' => 'PM003', 'role' => 'project-manager', 'team' => null, 'position' => 'PM'],
+            ['name' => 'Tarek', 'email' => 'tarek@gmail.com', 'employee_id' => 'TL004', 'role' => 'team-leader', 'team' => $teamAlpha, 'position' => 'T.L'],
+            ['name' => 'Helal', 'email' => 'helal@gmail.com', 'employee_id' => 'SL005', 'role' => 'stack-leader', 'team' => $teamAlpha, 'position' => 'Stack Leader'],
+            ['name' => 'Emon', 'email' => 'emon@gmail.com', 'employee_id' => 'TM006', 'role' => 'team-member', 'team' => $teamAlpha, 'position' => 'Team Member'],
         ];
 
         foreach ($users as $userData) {
@@ -190,6 +198,7 @@ class ComprehensiveDataSeeder extends Seeder
                     'employee_id' => $userData['employee_id'],
                     'password' => bcrypt('password'),
                     'position' => $userData['position'],
+                    'role' => $userData['role'],
                     'team_id' => $userData['team']?->id,
                     'is_active' => true,
                     'phone' => '555-0100',
@@ -197,7 +206,7 @@ class ComprehensiveDataSeeder extends Seeder
                     'hire_date' => Carbon::now()->subMonths(rand(1, 24)),
                 ]
             );
-            $user->assignRole($userData['role']);
+            $user->syncRoles([$userData['role']]);
         }
 
         // 3. Create Tech Stacks for each team

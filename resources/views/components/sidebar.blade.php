@@ -2,8 +2,8 @@
 <aside class="fixed top-0 left-0 h-screen w-64 bg-indigo-900 text-white hidden lg:flex flex-col shadow-2xl z-50">
     <!-- Logo Section -->
     <div class="flex items-center justify-center h-16 px-6 border-b border-indigo-700/50 flex-shrink-0">
-        <i class="fas fa-rocket text-2xl mr-3"></i>
-        <h1 class="text-xl font-bold tracking-wide">{{ config('app.name', 'PMT') }}</h1>
+        <img src="{{ asset('image/logo.png') }}" alt="Logo" class="h-10 w-auto mr-3" style="height:60px">
+        <!-- <h1 class="text-xl font-bold tracking-wide">{{ config('app.name', 'PMT') }}</h1> -->
     </div>
 
     <!-- Navigation -->

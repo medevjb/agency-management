@@ -115,4 +115,17 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mail Queue Configuration
+    |--------------------------------------------------------------------------
+    |
+    | This option controls whether emails should be queued for background
+    | processing or sent synchronously. When enabled, emails will be queued
+    | for better performance. When disabled, emails will be sent immediately.
+    |
+    */
+
+    'queue_enabled' => env('MAIL_QUEUE_ENABLED', true),
+
 ];
