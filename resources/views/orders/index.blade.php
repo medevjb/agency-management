@@ -344,10 +344,17 @@
                 ->count();
         @endphp
 
+<<<<<<< HEAD
         <!-- Overdue Alert Section -->
         @if ($overdueOrders->count() > 0)
             <div
                 class="mb-6 bg-gradient-to-r from-red-100 via-rose-50 to-pink-50 rounded-2xl shadow-lg border-2 border-red-400 overflow-hidden">
+=======
+        <!-- Due Soon Alert Section -->
+        @if ($dueSoonOrders->count() > 0)
+            <div
+                class="mb-6 bg-gradient-to-r from-red-50 via-orange-50 to-amber-50 rounded-2xl shadow-lg border-2 border-red-200 overflow-hidden">
+>>>>>>> dc724ee85e724feac405df0ad7bf659778369201
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-3">
@@ -555,7 +562,11 @@
 
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center gap-2">
+<<<<<<< HEAD
                                             @if ($timeRemaining == 'TODAY')
+=======
+                                            @if ($daysUntilDue == 0)
+>>>>>>> dc724ee85e724feac405df0ad7bf659778369201
                                                 <span class="px-2 py-1 bg-red-600 text-white text-xs font-bold rounded-lg">
                                                     TODAY
                                                 </span>
@@ -563,15 +574,26 @@
                                                 <span class="px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-lg">
                                                     TOMORROW
                                                 </span>
+<<<<<<< HEAD
                                             @elseif($isUrgent)
                                                 <span
                                                     class="px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded-lg">
                                                     {{ $timeRemaining }} left
+=======
+                                            @elseif($hoursUntilDue < 48)
+                                                <span
+                                                    class="px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded-lg">
+                                                    {{ $daysUntilDue }} days
+>>>>>>> dc724ee85e724feac405df0ad7bf659778369201
                                                 </span>
                                             @else
                                                 <span
                                                     class="px-2 py-1 bg-amber-500 text-white text-xs font-bold rounded-lg">
+<<<<<<< HEAD
                                                     {{ $timeRemaining }} left
+=======
+                                                    {{ $daysUntilDue }} days
+>>>>>>> dc724ee85e724feac405df0ad7bf659778369201
                                                 </span>
                                             @endif
                                             <span
