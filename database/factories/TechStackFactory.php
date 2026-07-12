@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\TechStack;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\TechStack>
+ * @extends Factory<TechStack>
  */
 class TechStackFactory extends Factory
 {
@@ -17,7 +18,7 @@ class TechStackFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'name' => fake()->words(2, true),
         ];
     }
 }

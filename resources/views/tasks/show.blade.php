@@ -126,7 +126,7 @@
                         </div>
                     </div>
                 @else
-                    <p class="text-gray-400">Unassigned</p>
+                    <p class="text-gray-400">Myself</p>
                 @endif
             </div>
 

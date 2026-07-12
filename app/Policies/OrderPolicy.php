@@ -30,7 +30,7 @@ class OrderPolicy
             return $user->team_id === $order->team_id;
         }
 
-        return true;
+        return false;
     }
 
     /**

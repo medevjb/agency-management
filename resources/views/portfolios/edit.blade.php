@@ -85,20 +85,11 @@
                                 <i class="fas fa-layer-group mr-1 text-indigo-600"></i>
                                 Tech Stack
                             </label>
-                            <div class="relative">
-                                <select name="tech_stack_id" id="tech_stack_id"
-                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white appearance-none transition-all">
-                                    <option value="">Select Tech Stack</option>
-                                    @foreach($techStacks as $stack)
-                                        <option value="{{ $stack->id }}" {{ old('tech_stack_id', $portfolio->tech_stack_id) == $stack->id ? 'selected' : '' }}>
-                                            {{ $stack->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                    <i class="fas fa-chevron-down text-gray-400"></i>
-                                </div>
-                            </div>
+                            <x-ajax-select name="tech_stack_id"
+                                           url="{{ route('search.tech-stacks') }}"
+                                           :value="$portfolio->tech_stack_id"
+                                           :label="$portfolio->techStack?->name"
+                                           placeholder="Search tech stack..." />
                             @error('tech_stack_id')
                                 <p class="mt-2 text-sm text-red-600 flex items-center">
                                     <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}

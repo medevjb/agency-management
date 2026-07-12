@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Project;
+use App\Models\Setting;
 use App\Models\Task;
 use App\Models\Team;
 use App\Models\TechStack;
@@ -18,10 +20,14 @@ class AdminController extends Controller
      */
     public function dashboard()
     {
-        $now = now();
-        $thisMonth = $now->startOfMonth();
-        $lastMonth = $now->subMonth()->startOfMonth();
-        $thisYear = $now->startOfYear();
+        // Use copy() to avoid Carbon mutation — all three vars must be independent instances
+        $thisMonthStart = now()->copy()->startOfMonth()->startOfDay();
+        $thisMonthEnd = now()->copy()->endOfMonth()->endOfDay();
+        $lastMonthStart = now()->copy()->subMonth()->startOfMonth()->startOfDay();
+        $lastMonthEnd = now()->copy()->subMonth()->endOfMonth()->endOfDay();
+        $thisYearStart = now()->copy()->startOfYear()->startOfDay();
+
+        $deliveredStatuses = ['delivered', 'completed'];
 
         // Basic stats
         $stats = [
@@ -30,25 +36,28 @@ class AdminController extends Controller
             'total_tasks' => Task::count(),
             'total_teams' => Team::count(),
             'total_tech_stacks' => TechStack::count(),
-            'new_users_this_month' => User::where('created_at', '>=', $thisMonth)->count(),
-            'active_projects' => Order::where('status', 'in-progress')->count(),
-            'completed_projects' => Order::where('status', 'completed')->count(),
+            'new_users_this_month' => User::where('created_at', '>=', $thisMonthStart)->count(),
+            'active_projects' => Order::whereNotIn('status', array_merge($deliveredStatuses, ['cancelled']))->count(),
+            'completed_projects' => Order::whereIn('status', $deliveredStatuses)->count(),
             'completed_tasks' => Task::where('status', 'completed')->count(),
             'total_team_members' => User::whereNotNull('team_id')->count(),
             'pending_jobs' => 0,
         ];
 
-        // Revenue analytics
-        $revenueThisMonth = Order::where('status', 'completed')
-            ->whereBetween('created_at', [$thisMonth, now()])
+        // Revenue analytics — use delivered_at (when money was earned, not when order was created)
+        $revenueThisMonth = Order::whereIn('status', $deliveredStatuses)
+            ->whereNotNull('delivered_at')
+            ->whereBetween('delivered_at', [$thisMonthStart, $thisMonthEnd])
             ->sum('actual_revenue');
 
-        $revenueLastMonth = Order::where('status', 'completed')
-            ->whereBetween('created_at', [$lastMonth, $thisMonth])
+        $revenueLastMonth = Order::whereIn('status', $deliveredStatuses)
+            ->whereNotNull('delivered_at')
+            ->whereBetween('delivered_at', [$lastMonthStart, $lastMonthEnd])
             ->sum('actual_revenue');
 
-        $revenueThisYear = Order::where('status', 'completed')
-            ->whereBetween('created_at', [$thisYear, now()])
+        $revenueThisYear = Order::whereIn('status', $deliveredStatuses)
+            ->whereNotNull('delivered_at')
+            ->whereBetween('delivered_at', [$thisYearStart, $thisMonthEnd])
             ->sum('actual_revenue');
 
         $stats['revenue_this_month'] = $revenueThisMonth;
@@ -59,7 +68,7 @@ class AdminController extends Controller
             : 0;
 
         // Monthly active users (users created this month)
-        $stats['active_users_this_month'] = User::where('created_at', '>=', $thisMonth)->count();
+        $stats['active_users_this_month'] = User::where('created_at', '>=', $thisMonthStart)->count();
 
         // Project completion rate
         $totalProjects = Order::count();
@@ -78,16 +87,16 @@ class AdminController extends Controller
         $recentUsers = User::latest()->take(5)->get();
         $recentOrders = Order::with(['team', 'creator'])->latest()->take(5)->get();
 
-        // Monthly revenue for chart (last 12 months)
-        $monthlyRevenue = Order::selectRaw('MONTH(created_at) as month, SUM(actual_revenue) as revenue')
-            ->where('status', 'delivered')
-            ->whereYear('created_at', now()->year)
+        // Monthly revenue for chart — by delivered_at (when money was earned)
+        $monthlyRevenue = Order::selectRaw('MONTH(delivered_at) as month, SUM(actual_revenue) as revenue')
+            ->whereIn('status', $deliveredStatuses)
+            ->whereNotNull('delivered_at')
+            ->whereYear('delivered_at', now()->year)
             ->groupBy('month')
             ->orderBy('month')
             ->pluck('revenue', 'month')
             ->toArray();
 
-        // Fill missing months with 0
         for ($i = 1; $i <= 12; $i++) {
             if (! isset($monthlyRevenue[$i])) {
                 $monthlyRevenue[$i] = 0;
@@ -95,9 +104,10 @@ class AdminController extends Controller
         }
         ksort($monthlyRevenue);
 
-        // Monthly orders for chart
-        $monthlyOrders = Order::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
-            ->whereYear('created_at', now()->year)
+        // Monthly orders for chart — by start_date (when work began)
+        $monthlyOrders = Order::selectRaw('MONTH(start_date) as month, COUNT(*) as count')
+            ->whereNotNull('start_date')
+            ->whereYear('start_date', now()->year)
             ->groupBy('month')
             ->orderBy('month')
             ->pluck('count', 'month')
@@ -110,13 +120,14 @@ class AdminController extends Controller
         }
         ksort($monthlyOrders);
 
-        // Top performing teams
-        $topTeams = \App\Models\Team::withCount('orders')
+        // Top performing teams — revenue from all delivered/completed orders
+        $topTeams = Team::withCount('orders')
             ->has('orders')
             ->get()
-            ->map(function ($team) {
+            ->map(function ($team) use ($deliveredStatuses) {
                 $completedRevenue = Order::where('team_id', $team->id)
-                    ->where('status', 'delivered')
+                    ->whereIn('status', $deliveredStatuses)
+                    ->whereNotNull('delivered_at')
                     ->sum('actual_revenue');
 
                 return [
@@ -130,10 +141,25 @@ class AdminController extends Controller
             ->values();
 
         // Recent activity
-        $activities = \App\Models\Project::with('createdBy')
+        $activities = Project::with('createdBy')
             ->latest()
             ->take(8)
             ->get();
+
+        // Settings for display
+        $currencyCode = Setting::get('currency_code', 'USD');
+        $currencySymbol = Setting::get('currency_symbol', '$');
+        $currencyPosition = Setting::get('currency_position', 'before');
+        $decimalPlaces = (int) Setting::get('decimal_places', 2);
+        $thousandSeparator = Setting::get('thousand_separator', ',');
+        $decimalSeparator = Setting::get('decimal_separator', '.');
+        $companyName = Setting::get('company_name', config('app.name'));
+        $companyEmail = Setting::get('company_email', '');
+        $companyPhone = Setting::get('company_phone', '');
+        $businessHours = Setting::get('business_hours', '');
+        $maintenanceMode = (bool) Setting::get('maintenance_mode', false);
+        $siteActive = (bool) Setting::get('site_active', true);
+        $siteName = Setting::get('site_name', config('app.name'));
 
         return view('admin.dashboard', compact(
             'stats',
@@ -144,7 +170,20 @@ class AdminController extends Controller
             'monthlyRevenue',
             'monthlyOrders',
             'topTeams',
-            'activities'
+            'activities',
+            'currencyCode',
+            'currencySymbol',
+            'currencyPosition',
+            'decimalPlaces',
+            'thousandSeparator',
+            'decimalSeparator',
+            'companyName',
+            'companyEmail',
+            'companyPhone',
+            'businessHours',
+            'maintenanceMode',
+            'siteActive',
+            'siteName'
         ));
     }
 

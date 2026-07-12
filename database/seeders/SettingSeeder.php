@@ -17,7 +17,7 @@ class SettingSeeder extends Seeder
             [
                 'group' => 'general',
                 'key' => 'site_name',
-                'value' => 'Project Management Tool',
+                'value' => 'PMT',
                 'type' => 'text',
                 'label' => 'Site Name',
                 'description' => 'The name of your application',
@@ -275,7 +275,7 @@ class SettingSeeder extends Seeder
             [
                 'group' => 'email',
                 'key' => 'mail_from_name',
-                'value' => 'Project Management Tool',
+                'value' => 'PMT',
                 'type' => 'text',
                 'label' => 'From Name',
                 'description' => 'Default sender name',

@@ -8,6 +8,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderDashboardController;
 use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TeamController;
@@ -20,7 +21,7 @@ Route::get('/', function () {
         return redirect()->route('dashboard');
     }
 
-    return redirect()->route('login');
+    return view('landing');
 })->name('home');
 
 Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
@@ -29,6 +30,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Global AJAX search endpoints
+    Route::prefix('search')->name('search.')->group(function () {
+        Route::get('/teams', [SearchController::class, 'teams'])->name('teams');
+        Route::get('/tech-stacks', [SearchController::class, 'techStacks'])->name('tech-stacks');
+        Route::get('/profiles', [SearchController::class, 'profiles'])->name('profiles');
+    });
 
     // Orders routes
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
@@ -54,6 +62,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/tasks/bulk-update', [TaskController::class, 'bulkUpdate'])->name('tasks.bulk-update');
     Route::get('/tasks/archived', [TaskController::class, 'archived'])->name('tasks.archived');
     Route::get('/tasks/assignable-users', [TaskController::class, 'getAssignableUsers'])->name('tasks.assignable-users');
+    Route::get('/tasks/orders-search', [TaskController::class, 'searchOrders'])->name('tasks.orders-search');
     Route::get('/tasks/create', [TaskController::class, 'create'])->name('tasks.create');
     Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
     Route::get('/tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');
@@ -123,7 +132,6 @@ Route::middleware(['auth'])->group(function () {
     // Freelance Profiles Routes
     Route::prefix('freelance-profiles')->name('freelance-profiles.')->group(function () {
         Route::get('/', [FreelanceProfileController::class, 'index'])->name('index');
-        Route::get('/create', [FreelanceProfileController::class, 'create'])->name('create');
         Route::post('/', [FreelanceProfileController::class, 'store'])->name('store');
         Route::get('/{profile}', [FreelanceProfileController::class, 'show'])->name('show');
         Route::get('/{profile}/edit', [FreelanceProfileController::class, 'edit'])->name('edit');

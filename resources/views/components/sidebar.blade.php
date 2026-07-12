@@ -1,13 +1,17 @@
 <!-- Desktop Sidebar -->
 <aside class="fixed top-0 left-0 h-screen w-64 bg-indigo-900 text-white hidden lg:flex flex-col shadow-2xl z-50">
     <!-- Logo Section -->
-    <div class="flex items-center justify-center h-16 px-6 border-b border-indigo-700/50 flex-shrink-0">
-        <img src="{{ asset('image/logo.png') }}" alt="Logo" class="h-10 w-auto mr-3" style="height:60px">
-        <!-- <h1 class="text-xl font-bold tracking-wide">{{ config('app.name', 'PMT') }}</h1> -->
+    <div class="flex items-center justify-center gap-2.5 h-16 px-6 border-b border-indigo-700/50 flex-shrink-0">
+        <x-site-logo
+            img-class="h-auto w-auto max-h-12 max-w-[170px] object-contain"
+            badge-class="h-10 w-10 text-lg"
+            :show-name="true"
+            name-class="font-bold text-lg tracking-tight text-white" />
     </div>
 
     <!-- Navigation -->
     <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto custom-scrollbar">
+
         @php
             $currentSection = '';
             if (request()->routeIs('dashboard')) {
@@ -154,8 +158,8 @@
                         All Profiles
                     </a>
                     @can('create freelance profile')
-                        <a href="{{ route('freelance-profiles.create') }}"
-                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('freelance-profiles.create') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                        <a href="{{ route('freelance-profiles.index', ['create' => 1]) }}"
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('freelance-profiles.index') && request('create') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
                             <i class="fas fa-plus w-5 mr-2"></i>
                             Add Profile
                         </a>

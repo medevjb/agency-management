@@ -146,11 +146,11 @@
                                                     <img src="{{ asset('storage/' . $setting->value) }}"
                                                          alt="{{ $setting->label }}"
                                                          class="h-32 rounded-lg border border-gray-300">
-                                                    <a href="{{ route('settings.delete-value', ['key' => $key]) }}"
-                                                       onclick="return confirm('Are you sure you want to remove this image?')"
+                                                    <button type="button"
+                                                       onclick="removeSettingImage('{{ route('settings.delete-value', ['key' => $key]) }}')"
                                                        class="absolute -top-2 -right-2 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-600 shadow-lg">
                                                         <i class="fas fa-times text-sm"></i>
-                                                    </a>
+                                                    </button>
                                                 </div>
                                             @endif
                                             <div class="mt-2 flex items-center gap-3">
@@ -487,6 +487,25 @@
 </div>
 
 <script>
+function removeSettingImage(url) {
+    if (!confirm('Are you sure you want to remove this image?')) {
+        return;
+    }
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+
+    const token = document.createElement('input');
+    token.type = 'hidden';
+    token.name = '_token';
+    token.value = '{{ csrf_token() }}';
+    form.appendChild(token);
+
+    document.body.appendChild(form);
+    form.submit();
+}
+
 function editStatus(key, label, icon, color) {
     document.getElementById('edit_original_key').value = key;
     document.getElementById('edit_label').value = label;

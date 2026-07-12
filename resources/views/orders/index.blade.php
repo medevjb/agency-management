@@ -316,7 +316,7 @@
     <div class="px-4 sm:px-6 lg:px-8 py-8">
         @php
             $dueSoonOrders = \App\Models\Order::with(['team', 'users'])
-                ->whereNotIn('status', ['delivered', 'cancelled'])
+                ->whereNotIn('status', ['delivered', 'completed', 'cancelled'])
                 ->whereNotNull('end_date')
                 ->where('end_date', '>=', now())
                 ->where('end_date', '<=', now()->addDays(4))
@@ -324,12 +324,134 @@
                 ->take(6)
                 ->get();
 
-            $urgentCount = \App\Models\Order::whereNotIn('status', ['delivered', 'cancelled'])
+            $urgentCount = \App\Models\Order::whereNotIn('status', ['delivered', 'completed', 'cancelled'])
                 ->whereNotNull('end_date')
                 ->where('end_date', '<=', now()->addDays(4))
                 ->where('end_date', '>=', now())
                 ->count();
+
+            $overdueOrders = \App\Models\Order::with(['team', 'users'])
+                ->whereNotIn('status', ['delivered', 'completed', 'cancelled'])
+                ->whereNotNull('end_date')
+                ->where('end_date', '<', now())
+                ->orderBy('end_date')
+                ->take(6)
+                ->get();
+
+            $overdueCount = \App\Models\Order::whereNotIn('status', ['delivered', 'completed', 'cancelled'])
+                ->whereNotNull('end_date')
+                ->where('end_date', '<', now())
+                ->count();
         @endphp
+
+        <!-- Overdue Alert Section -->
+        @if ($overdueOrders->count() > 0)
+            <div
+                class="mb-6 bg-gradient-to-r from-red-100 via-rose-50 to-pink-50 rounded-2xl shadow-lg border-2 border-red-400 overflow-hidden">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="relative">
+                                <div
+                                    class="w-12 h-12 rounded-xl bg-gradient-to-br from-red-700 to-rose-600 flex items-center justify-center shadow-lg animate-pulse">
+                                    <i class="fas fa-skull-crossbones text-white text-xl"></i>
+                                </div>
+                                <span
+                                    class="absolute -top-1 -right-1 w-6 h-6 bg-red-800 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-md">
+                                    {{ $overdueCount }}
+                                </span>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                                    Overdue Orders
+                                    <span class="px-3 py-1 bg-red-700 text-white text-sm font-semibold rounded-full">
+                                        {{ $overdueOrders->count() }} Shown{{ $overdueCount > $overdueOrders->count() ? ' of ' . $overdueCount : '' }}
+                                    </span>
+                                </h2>
+                                <p class="text-sm text-gray-600 mt-1">
+                                    <i class="fas fa-exclamation-circle text-red-700 mr-1"></i>
+                                    {{ $overdueCount }} order{{ $overdueCount > 1 ? 's' : '' }} past their deadline — immediate action required
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        @foreach ($overdueOrders as $order)
+                            @php
+                                $overdueDays = (int) $order->end_date->diffInDays(now());
+                                $overdueHours = (int) $order->end_date->diffInHours(now());
+                            @endphp
+
+                            <a href="{{ route('orders.show', $order->id) }}"
+                                class="group relative overflow-hidden rounded-xl bg-white shadow-md hover:shadow-xl transition-all duration-300 border-2 border-red-400 hover:border-red-600">
+                                <div class="absolute top-0 left-0 w-full h-1 bg-red-700"></div>
+
+                                <div class="p-4">
+                                    <div class="flex items-start justify-between mb-3">
+                                        <div class="flex-1 min-w-0">
+                                            <h4
+                                                class="text-sm font-bold text-gray-900 truncate group-hover:text-red-700 transition-colors">
+                                                {{ $order->name }}
+                                            </h4>
+                                            @if ($order->team)
+                                                <p class="text-xs text-gray-500 mt-1">
+                                                    <i class="fas fa-users mr-1"></i>{{ $order->team->name }}
+                                                </p>
+                                            @endif
+                                        </div>
+                                        <div class="ml-3 flex-shrink-0">
+                                            <div
+                                                class="w-10 h-10 rounded-lg bg-gradient-to-br from-red-700 to-rose-700 flex items-center justify-center shadow-md animate-pulse">
+                                                <i class="fas fa-bomb text-white"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            @if ($overdueDays >= 1)
+                                                <span
+                                                    class="px-2 py-1 bg-red-700 text-white text-xs font-bold rounded-lg">
+                                                    {{ $overdueDays }}d overdue
+                                                </span>
+                                            @else
+                                                <span
+                                                    class="px-2 py-1 bg-red-700 text-white text-xs font-bold rounded-lg">
+                                                    {{ $overdueHours }}h overdue
+                                                </span>
+                                            @endif
+                                            <span
+                                                class="text-xs text-gray-500">Due {{ $order->end_date->format('M d') }}</span>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            @if ($order->users->count() > 0)
+                                                <div class="flex -space-x-2">
+                                                    @foreach ($order->users->take(3) as $user)
+                                                        <div class="w-6 h-6 rounded-full bg-gradient-to-br from-red-400 to-rose-500 border-2 border-white flex items-center justify-center text-white text-xs font-bold"
+                                                            title="{{ $user->name }}">
+                                                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                                                        </div>
+                                                    @endforeach
+                                                    @if ($order->users->count() > 3)
+                                                        <div
+                                                            class="w-6 h-6 rounded-full bg-gray-300 border-2 border-white flex items-center justify-center text-gray-600 text-xs font-bold">
+                                                            +{{ $order->users->count() - 3 }}
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            @else
+                                                <span class="text-xs text-gray-400">Unassigned</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        @endif
 
         <!-- Due Soon Alert Section -->
         @if ($dueSoonOrders->count() > 0)
@@ -371,9 +493,29 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         @foreach ($dueSoonOrders as $order)
                             @php
-                                $daysUntilDue = $order->end_date->diffInDays(now());
+                                $diff = $order->end_date->diff(now());
+                                $daysUntilDue = $diff->d;
+                                $hoursUntilDue = $diff->h;
                                 $isUrgent = $daysUntilDue <= 3;
-                                $hoursUntilDue = $order->end_date->diffInHours(now());
+
+                                // Format time remaining in human-readable format
+                                if ($daysUntilDue == 0 && $order->end_date->isToday()) {
+                                    $timeRemaining = 'TODAY';
+                                } elseif ($daysUntilDue == 0 && $order->end_date->isTomorrow()) {
+                                    $timeRemaining = 'TOMORROW';
+                                } elseif ($daysUntilDue == 1) {
+                                    $timeRemaining = 'TOMORROW';
+                                } elseif ($daysUntilDue == 0) {
+                                    // Less than a day but not today/tomorrow (edge case)
+                                    $timeRemaining = $hoursUntilDue . 'h';
+                                } elseif ($daysUntilDue < 1) {
+                                    // Less than 24 hours
+                                    $totalHours = $order->end_date->diffInHours(now());
+                                    $timeRemaining = $totalHours . 'h';
+                                } else {
+                                    // More than a day
+                                    $timeRemaining = $daysUntilDue . 'd';
+                                }
                             @endphp
 
                             <a href="{{ route('orders.show', $order->id) }}"
@@ -413,23 +555,23 @@
 
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center gap-2">
-                                            @if ($daysUntilDue == 0)
+                                            @if ($timeRemaining == 'TODAY')
                                                 <span class="px-2 py-1 bg-red-600 text-white text-xs font-bold rounded-lg">
                                                     TODAY
                                                 </span>
-                                            @elseif($daysUntilDue == 1)
+                                            @elseif($timeRemaining == 'TOMORROW')
                                                 <span class="px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-lg">
-                                                    Tomorrow
+                                                    TOMORROW
                                                 </span>
-                                            @elseif($hoursUntilDue < 48)
+                                            @elseif($isUrgent)
                                                 <span
                                                     class="px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded-lg">
-                                                    {{ $daysUntilDue }} days
+                                                    {{ $timeRemaining }} left
                                                 </span>
                                             @else
                                                 <span
                                                     class="px-2 py-1 bg-amber-500 text-white text-xs font-bold rounded-lg">
-                                                    {{ $daysUntilDue }} days
+                                                    {{ $timeRemaining }} left
                                                 </span>
                                             @endif
                                             <span
@@ -452,7 +594,7 @@
                                                     @endif
                                                 </div>
                                             @else
-                                                <span class="text-xs text-gray-400">Unassigned</span>
+                                                <span class="text-xs text-gray-400">Myself</span>
                                             @endif
                                         </div>
                                     </div>
@@ -660,12 +802,12 @@
                             <th>Value</th>
                             <th>Team</th>
                             <th>Users</th>
-                            <th>Started</th>
+                            {{-- <th>Started</th> --}}
                             <th>Delivered</th>
                             <th>Deadline</th>
                             <th class="text-center">Docs</th>
-                            <th>Special</th>
-                            <th>Last Update</th>
+                            {{-- <th>Special</th> --}}
+                            {{-- <th>Last Update</th> --}}
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
@@ -966,7 +1108,7 @@
                                 </button>`;
                             }
                         },
-                        {
+                       /* {
                             data: 'start_date',
                             name: 'start_date',
                             render: function(data, type, row) {
@@ -997,7 +1139,7 @@
                                             title="${dbDate}"
                                             readonly onclick="handleStartDateClick(this)">`;
                             }
-                        },
+                        },*/
                         {
                             data: 'delivered_at',
                             name: 'delivered_at',
@@ -1053,9 +1195,25 @@
                                     return '<span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 text-red-600"><i class="fas fa-times"></i></span>';
                                 }
 
-                                if (!data) return '<span class="text-gray-400 text-xs">Not set</span>';
+                                if (!data) {
+                                    return `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-gray-400 whitespace-nowrap cursor-pointer hover:bg-gray-100"
+                                                data-order-id="${row.id}"
+                                                data-deadline=""
+                                                onclick="handleEndDateClick(this)">
+                                                <i class="fas fa-calendar-plus text-xs"></i>
+                                                <span>Set deadline</span>
+                                            </span>`;
+                                }
 
-                                return `<span class="countdown-timer inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold whitespace-nowrap" data-deadline="${data}"><i class="fas fa-clock text-xs"></i> <span class="countdown-text">Loading...</span></span>`;
+                                return `<span class="countdown-timer inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold whitespace-nowrap cursor-pointer hover:ring-2 hover:ring-orange-300 transition-all"
+                                            data-deadline="${data}"
+                                            data-order-id="${row.id}"
+                                            data-original-value="${data}"
+                                            onclick="handleEndDateClick(this)"
+                                            title="Click to edit deadline">
+                                            <i class="fas fa-clock text-xs"></i>
+                                            <span class="countdown-text">Loading...</span>
+                                        </span>`;
                             }
                         },
                         {
@@ -1075,75 +1233,77 @@
                                 `;
                             }
                         },
-                        {
-                            data: 'special_status',
-                            name: 'special_status',
-                            render: function(data, type, row) {
-                                const statusConfig = {
-                                    'selected_for_delivery': {
-                                        color: 'bg-green-100 text-green-800',
-                                        label: 'Sel'
-                                    },
-                                    'continue_for_next': {
-                                        color: 'bg-blue-100 text-blue-800',
-                                        label: 'Cont'
-                                    },
-                                    'stuck_order': {
-                                        color: 'bg-red-100 text-red-800',
-                                        label: 'Stuck'
-                                    }
-                                };
+                        // Special Status Column - Temporarily disabled
+                        // {
+                        //     data: 'special_status',
+                        //     name: 'special_status',
+                        //     render: function(data, type, row) {
+                        //         const statusConfig = {
+                        //             'selected_for_delivery': {
+                        //                 color: 'bg-green-100 text-green-800',
+                        //                 label: 'Sel'
+                        //             },
+                        //             'continue_for_next': {
+                        //                 color: 'bg-blue-100 text-blue-800',
+                        //                 label: 'Cont'
+                        //             },
+                        //             'stuck_order': {
+                        //                 color: 'bg-red-100 text-red-800',
+                        //                 label: 'Stuck'
+                        //             }
+                        //         };
 
-                                const currentStatus = data || '';
-                                const config = statusConfig[currentStatus];
-                                const bgClass = config ? config.color : 'bg-gray-100 text-gray-800';
+                        //         const currentStatus = data || '';
+                        //         const config = statusConfig[currentStatus];
+                        //         const bgClass = config ? config.color : 'bg-gray-100 text-gray-800';
 
-                                return `
-                                    <select class="inline-select px-2 py-1 rounded text-xs font-semibold border-0 cursor-pointer focus:ring-1 focus:ring-offset-1 focus:ring-purple-500 min-w-[70px] max-w-[80px] specialStatusDropdown ${bgClass}"
-                                            data-order-id="${row.id}"
-                                            data-field="special_status"
-                                            data-original-value="${currentStatus}"
-                                            onchange="handleQuickUpdate(this)">
-                                        <option value="" ${!data ? 'selected' : ''}> None</option>
-                                        <option value="selected_for_delivery" ${data === 'selected_for_delivery' ? 'selected' : ''}> Sel</option>
-                                        <option value="continue_for_next" ${data === 'continue_for_next' ? 'selected' : ''}> Cont</option>
-                                        <option value="stuck_order" ${data === 'stuck_order' ? 'selected' : ''}> Stuck</option>
-                                    </select>
-                                `;
-                            }
-                        },
-                        {
-                            data: 'updated_at',
-                            name: 'updated_at',
-                            render: function(data, type, row) {
-                                // Has a saved date — show it regardless
-                                if (row.last_update_date) {
-                                    const date = new Date(row.last_update_date);
-                                    const formattedDate = date.toLocaleDateString('en-US', {
-                                        month: 'short',
-                                        day: 'numeric'
-                                    });
-                                    const dbDate = row.last_update_date;
+                        //         return `
+                        //             <select class="inline-select px-2 py-1 rounded text-xs font-semibold border-0 cursor-pointer focus:ring-1 focus:ring-offset-1 focus:ring-purple-500 min-w-[70px] max-w-[80px] specialStatusDropdown ${bgClass}"
+                        //                     data-order-id="${row.id}"
+                        //                     data-field="special_status"
+                        //                     data-original-value="${currentStatus}"
+                        //                     onchange="handleQuickUpdate(this)">
+                        //                 <option value="" ${!data ? 'selected' : ''}> None</option>
+                        //                 <option value="selected_for_delivery" ${data === 'selected_for_delivery' ? 'selected' : ''}> Sel</option>
+                        //                 <option value="continue_for_next" ${data === 'continue_for_next' ? 'selected' : ''}> Cont</option>
+                        //                 <option value="stuck_order" ${data === 'stuck_order' ? 'selected' : ''}> Stuck</option>
+                        //             </select>
+                        //         `;
+                        //     }
+                        // },
+                        // Last Update Date Column - Temporarily disabled
+                        // {
+                        //     data: 'updated_at',
+                        //     name: 'updated_at',
+                        //     render: function(data, type, row) {
+                        //         // Has a saved date — show it regardless
+                        //         if (row.last_update_date) {
+                        //             const date = new Date(row.last_update_date);
+                        //             const formattedDate = date.toLocaleDateString('en-US', {
+                        //                 month: 'short',
+                        //                 day: 'numeric'
+                        //             });
+                        //             const dbDate = row.last_update_date;
 
-                                    return `<input type="text"
-                                                class="last-update-date-input px-2 py-1 rounded-lg text-xs font-medium border border-purple-300 bg-purple-50 text-purple-700 whitespace-nowrap w-28 cursor-pointer"
-                                                value="${formattedDate}"
-                                                data-order-id="${row.id}"
-                                                data-original-value="${dbDate}"
-                                                data-current-value="${dbDate}"
-                                                title="${dbDate}"
-                                                readonly onclick="handleLastUpdateClick(this)">`;
-                                }
+                        //             return `<input type="text"
+                        //                         class="last-update-date-input px-2 py-1 rounded-lg text-xs font-medium border border-purple-300 bg-purple-50 text-purple-700 whitespace-nowrap w-28 cursor-pointer"
+                        //                         value="${formattedDate}"
+                        //                         data-order-id="${row.id}"
+                        //                         data-original-value="${dbDate}"
+                        //                         data-current-value="${dbDate}"
+                        //                         title="${dbDate}"
+                        //                         readonly onclick="handleLastUpdateClick(this)">`;
+                        //         }
 
-                                // No date set yet
-                                return `<input type="text"
-                                            class="last-update-date-input px-2 py-1 rounded-lg text-xs font-medium border border-gray-300 bg-gray-50 text-gray-400 whitespace-nowrap w-28 cursor-pointer"
-                                            data-order-id="${row.id}"
-                                            data-original-value=""
-                                            placeholder="Set date"
-                                            readonly onclick="handleLastUpdateClick(this)">`;
-                            }
-                        },
+                        //         // No date set yet
+                        //         return `<input type="text"
+                        //                     class="last-update-date-input px-2 py-1 rounded-lg text-xs font-medium border border-gray-300 bg-gray-50 text-gray-400 whitespace-nowrap w-28 cursor-pointer"
+                        //                     data-order-id="${row.id}"
+                        //                     data-original-value=""
+                        //                     placeholder="Set date"
+                        //                     readonly onclick="handleLastUpdateClick(this)">`;
+                        //     }
+                        // },
                         {
                             data: null,
                             orderable: false,
@@ -1713,6 +1873,82 @@
                                         });
                                 }
                             });
+                        }
+                    }
+                });
+
+                picker.open();
+            }
+
+            function handleEndDateClick(element) {
+                const orderId = element.dataset.orderId;
+                const originalValue = element.dataset.originalValue || element.dataset.deadline || '';
+
+                if (typeof flatpickr === 'undefined') {
+                    console.error('Flatpickr is not loaded');
+                    return;
+                }
+
+                // Create a temporary input for flatpickr
+                const tempInput = document.createElement('input');
+                tempInput.type = 'text';
+                element.appendChild(tempInput);
+
+                const picker = flatpickr(tempInput, {
+                    enableTime: false,
+                    dateFormat: 'Y-m-d',
+                    defaultDate: originalValue ? new Date(originalValue) : new Date(),
+                    static: true,
+                    appendTo: element,
+                    onClose: function(selectedDates, dateStr, instance) {
+                        instance.destroy();
+                        element.removeChild(tempInput);
+
+                        if (selectedDates.length > 0) {
+                            // Only show confirmation if date actually changed
+                            if (dateStr !== originalValue) {
+                                Swal.fire({
+                                    title: 'Update Deadline Date?',
+                                    text: `Change deadline date to "${dateStr}"?`,
+                                    icon: 'question',
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#f97316',
+                                    cancelButtonColor: '#6b7280',
+                                    confirmButtonText: 'Yes, update!',
+                                    cancelButtonText: 'Cancel'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        Swal.showLoading();
+
+                                        const formData = new FormData();
+                                        formData.append('end_date', dateStr);
+
+                                        axios.post(`/orders/${orderId}/quick-update`, formData)
+                                            .then(response => {
+                                                Swal.fire({
+                                                    title: 'Updated!',
+                                                    text: response.data.message ||
+                                                        'Deadline date updated successfully.',
+                                                    icon: 'success',
+                                                    confirmButtonColor: '#f97316',
+                                                    timer: 1500,
+                                                    showConfirmButton: false
+                                                }).then(() => {
+                                                    $('#ordersTable').DataTable().ajax.reload();
+                                                });
+                                            })
+                                            .catch(error => {
+                                                Swal.fire({
+                                                    title: 'Error!',
+                                                    text: error.response?.data?.message ||
+                                                        'Something went wrong.',
+                                                    icon: 'error',
+                                                    confirmButtonColor: '#dc2626'
+                                                });
+                                            });
+                                    }
+                                });
+                            }
                         }
                     }
                 });

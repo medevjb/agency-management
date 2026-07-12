@@ -16,6 +16,7 @@ class StoreProfileRequest extends FormRequest
         return [
             'profile_name' => 'required|string|max:255',
             'username' => 'required|string|max:100|unique:profiles,username|regex:/^[a-zA-Z0-9_]+$/',
+            'platform' => 'required|in:fiverr,upwork',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'bio' => 'nullable|string|max:1000',
             'skills' => 'nullable|string|max:500',

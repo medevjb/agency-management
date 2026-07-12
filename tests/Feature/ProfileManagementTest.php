@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Middleware\VerifyCsrfToken;
 use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -46,10 +47,11 @@ class ProfileManagementTest extends TestCase
         $user->givePermissionTo('create profile');
 
         $response = $this->actingAs($user)
-            ->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class)
+            ->withoutMiddleware(VerifyCsrfToken::class)
             ->post(route('freelance-profiles.store'), [
                 'profile_name' => 'John Doe',
                 'username' => 'johndoe',
+                'platform' => 'fiverr',
                 'bio' => 'Experienced developer',
                 'skills' => 'PHP,Laravel',
                 'hourly_rate' => '$50/hr',
@@ -71,10 +73,11 @@ class ProfileManagementTest extends TestCase
         $profile = Profile::factory()->withUser($user->id)->create();
 
         $response = $this->actingAs($user)
-            ->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class)
+            ->withoutMiddleware(VerifyCsrfToken::class)
             ->patch(route('freelance-profiles.update', $profile), [
                 'profile_name' => 'Updated Name',
                 'username' => $profile->username,
+                'platform' => $profile->platform,
                 'bio' => 'Updated bio',
             ]);
 
@@ -93,7 +96,7 @@ class ProfileManagementTest extends TestCase
         $profile = Profile::factory()->withUser($user->id)->create();
 
         $response = $this->actingAs($user)
-            ->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class)
+            ->withoutMiddleware(VerifyCsrfToken::class)
             ->delete(route('freelance-profiles.destroy', $profile));
 
         $response->assertRedirect(route('freelance-profiles.index'));
@@ -110,7 +113,7 @@ class ProfileManagementTest extends TestCase
         Profile::factory()->create(['username' => 'taken']);
 
         $response = $this->actingAs($user)
-            ->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class)
+            ->withoutMiddleware(VerifyCsrfToken::class)
             ->post(route('freelance-profiles.store'), [
                 'profile_name' => 'Test User',
                 'username' => 'taken',

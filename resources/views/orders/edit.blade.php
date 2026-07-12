@@ -113,7 +113,7 @@
                     <!-- Amount Section -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Order Amount ($) <span class="text-gray-400 font-normal">— Fiverr price</span>
+                            Order Amount ($) <span class="text-gray-400 font-normal" id="amountLabel">— select a profile</span>
                         </label>
                         <input type="number" name="value" id="orderAmount" step="0.01" min="0"
                                value="{{ old('value', $order->value) }}"
@@ -136,21 +136,21 @@
                                 <div class="flex items-center justify-between text-sm">
                                     <span class="text-gray-600 flex items-center gap-1.5">
                                         <span class="w-2.5 h-2.5 rounded-full bg-red-400 inline-block"></span>
-                                        Fiverr Fee (20%)
+                                        <span id="feeLabel">Platform Fee</span>
                                     </span>
                                     <span class="font-semibold text-red-500" id="splitFee">-$0.00</span>
                                 </div>
                                 <div class="border-t border-gray-200 pt-2 flex items-center justify-between text-sm">
                                     <span class="text-gray-900 font-semibold flex items-center gap-1.5">
                                         <span class="w-2.5 h-2.5 rounded-full bg-green-500 inline-block"></span>
-                                        Net Value (80%)
+                                        <span id="netLabel">Net Value</span>
                                     </span>
                                     <span class="font-bold text-green-600 text-base" id="splitNet">$0.00</span>
                                 </div>
                                 <!-- Progress bar -->
                                 <div class="flex h-2 rounded-full overflow-hidden bg-gray-200 mt-1">
-                                    <div class="bg-green-500 transition-all duration-300" style="width: 80%"></div>
-                                    <div class="bg-red-400 transition-all duration-300" style="width: 20%"></div>
+                                    <div id="progressNet" class="bg-green-500 transition-all duration-300" style="width: 80%"></div>
+                                    <div id="progressFee" class="bg-red-400 transition-all duration-300" style="width: 20%"></div>
                                 </div>
                             </div>
                         </div>
@@ -190,32 +190,24 @@
                 <!-- Row 5: Team & Tech Stack -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Team
-                        </label>
-                        <select name="team_id"
-                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white text-sm">
-                            <option value="">Select team</option>
-                            @foreach($teams as $team)
-                                <option value="{{ $team->id }}" {{ $order->team_id === $team->id ? 'selected' : '' }}>{{ $team->name }}</option>
-                            @endforeach
-                        </select>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Team</label>
+                        <x-ajax-select name="team_id"
+                                       :url="route('search.teams')"
+                                       :value="$order->team_id"
+                                       :label="$order->team?->name"
+                                       placeholder="Search teams..." />
                         @error('team_id')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Tech Stack
-                        </label>
-                        <select name="tech_stack_id"
-                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white text-sm">
-                            <option value="">Select tech stack</option>
-                            @foreach($techStacks as $stack)
-                                <option value="{{ $stack->id }}" {{ $order->tech_stack_id === $stack->id ? 'selected' : '' }}>{{ $stack->name }}</option>
-                            @endforeach
-                        </select>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tech Stack</label>
+                        <x-ajax-select name="tech_stack_id"
+                                       :url="route('search.tech-stacks')"
+                                       :value="$order->tech_stack_id"
+                                       :label="$order->techStack?->name"
+                                       placeholder="Search tech stacks..." />
                         @error('tech_stack_id')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
@@ -224,16 +216,17 @@
 
                 <!-- Row 6: Freelance Profile -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Freelance Profile
-                    </label>
-                    <select name="freelance_profile_id"
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white text-sm">
-                        <option value="">Select freelance profile</option>
-                        @foreach($profiles as $profile)
-                            <option value="{{ $profile->id }}" {{ $order->freelance_profile_id === $profile->id ? 'selected' : '' }}>{{ $profile->username }}</option>
-                        @endforeach
-                    </select>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Freelance Profile</label>
+                    @php
+                        $profileLabel = $order->freelanceProfile
+                            ? $order->freelanceProfile->username . ' (' . ucfirst($order->freelanceProfile->platform) . ')'
+                            : null;
+                    @endphp
+                    <x-ajax-select name="freelance_profile_id"
+                                   :url="route('search.profiles')"
+                                   :value="$order->freelance_profile_id"
+                                   :label="$profileLabel"
+                                   placeholder="Search profiles..." />
                     @error('freelance_profile_id')
                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                     @enderror
@@ -534,17 +527,53 @@
             const splitAmount = document.getElementById('splitAmount');
             const splitFee = document.getElementById('splitFee');
             const splitNet = document.getElementById('splitNet');
+            const feeLabel = document.getElementById('feeLabel');
+            const netLabel = document.getElementById('netLabel');
+            const amountLabel = document.getElementById('amountLabel');
+            const progressNet = document.getElementById('progressNet');
+            const progressFee = document.getElementById('progressFee');
+            const platformFees = {fiverr: 0.20, upwork: 0.10};
+            const platformNames = {fiverr: 'Fiverr', upwork: 'Upwork'};
+
+            function getProfileLabelInput() {
+                const hidden = document.querySelector('[data-ajax-select] input[name="freelance_profile_id"]');
+                if (!hidden) return null;
+                const uid = hidden.closest('[data-ajax-select]').dataset.uid;
+                return document.getElementById(uid + '_s');
+            }
+
+            function getSelectedPlatform() {
+                const labelInput = getProfileLabelInput();
+                if (!labelInput || !labelInput.value) return 'fiverr';
+                const match = labelInput.value.match(/\((\w+)\)\s*$/);
+                return match ? match[1].toLowerCase() : 'fiverr';
+            }
+
+            function updatePlatformLabels() {
+                const platform = getSelectedPlatform();
+                const feeRate = platformFees[platform] ?? 0.20;
+                const netRate = 1 - feeRate;
+                const name = platformNames[platform] ?? 'Platform';
+                amountLabel.textContent = '— ' + name + ' price';
+                feeLabel.textContent = name + ' Fee (' + Math.round(feeRate * 100) + '%)';
+                netLabel.textContent = 'Net Value (' + Math.round(netRate * 100) + '%)';
+            }
 
             function calculateSplit() {
                 const amount = parseFloat(orderAmountInput.value) || 0;
                 if (amount > 0) {
-                    const fee = amount * 0.20;
-                    const net = amount * 0.80;
+                    const platform = getSelectedPlatform();
+                    const feeRate = platformFees[platform] ?? 0.20;
+                    const netRate = 1 - feeRate;
+                    const fee = amount * feeRate;
+                    const net = amount * netRate;
 
                     splitAmount.textContent = '$' + amount.toFixed(2);
                     splitFee.textContent = '-$' + fee.toFixed(2);
                     splitNet.textContent = '$' + net.toFixed(2);
                     actualRevenueInput.value = net.toFixed(2);
+                    progressNet.style.width = Math.round(netRate * 100) + '%';
+                    progressFee.style.width = Math.round(feeRate * 100) + '%';
 
                     splitContainer.classList.remove('hidden');
                 } else {
@@ -553,7 +582,16 @@
                 }
             }
 
+            // Listen for profile selection changes via the change event dispatched by x-ajax-select
+            document.addEventListener('change', function(e) {
+                if (e.target.name === 'freelance_profile_id') {
+                    updatePlatformLabels();
+                    calculateSplit();
+                }
+            });
+
             orderAmountInput.addEventListener('input', calculateSplit);
+            updatePlatformLabels();
             calculateSplit();
 
             const statusSelect = document.getElementById('status');

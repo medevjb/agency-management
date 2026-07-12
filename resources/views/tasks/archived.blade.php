@@ -212,7 +212,7 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <i class="fas fa-user text-slate-400"></i>
-                            <span>{{ $task->assignedTo?->name ?? 'Unassigned' }}</span>
+                            <span>{{ $task->assignedTo?->name ?? 'Myself' }}</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <i class="fas fa-calendar text-slate-400"></i>
@@ -281,7 +281,7 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <i class="fas fa-user text-slate-400"></i>
-                            <span id="archiveModalAssignee">Unassigned</span>
+                            <span id="archiveModalAssignee">Myself</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <i class="fas fa-calendar text-slate-400"></i>
@@ -437,7 +437,7 @@
         document.getElementById('archiveModalArchivedAt').textContent = `Archived ${taskData.archived_at || 'date unavailable'}`;
         document.getElementById('archiveModalDescription').textContent = taskData.description || 'No description provided.';
         document.getElementById('archiveModalProject').textContent = taskData.project || 'No project';
-        document.getElementById('archiveModalAssignee').textContent = taskData.assignee || 'Unassigned';
+        document.getElementById('archiveModalAssignee').textContent = taskData.assignee || 'Myself';
         document.getElementById('archiveModalDueDate').textContent = taskData.due_date || 'No due date';
         document.getElementById('archiveModalCompletedAt').textContent = taskData.completed_at || 'Not completed';
         document.getElementById('archiveRestoreStatus').value = 'pending';

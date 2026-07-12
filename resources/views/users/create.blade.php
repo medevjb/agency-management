@@ -325,25 +325,13 @@
                                         <i class="fas fa-users mr-2 text-indigo-500 text-sm"></i>
                                         Assign to Team
                                     </label>
-                                    <div class="relative">
-                                        <select id="team_id" name="team_id"
-                                                class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm appearance-none transition-all duration-200 text-base">
-                                            <option value="">Select a team (optional)</option>
-                                            @foreach($teams as $team)
-                                                <option value="{{ $team->id }}" {{ old('team_id') == $team->id ? 'selected' : '' }}>
-                                                    {{ $team->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                            <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
-                                        </div>
-                                    </div>
+                                    <x-ajax-select name="team_id"
+                                                   :url="route('search.teams')"
+                                                   placeholder="Search teams..." />
                                     <p class="mt-1 text-xs text-gray-500">Assign user to a team for better collaboration</p>
                                     @error('team_id')
                                         <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
-                                            <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
-                                            {{ $message }}
+                                            <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>{{ $message }}
                                         </p>
                                     @enderror
                                 </div>
@@ -353,25 +341,13 @@
                                         <i class="fas fa-code mr-2 text-indigo-500 text-sm"></i>
                                         Assign to Tech Stack
                                     </label>
-                                    <div class="relative">
-                                        <select id="tech_stack_id" name="tech_stack_id"
-                                                class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm appearance-none transition-all duration-200 text-base">
-                                            <option value="">Select a tech stack (optional)</option>
-                                            @foreach($techStacks as $techStack)
-                                                <option value="{{ $techStack->id }}" {{ old('tech_stack_id') == $techStack->id ? 'selected' : '' }}>
-                                                    {{ $techStack->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                            <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
-                                        </div>
-                                    </div>
+                                    <x-ajax-select name="tech_stack_id"
+                                                   :url="route('search.tech-stacks')"
+                                                   placeholder="Search tech stacks..." />
                                     <p class="mt-1 text-xs text-gray-500">Define the user's primary technology stack</p>
                                     @error('tech_stack_id')
                                         <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
-                                            <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
-                                            {{ $message }}
+                                            <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>{{ $message }}
                                         </p>
                                     @enderror
                                 </div>

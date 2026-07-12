@@ -40,13 +40,6 @@ class FreelanceProfileController extends Controller
         return view('freelance-profiles.index', compact('profiles'));
     }
 
-    public function create()
-    {
-        $this->authorize('create', Profile::class);
-
-        return view('freelance-profiles.create');
-    }
-
     public function store(StoreProfileRequest $request)
     {
         $this->authorize('create', Profile::class);

@@ -170,7 +170,7 @@
                 <div>
                     <p class="text-sm font-medium text-gray-500 mb-1">Workload</p>
                     <p class="text-3xl font-bold text-gray-900">{{ number_format($stats['workload']) }}</p>
-                    <p class="text-xs text-blue-600 mt-2"><i class="fas fa-spinner mr-1"></i>Active orders</p>
+                    <p class="text-xs text-blue-600 mt-2"><i class="fas fa-dollar-sign mr-1"></i>${{ number_format($stats['workloadValue'], 0) }} running value</p>
                 </div>
                 <div class="gradient-icon w-14 h-14 rounded-2xl flex items-center justify-center" style="--icon-from: #3b82f6; --icon-to: #60a5fa;">
                     <i class="fas fa-spinner text-white text-xl"></i>
@@ -178,13 +178,13 @@
             </div>
         </div>
 
-        <!-- Total Revenue -->
+        <!-- Delivered Revenue -->
         <div class="stat-card bg-white rounded-2xl shadow-md p-6 border border-gray-100">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-500 mb-1">Total Revenue</p>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Delivered Revenue</p>
                     <p class="text-3xl font-bold text-gray-900">${{ number_format($stats['revenue'], 0) }}</p>
-                    <p class="text-xs text-purple-600 mt-2"><i class="fas fa-dollar-sign mr-1"></i>From delivered</p>
+                    <p class="text-xs text-purple-600 mt-2"><i class="fas fa-check-circle mr-1"></i>{{ $stats['delivered'] }} orders this month</p>
                 </div>
                 <div class="gradient-icon w-14 h-14 rounded-2xl flex items-center justify-center" style="--icon-from: #8b5cf6; --icon-to: #a78bfa;">
                     <i class="fas fa-chart-line text-white text-xl"></i>
@@ -281,8 +281,10 @@
                                             @if($order->actual_revenue && $order->actual_revenue > 0)
                                                 <span><i class="fas fa-dollar-sign mr-1"></i>{{ number_format($order->actual_revenue) }}</span>
                                             @endif
-                                            @if($order->end_date)
-                                                <span><i class="far fa-calendar mr-1"></i>{{ $order->end_date->format('M d') }}</span>
+                                            @if($order->delivered_at)
+                                                <span><i class="fas fa-check-circle mr-1 text-green-500"></i>{{ $order->delivered_at->format('M d') }}</span>
+                                            @elseif($order->end_date)
+                                                <span><i class="far fa-calendar mr-1"></i>Due {{ $order->end_date->format('M d') }}</span>
                                             @endif
                                         </div>
                                     </div>

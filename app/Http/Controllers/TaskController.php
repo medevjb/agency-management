@@ -11,6 +11,8 @@ use App\Models\User;
 use App\Notifications\TaskUpdatedNotification;
 use App\Services\EmailService;
 use App\Services\TaskAssignmentService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -117,21 +119,33 @@ class TaskController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create(): View
+    public function create(): RedirectResponse
     {
-        $this->authorize('create', Task::class);
+        return redirect()->route('tasks.index');
+    }
 
-        $user = auth()->user();
-        $orders = Order::all();
-        $users = TaskAssignmentService::getAssignableUsers($user);
+    /**
+     * Search orders for AJAX order picker.
+     */
+    public function searchOrders(Request $request): JsonResponse
+    {
+        $query = Order::query()->select(['id', 'name', 'status']);
 
-        return view('tasks.create', compact('orders', 'users'));
+        if ($request->filled('q')) {
+            $query->where('name', 'like', '%'.$request->q.'%');
+        } else {
+            $query->latest();
+        }
+
+        $orders = $query->take(10)->get();
+
+        return response()->json($orders);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreTaskRequest $request): \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+    public function store(StoreTaskRequest $request): RedirectResponse|JsonResponse
     {
         $this->authorize('create', Task::class);
 
@@ -186,7 +200,7 @@ class TaskController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Task $task): View|\Illuminate\Http\JsonResponse
+    public function show(Task $task): View|JsonResponse
     {
         $this->authorize('view', $task);
 
@@ -205,30 +219,25 @@ class TaskController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Task $task): View|\Illuminate\Http\JsonResponse
+    public function edit(Task $task): RedirectResponse|JsonResponse
     {
         $this->authorize('update', $task);
 
-        $user = auth()->user();
-        $orders = Order::all();
-        $users = TaskAssignmentService::getAssignableUsers($user);
-
-        // Return JSON for AJAX requests (modal)
-        if (request()->expectsJson()) {
-            return response()->json([
-                'task' => $task,
-                'orders' => $orders,
-                'users' => $users,
-            ]);
+        if (! request()->expectsJson()) {
+            return redirect()->route('tasks.index');
         }
 
-        return view('tasks.edit', compact('task', 'orders', 'users'));
+        $task->load('order');
+
+        return response()->json([
+            'task' => $task,
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateTaskRequest $request, Task $task): \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+    public function update(UpdateTaskRequest $request, Task $task): RedirectResponse|JsonResponse
     {
         $this->authorize('update', $task);
 
@@ -279,7 +288,7 @@ class TaskController extends Controller
     /**
      * Update task status.
      */
-    public function updateStatus(Request $request, Task $task): \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+    public function updateStatus(Request $request, Task $task): RedirectResponse|JsonResponse
     {
         $this->authorize('updateStatus', $task);
 
@@ -336,7 +345,7 @@ class TaskController extends Controller
     /**
      * Bulk update tasks.
      */
-    public function bulkUpdate(Request $request): \Illuminate\Http\JsonResponse
+    public function bulkUpdate(Request $request): JsonResponse
     {
         $request->validate([
             'task_ids' => 'required|array',
@@ -364,7 +373,7 @@ class TaskController extends Controller
     /**
      * Archive the specified task.
      */
-    public function archive(Request $request, Task $task): \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+    public function archive(Request $request, Task $task): RedirectResponse|JsonResponse
     {
         $this->authorize('update', $task);
 
@@ -388,7 +397,7 @@ class TaskController extends Controller
     /**
      * Unarchive the specified task.
      */
-    public function unarchive(Request $request, Task $task): \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+    public function unarchive(Request $request, Task $task): RedirectResponse|JsonResponse
     {
         $this->authorize('update', $task);
 
@@ -471,7 +480,7 @@ class TaskController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Task $task): \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+    public function destroy(Task $task): RedirectResponse|JsonResponse
     {
         $this->authorize('delete', $task);
 
@@ -493,7 +502,7 @@ class TaskController extends Controller
     /**
      * Get assignable users for the current user.
      */
-    public function getAssignableUsers(Request $request): \Illuminate\Http\JsonResponse
+    public function getAssignableUsers(Request $request): JsonResponse
     {
         $user = auth()->user();
         $users = TaskAssignmentService::getAssignableUsers($user);

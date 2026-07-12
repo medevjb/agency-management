@@ -14,6 +14,7 @@ class Profile extends Model
         'user_id',
         'profile_name',
         'username',
+        'platform',
         'avatar',
         'bio',
         'skills',
@@ -33,6 +34,14 @@ class Profile extends Model
             'rating' => 'integer',
             'total_jobs' => 'integer',
         ];
+    }
+
+    public function getPlatformFeeRateAttribute(): float
+    {
+        return match ($this->platform) {
+            'upwork' => 0.10,
+            default => 0.20,
+        };
     }
 
     public function user()

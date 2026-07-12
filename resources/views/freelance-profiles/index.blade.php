@@ -264,6 +264,32 @@
                     </div>
                 </div>
 
+                <!-- Platform -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">
+                        <i class="fas fa-globe mr-2 text-purple-600"></i>
+                        Platform <span class="text-red-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="relative cursor-pointer">
+                            <input type="radio" name="platform" value="fiverr" checked class="peer sr-only">
+                            <div class="p-3 border-2 border-gray-200 rounded-xl text-center peer-checked:border-green-500 peer-checked:bg-green-50 transition-all hover:border-green-300">
+                                <i class="fas fa-tag text-xl text-green-600 mb-1"></i>
+                                <p class="text-sm font-semibold text-gray-900">Fiverr</p>
+                                <p class="text-[11px] text-gray-500">20% fee</p>
+                            </div>
+                        </label>
+                        <label class="relative cursor-pointer">
+                            <input type="radio" name="platform" value="upwork" class="peer sr-only">
+                            <div class="p-3 border-2 border-gray-200 rounded-xl text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all hover:border-blue-300">
+                                <i class="fas fa-briefcase text-xl text-blue-600 mb-1"></i>
+                                <p class="text-sm font-semibold text-gray-900">Upwork</p>
+                                <p class="text-[11px] text-gray-500">10% fee</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
                 <!-- Avatar with Preview -->
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">
@@ -433,6 +459,11 @@ async function editProfile(id) {
         profileNameInput.value = profile.profile_name;
         usernameInput.value = profile.username;
 
+        const platformRadio = profileForm.querySelector(`input[name="platform"][value="${profile.platform || 'fiverr'}"]`);
+        if (platformRadio) {
+            platformRadio.checked = true;
+        }
+
         existingAvatar = profile.avatar;
         if (profile.avatar) {
             avatarPreview.src = '/storage/' + profile.avatar;
@@ -531,6 +562,7 @@ async function submitForm(event) {
     const formData = new FormData();
     formData.append('profile_name', profileNameInput.value);
     formData.append('username', usernameInput.value);
+    formData.append('platform', profileForm.querySelector('input[name="platform"]:checked')?.value || 'fiverr');
     formData.append('bio', '');
 
     if (avatarInput.files[0]) {
@@ -652,6 +684,12 @@ function resetForm() {
     avatarPreviewContainer.classList.add('hidden');
     existingAvatar = null;
     isEditing = false;
+}
+
+// Auto-open the create modal when arriving via the "Add Profile" link (?create=1)
+if (new URLSearchParams(window.location.search).has('create')) {
+    openCreateModal();
+    window.history.replaceState({}, '', '{{ route('freelance-profiles.index') }}');
 }
 </script>
 @endsection

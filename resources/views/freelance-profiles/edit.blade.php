@@ -177,6 +177,35 @@
                             <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
+
+                    <!-- Platform -->
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">
+                            <i class="fas fa-globe mr-2 text-indigo-600"></i>
+                            Platform <span class="text-red-500">*</span>
+                        </label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <label class="relative cursor-pointer">
+                                <input type="radio" name="platform" value="fiverr" {{ old('platform', $profile->platform) === 'fiverr' ? 'checked' : '' }} class="peer sr-only">
+                                <div class="p-4 border-2 border-gray-200 rounded-xl text-center peer-checked:border-green-500 peer-checked:bg-green-50 transition-all hover:border-green-300">
+                                    <i class="fas fa-tag text-2xl text-green-600 mb-2"></i>
+                                    <p class="font-semibold text-gray-900">Fiverr</p>
+                                    <p class="text-xs text-gray-500">20% platform fee</p>
+                                </div>
+                            </label>
+                            <label class="relative cursor-pointer">
+                                <input type="radio" name="platform" value="upwork" {{ old('platform', $profile->platform) === 'upwork' ? 'checked' : '' }} class="peer sr-only">
+                                <div class="p-4 border-2 border-gray-200 rounded-xl text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all hover:border-blue-300">
+                                    <i class="fas fa-briefcase text-2xl text-blue-600 mb-2"></i>
+                                    <p class="font-semibold text-gray-900">Upwork</p>
+                                    <p class="text-xs text-gray-500">10% platform fee</p>
+                                </div>
+                            </label>
+                        </div>
+                        @error('platform')
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
             </div>
 

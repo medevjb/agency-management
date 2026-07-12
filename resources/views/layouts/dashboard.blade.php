@@ -553,9 +553,12 @@
     <aside id="mobileSidebar" class="hidden fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-indigo-600 to-indigo-800 text-white lg:hidden">
         <div class="flex flex-col h-full">
             <div class="flex items-center justify-between h-16 px-4 border-b border-indigo-700">
-                <div class="flex items-center">
-                    <img src="{{ asset('image/stv.png') }}" alt="Logo" class="h-8 w-auto mr-2">
-                    <h1 class="text-xl font-bold">{{ config('app.name', 'Dashboard') }}</h1>
+                <div class="flex items-center gap-2">
+                    @php $mobileSiteName = \App\Models\Setting::get('site_name', config('app.name', 'PMT')); @endphp
+                    <x-site-logo
+                        img-class="h-8 w-auto max-w-[120px] object-contain"
+                        badge-class="h-8 w-8 text-sm" />
+                    <h1 class="text-xl font-bold">{{ $mobileSiteName }}</h1>
                 </div>
                 <button id="closeMobileSidebar" class="text-white hover:text-gray-300">
                     <i class="fas fa-times"></i>
@@ -895,5 +898,123 @@
     </script>
 
     @stack('scripts')
+
+    {{-- Global AJAX Select Component --}}
+    <script>
+    (function () {
+        const statusColors = {
+            'nra':         'bg-gray-100 text-gray-600',
+            'pending':     'bg-yellow-100 text-yellow-700',
+            'in-progress': 'bg-blue-100 text-blue-700',
+            'delivered':   'bg-green-100 text-green-700',
+            'on-hold':     'bg-orange-100 text-orange-700',
+            'cancelled':   'bg-red-100 text-red-600',
+        };
+
+        function badgeClass(val) {
+            return statusColors[val] || 'bg-purple-100 text-purple-700';
+        }
+
+        function initAjaxSelect(wrapper) {
+            if (wrapper._asi) return;
+            wrapper._asi = true;
+
+            const url      = wrapper.dataset.url;
+            const badgeKey = wrapper.dataset.badge || '';
+            const uid      = wrapper.dataset.uid;
+            const search   = document.getElementById(uid + '_s');
+            const hidden   = document.getElementById(uid + '_h');
+            const dropdown = document.getElementById(uid + '_d');
+            const clear    = document.getElementById(uid + '_c');
+
+            let cached = null;
+            let timer  = null;
+
+            function renderOptions(items) {
+                if (!items.length) {
+                    dropdown.innerHTML = '<div class="px-4 py-3 text-sm text-gray-400">No results found</div>';
+                } else {
+                    dropdown.innerHTML = items.map(item => {
+                        const label    = String(item.name || item.label || '');
+                        const badgeVal = badgeKey ? (item[badgeKey] || '') : '';
+                        return `<button type="button"
+                                        data-id="${item.id}"
+                                        data-label="${label.replace(/"/g, '&quot;')}"
+                                        class="asi-opt w-full text-left px-4 py-2.5 hover:bg-indigo-50 text-sm border-b border-gray-100 last:border-0 flex items-center justify-between gap-2 transition-colors">
+                                    <span class="truncate">${label}</span>
+                                    ${badgeVal ? `<span class="flex-shrink-0 text-xs font-medium px-1.5 py-0.5 rounded ${badgeClass(badgeVal)}">${badgeVal}</span>` : ''}
+                                </button>`;
+                    }).join('');
+
+                    dropdown.querySelectorAll('.asi-opt').forEach(btn => {
+                        btn.addEventListener('click', () => pick(btn.dataset.id, btn.dataset.label));
+                    });
+                }
+                dropdown.classList.remove('hidden');
+            }
+
+            function pick(id, label) {
+                hidden.value = id;
+                search.value = label;
+                search.classList.add('border-indigo-400', 'bg-indigo-50');
+                clear.classList.remove('hidden');
+                dropdown.classList.add('hidden');
+                hidden.dispatchEvent(new Event('change', {bubbles: true}));
+            }
+
+            function reset() {
+                hidden.value = '';
+                search.value = '';
+                search.classList.remove('border-indigo-400', 'bg-indigo-50');
+                clear.classList.add('hidden');
+                dropdown.classList.add('hidden');
+                hidden.dispatchEvent(new Event('change', {bubbles: true}));
+            }
+
+            function fetchItems(q) {
+                const endpoint = q ? `${url}?q=${encodeURIComponent(q)}` : url;
+                fetch(endpoint)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (!q) cached = data;
+                        renderOptions(data);
+                    });
+            }
+
+            search.addEventListener('focus', () => {
+                if (search.value) return;
+                if (cached) renderOptions(cached);
+                else fetchItems('');
+            });
+
+            search.addEventListener('input', () => {
+                const q = search.value.trim();
+                clearTimeout(timer);
+                if (!q) {
+                    if (cached) renderOptions(cached);
+                    else fetchItems('');
+                    return;
+                }
+                timer = setTimeout(() => fetchItems(q), 300);
+            });
+
+            clear.addEventListener('click', reset);
+
+            document.addEventListener('click', e => {
+                if (!wrapper.contains(e.target)) dropdown.classList.add('hidden');
+            });
+        }
+
+        function initAll() {
+            document.querySelectorAll('[data-ajax-select]').forEach(initAjaxSelect);
+        }
+
+        document.addEventListener('DOMContentLoaded', initAll);
+
+        // Support dynamic modals — re-init whenever new nodes appear
+        const observer = new MutationObserver(() => initAll());
+        observer.observe(document.body, { childList: true, subtree: true });
+    })();
+    </script>
 </body>
 </html>

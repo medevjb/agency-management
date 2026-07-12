@@ -4,7 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Mail\OrderAssignmentNotification;
 use App\Models\Order;
+use App\Models\OrderStatus;
 use App\Models\OrderStatusHistory;
+use App\Models\Profile;
+use App\Models\Team;
+use App\Models\TechStack;
+use App\Models\User;
 use App\Notifications\OrderStatusNotification;
 use App\Services\EmailService;
 use Carbon\Carbon;
@@ -32,7 +37,7 @@ class OrderController extends Controller
 
         // Parse the selected month only if provided
         if ($selectedMonth) {
-            $monthDate = \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth);
+            $monthDate = Carbon::createFromFormat('Y-m', $selectedMonth);
             $startDate = $monthDate->startOfMonth()->format('Y-m-d');
             $endDate = $monthDate->endOfMonth()->format('Y-m-d');
         }
@@ -44,26 +49,26 @@ class OrderController extends Controller
             $availableMonths->put($date->format('Y-m'), $date->format('F Y'));
         }
 
-        $statuses = \App\Models\OrderStatus::orderBy('sort_order')->get();
+        $statuses = OrderStatus::orderBy('sort_order')->get();
 
         // Scope filter options based on role
         if ($user->hasRole(['team-leader', 'stack-leader'])) {
-            $teams = \App\Models\Team::where('id', $user->team_id)->get();
-            $techStacks = \App\Models\TechStack::where('team_id', $user->team_id)->get();
-            $profiles = \App\Models\Profile::active()->get();
+            $teams = Team::where('id', $user->team_id)->get();
+            $techStacks = TechStack::where('team_id', $user->team_id)->get();
+            $profiles = Profile::active()->get();
         } else {
-            $teams = \App\Models\Team::all();
-            $techStacks = \App\Models\TechStack::all();
-            $profiles = \App\Models\Profile::active()->get();
+            $teams = Team::all();
+            $techStacks = TechStack::all();
+            $profiles = Profile::active()->get();
         }
 
         // Filter users for assignment modal based on role
         if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
-            $users = \App\Models\User::all();
+            $users = User::all();
         } elseif ($user->hasRole('team-leader')) {
-            $users = \App\Models\User::where('team_id', $user->team_id)->get();
+            $users = User::where('team_id', $user->team_id)->get();
         } else {
-            $users = \App\Models\User::where('team_id', $user->team_id)->get();
+            $users = User::where('team_id', $user->team_id)->get();
         }
 
         return view('orders.index', compact('teams', 'statuses', 'techStacks', 'profiles', 'users', 'selectedMonth', 'availableMonths', 'startDate', 'endDate'));
@@ -84,12 +89,35 @@ class OrderController extends Controller
         // Team members see all orders (with badge for assigned ones)
         // Admin, OM, PM see all orders
 
-        // Filter by month (only in created_at)
-        if ($request->filled('month') && $request->month !== '') {
-            $monthName = Carbon::parse($request->month)->format('F Y');
+        // Filter by month with carry-forward logic.
+        // An order belongs to month M if it started on/before end of M
+        // AND was not finished before M began.
+        $finishedStatuses = ['delivered', 'completed'];
 
-            $query->whereMonth('start_date', Carbon::parse($request->month)->month);
+        if ($request->filled('month') && $request->month !== '') {
+            $monthDate = Carbon::parse($request->month);
+            $monthStart = $monthDate->copy()->startOfMonth();
+            $monthEnd = $monthDate->copy()->endOfMonth();
+        } else {
+            $monthStart = now()->copy()->startOfMonth();
+            $monthEnd = now()->copy()->endOfMonth();
         }
+
+        $query->where(function ($q) use ($monthStart, $monthEnd, $finishedStatuses) {
+            $q->where('start_date', '<=', $monthEnd)
+                ->where(function ($inner) use ($monthStart, $finishedStatuses) {
+                    // Active orders (not finished or cancelled)
+                    $inner->whereNotIn('status', array_merge($finishedStatuses, ['cancelled']))
+                        // OR finished during or after this month
+                        ->orWhere(function ($done) use ($monthStart, $finishedStatuses) {
+                            $done->whereIn('status', $finishedStatuses)
+                                ->where(function ($dt) use ($monthStart) {
+                                    $dt->whereNull('delivered_at')
+                                        ->orWhere('delivered_at', '>=', $monthStart);
+                                });
+                        });
+                });
+        });
 
         // Custom search field or DataTables search
         $searchTerm = $request->input('search') ?? $request->input('search.value');
@@ -202,7 +230,7 @@ class OrderController extends Controller
         $search = $request->get('q', '');
         $teamId = $request->get('team_id');
 
-        $query = \App\Models\User::query();
+        $query = User::query();
 
         if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             if ($teamId) {
@@ -247,20 +275,21 @@ class OrderController extends Controller
         $user = auth()->user();
 
         if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
-            $teams = \App\Models\Team::all();
-            $techStacks = \App\Models\TechStack::all();
-            $users = \App\Models\User::all();
+            $teams = Team::all();
+            $techStacks = TechStack::all();
+            $users = User::all();
         } else {
-            $teams = \App\Models\Team::where('id', $user->team_id)->get();
-            $techStacks = \App\Models\TechStack::where('team_id', $user->team_id)->get();
-            $users = \App\Models\User::where('team_id', $user->team_id)->get();
+            $teams = Team::where('id', $user->team_id)->get();
+            $techStacks = TechStack::where('team_id', $user->team_id)->get();
+            $users = User::where('team_id', $user->team_id)->get();
         }
 
-        $statuses = \App\Models\OrderStatus::orderBy('sort_order')->get();
+        $statuses = OrderStatus::orderBy('sort_order')->get();
         $isTeamLeader = $user->hasRole('team-leader');
-        $profiles = \App\Models\Profile::active()->get();
+        $profiles = Profile::active()->get();
+        $profilePlatforms = $profiles->pluck('platform', 'id');
 
-        return view('orders.create', compact('teams', 'techStacks', 'statuses', 'users', 'profiles', 'isTeamLeader'));
+        return view('orders.create', compact('teams', 'techStacks', 'statuses', 'users', 'profiles', 'isTeamLeader', 'profilePlatforms'));
     }
 
     public function store(Request $request)
@@ -322,7 +351,7 @@ class OrderController extends Controller
 
             // Send notifications to assigned users
             foreach ($validated['users'] as $userId) {
-                $assignedUser = \App\Models\User::find($userId);
+                $assignedUser = User::find($userId);
                 if ($assignedUser) {
                     EmailService::sendTo($assignedUser->email, new OrderAssignmentNotification($order, $assignedUser, false));
                 }
@@ -362,20 +391,21 @@ class OrderController extends Controller
         $user = auth()->user();
 
         if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
-            $teams = \App\Models\Team::all();
-            $techStacks = \App\Models\TechStack::all();
-            $users = \App\Models\User::all();
+            $teams = Team::all();
+            $techStacks = TechStack::all();
+            $users = User::all();
         } else {
-            $teams = \App\Models\Team::where('id', $user->team_id)->get();
-            $techStacks = \App\Models\TechStack::where('team_id', $user->team_id)->get();
-            $users = \App\Models\User::where('team_id', $user->team_id)->get();
+            $teams = Team::where('id', $user->team_id)->get();
+            $techStacks = TechStack::where('team_id', $user->team_id)->get();
+            $users = User::where('team_id', $user->team_id)->get();
         }
 
-        $statuses = \App\Models\OrderStatus::orderBy('sort_order')->get();
-        $profiles = \App\Models\Profile::active()->get();
+        $statuses = OrderStatus::orderBy('sort_order')->get();
+        $profiles = Profile::active()->get();
+        $profilePlatforms = $profiles->pluck('platform', 'id');
         $order->load('users');
 
-        return view('orders.edit', compact('order', 'teams', 'techStacks', 'statuses', 'users', 'profiles'));
+        return view('orders.edit', compact('order', 'teams', 'techStacks', 'statuses', 'users', 'profiles', 'profilePlatforms'));
     }
 
     public function update(Request $request, Order $order)
@@ -511,6 +541,10 @@ class OrderController extends Controller
 
         $order->delete();
 
+        if (request()->expectsJson()) {
+            return response()->json(['message' => 'Order deleted successfully.']);
+        }
+
         return redirect()->route('orders.index')
             ->with('success', 'Order deleted successfully.');
     }
@@ -524,6 +558,7 @@ class OrderController extends Controller
             'priority' => 'nullable|in:low,medium,high',
             'delivered_at' => 'nullable|date',
             'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
             'special_status' => 'nullable|in:selected_for_delivery,continue_for_next,stuck_order',
             'last_update_date' => 'nullable|date',
         ]);
@@ -561,7 +596,7 @@ class OrderController extends Controller
 
         // Send notifications to newly assigned users
         foreach ($validated['users'] as $userId) {
-            $assignedUser = \App\Models\User::find($userId);
+            $assignedUser = User::find($userId);
             if ($assignedUser) {
                 EmailService::sendTo($assignedUser->email, new OrderAssignmentNotification($order, $assignedUser, false));
             }
@@ -592,7 +627,7 @@ class OrderController extends Controller
 
         $user = auth()->user();
 
-        $query = \App\Models\User::query();
+        $query = User::query();
 
         if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             // Can see all users

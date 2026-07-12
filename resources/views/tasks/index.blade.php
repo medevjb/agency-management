@@ -177,11 +177,108 @@
             padding: 0.5rem;
             border-radius: 8px;
             transition: all 0.2s;
+            min-height: 200px;
+            position: relative;
         }
 
         .drop-zone.drag-over {
             background: rgba(99, 102, 241, 0.1);
             border: 2px dashed #6366f1;
+        }
+
+        /* Clickable area for adding tasks */
+        .drop-zone::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1;
+        }
+
+        .drop-zone:hover::after {
+            background: linear-gradient(to top, rgba(99, 102, 241, 0.05) 0%, transparent 100%);
+        }
+
+        .drop-zone .add-task-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            margin-top: auto;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 2;
+            opacity: 0.7;
+        }
+
+        .drop-zone .add-task-placeholder:hover {
+            opacity: 1;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .column-pending .add-task-placeholder {
+            border-color: #fcd34d;
+            color: #d97706;
+            background: rgba(254, 243, 199, 0.6);
+        }
+
+        .column-pending .add-task-placeholder:hover {
+            border-color: #f59e0b;
+            color: #b45309;
+            background: rgba(254, 243, 199, 0.9);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+        }
+
+        .column-in-progress .add-task-placeholder {
+            border-color: #93c5fd;
+            color: #2563eb;
+            background: rgba(219, 234, 254, 0.6);
+        }
+
+        .column-in-progress .add-task-placeholder:hover {
+            border-color: #3b82f6;
+            color: #1d4ed8;
+            background: rgba(219, 234, 254, 0.9);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+
+        .column-on-hold .add-task-placeholder {
+            border-color: #d8b4fe;
+            color: #9333ea;
+            background: rgba(243, 232, 255, 0.6);
+        }
+
+        .column-on-hold .add-task-placeholder:hover {
+            border-color: #a855f7;
+            color: #7c3aed;
+            background: rgba(243, 232, 255, 0.9);
+            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2);
+        }
+
+        .column-completed .add-task-placeholder {
+            border-color: #86efac;
+            color: #16a34a;
+            background: rgba(220, 252, 231, 0.6);
+        }
+
+        .column-completed .add-task-placeholder:hover {
+            border-color: #22c55e;
+            color: #15803d;
+            background: rgba(220, 252, 231, 0.9);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
         }
 
         /* Custom SweetAlert Styles */
@@ -880,7 +977,7 @@
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Assigned To</label>
                                 <select id="taskAssignedTo" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none">
-                                    <option value="">Unassigned</option>
+                                    <option value="" selected>Assign to yourself</option>
                                     @foreach($users as $user)
                                         <option value="{{ $user->id }}">{{ $user->name }}</option>
                                     @endforeach
@@ -890,12 +987,21 @@
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Order</label>
-                            <select id="taskOrder" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none">
-                                <option value="">No Order</option>
-                                @foreach($orders as $order)
-                                    <option value="{{ $order->id }}">{{ $order->name }} (ID: {{ $order->id }})</option>
-                                @endforeach
-                            </select>
+                            <div class="relative">
+                                <input type="hidden" id="taskOrderId">
+                                <input type="text"
+                                       id="taskOrderSearch"
+                                       placeholder="Search orders..."
+                                       autocomplete="off"
+                                       class="w-full px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none">
+                                <button type="button" id="clearTaskOrder"
+                                        class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                                    <i class="fas fa-times text-xs"></i>
+                                </button>
+                                <div id="taskOrderDropdown"
+                                     class="hidden absolute z-[60] w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg max-h-52 overflow-y-auto">
+                                </div>
+                            </div>
                             <p class="text-red-500 text-xs mt-1 hidden" id="taskOrderError"></p>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
@@ -1077,7 +1183,12 @@ function renderTasks() {
         const dropZone = document.querySelector(`.drop-zone[data-status="${status}"]`);
         const tasks = tasksData.filter(task => task.status === status);
 
-        dropZone.innerHTML = tasks.map(task => renderTaskCard(task)).join('');
+        // Render tasks and add the placeholder
+        dropZone.innerHTML = tasks.map(task => renderTaskCard(task)).join('') +
+            `<div class="add-task-placeholder" onclick="openCreateModalForStatus('${status}')">
+                <i class="fas fa-plus"></i>
+                <span>Add Task</span>
+            </div>`;
         document.getElementById(`count-${status}`).textContent = tasks.length;
     });
 }
@@ -1189,16 +1300,16 @@ function renderTaskCard(task) {
                         <!-- Footer Row: Assignee & Time -->
                         <div class="flex items-center justify-between pt-2.5 border-t border-gray-100">
                             <!-- Left: Assignee -->
-                            ${task.assigned_to ? `
+                            ${task.assigned_to && task.assignedTo ? `
                                 <div class="flex items-center gap-2">
                                     <div class="relative">
                                         <div class="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-xs shadow-md">
-                                            ${task.assignedTo ? task.assignedTo.name.charAt(0) : '?'}
+                                            ${task.assignedTo.name.charAt(0)}
                                         </div>
                                         <div class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
                                     </div>
                                     <div class="flex flex-col">
-                                        <span class="text-xs font-semibold text-gray-800 leading-tight">${task.assignedTo ? task.assignedTo.name : 'Unknown'}</span>
+                                        <span class="text-xs font-semibold text-gray-800 leading-tight">${task.assignedTo.name}</span>
                                         <span class="text-[10px] text-gray-400">Assigned</span>
                                     </div>
                                 </div>
@@ -1207,7 +1318,7 @@ function renderTaskCard(task) {
                                     <div class="w-7 h-7 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center">
                                         <svg class="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
                                     </div>
-                                    <span class="text-xs text-gray-400">Unassigned</span>
+                                    <span class="text-xs text-gray-400">Myself</span>
                                 </div>
                             `}
 
@@ -1555,6 +1666,16 @@ function openCreateModal() {
     document.getElementById('modalTitle').textContent = 'Create New Task';
     document.getElementById('taskForm').reset();
     document.getElementById('taskId').value = '';
+    resetOrderPicker();
+    document.getElementById('taskModal').classList.remove('hidden');
+}
+
+function openCreateModalForStatus(status) {
+    document.getElementById('modalTitle').textContent = 'Create New Task';
+    document.getElementById('taskForm').reset();
+    document.getElementById('taskId').value = '';
+    document.getElementById('taskStatus').value = status;
+    resetOrderPicker();
     document.getElementById('taskModal').classList.remove('hidden');
 }
 
@@ -1570,9 +1691,14 @@ function openEditModal(taskId) {
             document.getElementById('taskPriority').value = task.priority;
             document.getElementById('taskDueDate').value = task.due_date || '';
             document.getElementById('taskAssignedTo').value = task.assigned_to || '';
-            document.getElementById('taskOrder').value = task.order_id || '';
             document.getElementById('taskEstimatedHours').value = task.estimated_hours || '';
             document.getElementById('taskActualHours').value = task.actual_hours || '';
+
+            if (task.order) {
+                setOrderPicker(task.order.id, task.order.name, task.order.status);
+            } else {
+                resetOrderPicker();
+            }
 
             document.getElementById('taskModal').classList.remove('hidden');
         })
@@ -1639,7 +1765,7 @@ function openViewModal(taskId) {
                     <span class="text-sm font-medium text-gray-700">${task.assigned_to.name}</span>
                 `;
             } else {
-                document.getElementById('viewModalAssignedTo').innerHTML = '<span class="text-sm text-gray-400">Unassigned</span>';
+                document.getElementById('viewModalAssignedTo').innerHTML = '<span class="text-sm text-gray-400">Myself</span>';
             }
 
             if (task.estimated_hours || task.actual_hours) {
@@ -1707,18 +1833,25 @@ document.getElementById('taskForm').addEventListener('submit', async function(e)
     clearValidationErrors();
 
     const taskId = document.getElementById('taskId').value;
+    const assignedToValue = document.getElementById('taskAssignedTo').value;
+
     const data = {
         title: document.getElementById('taskTitle').value,
         description: document.getElementById('taskDescription').value,
         status: document.getElementById('taskStatus').value,
         priority: document.getElementById('taskPriority').value,
         due_date: document.getElementById('taskDueDate').value,
-        assigned_to: document.getElementById('taskAssignedTo').value,
-        order_id: document.getElementById('taskOrder').value,
+        order_id: document.getElementById('taskOrderId').value,
         estimated_hours: document.getElementById('taskEstimatedHours').value,
         actual_hours: document.getElementById('taskActualHours').value,
         _method: taskId ? 'PATCH' : 'POST'
     };
+
+    // Only include assigned_to if a value is selected
+    // Otherwise, let the backend default to the current user
+    if (assignedToValue && assignedToValue !== '') {
+        data.assigned_to = assignedToValue;
+    }
 
     const url = taskId ? `/tasks/${taskId}` : '/tasks';
 
@@ -1783,7 +1916,7 @@ function showValidationErrors(errors) {
         'due_date': { input: 'taskDueDate', error: 'taskDueDateError' },
         'estimated_hours': { input: 'taskEstimatedHours', error: 'taskEstimatedHoursError' },
         'actual_hours': { input: 'taskActualHours', error: 'taskActualHoursError' },
-        'order_id': { input: 'taskOrder', error: 'taskOrderError' },
+        'order_id': { input: 'taskOrderSearch', error: 'taskOrderError' },
         'assigned_to': { input: 'taskAssignedTo', error: 'taskAssignedToError' }
     };
 
@@ -1972,5 +2105,103 @@ async function confirmBulkAction() {
     hideAlert();
     await executeBulkAction('delete');
 }
+
+// ── Modal Order AJAX Picker ──────────────────────────────────────────────────
+(function () {
+    const searchInput  = document.getElementById('taskOrderSearch');
+    const hiddenInput  = document.getElementById('taskOrderId');
+    const dropdown     = document.getElementById('taskOrderDropdown');
+    const clearBtn     = document.getElementById('clearTaskOrder');
+    const searchUrl    = '{{ route('tasks.orders-search') }}';
+
+    let debounceTimer  = null;
+    let cachedLatest   = null;
+
+    const statusClass = {
+        'nra':         'bg-gray-100 text-gray-600',
+        'pending':     'bg-yellow-100 text-yellow-700',
+        'in-progress': 'bg-blue-100 text-blue-700',
+        'delivered':   'bg-green-100 text-green-700',
+        'on-hold':     'bg-orange-100 text-orange-700',
+        'cancelled':   'bg-red-100 text-red-600',
+    };
+
+    function getStatusClass(status) {
+        return statusClass[status] || 'bg-gray-100 text-gray-600';
+    }
+
+    function renderOptions(orders) {
+        if (!orders.length) {
+            dropdown.innerHTML = '<div class="px-4 py-3 text-sm text-gray-400">No orders found</div>';
+        } else {
+            dropdown.innerHTML = orders.map(order => `
+                <button type="button"
+                        data-id="${order.id}"
+                        data-name="${order.name.replace(/"/g, '&quot;')}"
+                        data-status="${order.status || ''}"
+                        class="order-picker-option w-full text-left px-4 py-2.5 hover:bg-indigo-50 text-sm border-b border-gray-100 last:border-0 flex items-center justify-between gap-2 transition-colors">
+                    <span class="truncate">${order.name}</span>
+                    <span class="flex-shrink-0 text-xs font-medium px-1.5 py-0.5 rounded ${getStatusClass(order.status)}">${order.status || 'N/A'}</span>
+                </button>
+            `).join('');
+
+            dropdown.querySelectorAll('.order-picker-option').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    setOrderPicker(this.dataset.id, this.dataset.name, this.dataset.status);
+                });
+            });
+        }
+        dropdown.classList.remove('hidden');
+    }
+
+    function fetchAndRender(q) {
+        const url = q ? `${searchUrl}?q=${encodeURIComponent(q)}` : searchUrl;
+        fetch(url).then(r => r.json()).then(renderOptions);
+    }
+
+    searchInput.addEventListener('focus', function () {
+        if (cachedLatest) {
+            renderOptions(cachedLatest);
+        } else {
+            fetch(searchUrl)
+                .then(r => r.json())
+                .then(data => { cachedLatest = data; renderOptions(data); });
+        }
+    });
+
+    searchInput.addEventListener('input', function () {
+        const q = this.value.trim();
+        clearTimeout(debounceTimer);
+        if (!q) {
+            renderOptions(cachedLatest || []);
+            return;
+        }
+        debounceTimer = setTimeout(() => fetchAndRender(q), 300);
+    });
+
+    clearBtn.addEventListener('click', () => resetOrderPicker());
+
+    document.addEventListener('click', function (e) {
+        if (!searchInput.contains(e.target) && !dropdown.contains(e.target) && !clearBtn.contains(e.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+})();
+
+window.setOrderPicker = function (id, name, status) {
+    document.getElementById('taskOrderId').value = id;
+    document.getElementById('taskOrderSearch').value = name;
+    document.getElementById('taskOrderSearch').classList.add('border-indigo-400', 'bg-indigo-50');
+    document.getElementById('clearTaskOrder').classList.remove('hidden');
+    document.getElementById('taskOrderDropdown').classList.add('hidden');
+};
+
+window.resetOrderPicker = function () {
+    document.getElementById('taskOrderId').value = '';
+    document.getElementById('taskOrderSearch').value = '';
+    document.getElementById('taskOrderSearch').classList.remove('border-indigo-400', 'bg-indigo-50');
+    document.getElementById('clearTaskOrder').classList.add('hidden');
+    document.getElementById('taskOrderDropdown').classList.add('hidden');
+};
 </script>
 @endpush

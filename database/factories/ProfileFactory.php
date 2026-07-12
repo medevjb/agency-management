@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\Profile;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Profile>
+ * @extends Factory<Profile>
  */
 class ProfileFactory extends Factory
 {
@@ -28,6 +29,7 @@ class ProfileFactory extends Factory
             'user_id' => null,
             'profile_name' => fake()->name(),
             'username' => fake()->unique()->userName(),
+            'platform' => fake()->randomElement(['fiverr', 'upwork']),
             'avatar' => null,
             'bio' => fake()->paragraphs(2, true),
             'skills' => fake()->randomElement($skills),

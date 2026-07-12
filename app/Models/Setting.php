@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 class Setting extends Model
 {
@@ -41,9 +42,31 @@ class Setting extends Model
      */
     public static function get(string $key, $default = null)
     {
+        if (! static::tableExists()) {
+            return $default;
+        }
+
         $setting = static::where('key', $key)->first();
 
         return $setting ? $setting->getValue() : $default;
+    }
+
+    /**
+     * Whether the settings table exists yet (false on a fresh/unmigrated database).
+     */
+    protected static function tableExists(): bool
+    {
+        static $exists = null;
+
+        if ($exists === null) {
+            try {
+                $exists = Schema::hasTable('settings');
+            } catch (\Throwable $e) {
+                $exists = false;
+            }
+        }
+
+        return $exists;
     }
 
     /**
@@ -79,7 +102,9 @@ class Setting extends Model
      */
     public static function getProjectStatuses(): array
     {
-        $statuses = static::where('key', 'project_statuses')->first();
+        $statuses = static::tableExists()
+            ? static::where('key', 'project_statuses')->first()
+            : null;
 
         if (! $statuses) {
             // Return default statuses if none exist in database

@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
+use App\Models\Team;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,17 +17,12 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Admin, OM, PM get the full dashboard. Team leader gets redirected to orders dashboard (which has team progress).
-        // Stack leader and team member also go to orders dashboard.
         if (! $user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             return redirect()->route('orders.dashboard');
         }
 
-        // Get selected month from request (default to current month)
         $selectedMonth = $request->input('month', now()->format('Y-m'));
-
-        // Parse the selected month
-        $monthDate = \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth);
+        $monthDate = Carbon::createFromFormat('Y-m', $selectedMonth);
         $startDate = $monthDate->copy()->startOfMonth()->startOfDay();
         $endDate = $monthDate->copy()->endOfMonth()->endOfDay();
 
@@ -35,31 +33,52 @@ class DashboardController extends Controller
             $availableMonths->put($date->format('Y-m'), $date->format('F Y'));
         }
 
-        // Base query for the selected month
-        $baseQuery = \App\Models\Order::with(['team', 'techStack', 'creator'])
-            ->whereBetween('created_at', [$startDate, $endDate]);
+        // Finished statuses: 'delivered' auto-sets delivered_at; 'completed' is set via bulk action.
+        $finishedStatuses = ['delivered', 'completed'];
 
-        // Get all orders for statistics in selected month
-        $orders = (clone $baseQuery)->get();
+        // Carry-forward logic: an order is visible in month M if:
+        // - It started on or before the last day of M
+        // - AND it was not finished before M began
+        $carryForwardFilter = function ($q) use ($startDate, $endDate, $finishedStatuses) {
+            $q->where('start_date', '<=', $endDate)
+                ->where(function ($inner) use ($startDate, $finishedStatuses) {
+                    // Active (not delivered/completed/cancelled)
+                    $inner->whereNotIn('status', array_merge($finishedStatuses, ['cancelled']))
+                        // OR finished in or after this month started
+                        ->orWhere(function ($done) use ($startDate, $finishedStatuses) {
+                            $done->whereIn('status', $finishedStatuses)
+                                ->where(function ($dt) use ($startDate) {
+                                    $dt->whereNull('delivered_at')
+                                        ->orWhere('delivered_at', '>=', $startDate);
+                                });
+                        });
+                });
+        };
 
-        // Delivered (completed) orders - these generate revenue
-        $deliveredOrders = $orders->where('status', 'completed');
+        $orders = Order::with(['team', 'techStack', 'creator'])
+            ->where($carryForwardFilter)
+            ->get();
 
-        // Workload (active) orders - these are in progress but not delivered yet
+        // Delivered this month = delivered/completed AND delivered_at within selected month
+        $deliveredOrders = Order::whereIn('status', $finishedStatuses)
+            ->whereNotNull('delivered_at')
+            ->whereBetween('delivered_at', [$startDate, $endDate])
+            ->get();
+
+        // Workload = active (pending/in-progress/on-hold) orders in this month
         $workloadOrders = $orders->whereIn('status', ['pending', 'in-progress', 'on-hold']);
 
-        // Calculate statistics for selected month
         $stats = [
             'total' => $orders->count(),
             'delivered' => $deliveredOrders->count(),
             'workload' => $workloadOrders->count(),
-            'revenue' => $deliveredOrders->whereNotNull('actual_revenue')->sum('actual_revenue'),
+            'revenue' => $deliveredOrders->sum('actual_revenue'),
+            'workloadValue' => $workloadOrders->sum('value'),
             'pending' => $orders->where('status', 'pending')->count(),
             'inProgress' => $orders->where('status', 'in-progress')->count(),
             'onHold' => $orders->where('status', 'on-hold')->count(),
         ];
 
-        // Orders by status - focusing on delivered vs workload
         $ordersByStatus = [
             'delivered' => $stats['delivered'],
             'pending' => $stats['pending'],
@@ -67,18 +86,18 @@ class DashboardController extends Controller
             'on-hold' => $stats['onHold'],
         ];
 
-        // Daily delivered revenue for the selected month
+        // Daily revenue by delivered_at within selected month
         $daysInMonth = $monthDate->daysInMonth;
 
-        $dailyRevenue = \App\Models\Order::selectRaw('DAY(created_at) as day, SUM(CASE WHEN actual_revenue IS NOT NULL THEN actual_revenue ELSE 0 END) as revenue')
-            ->where('status', 'completed')
-            ->whereBetween('created_at', [$startDate, $endDate])
+        $dailyRevenue = Order::selectRaw('DAY(delivered_at) as day, SUM(COALESCE(actual_revenue, 0)) as revenue')
+            ->whereIn('status', $finishedStatuses)
+            ->whereNotNull('delivered_at')
+            ->whereBetween('delivered_at', [$startDate, $endDate])
             ->groupBy('day')
             ->orderBy('day')
             ->pluck('revenue', 'day')
             ->toArray();
 
-        // Fill in missing days with 0
         for ($i = 1; $i <= $daysInMonth; $i++) {
             if (! isset($dailyRevenue[$i])) {
                 $dailyRevenue[$i] = 0;
@@ -86,15 +105,14 @@ class DashboardController extends Controller
         }
         ksort($dailyRevenue);
 
-        // Daily orders count for the selected month (for workload chart)
-        $dailyOrders = \App\Models\Order::selectRaw('DAY(created_at) as day, COUNT(*) as count')
-            ->whereBetween('created_at', [$startDate, $endDate])
+        // Daily orders by start_date within selected month
+        $dailyOrders = Order::selectRaw('DAY(start_date) as day, COUNT(*) as count')
+            ->whereBetween('start_date', [$startDate, $endDate])
             ->groupBy('day')
             ->orderBy('day')
             ->pluck('count', 'day')
             ->toArray();
 
-        // Fill in missing days with 0
         for ($i = 1; $i <= $daysInMonth; $i++) {
             if (! isset($dailyOrders[$i])) {
                 $dailyOrders[$i] = 0;
@@ -102,12 +120,13 @@ class DashboardController extends Controller
         }
         ksort($dailyOrders);
 
-        // Revenue by team (only delivered orders in selected month)
-        $revenueByTeam = \App\Models\Order::with('team')
+        // Revenue by team (delivered in selected month)
+        $revenueByTeam = Order::with('team')
             ->whereNotNull('team_id')
             ->whereHas('team')
-            ->where('status', 'completed')
-            ->whereBetween('created_at', [$startDate, $endDate])
+            ->whereIn('status', $finishedStatuses)
+            ->whereNotNull('delivered_at')
+            ->whereBetween('delivered_at', [$startDate, $endDate])
             ->get()
             ->groupBy('team_id')
             ->map(function ($group) {
@@ -120,41 +139,40 @@ class DashboardController extends Controller
             ->sortByDesc('revenue')
             ->values();
 
-        // Recent delivered orders in selected month
-        $recentDelivered = \App\Models\Order::with(['team', 'techStack', 'creator'])
-            ->where('status', 'completed')
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->latest()
+        // Recent delivered orders (delivered this month)
+        $recentDelivered = Order::with(['team', 'techStack', 'creator'])
+            ->whereIn('status', $finishedStatuses)
+            ->whereNotNull('delivered_at')
+            ->whereBetween('delivered_at', [$startDate, $endDate])
+            ->orderBy('delivered_at', 'desc')
             ->take(6)
             ->get();
 
-        // Recent workload orders in selected month
-        $recentWorkload = \App\Models\Order::with(['team', 'techStack', 'creator'])
+        // Recent workload orders (active in this month, carry-forward)
+        $recentWorkload = Order::with(['team', 'techStack', 'creator'])
+            ->where($carryForwardFilter)
             ->whereIn('status', ['pending', 'in-progress', 'on-hold'])
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->latest()
+            ->orderBy('start_date', 'desc')
             ->take(6)
             ->get();
 
-        // Orders by priority (only workload orders in selected month)
         $priorityStats = [
             'high' => $workloadOrders->where('priority', 'high')->count(),
             'medium' => $workloadOrders->where('priority', 'medium')->count(),
             'low' => $workloadOrders->where('priority', 'low')->count(),
         ];
 
-        // Teams with order counts for selected month
-        $teams = \App\Models\Team::withCount(['orders' => function ($query) use ($startDate, $endDate) {
-            $query->where('status', 'completed')
-                ->whereBetween('created_at', [$startDate, $endDate]);
+        $teams = Team::withCount(['orders' => function ($query) use ($startDate, $endDate) {
+            $query->whereIn('status', ['delivered', 'completed'])
+                ->whereNotNull('delivered_at')
+                ->whereBetween('delivered_at', [$startDate, $endDate]);
         }])
             ->having('orders_count', '>', 0)
             ->latest()
             ->take(4)
             ->get();
 
-        // Due soon (workload orders only - across all time, not filtered by month)
-        $dueSoon = \App\Models\Order::with(['team'])
+        $dueSoon = Order::with(['team'])
             ->whereIn('status', ['pending', 'in-progress', 'on-hold'])
             ->whereNotNull('end_date')
             ->where('end_date', '>=', now())
@@ -163,20 +181,18 @@ class DashboardController extends Controller
             ->take(4)
             ->get();
 
-        // Additional analytics for selected month
         $analytics = [
-            'totalValue' => $orders->whereNotNull('value')->sum('value') ?? 0,
-            'actualRevenue' => $deliveredOrders->whereNotNull('actual_revenue')->sum('actual_revenue') ?? 0,
+            'totalValue' => $workloadOrders->whereNotNull('value')->sum('value') ?? 0,
+            'actualRevenue' => $stats['revenue'],
             'revenuePercent' => 0,
             'avgRevenuePerOrder' => 0,
-            'highPriorityCount' => $orders->where('priority', 'high')->count(),
-            'overdueCount' => $workloadOrders->where('end_date', '<', now())->count(),
+            'highPriorityCount' => $workloadOrders->where('priority', 'high')->count(),
+            'overdueCount' => $workloadOrders->filter(fn ($o) => $o->end_date && $o->end_date->lt(now()))->count(),
         ];
 
         if ($analytics['totalValue'] > 0) {
             $analytics['revenuePercent'] = ($analytics['actualRevenue'] / $analytics['totalValue']) * 100;
         }
-
         if ($stats['delivered'] > 0) {
             $analytics['avgRevenuePerOrder'] = $analytics['actualRevenue'] / $stats['delivered'];
         }
@@ -187,11 +203,17 @@ class DashboardController extends Controller
         $prevEndDate = $previousMonth->copy()->endOfMonth()->endOfDay();
 
         $previousStats = [
-            'revenue' => \App\Models\Order::where('status', 'completed')
-                ->whereBetween('created_at', [$prevStartDate, $prevEndDate])
+            'revenue' => Order::whereIn('status', ['delivered', 'completed'])
+                ->whereNotNull('delivered_at')
+                ->whereBetween('delivered_at', [$prevStartDate, $prevEndDate])
                 ->sum('actual_revenue') ?? 0,
-            'orders' => \App\Models\Order::whereBetween('created_at', [$prevStartDate, $prevEndDate])
-                ->count(),
+            'orders' => Order::where(function ($q) use ($prevStartDate, $prevEndDate) {
+                $q->where('start_date', '<=', $prevEndDate)
+                    ->where(function ($inner) use ($prevStartDate) {
+                        $inner->whereNull('delivered_at')
+                            ->orWhere('delivered_at', '>=', $prevStartDate);
+                    });
+            })->count(),
         ];
 
         $analytics['revenueChange'] = $previousStats['revenue'] > 0

@@ -55,13 +55,9 @@
                                     <label for="team_id" class="block text-sm font-semibold text-gray-700 mb-2">
                                         <i class="fas fa-users mr-2 text-indigo-500"></i>Team <span class="text-red-500">*</span>
                                     </label>
-                                    <select id="team_id" name="team_id" required
-                                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
-                                        <option value="">Select a team</option>
-                                        @foreach($teams as $team)
-                                            <option value="{{ $team->id }}">{{ $team->name }}</option>
-                                        @endforeach
-                                    </select>
+                                    <x-ajax-select name="team_id"
+                                                   url="{{ route('search.teams') }}"
+                                                   placeholder="Search team..." />
                                     @error('team_id')
                                         <p class="mt-2 text-sm text-red-600 flex items-center">
                                             <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
@@ -223,7 +219,7 @@
 
     // Get team ID
     const teamId = {{ auth()->user()->hasRole('team-leader') ? auth()->user()->team_id : 'null' }};
-    const teamSelect = document.getElementById('team_id');
+    const teamSelect = document.querySelector('input[name="team_id"]');
 
     // Fetch team members from server with search
     async function fetchMembers(search = '') {

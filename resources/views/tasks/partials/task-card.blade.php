@@ -129,7 +129,7 @@
                             <div class="w-7 h-7 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center">
                                 <svg class="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
                             </div>
-                            <span class="text-xs text-gray-400">Unassigned</span>
+                            <span class="text-xs text-gray-400">Myself</span>
                         </div>
                     @endif
 

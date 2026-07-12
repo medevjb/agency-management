@@ -162,11 +162,11 @@
                 </div>
             </div>
 
-            <!-- Total Revenue -->
+            <!-- Delivered Revenue -->
             <div class="stat-card bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-xl p-6 text-white">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-green-100 text-sm font-medium mb-1">Total Value</p>
+                        <p class="text-green-100 text-sm font-medium mb-1">Delivered Revenue</p>
                         <p class="text-4xl font-bold">${{ number_format($stats['totalRevenue'], 2) }}</p>
                     </div>
                     <div class="bg-white/20 p-4 rounded-2xl">
@@ -174,8 +174,8 @@
                     </div>
                 </div>
                 <div class="mt-4 flex items-center text-sm">
-                    <i class="fas fa-chart-line mr-2"></i>
-                    <span class="text-green-100">After 20% split</span>
+                    <i class="fas fa-check-circle mr-2"></i>
+                    <span class="text-green-100">{{ $stats['deliveredOrders'] }} orders delivered this month</span>
                 </div>
             </div>
 
@@ -198,20 +198,20 @@
                 </div>
             </div>
 
-            <!-- Average Revenue -->
+            <!-- Running Order Value -->
             <div class="stat-card bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl shadow-xl p-6 text-white">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-orange-100 text-sm font-medium mb-1">Avg Value</p>
-                        <p class="text-4xl font-bold">${{ number_format($stats['averageRevenue'], 2) }}</p>
+                        <p class="text-orange-100 text-sm font-medium mb-1">Running Value</p>
+                        <p class="text-4xl font-bold">${{ number_format($stats['workloadValue'], 2) }}</p>
                     </div>
                     <div class="bg-white/20 p-4 rounded-2xl">
                         <i class="fas fa-calculator text-3xl"></i>
                     </div>
                 </div>
                 <div class="mt-4 flex items-center text-sm">
-                    <i class="fas fa-receipt mr-2"></i>
-                    <span class="text-orange-100">Per order</span>
+                    <i class="fas fa-hourglass-half mr-2"></i>
+                    <span class="text-orange-100">Active orders pipeline value</span>
                 </div>
             </div>
         </div>
@@ -732,17 +732,25 @@ if ($diffInSeconds <= 0) {
                                         {{ $order->name }}
                                     </a>
                                     <p class="text-sm text-gray-500 mt-1">
-                                        <i class="fas fa-calendar mr-1"></i>{{ $order->created_at->format('M d Y') }}
-                                        <span class="mx-2">•</span>
-                                        <i
-                                            class="fas fa-dollar-sign mr-1"></i>${{ number_format($order->actual_revenue, 2) }}
+                                        @if(in_array($order->status, ['delivered', 'completed']) && $order->delivered_at)
+                                            <i class="fas fa-check-circle text-green-500 mr-1"></i>Delivered {{ $order->delivered_at->format('M d, Y') }}
+                                        @elseif($order->end_date)
+                                            <i class="fas fa-calendar-alt mr-1"></i>Deadline {{ $order->end_date->format('M d, Y') }}
+                                        @else
+                                            <i class="fas fa-calendar mr-1"></i>Started {{ $order->start_date?->format('M d, Y') ?? '—' }}
+                                        @endif
+                                        @if($order->actual_revenue > 0)
+                                            <span class="mx-2">•</span>
+                                            <i class="fas fa-dollar-sign mr-1"></i>${{ number_format($order->actual_revenue, 2) }}
+                                        @endif
                                     </p>
                                 </div>
                                 <span
                                     class="px-3 py-1 rounded-full text-xs font-semibold
-                                @if ($order->status === 'completed') bg-green-100 text-green-800
+                                @if(in_array($order->status, ['delivered', 'completed'])) bg-green-100 text-green-800
                                 @elseif($order->status === 'in-progress') bg-blue-100 text-blue-800
                                 @elseif($order->status === 'pending') bg-yellow-100 text-yellow-800
+                                @elseif($order->status === 'on-hold') bg-yellow-100 text-yellow-800
                                 @else bg-gray-100 text-gray-800 @endif">
                                     {{ ucfirst(str_replace('-', ' ', $order->status)) }}
                                 </span>
@@ -887,21 +895,19 @@ if ($diffInSeconds <= 0) {
                 new Chart(statusCtx.getContext('2d'), {
                     type: 'doughnut',
                     data: {
-                        labels: ['NRA', 'Pending', 'In Progress', 'Completed', 'On Hold', 'Cancelled'],
+                        labels: ['Delivered', 'Pending', 'In Progress', 'On Hold', 'Cancelled'],
                         datasets: [{
                             data: [
-                                ordersByStatus.nra || 0,
+                                ordersByStatus.delivered || 0,
                                 ordersByStatus.pending || 0,
                                 ordersByStatus['in-progress'] || 0,
-                                ordersByStatus.completed || 0,
                                 ordersByStatus['on-hold'] || 0,
                                 ordersByStatus.cancelled || 0
                             ],
                             backgroundColor: [
-                                '#9ca3af',
+                                '#34d399',
                                 '#fbbf24',
                                 '#60a5fa',
-                                '#34d399',
                                 '#fb923c',
                                 '#f87171'
                             ],
