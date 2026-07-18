@@ -167,7 +167,24 @@ class OrderController extends Controller
                 $query->orderBy($columns[$adjustedColumn], $orderDir);
             }
         } else {
-            $query->latest();
+            // Default ordering: overdue orders first, then due soon, then the
+            // rest by upcoming deadline, and finally delivered/completed/cancelled orders.
+            $finishedOrCancelled = array_merge($finishedStatuses, ['cancelled']);
+            $now = now();
+            $dueSoonThreshold = now()->addDays(4);
+
+            $query->orderByRaw(
+                'CASE
+                    WHEN status IN (?, ?, ?) THEN 3
+                    WHEN end_date IS NULL THEN 2
+                    WHEN end_date < ? THEN 0
+                    WHEN end_date <= ? THEN 1
+                    ELSE 2
+                END',
+                [...$finishedOrCancelled, $now, $dueSoonThreshold]
+            )
+                ->orderByRaw('end_date IS NULL')
+                ->orderBy('end_date', 'asc');
         }
 
         // Pagination
