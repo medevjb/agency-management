@@ -309,10 +309,545 @@
             font-size: 14px;
             font-weight: bold;
         }
+
+        /* ===== Dark Mode: DataTables chrome ===== */
+        /* DataTables renders its own controls outside Tailwind's reach, so
+           these need plain CSS overrides keyed off the `dark` class on <html>.
+           This build is DataTables 2 + the Bootstrap 5 integration (dt-length,
+           dt-search, dt-info, dt-paging / .page-link), not the classic 1.x
+           dataTables_* class names. */
+        .dark #ordersTable_wrapper {
+            color: #e5e7eb;
+        }
+
+        .dark #ordersTable_wrapper .dt-length select,
+        .dark #ordersTable_wrapper .dt-search input {
+            border-color: #374151;
+            color: #e5e7eb;
+            background-color: #1f2937;
+        }
+
+        .dark #ordersTable_wrapper .dt-length select:hover,
+        .dark #ordersTable_wrapper .dt-length select:focus,
+        .dark #ordersTable_wrapper .dt-search input:hover,
+        .dark #ordersTable_wrapper .dt-search input:focus {
+            border-color: #818cf8;
+        }
+
+        .dark #ordersTable_wrapper .dt-length label,
+        .dark #ordersTable_wrapper .dt-search label,
+        .dark #ordersTable_wrapper .dt-info {
+            color: #9ca3af;
+        }
+
+        .dark #ordersTable_wrapper .dt-paging {
+            background: transparent !important;
+        }
+
+        .dark #ordersTable_wrapper .dt-paging .page-link {
+            background-color: #1f2937;
+            border-color: #374151;
+            color: #e5e7eb;
+        }
+
+        .dark #ordersTable_wrapper .dt-paging .page-link:hover {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #f3f4f6;
+        }
+
+        .dark #ordersTable_wrapper .dt-paging .page-item.active .page-link {
+            background-color: #4f46e5;
+            border-color: #4f46e5;
+            color: #ffffff;
+        }
+
+        .dark #ordersTable_wrapper .dt-paging .page-item.disabled .page-link {
+            background-color: #111827;
+            border-color: #374151;
+            color: #4b5563;
+        }
+
+        .dark #ordersTable.dataTable {
+            color: #e5e7eb;
+            border-color: #374151;
+        }
+
+        .dark #ordersTable.dataTable tbody tr {
+            background-color: #111827;
+        }
+
+        .dark #ordersTable.dataTable tbody tr:hover {
+            background-color: #1f2937;
+        }
+
+        .dark #ordersTable.dataTable thead th {
+            color: #9ca3af;
+            border-bottom-color: #374151;
+        }
+
+        .dark #ordersTable.dataTable tbody td {
+            border-top-color: #1f2937;
+        }
+
+        .dark .inline-select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+        }
+
+        /* Progress ring: circular gauge with the percentage in the middle */
+        .progress-ring {
+            position: relative;
+            width: 2.375rem;
+            height: 2.375rem;
+            flex-shrink: 0;
+        }
+
+        .progress-ring svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring-track {
+            fill: none;
+            stroke: #e8edf5;
+            stroke-width: 3.5;
+        }
+
+        .dark .progress-ring-track {
+            stroke: #374151;
+        }
+
+        .progress-ring-value {
+            fill: none;
+            stroke-width: 3.5;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 300ms ease;
+        }
+
+        .progress-ring-label {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.625rem;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.02em;
+            color: #4b5563;
+        }
+
+        .dark .progress-ring-label {
+            color: #d1d5db;
+        }
+
+        .progress-ring-label.is-empty {
+            color: #9ca3af;
+        }
+
+        /* ---- Overdue accordion ----
+           Severity is carried by the number and the left rail, so the block can
+           be urgent without shouting in every cell. */
+        .overdue {
+            margin-bottom: 1.5rem;
+            border: 1px solid #fecaca;
+            border-radius: 1rem;
+            background-color: #ffffff;
+            overflow: hidden;
+            box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+        }
+
+        .dark .overdue {
+            background-color: #111827;
+            border-color: rgba(220, 38, 38, 0.3);
+            box-shadow: none;
+        }
+
+        .overdue-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            background-color: #fef2f2;
+            border-bottom: 1px solid #fecaca;
+            border-left: 4px solid #dc2626;
+        }
+
+        .dark .overdue-head {
+            background-color: rgba(220, 38, 38, 0.08);
+            border-bottom-color: rgba(220, 38, 38, 0.25);
+        }
+
+        .overdue-head-main {
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+            min-width: 0;
+        }
+
+        .overdue-count {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2.75rem;
+            height: 2.75rem;
+            padding: 0 0.5rem;
+            border-radius: 0.875rem;
+            background-color: #dc2626;
+            color: #ffffff;
+            font-size: 1.375rem;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.03em;
+        }
+
+        .overdue-title {
+            font-size: 1.0625rem;
+            font-weight: 800;
+            color: #111827;
+            letter-spacing: -0.01em;
+        }
+
+        .dark .overdue-title {
+            color: #f3f4f6;
+        }
+
+        .overdue-sub {
+            margin-top: 0.125rem;
+            font-size: 0.8125rem;
+            color: #b91c1c;
+        }
+
+        .dark .overdue-sub {
+            color: #fca5a5;
+        }
+
+        .overdue-collapse {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #b91c1c;
+            flex-shrink: 0;
+            transition: background-color 0.15s ease;
+        }
+
+        .overdue-collapse:hover {
+            background-color: rgba(220, 38, 38, 0.08);
+        }
+
+        .dark .overdue-collapse {
+            color: #fca5a5;
+        }
+
+        .overdue-body[hidden] {
+            display: none;
+        }
+
+        .overdue-item {
+            border-bottom: 1px solid #f3f4f6;
+            border-left: 4px solid transparent;
+        }
+
+        .dark .overdue-item {
+            border-bottom-color: #1f2937;
+        }
+
+        .overdue-item:last-child {
+            border-bottom: 0;
+        }
+
+        .overdue-item.sev-1 { border-left-color: #fb923c; }
+        .overdue-item.sev-2 { border-left-color: #ef4444; }
+        .overdue-item.sev-3 { border-left-color: #991b1b; }
+
+        .overdue-row {
+            display: grid;
+            grid-template-columns: 4rem minmax(0, 1fr) auto 7rem 1rem;
+            align-items: center;
+            gap: 1rem;
+            width: 100%;
+            padding: 0.75rem 1.25rem 0.75rem 1rem;
+            text-align: left;
+            transition: background-color 0.15s ease;
+        }
+
+        .overdue-row:hover {
+            background-color: #fef2f2;
+        }
+
+        .dark .overdue-row:hover {
+            background-color: rgba(220, 38, 38, 0.06);
+        }
+
+        .overdue-late {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.05;
+        }
+
+        .overdue-late-num {
+            font-size: 1.5rem;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.04em;
+        }
+
+        .sev-1 .overdue-late-num { color: #ea580c; }
+        .sev-2 .overdue-late-num { color: #dc2626; }
+        .sev-3 .overdue-late-num { color: #991b1b; }
+
+        .dark .sev-1 .overdue-late-num { color: #fb923c; }
+        .dark .sev-2 .overdue-late-num { color: #f87171; }
+        .dark .sev-3 .overdue-late-num { color: #ef4444; }
+
+        .overdue-late-unit {
+            margin-top: 0.125rem;
+            font-size: 0.625rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #9ca3af;
+        }
+
+        .overdue-name {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .overdue-client {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: #111827;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .dark .overdue-client {
+            color: #f3f4f6;
+        }
+
+        .overdue-meta {
+            margin-top: 0.125rem;
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+
+        .dark .overdue-meta {
+            color: #9ca3af;
+        }
+
+        .overdue-people {
+            display: flex;
+            align-items: center;
+        }
+
+        .overdue-avatar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.5rem;
+            height: 1.5rem;
+            margin-left: -0.375rem;
+            border-radius: 9999px;
+            border: 2px solid #ffffff;
+            background-color: #4f46e5;
+            color: #ffffff;
+            font-size: 0.625rem;
+            font-weight: 700;
+        }
+
+        .overdue-avatar:first-child {
+            margin-left: 0;
+        }
+
+        .dark .overdue-avatar {
+            border-color: #111827;
+        }
+
+        .overdue-avatar.is-rest {
+            background-color: #9ca3af;
+        }
+
+        .overdue-unassigned {
+            padding: 0.125rem 0.5rem;
+            border-radius: 9999px;
+            background-color: #fef3c7;
+            color: #92400e;
+            font-size: 0.6875rem;
+            font-weight: 700;
+        }
+
+        .dark .overdue-unassigned {
+            background-color: rgba(245, 158, 11, 0.15);
+            color: #fcd34d;
+        }
+
+        .overdue-progress {
+            position: relative;
+            height: 0.375rem;
+            border-radius: 9999px;
+            background-color: #e5e7eb;
+            overflow: hidden;
+        }
+
+        .dark .overdue-progress {
+            background-color: #374151;
+        }
+
+        .overdue-progress-fill {
+            position: absolute;
+            inset: 0 auto 0 0;
+            border-radius: 9999px;
+            background-color: #6366f1;
+        }
+
+        .overdue-chevron {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            transition: transform 0.2s ease;
+        }
+
+        .overdue-row[aria-expanded='true'] .overdue-chevron {
+            transform: rotate(180deg);
+        }
+
+        .overdue-detail {
+            padding: 0 1.25rem 1rem 5rem;
+            background-color: #fafafa;
+        }
+
+        .dark .overdue-detail {
+            background-color: rgba(31, 41, 55, 0.4);
+        }
+
+        .overdue-detail[hidden] {
+            display: none;
+        }
+
+        .overdue-facts {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.75rem 1.5rem;
+            padding-top: 0.75rem;
+        }
+
+        .overdue-facts .is-wide {
+            grid-column: 1 / -1;
+        }
+
+        .overdue-facts dt {
+            font-size: 0.625rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #9ca3af;
+        }
+
+        .overdue-facts dd {
+            margin-top: 0.125rem;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .dark .overdue-facts dd {
+            color: #e5e7eb;
+        }
+
+        .overdue-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .overdue-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.4375rem 0.875rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #374151;
+            transition: background-color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .overdue-btn:hover {
+            background-color: #f3f4f6;
+        }
+
+        .dark .overdue-btn {
+            border-color: #374151;
+            color: #d1d5db;
+        }
+
+        .dark .overdue-btn:hover {
+            background-color: #1f2937;
+        }
+
+        .overdue-btn.is-primary {
+            background-color: #dc2626;
+            border-color: #dc2626;
+            color: #ffffff;
+        }
+
+        .overdue-btn.is-primary:hover {
+            background-color: #b91c1c;
+        }
+
+        .overdue-more {
+            padding: 0.75rem 1.25rem;
+            border-top: 1px solid #f3f4f6;
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+
+        .dark .overdue-more {
+            border-top-color: #1f2937;
+            color: #9ca3af;
+        }
+
+        .overdue-row:focus-visible,
+        .overdue-collapse:focus-visible,
+        .overdue-btn:focus-visible {
+            outline: 2px solid #dc2626;
+            outline-offset: -2px;
+        }
+
+        @media (max-width: 900px) {
+            .overdue-row {
+                grid-template-columns: 3.5rem minmax(0, 1fr) 1rem;
+                gap: 0.75rem;
+            }
+
+            .overdue-people,
+            .overdue-progress {
+                display: none;
+            }
+
+            .overdue-detail {
+                padding-left: 1.25rem;
+            }
+
+            .overdue-facts {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
     </style>
 @endpush
 
 @section('content')
+@php $isSalesUser = auth()->user()->isSales(); @endphp
     <div class="px-4 sm:px-6 lg:px-8 py-8">
         @php
             $dueSoonOrders = \App\Models\Order::with(['team', 'users'])
@@ -335,7 +870,7 @@
                 ->whereNotNull('end_date')
                 ->where('end_date', '<', now())
                 ->orderBy('end_date')
-                ->take(6)
+                ->take(8)
                 ->get();
 
             $overdueCount = \App\Models\Order::whereNotIn('status', ['delivered', 'completed', 'cancelled'])
@@ -344,119 +879,133 @@
                 ->count();
         @endphp
 
-        <!-- Overdue Alert Section -->
+        <!-- Overdue: ranked accordion, worst first -->
         @if ($overdueOrders->count() > 0)
-            <div
-                class="mb-6 bg-gradient-to-r from-red-100 via-rose-50 to-pink-50 rounded-2xl shadow-lg border-2 border-red-400 overflow-hidden">
-                <div class="p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-3">
-                            <div class="relative">
-                                <div
-                                    class="w-12 h-12 rounded-xl bg-gradient-to-br from-red-700 to-rose-600 flex items-center justify-center shadow-lg animate-pulse">
-                                    <i class="fas fa-skull-crossbones text-white text-xl"></i>
-                                </div>
-                                <span
-                                    class="absolute -top-1 -right-1 w-6 h-6 bg-red-800 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-md">
-                                    {{ $overdueCount }}
-                                </span>
-                            </div>
-                            <div>
-                                <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                                    Overdue Orders
-                                    <span class="px-3 py-1 bg-red-700 text-white text-sm font-semibold rounded-full">
-                                        {{ $overdueOrders->count() }} Shown{{ $overdueCount > $overdueOrders->count() ? ' of ' . $overdueCount : '' }}
-                                    </span>
-                                </h2>
-                                <p class="text-sm text-gray-600 mt-1">
-                                    <i class="fas fa-exclamation-circle text-red-700 mr-1"></i>
-                                    {{ $overdueCount }} order{{ $overdueCount > 1 ? 's' : '' }} past their deadline — immediate action required
-                                </p>
-                            </div>
+            @php
+                $worstOverdue = (int) $overdueOrders->first()->end_date->diffInDays(now());
+                $unassignedOverdue = $overdueOrders->filter(fn ($order) => $order->users->isEmpty())->count();
+            @endphp
+
+            <section class="overdue" id="overduePanel" aria-labelledby="overdueHeading">
+                <header class="overdue-head">
+                    <div class="overdue-head-main">
+                        <span class="overdue-count" aria-hidden="true">{{ $overdueCount }}</span>
+                        <div>
+                            <h2 class="overdue-title" id="overdueHeading">
+                                {{ $overdueCount === 1 ? 'Order is overdue' : 'Orders are overdue' }}
+                            </h2>
+                            <p class="overdue-sub">
+                                Worst is {{ $worstOverdue >= 1 ? $worstOverdue . ' ' . \Illuminate\Support\Str::plural('day', $worstOverdue) : 'less than a day' }} past deadline@if ($unassignedOverdue > 0), and {{ $unassignedOverdue }} {{ $unassignedOverdue === 1 ? 'has' : 'have' }} nobody assigned@endif.
+                            </p>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        @foreach ($overdueOrders as $order)
+                    <button type="button" class="overdue-collapse" id="overdueCollapse"
+                            aria-expanded="true" aria-controls="overdueBody">
+                        <span data-collapse-label>Hide</span>
+                        <i class="fas fa-chevron-up"></i>
+                    </button>
+                </header>
+
+                <div class="overdue-body" id="overdueBody">
+                    <ul class="overdue-list">
+                        @foreach ($overdueOrders as $overdue)
                             @php
-                                $overdueDays = (int) $order->end_date->diffInDays(now());
-                                $overdueHours = (int) $order->end_date->diffInHours(now());
+                                $lateDays = (int) $overdue->end_date->diffInDays(now());
+                                $lateHours = (int) $overdue->end_date->diffInHours(now());
+                                $severity = $lateDays >= 7 ? 3 : ($lateDays >= 3 ? 2 : 1);
+                                $lateLabel = $lateDays >= 1 ? $lateDays : $lateHours;
+                                $lateUnit = $lateDays >= 1 ? \Illuminate\Support\Str::plural('day', $lateDays) : 'hrs';
+                                $overdueProgress = max(0, min(100, (int) ($overdue->progress ?? 0)));
                             @endphp
 
-                            <a href="{{ route('orders.show', $order->id) }}"
-                                class="group relative overflow-hidden rounded-xl bg-white shadow-md hover:shadow-xl transition-all duration-300 border-2 border-red-400 hover:border-red-600">
-                                <div class="absolute top-0 left-0 w-full h-1 bg-red-700"></div>
+                            <li class="overdue-item sev-{{ $severity }}">
+                                <button type="button" class="overdue-row" aria-expanded="false"
+                                        aria-controls="overdue-detail-{{ $overdue->id }}">
+                                    <span class="overdue-late">
+                                        <span class="overdue-late-num">{{ $lateLabel }}</span>
+                                        <span class="overdue-late-unit">{{ $lateUnit }} late</span>
+                                    </span>
 
-                                <div class="p-4">
-                                    <div class="flex items-start justify-between mb-3">
-                                        <div class="flex-1 min-w-0">
-                                            <h4
-                                                class="text-sm font-bold text-gray-900 truncate group-hover:text-red-700 transition-colors">
-                                                {{ $order->name }}
-                                            </h4>
-                                            @if ($order->team)
-                                                <p class="text-xs text-gray-500 mt-1">
-                                                    <i class="fas fa-users mr-1"></i>{{ $order->team->name }}
-                                                </p>
-                                            @endif
-                                        </div>
-                                        <div class="ml-3 flex-shrink-0">
-                                            <div
-                                                class="w-10 h-10 rounded-lg bg-gradient-to-br from-red-700 to-rose-700 flex items-center justify-center shadow-md animate-pulse">
-                                                <i class="fas fa-bomb text-white"></i>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <span class="overdue-name">
+                                        <span class="overdue-client">{{ $overdue->name }}</span>
+                                        <span class="overdue-meta">
+                                            {{ $overdue->team?->name ?? 'No team' }} · due {{ $overdue->end_date->format('M d') }}
+                                        </span>
+                                    </span>
 
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-2">
-                                            @if ($overdueDays >= 1)
-                                                <span
-                                                    class="px-2 py-1 bg-red-700 text-white text-xs font-bold rounded-lg">
-                                                    {{ $overdueDays }}d overdue
-                                                </span>
-                                            @else
-                                                <span
-                                                    class="px-2 py-1 bg-red-700 text-white text-xs font-bold rounded-lg">
-                                                    {{ $overdueHours }}h overdue
-                                                </span>
+                                    <span class="overdue-people">
+                                        @if ($overdue->users->count() > 0)
+                                            @foreach ($overdue->users->take(3) as $assignee)
+                                                <span class="overdue-avatar" title="{{ $assignee->name }}">{{ strtoupper(substr($assignee->name, 0, 1)) }}</span>
+                                            @endforeach
+                                            @if ($overdue->users->count() > 3)
+                                                <span class="overdue-avatar is-rest">+{{ $overdue->users->count() - 3 }}</span>
                                             @endif
-                                            <span
-                                                class="text-xs text-gray-500">Due {{ $order->end_date->format('M d') }}</span>
+                                        @else
+                                            <span class="overdue-unassigned">Unassigned</span>
+                                        @endif
+                                    </span>
+
+                                    <span class="overdue-progress" title="{{ $overdueProgress }}% complete">
+                                        <span class="overdue-progress-fill" style="width: {{ $overdueProgress }}%"></span>
+                                    </span>
+
+                                    <i class="fas fa-chevron-down overdue-chevron"></i>
+                                </button>
+
+                                <div class="overdue-detail" id="overdue-detail-{{ $overdue->id }}" hidden>
+                                    <dl class="overdue-facts">
+                                        <div>
+                                            <dt>Progress</dt>
+                                            <dd>{{ $overdueProgress }}% done</dd>
                                         </div>
-                                        <div class="flex items-center gap-1">
-                                            @if ($order->users->count() > 0)
-                                                <div class="flex -space-x-2">
-                                                    @foreach ($order->users->take(3) as $user)
-                                                        <div class="w-6 h-6 rounded-full bg-gradient-to-br from-red-400 to-rose-500 border-2 border-white flex items-center justify-center text-white text-xs font-bold"
-                                                            title="{{ $user->name }}">
-                                                            {{ strtoupper(substr($user->name, 0, 1)) }}
-                                                        </div>
-                                                    @endforeach
-                                                    @if ($order->users->count() > 3)
-                                                        <div
-                                                            class="w-6 h-6 rounded-full bg-gray-300 border-2 border-white flex items-center justify-center text-gray-600 text-xs font-bold">
-                                                            +{{ $order->users->count() - 3 }}
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                            @else
-                                                <span class="text-xs text-gray-400">Unassigned</span>
-                                            @endif
+                                        <div>
+                                            <dt>Status</dt>
+                                            <dd>{{ ucfirst(str_replace('-', ' ', $overdue->status)) }}</dd>
                                         </div>
+                                        <div>
+                                            <dt>Deadline</dt>
+                                            <dd>{{ $overdue->end_date->format('M d, Y') }}</dd>
+                                        </div>
+                                        <div>
+                                            <dt>Value</dt>
+                                            <dd>${{ number_format($overdue->actual_revenue ?? 0, 2) }}</dd>
+                                        </div>
+                                        <div class="is-wide">
+                                            <dt>Assigned to</dt>
+                                            <dd>{{ $overdue->users->pluck('name')->join(', ') ?: 'Nobody yet — assign someone to unblock this.' }}</dd>
+                                        </div>
+                                    </dl>
+
+                                    <div class="overdue-actions">
+                                        <a href="{{ route('orders.show', $overdue->id) }}" class="overdue-btn is-primary">
+                                            Open order
+                                        </a>
+                                        @can('update', $overdue)
+                                            <a href="{{ route('orders.edit', $overdue->id) }}" class="overdue-btn">
+                                                Change deadline
+                                            </a>
+                                        @endcan
                                     </div>
                                 </div>
-                            </a>
+                            </li>
                         @endforeach
-                    </div>
+                    </ul>
+
+                    @if ($overdueCount > $overdueOrders->count())
+                        <p class="overdue-more">
+                            {{ $overdueCount - $overdueOrders->count() }} more overdue {{ \Illuminate\Support\Str::plural('order', $overdueCount - $overdueOrders->count()) }} — the table below is sorted worst first.
+                        </p>
+                    @endif
                 </div>
-            </div>
+            </section>
         @endif
 
         <!-- Due Soon Alert Section -->
         @if ($dueSoonOrders->count() > 0)
             <div
-                class="mb-6 bg-gradient-to-r from-red-50 via-orange-50 to-amber-50 rounded-2xl shadow-lg border-2 border-red-200 overflow-hidden">
+                class="mb-6 bg-gradient-to-r from-red-50 via-orange-50 to-amber-50 dark:from-red-950/30 dark:via-orange-950/20 dark:to-amber-950/10 rounded-2xl shadow-lg border-2 border-red-200 dark:border-orange-900 overflow-hidden">
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-3">
@@ -471,20 +1020,20 @@
                                 </span>
                             </div>
                             <div>
-                                <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                                     Due Soon Alert
                                     <span class="px-3 py-1 bg-red-600 text-white text-sm font-semibold rounded-full">
                                         {{ $dueSoonOrders->count() }} Order{{ $dueSoonOrders->count() > 1 ? 's' : '' }}
                                     </span>
                                 </h2>
-                                <p class="text-sm text-gray-600 mt-1">
-                                    <i class="fas fa-clock text-red-500 mr-1"></i>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                    <i class="fas fa-clock text-red-500 dark:text-red-400 mr-1"></i>
                                     Orders ending within 4 days - {{ $urgentCount }} urgent (within 4 days)
                                 </p>
                             </div>
                         </div>
                         <button onclick="this.parentElement.parentElement.nextElementSibling.classList.toggle('hidden')"
-                            class="text-gray-400 hover:text-gray-600 transition-colors p-2">
+                            class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-2">
                             <i class="fas fa-chevron-down text-lg"></i>
                         </button>
                     </div>
@@ -519,7 +1068,7 @@
                             @endphp
 
                             <a href="{{ route('orders.show', $order->id) }}"
-                                class="group relative overflow-hidden rounded-xl bg-white shadow-md hover:shadow-xl transition-all duration-300 border-2 {{ $isUrgent ? 'border-red-300 hover:border-red-500' : 'border-orange-200 hover:border-orange-400' }}">
+                                class="group relative overflow-hidden rounded-xl bg-white dark:bg-gray-900 shadow-md hover:shadow-xl transition-all duration-300 border-2 {{ $isUrgent ? 'border-red-300 dark:border-red-800 hover:border-red-500 dark:hover:border-red-600' : 'border-orange-200 dark:border-orange-900 hover:border-orange-400 dark:hover:border-orange-700' }}">
                                 <!-- Progress Bar Background -->
                                 <div
                                     class="absolute top-0 left-0 w-full h-1 {{ $isUrgent ? 'bg-red-500' : 'bg-orange-400' }}">
@@ -529,11 +1078,11 @@
                                     <div class="flex items-start justify-between mb-3">
                                         <div class="flex-1 min-w-0">
                                             <h4
-                                                class="text-sm font-bold text-gray-900 truncate group-hover:text-red-600 transition-colors">
+                                                class="text-sm font-bold text-gray-900 dark:text-gray-100 truncate group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
                                                 {{ $order->name }}
                                             </h4>
                                             @if ($order->team)
-                                                <p class="text-xs text-gray-500 mt-1">
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                                     <i class="fas fa-users mr-1"></i>{{ $order->team->name }}
                                                 </p>
                                             @endif
@@ -575,26 +1124,26 @@
                                                 </span>
                                             @endif
                                             <span
-                                                class="text-xs text-gray-500">{{ $order->end_date->format('M d') }}</span>
+                                                class="text-xs text-gray-500 dark:text-gray-400">{{ $order->end_date->format('M d') }}</span>
                                         </div>
                                         <div class="flex items-center gap-1">
                                             @if ($order->users->count() > 0)
                                                 <div class="flex -space-x-2">
                                                     @foreach ($order->users->take(3) as $user)
-                                                        <div class="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 border-2 border-white flex items-center justify-center text-white text-xs font-bold"
+                                                        <div class="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 border-2 border-white dark:border-gray-900 flex items-center justify-center text-white text-xs font-bold"
                                                             title="{{ $user->name }}">
                                                             {{ strtoupper(substr($user->name, 0, 1)) }}
                                                         </div>
                                                     @endforeach
                                                     @if ($order->users->count() > 3)
                                                         <div
-                                                            class="w-6 h-6 rounded-full bg-gray-300 border-2 border-white flex items-center justify-center text-gray-600 text-xs font-bold">
+                                                            class="w-6 h-6 rounded-full bg-gray-300 dark:bg-gray-600 border-2 border-white dark:border-gray-900 flex items-center justify-center text-gray-600 dark:text-gray-200 text-xs font-bold">
                                                             +{{ $order->users->count() - 3 }}
                                                         </div>
                                                     @endif
                                                 </div>
                                             @else
-                                                <span class="text-xs text-gray-400">Myself</span>
+                                                <span class="text-xs text-gray-400 dark:text-gray-500">Myself</span>
                                             @endif
                                         </div>
                                     </div>
@@ -610,8 +1159,8 @@
         <div class="mb-4">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Orders</h1>
-                    <p class="mt-2 text-sm text-gray-600">Manage orders and track their status</p>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Orders</h1>
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Manage orders and track their status</p>
                 </div>
                 <div class="flex items-center gap-3">
                     <button onclick="exportOrders()"
@@ -629,24 +1178,24 @@
         </div>
 
         <!-- Filters (One Line) -->
-        <div class="bg-white rounded-xl shadow-md border border-gray-100 p-3 mb-4">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-100 dark:border-gray-800 p-3 mb-4">
             <div class="flex flex-wrap items-center gap-3">
                 <!-- Search Field -->
                 <div class="relative flex-shrink-0 flex-grow max-w-xs">
-                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-sm"></i>
                     <input type="text" id="filterSearch" placeholder="Search orders..."
-                        class="w-full pl-9 pr-4 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white transition-all duration-200 text-sm">
+                        class="w-full pl-9 pr-4 py-1.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 transition-all duration-200 text-sm">
                 </div>
 
-                <span class="text-sm font-semibold text-gray-700 flex items-center">
-                    <i class="fas fa-filter text-indigo-500 mr-2"></i>
+                <span class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center">
+                    <i class="fas fa-filter text-indigo-500 dark:text-indigo-400 mr-2"></i>
                     Filters:
                 </span>
 
                 <!-- Month Filter -->
                 <div class="relative flex-shrink-0 inline-block">
                     <select id="filterMonth" name="filterMonth"
-                        class="px-3 py-1.5 pr-8 border border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-indigo-50 appearance-none transition-all duration-200 text-sm font-medium">
+                        class="px-3 py-1.5 pr-8 border border-indigo-300 dark:border-indigo-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-gray-900 dark:text-gray-100 appearance-none transition-all duration-200 text-sm font-medium">
                         <option value="">All Time</option>
                         @foreach ($availableMonths as $value => $label)
                             <option value="{{ $value }}" {{ $selectedMonth === $value ? 'selected' : '' }}>
@@ -662,7 +1211,7 @@
                 <!-- Status Filter -->
                 <div class="relative flex-shrink-0">
                     <select id="filterStatus"
-                        class="px-3 py-1.5 pr-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white appearance-none transition-all duration-200 text-sm">
+                        class="px-3 py-1.5 pr-8 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 appearance-none transition-all duration-200 text-sm">
                         <option value="">All Statuses</option>
                         <option value="nra">NRA</option>
                         <option value="pending">Pending</option>
@@ -672,63 +1221,63 @@
                         <option value="cancelled">Cancelled</option>
                     </select>
                     <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                        <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                        <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500 text-xs"></i>
                     </div>
                 </div>
 
                 <!-- Team Filter -->
                 <div class="relative flex-shrink-0">
                     <select id="filterTeam"
-                        class="px-3 py-1.5 pr-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white appearance-none transition-all duration-200 text-sm">
+                        class="px-3 py-1.5 pr-8 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 appearance-none transition-all duration-200 text-sm">
                         <option value="">All Teams</option>
                         @foreach ($teams as $team)
                             <option value="{{ $team->id }}">{{ $team->name }}</option>
                         @endforeach
                     </select>
                     <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                        <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                        <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500 text-xs"></i>
                     </div>
                 </div>
 
                 <!-- Tech Stack Filter -->
                 <div class="relative flex-shrink-0">
                     <select id="filterTechStack"
-                        class="px-3 py-1.5 pr-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white appearance-none transition-all duration-200 text-sm">
+                        class="px-3 py-1.5 pr-8 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 appearance-none transition-all duration-200 text-sm">
                         <option value="">All Tech Stacks</option>
                         @foreach ($techStacks as $stack)
                             <option value="{{ $stack->id }}">{{ $stack->name }}</option>
                         @endforeach
                     </select>
                     <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                        <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                        <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500 text-xs"></i>
                     </div>
                 </div>
 
                 <!-- Freelance Profile Filter -->
                 <div class="relative flex-shrink-0">
                     <select id="filterProfile"
-                        class="px-3 py-1.5 pr-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white appearance-none transition-all duration-200 text-sm">
+                        class="px-3 py-1.5 pr-8 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 appearance-none transition-all duration-200 text-sm">
                         <option value="">All Profiles</option>
                         @foreach ($profiles as $profile)
                             <option value="{{ $profile->id }}">{{ $profile->profile_name }}</option>
                         @endforeach
                     </select>
                     <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                        <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                        <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500 text-xs"></i>
                     </div>
                 </div>
 
                 <!-- Priority Filter -->
                 <div class="relative flex-shrink-0">
                     <select id="filterPriority"
-                        class="px-3 py-1.5 pr-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white appearance-none transition-all duration-200 text-sm">
+                        class="px-3 py-1.5 pr-8 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 appearance-none transition-all duration-200 text-sm">
                         <option value="">All Priorities</option>
                         <option value="low">Low</option>
                         <option value="medium">Medium</option>
                         <option value="high">High</option>
                     </select>
                     <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                        <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                        <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500 text-xs"></i>
                     </div>
                 </div>
 
@@ -751,18 +1300,18 @@
 
         <!-- Bulk Actions Bar -->
         <div id="bulkActions"
-            class="hidden bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl shadow-md border-2 border-indigo-200 p-4 mb-4">
+            class="hidden bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10 rounded-xl shadow-md border-2 border-indigo-200 dark:border-indigo-900 p-4 mb-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <input type="checkbox" id="selectAll"
-                        class="w-5 h-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
-                    <span class="text-sm font-semibold text-gray-700">
+                        class="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                    <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
                         <span id="selectedCount">0</span> orders selected
                     </span>
                 </div>
                 <div class="flex items-center gap-2">
                     <select id="bulkAction"
-                        class="px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white text-sm">
+                        class="px-3 py-1.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm">
                         <option value="">Bulk Actions</option>
                         <option value="mark-completed">Mark as Completed</option>
                         <option value="mark-in-progress">Mark as In Progress</option>
@@ -786,26 +1335,28 @@
         </div>
 
         <!-- DataTable -->
-        <div class="bg-white rounded-xl shadow-lg border border-gray-100 datatableprimary mx-0">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 datatableprimary mx-0">
             <div class="datatable-container">
                 <table id="ordersTable" class="display w-full" style="width:100%;">
                     <thead>
                         <tr>
                             <th class="text-center" style="width: 40px;">
                                 <input type="checkbox" id="checkAll"
-                                    class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                                    class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                             </th>
                             <th>Client</th>
                             <th>Profile</th>
                             <th>Status</th>
                             <th>Priority</th>
                             <th>Value</th>
-                            <th>Team</th>
-                            <th>Users</th>
+                            @unless($isSalesUser)
+                                <th>Team</th>
+                                <th>Users</th>
+                            @endunless
                             {{-- <th>Started</th> --}}
                             <th>Delivered</th>
                             <th>Deadline</th>
-                            <th class="text-center">Docs</th>
+                            <th class="text-center">Progress</th>
                             {{-- <th>Special</th> --}}
                             {{-- <th>Last Update</th> --}}
                             <th class="text-center">Actions</th>
@@ -828,7 +1379,7 @@
         <div class="fixed inset-0 z-10 overflow-y-auto">
             <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
                 <div
-                    class="relative transform  rounded-xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
+                    class="relative transform  rounded-xl bg-white dark:bg-gray-900 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
                     <!-- Modal Header -->
                     <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-3 sm:px-6">
                         <div class="flex items-center justify-between">
@@ -848,33 +1399,33 @@
                     <div class="px-4 py-4 sm:px-6">
                         <!-- Selected Users Display -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Assigned Users
                             </label>
                             <div id="modalSelectedUsersDisplay"
-                                class="border border-gray-300 rounded-lg p-3 min-h-[60px] bg-gray-50 mb-3">
-                                <span class="text-gray-400 text-sm">No users assigned</span>
+                                class="border border-gray-300 dark:border-gray-700 rounded-lg p-3 min-h-[60px] bg-gray-50 dark:bg-gray-800 mb-3">
+                                <span class="text-gray-400 dark:text-gray-500 text-sm">No users assigned</span>
                             </div>
                         </div>
 
                         <!-- Search and Add Users -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Search & Add Users
                             </label>
                             <div class="relative">
                                 <input type="text" id="modalUserSearchInput"
                                     placeholder="Search users by name or email..."
-                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm">
+                                    class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 text-sm">
 
                                 <!-- Dropdown List -->
                                 <div id="modalUserDropdown"
-                                    class="hidden absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                    class="hidden absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                                     <!-- Users will be populated here by JavaScript -->
                                 </div>
                             </div>
 
-                            <p class="mt-1 text-xs text-gray-500">
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                 <i class="fas fa-info-circle mr-1"></i>
                                 Start typing to search and add users
                             </p>
@@ -882,14 +1433,14 @@
                     </div>
 
                     <!-- Modal Footer -->
-                    <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                    <div class="bg-gray-50 dark:bg-gray-800 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                         <button type="button" onclick="saveUserAssignments()"
                             class="inline-flex w-full justify-center rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:from-indigo-700 hover:to-purple-700 sm:ml-3 sm:w-auto transition-all">
                             <i class="fas fa-save mr-2"></i>
                             Save Assignments
                         </button>
                         <button type="button" onclick="closeUserAssignmentModal()"
-                            class="mt-3 inline-flex w-full justify-center rounded-lg bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto transition-all">
+                            class="mt-3 inline-flex w-full justify-center rounded-lg bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 sm:mt-0 sm:w-auto transition-all">
                             Cancel
                         </button>
                     </div>
@@ -900,6 +1451,53 @@
 
     @push('scripts')
         <script>
+            // --- Overdue accordion ---
+            document.addEventListener('DOMContentLoaded', function() {
+                const panel = document.getElementById('overduePanel');
+
+                if (!panel) {
+                    return;
+                }
+
+                const body = document.getElementById('overdueBody');
+                const collapse = document.getElementById('overdueCollapse');
+                const STORAGE_KEY = 'pmt.orders.overdueCollapsed';
+
+                function setCollapsed(collapsed) {
+                    body.hidden = collapsed;
+                    collapse.setAttribute('aria-expanded', String(!collapsed));
+                    collapse.querySelector('[data-collapse-label]').textContent = collapsed ? 'Show' : 'Hide';
+                    collapse.querySelector('i').className = collapsed ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
+                }
+
+                // The block is visited daily; keep it the way it was left.
+                setCollapsed(localStorage.getItem(STORAGE_KEY) === '1');
+
+                collapse.addEventListener('click', function() {
+                    const collapsed = !body.hidden;
+                    setCollapsed(collapsed);
+                    localStorage.setItem(STORAGE_KEY, collapsed ? '1' : '0');
+                });
+
+                // One row open at a time, so the block stays scannable.
+                panel.querySelectorAll('.overdue-row').forEach(row => {
+                    row.addEventListener('click', function() {
+                        const detail = document.getElementById(this.getAttribute('aria-controls'));
+                        const willOpen = detail.hidden;
+
+                        panel.querySelectorAll('.overdue-row').forEach(other => {
+                            other.setAttribute('aria-expanded', 'false');
+                            document.getElementById(other.getAttribute('aria-controls')).hidden = true;
+                        });
+
+                        if (willOpen) {
+                            this.setAttribute('aria-expanded', 'true');
+                            detail.hidden = false;
+                        }
+                    });
+                });
+            });
+
             // DataTables initialization matching users module
             document.addEventListener('DOMContentLoaded', function() {
                 console.log('Initializing orders DataTable...');
@@ -971,14 +1569,14 @@
                             searchable: false,
                             className: 'text-center',
                             render: function(data) {
-                                return `<input type="checkbox" class="row-checkbox w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" data-id="${data.id}">`;
+                                return `<input type="checkbox" class="row-checkbox w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500 cursor-pointer" data-id="${data.id}">`;
                             }
                         },
                         {
                             data: 'name',
                             name: 'name',
                             render: function(data, type, row) {
-                                return `<a href="${urlTemplates.show}/${row.id}" class="font-semibold text-gray-900 hover:text-indigo-600 transition-colors">${data}</a>`;
+                                return `<a href="${urlTemplates.show}/${row.id}" class="font-semibold text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">${data}</a>`;
                             }
                         },
                         {
@@ -986,8 +1584,8 @@
                             name: 'freelance_profile_id',
                             render: function(data) {
                                 if (!data || data === 'N/A')
-                                    return '<span class="text-gray-400 text-xs">No profile</span>';
-                                return `<span class="px-2 py-1 rounded-lg text-xs font-semibold bg-purple-50 text-purple-700">@${data}</span>`;
+                                    return '<span class="text-gray-400 dark:text-gray-500 text-xs">No profile</span>';
+                                return `<span class="px-2 py-1 rounded-lg text-xs font-semibold bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400">@${data}</span>`;
                             }
                         },
                         {
@@ -996,27 +1594,27 @@
                             render: function(data, type, row) {
                                 const statusConfig = {
                                     'nra': {
-                                        color: 'bg-gray-100 text-gray-800',
+                                        color: 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300',
                                         label: 'NRA'
                                     },
                                     'pending': {
-                                        color: 'bg-yellow-100 text-yellow-800',
+                                        color: 'bg-yellow-100 dark:bg-yellow-500/10 text-yellow-800 dark:text-yellow-400',
                                         label: 'Pending'
                                     },
                                     'in-progress': {
-                                        color: 'bg-blue-100 text-blue-800',
+                                        color: 'bg-blue-100 dark:bg-blue-500/10 text-blue-800 dark:text-blue-400',
                                         label: 'Progress'
                                     },
                                     'delivered': {
-                                        color: 'bg-green-100 text-green-800',
+                                        color: 'bg-green-100 dark:bg-green-500/10 text-green-800 dark:text-green-400',
                                         label: 'Delivered'
                                     },
                                     'on-hold': {
-                                        color: 'bg-orange-100 text-orange-800',
+                                        color: 'bg-orange-100 dark:bg-orange-500/10 text-orange-800 dark:text-orange-400',
                                         label: 'Hold'
                                     },
                                     'cancelled': {
-                                        color: 'bg-red-100 text-red-800',
+                                        color: 'bg-red-100 dark:bg-red-500/10 text-red-800 dark:text-red-400',
                                         label: 'Cancelled'
                                     }
                                 };
@@ -1044,15 +1642,15 @@
                             render: function(data, type, row) {
                                 const config = {
                                     'low': {
-                                        color: 'bg-green-100 text-green-800',
+                                        color: 'bg-green-100 dark:bg-green-500/10 text-green-800 dark:text-green-400',
                                         label: 'Low'
                                     },
                                     'medium': {
-                                        color: 'bg-yellow-100 text-yellow-800',
+                                        color: 'bg-yellow-100 dark:bg-yellow-500/10 text-yellow-800 dark:text-yellow-400',
                                         label: 'Medium'
                                     },
                                     'high': {
-                                        color: 'bg-red-100 text-red-800',
+                                        color: 'bg-red-100 dark:bg-red-500/10 text-red-800 dark:text-red-400',
                                         label: 'High'
                                     }
                                 };
@@ -1075,17 +1673,18 @@
                             data: 'actual_revenue',
                             name: 'actual_revenue',
                             render: function(data) {
-                                return data ? '<span class="font-semibold text-green-600">$' + parseFloat(data)
-                                    .toFixed(2) + '</span>' : '<span class="text-gray-400">N/A</span>';
+                                return data ? '<span class="font-semibold text-green-600 dark:text-green-400">$' + parseFloat(data)
+                                    .toFixed(2) + '</span>' : '<span class="text-gray-400 dark:text-gray-500">N/A</span>';
                             }
                         },
+                        @unless($isSalesUser)
                         {
                             data: 'team',
                             name: 'team_id',
                             render: function(data) {
                                 if (!data || data === 'N/A')
-                                    return '<span class="text-gray-400 text-xs">No team</span>';
-                                return `<span class="px-2 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 inline-block whitespace-nowrap">${data}</span>`;
+                                    return '<span class="text-gray-400 dark:text-gray-500 text-xs">No team</span>';
+                                return `<span class="px-2 py-1 rounded-lg text-xs font-semibold bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 inline-block whitespace-nowrap">${data}</span>`;
                             }
                         },
 
@@ -1094,20 +1693,22 @@
                             name: 'users',
                             render: function(data, type, row) {
                                 if (!data || data.length === 0) {
-                                    return `<button onclick="openUserAssignmentModal(${row.id}, '${row.name.replace(/'/g, "\\'")}')" class="w-9 h-8 flex items-center justify-center rounded-lg text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-all cursor-pointer" title="Assign Users">
+                                    return `<button onclick="openUserAssignmentModal(${row.id}, '${row.name.replace(/'/g, "\\'")}')" class="w-9 h-8 flex items-center justify-center rounded-lg text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-all cursor-pointer" title="Assign Users">
                                         <i class="fas fa-user-plus "></i>
                                     </button>`;
                                 }
                                 if (data.length === 1) {
-                                    return `<button onclick="openUserAssignmentModal(${row.id}, '${row.name.replace(/'/g, "\\'")}')" class="px-2 py-1 rounded-lg text-xs font-semibold bg-purple-50 text-purple-700 truncate max-w-[100px] inline-block hover:bg-purple-100 cursor-pointer transition-all" title="${data[0].name}">${data[0].name}</button>`;
+                                    return `<button onclick="openUserAssignmentModal(${row.id}, '${row.name.replace(/'/g, "\\'")}')" class="px-2 py-1 rounded-lg text-xs font-semibold bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 truncate max-w-[100px] inline-block hover:bg-purple-100 dark:hover:bg-purple-500/20 cursor-pointer transition-all" title="${data[0].name}">${data[0].name}</button>`;
                                 }
                                 // Multiple users - show icon with count
-                                return `<button onclick="openUserAssignmentModal(${row.id}, '${row.name.replace(/'/g, "\\'")}')" class="w-12 h-8 px-2 flex items-center justify-center rounded-lg text-purple-600 bg-purple-50 hover:bg-purple-100 transition-all cursor-pointer" title="${data.length} users: ${row.users_names}">
+                                return `<button onclick="openUserAssignmentModal(${row.id}, '${row.name.replace(/'/g, "\\'")}')" class="w-12 h-8 px-2 flex items-center justify-center rounded-lg text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-100 dark:hover:bg-purple-500/20 transition-all cursor-pointer" title="${data.length} users: ${row.users_names}">
                                     <i class="fas fa-users "></i>
                                     <span class="ml-0.5  font-bold">${data.length}</span>
                                 </button>`;
                             }
                         },
+                        @endunless
+
                        /* {
                             data: 'start_date',
                             name: 'start_date',
@@ -1155,7 +1756,7 @@
                                     const dbDate = data;
 
                                     return `<input type="text"
-                                                class="delivered-date-input px-2 py-1 rounded-lg text-xs font-medium border border-green-300 bg-green-50 text-green-700 whitespace-nowrap w-28 cursor-pointer"
+                                                class="delivered-date-input px-2 py-1 rounded-lg text-xs font-medium border border-green-300 dark:border-green-800 bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 whitespace-nowrap w-28 cursor-pointer"
                                                 value="${formattedDate}"
                                                 data-order-id="${row.id}"
                                                 data-original-value="${dbDate}"
@@ -1167,7 +1768,7 @@
                                 // Delivered status but no date yet
                                 if (row.status === 'delivered') {
                                     return `<input type="text"
-                                                class="delivered-date-input px-2 py-1 rounded-lg text-xs font-medium border border-green-300 bg-green-50 text-green-700 whitespace-nowrap w-28 cursor-pointer"
+                                                class="delivered-date-input px-2 py-1 rounded-lg text-xs font-medium border border-green-300 dark:border-green-800 bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 whitespace-nowrap w-28 cursor-pointer"
                                                 data-order-id="${row.id}"
                                                 data-original-value=""
                                                 placeholder="Set date"
@@ -1176,7 +1777,7 @@
 
                                 // Non-delivered orders
                                 return `<input type="text"
-                                            class="delivered-date-input px-2 py-1 rounded-lg text-xs font-medium border border-gray-300 bg-gray-50 text-gray-400 whitespace-nowrap w-28 cursor-pointer"
+                                            class="delivered-date-input px-2 py-1 rounded-lg text-xs font-medium border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500 whitespace-nowrap w-28 cursor-pointer"
                                             data-order-id="${row.id}"
                                             data-original-value=""
                                             placeholder="Set date"
@@ -1189,14 +1790,14 @@
                             render: function(data, type, row) {
                                 // Check if order is completed
                                 if (row.status === 'delivered') {
-                                    return '<span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-green-100 text-green-600"><i class="fas fa-check"></i></span>';
+                                    return '<span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-green-100 dark:bg-green-500/10 text-green-600 dark:text-green-400"><i class="fas fa-check"></i></span>';
                                 }
                                 if (row.status === 'cancelled') {
-                                    return '<span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 text-red-600"><i class="fas fa-times"></i></span>';
+                                    return '<span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400"><i class="fas fa-times"></i></span>';
                                 }
 
                                 if (!data) {
-                                    return `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-gray-400 whitespace-nowrap cursor-pointer hover:bg-gray-100"
+                                    return `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
                                                 data-order-id="${row.id}"
                                                 data-deadline=""
                                                 onclick="handleEndDateClick(this)">
@@ -1217,19 +1818,35 @@
                             }
                         },
                         {
-                            data: 'order_sheet_url',
-                            name: 'order_sheet_url',
+                            data: 'progress',
+                            name: 'progress',
                             orderable: false,
                             className: 'text-center',
-                            render: function(data) {
-                                if (!data) {
-                                    return '<span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 text-gray-400"><i class="fas fa-file-alt text-xs"></i></span>';
-                                }
+                            render: function(data, type, row) {
+                                const progress = Math.max(0, Math.min(100, parseInt(data) || 0));
+                                const circumference = 2 * Math.PI * 15.5;
+                                const offset = circumference * (1 - progress / 100);
+                                const stroke = progress >= 100 ? '#10b981' : '#6366f1';
+                                const documents = parseInt(row.documents_count) || 0;
+                                const documentsBadge = documents > 0 ?
+                                    `<a href="/orders/${row.id}" class="inline-flex items-center gap-0.5 text-[10px] font-semibold text-blue-500 dark:text-blue-400 hover:underline" title="${documents} document(s)">
+                                        <i class="fas fa-paperclip text-[9px]"></i>${documents}
+                                     </a>` : '';
+
                                 return `
-                                    <a href="${data}" target="_blank" class="inline-flex items-center justify-center gap-1 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-xs font-semibold rounded-lg shadow-md hover:shadow-lg transition-all cursor-pointer">
-                                        <i class="fas fa-external-link-alt text-xs"></i>
-                                        <span>Docs</span>
-                                    </a>
+                                    <div class="flex items-center justify-center gap-1.5">
+                                        <div class="progress-ring" title="${progress}% complete">
+                                            <svg viewBox="0 0 36 36">
+                                                <circle class="progress-ring-track" cx="18" cy="18" r="15.5"></circle>
+                                                <circle class="progress-ring-value" cx="18" cy="18" r="15.5"
+                                                        stroke="${stroke}"
+                                                        stroke-dasharray="${circumference.toFixed(2)}"
+                                                        stroke-dashoffset="${offset.toFixed(2)}"></circle>
+                                            </svg>
+                                            <span class="progress-ring-label ${progress === 0 ? 'is-empty' : ''}">${progress}%</span>
+                                        </div>
+                                        ${documentsBadge}
+                                    </div>
                                 `;
                             }
                         },
@@ -1311,13 +1928,13 @@
                             render: function(data) {
                                 return `
                         <div class="flex items-center justify-center gap-1">
-                            <a href="${urlTemplates.show}/${data.id}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-100 transition-all" title="View">
+                            <a href="${urlTemplates.show}/${data.id}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-500/20 transition-all" title="View">
                                 <i class="fas fa-eye text-xs"></i>
                             </a>
-                            <a href="${urlTemplates.edit}/${data.id}/edit" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all" title="Edit">
+                            <a href="${urlTemplates.edit}/${data.id}/edit" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-all" title="Edit">
                                 <i class="fas fa-edit text-xs"></i>
                             </a>
-                            <button onclick="deleteOrder(${data.id})" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-all" title="Delete">
+                            <button onclick="deleteOrder(${data.id})" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 transition-all" title="Delete">
                                 <i class="fas fa-trash text-xs"></i>
                             </button>
                         </div>
@@ -1326,10 +1943,10 @@
                         }
                     ],
                     order: [],
-                    pageLength: 10,
+                    pageLength: 20,
                     lengthMenu: [
-                        [10, 25, 50, -1],
-                        [10, 25, 50, "All"]
+                        [20, 25, 50, -1],
+                        [20, 25, 50, "All"]
                     ],
                     responsive: true,
                     language: {
@@ -1424,17 +2041,17 @@
                     countdown +=
                         `<span class="countdown-unit">${seconds}<small class="text-xs opacity-75">s</small></span>`;
 
-                    let colorClass = 'bg-green-100 text-green-700';
+                    let colorClass = 'bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400';
                     if (days <= 1) {
-                        colorClass = 'bg-red-100 text-red-700 animate-pulse';
+                        colorClass = 'bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400 animate-pulse';
                     } else if (days <= 4) {
-                        colorClass = 'bg-yellow-100 text-yellow-800';
+                        colorClass = 'bg-yellow-100 dark:bg-yellow-500/10 text-yellow-800 dark:text-yellow-400';
                     } else if (days <= 30) {
-                        colorClass = 'bg-blue-100 text-blue-700';
+                        colorClass = 'bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400';
                     }
 
                     $timer.removeClass(
-                            'bg-green-100 text-green-700 bg-yellow-100 text-yellow-800 bg-blue-100 text-blue-700 bg-red-100 text-red-700 animate-pulse'
+                            'bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400 bg-yellow-100 dark:bg-yellow-500/10 text-yellow-800 dark:text-yellow-400 bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400 animate-pulse'
                         )
                         .addClass(colorClass);
                     $timer.find('.countdown-text').html(countdown);
@@ -2094,10 +2711,10 @@
             function renderModalDropdown(users) {
                 const dropdown = document.getElementById('modalUserDropdown');
                 if (users.length === 0) {
-                    dropdown.innerHTML = '<div class="px-4 py-3 text-sm text-gray-500 text-center">No users found</div>';
+                    dropdown.innerHTML = '<div class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 text-center">No users found</div>';
                 } else {
                     dropdown.innerHTML = users.map(user => `
-                        <div class="user-option flex items-center gap-3 p-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 last:border-0 transition-colors"
+                        <div class="user-option flex items-center gap-3 p-3 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors"
                              data-user-id="${user.id}"
                              data-user-name="${user.name}"
                              data-user-email="${user.email}">
@@ -2106,17 +2723,17 @@
                             </div>
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center gap-2 mb-0.5 flex-wrap">
-                                    <div class="font-semibold text-sm text-gray-900 truncate">${user.name}</div>
+                                    <div class="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">${user.name}</div>
                                     <span class="text-xs text-white bg-indigo-500 px-2 py-0.5 rounded-full flex-shrink-0">${user.employee_id || 'N/A'}</span>
                                     ${user.team ? `<span class="text-xs text-white bg-purple-500 px-2 py-0.5 rounded-full flex-shrink-0"><i class="fas fa-users mr-1"></i>${user.team.name}</span>` : ''}
                                 </div>
-                                <div class="text-xs text-gray-500 truncate">
-                                    ${user.position ? `<span class="font-medium text-gray-600">${user.position}</span> &bull; ` : ''}${user.email}
+                                <div class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                    ${user.position ? `<span class="font-medium text-gray-600 dark:text-gray-300">${user.position}</span> &bull; ` : ''}${user.email}
                                 </div>
                             </div>
                             <div class="flex-shrink-0">
-                                <div class="w-8 h-8 rounded-full bg-indigo-100 hover:bg-indigo-200 flex items-center justify-center transition-colors">
-                                    <i class="fas fa-plus text-indigo-600 text-xs"></i>
+                                <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-500/10 hover:bg-indigo-200 dark:hover:bg-indigo-500/20 flex items-center justify-center transition-colors">
+                                    <i class="fas fa-plus text-indigo-600 dark:text-indigo-400 text-xs"></i>
                                 </div>
                             </div>
                         </div>
@@ -2178,12 +2795,12 @@
             function updateModalSelectedDisplay() {
                 const display = document.getElementById('modalSelectedUsersDisplay');
                 if (modalSelectedUsers.length === 0) {
-                    display.innerHTML = '<span class="text-gray-400 text-sm">No users assigned</span>';
+                    display.innerHTML = '<span class="text-gray-400 dark:text-gray-500 text-sm">No users assigned</span>';
                 } else {
                     display.innerHTML = modalSelectedUsers.map(user => `
-                        <span class="inline-flex items-center gap-1 px-3 py-1 m-1 bg-indigo-100 text-indigo-800 rounded-lg text-sm">
+                        <span class="inline-flex items-center gap-1 px-3 py-1 m-1 bg-indigo-100 dark:bg-indigo-500/10 text-indigo-800 dark:text-indigo-400 rounded-lg text-sm">
                             <span>${user.name}</span>
-                            <button type="button" class="remove-modal-user-btn hover:text-red-600 transition-colors" data-user-id="${user.id}">
+                            <button type="button" class="remove-modal-user-btn hover:text-red-600 dark:hover:text-red-400 transition-colors" data-user-id="${user.id}">
                                 <i class="fas fa-times text-xs"></i>
                             </button>
                         </span>
@@ -2383,7 +3000,8 @@
                             'Start Date',
                             'End Date',
                             'Delivered At',
-                            'Order Sheet URL'
+                            'Progress (%)',
+                            'Documents'
                         ];
 
                         // Convert orders to CSV format
@@ -2402,7 +3020,8 @@
                                 `"${order.start_date || ''}"`,
                                 `"${order.end_date || ''}"`,
                                 `"${order.delivered_at || ''}"`,
-                                `"${(order.order_sheet_url || '').replace(/"/g, '""')}"`
+                                `"${order.progress ?? 0}"`,
+                                `"${order.documents_count ?? 0}"`
                             ];
                             csvRows.push(row.join(','));
                         });

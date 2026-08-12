@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\SalesTarget;
 use App\Models\Team;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +18,10 @@ class DashboardController extends Controller
     public function __invoke(Request $request)
     {
         $user = Auth::user();
+
+        if ($user->isSales()) {
+            return redirect()->route('sales.dashboard');
+        }
 
         if (! $user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             return redirect()->route('orders.dashboard');
@@ -89,13 +95,14 @@ class DashboardController extends Controller
         // Daily revenue by delivered_at within selected month
         $daysInMonth = $monthDate->daysInMonth;
 
-        $dailyRevenue = Order::selectRaw('DAY(delivered_at) as day, SUM(COALESCE(actual_revenue, 0)) as revenue')
-            ->whereIn('status', $finishedStatuses)
+        // Grouped in PHP rather than with DAY(), which only exists on MySQL.
+        // One month of rows, so the cost is the same either way.
+        $dailyRevenue = Order::whereIn('status', $finishedStatuses)
             ->whereNotNull('delivered_at')
             ->whereBetween('delivered_at', [$startDate, $endDate])
-            ->groupBy('day')
-            ->orderBy('day')
-            ->pluck('revenue', 'day')
+            ->get(['delivered_at', 'actual_revenue'])
+            ->groupBy(fn (Order $order) => (int) $order->delivered_at->format('j'))
+            ->map(fn ($group) => (float) $group->sum('actual_revenue'))
             ->toArray();
 
         for ($i = 1; $i <= $daysInMonth; $i++) {
@@ -106,11 +113,10 @@ class DashboardController extends Controller
         ksort($dailyRevenue);
 
         // Daily orders by start_date within selected month
-        $dailyOrders = Order::selectRaw('DAY(start_date) as day, COUNT(*) as count')
-            ->whereBetween('start_date', [$startDate, $endDate])
-            ->groupBy('day')
-            ->orderBy('day')
-            ->pluck('count', 'day')
+        $dailyOrders = Order::whereBetween('start_date', [$startDate, $endDate])
+            ->get(['start_date'])
+            ->groupBy(fn (Order $order) => (int) $order->start_date->format('j'))
+            ->map(fn ($group) => $group->count())
             ->toArray();
 
         for ($i = 1; $i <= $daysInMonth; $i++) {
@@ -162,12 +168,15 @@ class DashboardController extends Controller
             'low' => $workloadOrders->where('priority', 'low')->count(),
         ];
 
-        $teams = Team::withCount(['orders' => function ($query) use ($startDate, $endDate) {
+        $deliveredInMonth = function ($query) use ($startDate, $endDate) {
             $query->whereIn('status', ['delivered', 'completed'])
                 ->whereNotNull('delivered_at')
                 ->whereBetween('delivered_at', [$startDate, $endDate]);
-        }])
-            ->having('orders_count', '>', 0)
+        };
+
+        // whereHas rather than having(), which needs an aggregate query on SQLite.
+        $teams = Team::withCount(['orders' => $deliveredInMonth])
+            ->whereHas('orders', $deliveredInMonth)
             ->latest()
             ->take(4)
             ->get();
@@ -223,6 +232,63 @@ class DashboardController extends Controller
             ? (($stats['total'] - $previousStats['orders']) / $previousStats['orders']) * 100
             : 0;
 
+        // ---- Sales ----
+        // Half of this page is the sales side: what was sold this month, how it
+        // tracks against the targets in force, and who is bringing it in.
+        $salesUserIds = User::withRoleName(['sales-leader', 'sales-member'])->pluck('id')->all();
+
+        $soldThisMonth = Order::whereNotNull('sales_user_id')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->get();
+
+        $soldPreviousMonth = Order::whereNotNull('sales_user_id')
+            ->whereBetween('created_at', [$prevStartDate, $prevEndDate])
+            ->get();
+
+        $salesTargets = SalesTarget::amountsFor($salesUserIds, $monthDate);
+        $soldAmount = (float) $soldThisMonth->sum('value');
+        $previousSold = (float) $soldPreviousMonth->sum('value');
+        $targetTotal = (float) $salesTargets->sum();
+
+        $salesStats = [
+            'sold' => $soldAmount,
+            'count' => $soldThisMonth->count(),
+            'averageDeal' => $soldThisMonth->count() ? $soldAmount / $soldThisMonth->count() : 0.0,
+            'target' => $targetTotal,
+            'achievement' => $targetTotal > 0 ? (int) round($soldAmount / $targetTotal * 100) : null,
+            'remaining' => max(0, $targetTotal - $soldAmount),
+            'change' => $previousSold > 0 ? round((($soldAmount - $previousSold) / $previousSold) * 100, 1) : null,
+            'previousSold' => $previousSold,
+            'sellers' => count($salesUserIds),
+            'inDelivery' => (float) Order::whereNotNull('sales_user_id')
+                ->whereNotIn('status', ['delivered', 'completed', 'cancelled'])
+                ->sum('value'),
+        ];
+
+        $leaderboard = User::whereIn('id', $salesUserIds)
+            ->get()
+            ->map(function (User $seller) use ($soldThisMonth, $salesTargets) {
+                $sold = $soldThisMonth->where('sales_user_id', $seller->id);
+                $amount = (float) $sold->sum('value');
+                $target = (float) ($salesTargets[$seller->id] ?? 0);
+
+                return [
+                    'id' => $seller->id,
+                    'name' => $seller->name,
+                    'is_leader' => $seller->isSalesLeader(),
+                    'amount' => $amount,
+                    'count' => $sold->count(),
+                    'target' => $target,
+                    'achievement' => $target > 0 ? (int) round($amount / $target * 100) : null,
+                ];
+            })
+            // A leaderboard of people who sold nothing is just noise; the full
+            // roster lives on the sales dashboard.
+            ->filter(fn (array $seller) => $seller['amount'] > 0)
+            ->sortByDesc('amount')
+            ->values()
+            ->take(6);
+
         return view('dashboard', compact(
             'stats',
             'ordersByStatus',
@@ -237,7 +303,9 @@ class DashboardController extends Controller
             'dueSoon',
             'selectedMonth',
             'availableMonths',
-            'analytics'
+            'analytics',
+            'salesStats',
+            'leaderboard'
         ));
     }
 }

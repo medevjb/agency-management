@@ -7,7 +7,7 @@
         <nav class="flex" aria-label="Breadcrumb">
             <ol class="flex items-center space-x-4">
                 <li>
-                    <a href="{{ route('users.index') }}" class="inline-flex items-center text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                    <a href="{{ route('users.index') }}" class="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-200">
                         <i class="fas fa-arrow-left mr-2 text-sm"></i>
                         <span class="text-sm font-medium">Back to Users</span>
                     </a>
@@ -15,14 +15,14 @@
             </ol>
         </nav>
         <div class="mt-6">
-            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Create New User</h1>
-            <p class="text-gray-600 text-lg">Add a new user to the system with appropriate roles and permissions</p>
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">Create New User</h1>
+            <p class="text-gray-600 dark:text-gray-400 text-lg">Add a new user to the system with appropriate roles and permissions</p>
         </div>
     </div>
 
     <!-- Create User Form -->
     <div class="max-w-6xl mx-auto">
-        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 overflow-hidden">
             <!-- Form Header -->
             <div class="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 p-8 text-center">
                 <div class="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl mb-4">
@@ -40,22 +40,22 @@
                         <div class="flex items-center justify-center space-x-4">
                             <div class="flex items-center">
                                 <div class="flex items-center justify-center w-10 h-10 bg-indigo-600 rounded-full text-white font-semibold" id="step1">1</div>
-                                <span class="ml-2 font-medium text-gray-900">Basic Info</span>
+                                <span class="ml-2 font-medium text-gray-900 dark:text-gray-100">Basic Info</span>
                             </div>
-                            <div class="w-12 h-1 bg-gray-300 rounded" id="progress1"></div>
+                            <div class="w-12 h-1 bg-gray-300 dark:bg-gray-700 rounded" id="progress1"></div>
                             <div class="flex items-center">
-                                <div class="flex items-center justify-center w-10 h-10 bg-gray-300 rounded-full text-gray-600 font-semibold" id="step2">2</div>
-                                <span class="ml-2 font-medium text-gray-500">Professional</span>
+                                <div class="flex items-center justify-center w-10 h-10 bg-gray-300 dark:bg-gray-700 rounded-full text-gray-600 dark:text-gray-300 font-semibold" id="step2">2</div>
+                                <span class="ml-2 font-medium text-gray-500 dark:text-gray-400">Professional</span>
                             </div>
-                            <div class="w-12 h-1 bg-gray-300 rounded" id="progress2"></div>
+                            <div class="w-12 h-1 bg-gray-300 dark:bg-gray-700 rounded" id="progress2"></div>
                             <div class="flex items-center">
-                                <div class="flex items-center justify-center w-10 h-10 bg-gray-300 rounded-full text-gray-600 font-semibold" id="step3">3</div>
-                                <span class="ml-2 font-medium text-gray-500">Assignments</span>
+                                <div class="flex items-center justify-center w-10 h-10 bg-gray-300 dark:bg-gray-700 rounded-full text-gray-600 dark:text-gray-300 font-semibold" id="step3">3</div>
+                                <span class="ml-2 font-medium text-gray-500 dark:text-gray-400">Assignments</span>
                             </div>
-                            <div class="w-12 h-1 bg-gray-300 rounded" id="progress3"></div>
+                            <div class="w-12 h-1 bg-gray-300 dark:bg-gray-700 rounded" id="progress3"></div>
                             <div class="flex items-center">
-                                <div class="flex items-center justify-center w-10 h-10 bg-gray-300 rounded-full text-gray-600 font-semibold" id="step4">4</div>
-                                <span class="ml-2 font-medium text-gray-500">Permissions</span>
+                                <div class="flex items-center justify-center w-10 h-10 bg-gray-300 dark:bg-gray-700 rounded-full text-gray-600 dark:text-gray-300 font-semibold" id="step4">4</div>
+                                <span class="ml-2 font-medium text-gray-500 dark:text-gray-400">Permissions</span>
                             </div>
                         </div>
                     </div>
@@ -63,29 +63,29 @@
                     <!-- Step 1: Basic Information -->
                     <div id="step1Content" class="space-y-8">
                         <div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                                <div class="bg-blue-100 rounded-lg p-3 mr-3">
-                                    <i class="fas fa-info-circle text-blue-600"></i>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
+                                <div class="bg-blue-100 dark:bg-blue-500/10 rounded-lg p-3 mr-3">
+                                    <i class="fas fa-info-circle text-blue-600 dark:text-blue-400"></i>
                                 </div>
                                 Basic User Information
                             </h3>
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div>
-                                    <label for="name" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                                        <i class="fas fa-user mr-2 text-indigo-500 text-sm"></i>
+                                    <label for="name" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                                        <i class="fas fa-user mr-2 text-indigo-500 dark:text-indigo-400 text-sm"></i>
                                         Full Name <span class="text-red-500 ml-1">*</span>
                                     </label>
                                     <div class="relative">
                                         <input type="text" id="name" name="name" required
                                                value="{{ old('name') }}"
-                                               class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
+                                               class="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200 text-base"
                                                placeholder="Enter full name">
                                         <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                            <i class="fas fa-user text-gray-400 text-sm"></i>
+                                            <i class="fas fa-user text-gray-400 dark:text-gray-500 text-sm"></i>
                                         </div>
                                     </div>
                                     @error('name')
-                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                        <p class="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center font-medium">
                                             <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
                                             {{ $message }}
                                         </p>
@@ -93,21 +93,21 @@
                                 </div>
 
                                 <div>
-                                    <label for="email" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                                        <i class="fas fa-envelope mr-2 text-indigo-500 text-sm"></i>
+                                    <label for="email" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                                        <i class="fas fa-envelope mr-2 text-indigo-500 dark:text-indigo-400 text-sm"></i>
                                         Email Address <span class="text-red-500 ml-1">*</span>
                                     </label>
                                     <div class="relative">
                                         <input type="email" id="email" name="email" required
                                                value="{{ old('email') }}"
-                                               class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
+                                               class="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200 text-base"
                                                placeholder="user@company.com">
                                         <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                            <i class="fas fa-envelope text-gray-400 text-sm"></i>
+                                            <i class="fas fa-envelope text-gray-400 dark:text-gray-500 text-sm"></i>
                                         </div>
                                     </div>
                                     @error('email')
-                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                        <p class="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center font-medium">
                                             <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
                                             {{ $message }}
                                         </p>
@@ -115,23 +115,23 @@
                                 </div>
 
                                 <div>
-                                    <label for="employee_id" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                                        <i class="fas fa-id-badge mr-2 text-indigo-500 text-sm"></i>
+                                    <label for="employee_id" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                                        <i class="fas fa-id-badge mr-2 text-indigo-500 dark:text-indigo-400 text-sm"></i>
                                         Employee ID
                                     </label>
                                     <div class="relative">
                                         <input type="text" id="employee_id" name="employee_id"
                                                value="{{ old('employee_id') }}"
                                                maxlength="13"
-                                               class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
+                                               class="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200 text-base"
                                                placeholder="13 characters (optional)">
                                         <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                            <i class="fas fa-id-badge text-gray-400 text-sm"></i>
+                                            <i class="fas fa-id-badge text-gray-400 dark:text-gray-500 text-sm"></i>
                                         </div>
                                     </div>
-                                    <p class="mt-1 text-xs text-gray-500">Letters and numbers, leave empty to auto-generate</p>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Letters and numbers, leave empty to auto-generate</p>
                                     @error('employee_id')
-                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                        <p class="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center font-medium">
                                             <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
                                             {{ $message }}
                                         </p>
@@ -139,21 +139,21 @@
                                 </div>
 
                                 <div>
-                                    <label for="phone" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                                        <i class="fas fa-phone mr-2 text-indigo-500 text-sm"></i>
+                                    <label for="phone" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                                        <i class="fas fa-phone mr-2 text-indigo-500 dark:text-indigo-400 text-sm"></i>
                                         Phone Number
                                     </label>
                                     <div class="relative">
                                         <input type="tel" id="phone" name="phone"
                                                value="{{ old('phone') }}"
-                                               class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
+                                               class="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200 text-base"
                                                placeholder="+1 (555) 123-4567">
                                         <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                            <i class="fas fa-phone text-gray-400 text-sm"></i>
+                                            <i class="fas fa-phone text-gray-400 dark:text-gray-500 text-sm"></i>
                                         </div>
                                     </div>
                                     @error('phone')
-                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                        <p class="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center font-medium">
                                             <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
                                             {{ $message }}
                                         </p>
@@ -161,24 +161,24 @@
                                 </div>
 
                                 <div>
-                                    <label for="password" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                                        <i class="fas fa-lock mr-2 text-indigo-500 text-sm"></i>
+                                    <label for="password" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                                        <i class="fas fa-lock mr-2 text-indigo-500 dark:text-indigo-400 text-sm"></i>
                                         Password <span class="text-red-500 ml-1">*</span>
                                     </label>
                                     <div class="relative">
                                         <input type="password" id="password" name="password" required
-                                               class="w-full px-4 py-2.5 pr-12 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
+                                               class="w-full px-4 py-2.5 pr-12 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200 text-base"
                                                placeholder="•••••••••">
                                         <button type="button"
                                                 onclick="togglePasswordVisibility('password')"
-                                                class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 focus:outline-none focus:text-indigo-600 transition-colors duration-200"
+                                                class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none focus:text-indigo-600 dark:focus:text-indigo-400 transition-colors duration-200"
                                                 aria-label="Toggle password visibility">
                                             <i id="password-toggle-icon" class="fas fa-eye text-sm"></i>
                                         </button>
                                     </div>
-                                    <p class="mt-1 text-xs text-gray-500">Must contain at least 8 characters with uppercase, lowercase, and numbers</p>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Must contain at least 8 characters with uppercase, lowercase, and numbers</p>
                                     @error('password')
-                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                        <p class="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center font-medium">
                                             <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
                                             {{ $message }}
                                         </p>
@@ -186,23 +186,23 @@
                                 </div>
 
                                 <div>
-                                    <label for="password_confirmation" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                                        <i class="fas fa-lock mr-2 text-indigo-500 text-sm"></i>
+                                    <label for="password_confirmation" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                                        <i class="fas fa-lock mr-2 text-indigo-500 dark:text-indigo-400 text-sm"></i>
                                         Confirm Password <span class="text-red-500 ml-1">*</span>
                                     </label>
                                     <div class="relative">
                                         <input type="password" id="password_confirmation" name="password_confirmation" required
-                                               class="w-full px-4 py-2.5 pr-12 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
+                                               class="w-full px-4 py-2.5 pr-12 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200 text-base"
                                                placeholder="•••••••••">
                                         <button type="button"
                                                 onclick="togglePasswordVisibility('password_confirmation')"
-                                                class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 focus:outline-none focus:text-indigo-600 transition-colors duration-200"
+                                                class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none focus:text-indigo-600 dark:focus:text-indigo-400 transition-colors duration-200"
                                                 aria-label="Toggle password confirmation visibility">
                                             <i id="password_confirmation-toggle-icon" class="fas fa-eye text-sm"></i>
                                         </button>
                                     </div>
                                     @error('password_confirmation')
-                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                        <p class="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center font-medium">
                                             <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
                                             {{ $message }}
                                         </p>
@@ -223,29 +223,29 @@
                     <!-- Step 2: Professional Information -->
                     <div id="step2Content" class="space-y-8 hidden">
                         <div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                                <div class="bg-green-100 rounded-lg p-3 mr-3">
-                                    <i class="fas fa-briefcase text-green-600"></i>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
+                                <div class="bg-green-100 dark:bg-green-500/10 rounded-lg p-3 mr-3">
+                                    <i class="fas fa-briefcase text-green-600 dark:text-green-400"></i>
                                 </div>
                                 Professional Information
                             </h3>
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div>
-                                    <label for="department" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                                        <i class="fas fa-building mr-2 text-indigo-500 text-sm"></i>
+                                    <label for="department" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                                        <i class="fas fa-building mr-2 text-indigo-500 dark:text-indigo-400 text-sm"></i>
                                         Department
                                     </label>
                                     <div class="relative">
                                         <input type="text" id="department" name="department"
                                                value="{{ old('department') }}"
-                                               class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
+                                               class="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200 text-base"
                                                placeholder="Engineering, Marketing, etc.">
                                         <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                            <i class="fas fa-building text-gray-400 text-sm"></i>
+                                            <i class="fas fa-building text-gray-400 dark:text-gray-500 text-sm"></i>
                                         </div>
                                     </div>
                                     @error('department')
-                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                        <p class="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center font-medium">
                                             <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
                                             {{ $message }}
                                         </p>
@@ -253,21 +253,21 @@
                                 </div>
 
                                 <div>
-                                    <label for="position" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                                        <i class="fas fa-user-tag mr-2 text-indigo-500 text-sm"></i>
+                                    <label for="position" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                                        <i class="fas fa-user-tag mr-2 text-indigo-500 dark:text-indigo-400 text-sm"></i>
                                         Position
                                     </label>
                                     <div class="relative">
                                         <input type="text" id="position" name="position"
                                                value="{{ old('position') }}"
-                                               class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
+                                               class="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200 text-base"
                                                placeholder="Senior Developer, Manager, etc.">
                                         <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                            <i class="fas fa-user-tag text-gray-400 text-sm"></i>
+                                            <i class="fas fa-user-tag text-gray-400 dark:text-gray-500 text-sm"></i>
                                         </div>
                                     </div>
                                     @error('position')
-                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                        <p class="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center font-medium">
                                             <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
                                             {{ $message }}
                                         </p>
@@ -275,20 +275,20 @@
                                 </div>
 
                                 <div class="lg:col-span-2">
-                                    <label for="address" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                                        <i class="fas fa-map-marker-alt mr-2 text-indigo-500 text-sm"></i>
+                                    <label for="address" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                                        <i class="fas fa-map-marker-alt mr-2 text-indigo-500 dark:text-indigo-400 text-sm"></i>
                                         Address
                                     </label>
                                     <div class="relative">
                                         <textarea id="address" name="address" rows="3"
-                                                  class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base resize-none"
+                                                  class="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200 text-base resize-none"
                                                   placeholder="Enter full address">{{ old('address') }}</textarea>
                                         <div class="absolute top-2.5 right-2.5 pointer-events-none">
-                                            <i class="fas fa-map-marker-alt text-gray-400 text-sm"></i>
+                                            <i class="fas fa-map-marker-alt text-gray-400 dark:text-gray-500 text-sm"></i>
                                         </div>
                                     </div>
                                     @error('address')
-                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                        <p class="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center font-medium">
                                             <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
                                             {{ $message }}
                                         </p>
@@ -300,7 +300,7 @@
                         <!-- Navigation -->
                         <div class="flex justify-between">
                             <button type="button" onclick="goToStep(1)"
-                                    class="px-5 py-2 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200 text-sm">
+                                    class="px-5 py-2 border-2 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 text-sm">
                                 <i class="fas fa-arrow-left mr-1.5 text-xs"></i> Previous
                             </button>
                             <button type="button" onclick="goToStep(3)"
@@ -313,40 +313,87 @@
                     <!-- Step 3: Team and Tech Stack Assignments -->
                     <div id="step3Content" class="space-y-8 hidden">
                         <div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                                <div class="bg-purple-100 rounded-lg p-3 mr-3">
-                                    <i class="fas fa-users text-purple-600"></i>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
+                                <div class="bg-purple-100 dark:bg-purple-500/10 rounded-lg p-3 mr-3">
+                                    <i class="fas fa-users text-purple-600 dark:text-purple-400"></i>
                                 </div>
                                 Team and Tech Stack Assignments
                             </h3>
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div>
-                                    <label for="team_id" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                                        <i class="fas fa-users mr-2 text-indigo-500 text-sm"></i>
+                                    <label for="team_id" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                                        <i class="fas fa-users mr-2 text-indigo-500 dark:text-indigo-400 text-sm"></i>
                                         Assign to Team
                                     </label>
                                     <x-ajax-select name="team_id"
                                                    :url="route('search.teams')"
                                                    placeholder="Search teams..." />
-                                    <p class="mt-1 text-xs text-gray-500">Assign user to a team for better collaboration</p>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Assign user to a team for better collaboration</p>
                                     @error('team_id')
-                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                        <p class="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center font-medium">
                                             <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>{{ $message }}
                                         </p>
                                     @enderror
                                 </div>
 
                                 <div>
-                                    <label for="tech_stack_id" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                                        <i class="fas fa-code mr-2 text-indigo-500 text-sm"></i>
+                                    <label for="sales_leader_id" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                                        <i class="fas fa-user-tie mr-2 text-indigo-500 dark:text-indigo-400 text-sm"></i>
+                                        Sales Leader
+                                    </label>
+                                    <select name="sales_leader_id" id="sales_leader_id"
+                                            class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm">
+                                        <option value="">No sales leader</option>
+                                        @foreach(\App\Models\User::withRoleName('sales-leader')->orderBy('name')->get() as $leader)
+                                            <option value="{{ $leader->id }}" {{ (int) old('sales_leader_id') === $leader->id ? 'selected' : '' }}>
+                                                {{ $leader->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Only used for sales members — the leader sees every order their members sell.</p>
+                                    @error('sales_leader_id')
+                                        <p class="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center font-medium">
+                                            <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>{{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="sales_target" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                                        <i class="fas fa-bullseye mr-2 text-indigo-500 dark:text-indigo-400 text-sm"></i>
+                                        Monthly Sales Target
+                                    </label>
+                                    <div class="flex gap-2">
+                                        <div class="relative flex-1">
+                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                            <input type="number" step="0.01" min="0" name="sales_target" id="sales_target"
+                                                   value="{{ old('sales_target') }}"
+                                                   class="w-full pl-7 pr-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
+                                                   placeholder="0.00">
+                                        </div>
+                                        <input type="month" name="sales_target_month"
+                                               value="{{ old('sales_target_month', now()->format('Y-m')) }}"
+                                               class="w-40 px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm">
+                                    </div>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">The minimum this person should sell from that month on — it carries forward until changed.</p>
+                                    @error('sales_target')
+                                        <p class="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center font-medium">
+                                            <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>{{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="tech_stack_id" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                                        <i class="fas fa-code mr-2 text-indigo-500 dark:text-indigo-400 text-sm"></i>
                                         Assign to Tech Stack
                                     </label>
                                     <x-ajax-select name="tech_stack_id"
                                                    :url="route('search.tech-stacks')"
                                                    placeholder="Search tech stacks..." />
-                                    <p class="mt-1 text-xs text-gray-500">Define the user's primary technology stack</p>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Define the user's primary technology stack</p>
                                     @error('tech_stack_id')
-                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                        <p class="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center font-medium">
                                             <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>{{ $message }}
                                         </p>
                                     @enderror
@@ -357,7 +404,7 @@
                         <!-- Navigation -->
                         <div class="flex justify-between">
                             <button type="button" onclick="goToStep(2)"
-                                    class="px-5 py-2 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200 text-sm">
+                                    class="px-5 py-2 border-2 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 text-sm">
                                 <i class="fas fa-arrow-left mr-1.5 text-xs"></i> Previous
                             </button>
                             <button type="button" onclick="goToStep(4)"
@@ -370,21 +417,21 @@
                     <!-- Step 4: Role and Permissions -->
                     <div id="step4Content" class="space-y-8 hidden">
                         <div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                                <div class="bg-orange-100 rounded-lg p-3 mr-3">
-                                    <i class="fas fa-shield-alt text-orange-600"></i>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
+                                <div class="bg-orange-100 dark:bg-orange-500/10 rounded-lg p-3 mr-3">
+                                    <i class="fas fa-shield-alt text-orange-600 dark:text-orange-400"></i>
                                 </div>
                                 Role and Permissions
                             </h3>
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div>
-                                    <label for="role" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                                        <i class="fas fa-user-shield mr-2 text-indigo-500 text-sm"></i>
+                                    <label for="role" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                                        <i class="fas fa-user-shield mr-2 text-indigo-500 dark:text-indigo-400 text-sm"></i>
                                         Assign Primary Role
                                     </label>
                                     <div class="relative">
                                         <select id="role" name="role"
-                                                class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm appearance-none transition-all duration-200 text-base">
+                                                class="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm appearance-none transition-all duration-200 text-base">
                                             <option value="">Select a role</option>
                                             @foreach($roles as $role)
                                                 <option value="{{ $role->name }}" {{ old('role') == $role->name ? 'selected' : '' }}>
@@ -393,12 +440,12 @@
                                             @endforeach
                                         </select>
                                         <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                            <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+                                            <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500 text-sm"></i>
                                         </div>
                                     </div>
-                                    <p class="mt-1 text-xs text-gray-500">Primary role determines basic user permissions</p>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Primary role determines basic user permissions</p>
                                     @error('role')
-                                        <p class="mt-1.5 text-sm text-red-600 flex items-center font-medium">
+                                        <p class="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center font-medium">
                                             <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>
                                             {{ $message }}
                                         </p>
@@ -407,25 +454,25 @@
 
                                 <!-- Managed Teams Section (only for managers) -->
                                 <div id="managedTeamsSection" class="hidden">
-                                    <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                                    <div class="bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-900 rounded-lg p-4">
                                         <div class="flex items-start mb-3">
-                                            <i class="fas fa-users-cog text-indigo-600 mt-1 mr-2"></i>
+                                            <i class="fas fa-users-cog text-indigo-600 dark:text-indigo-400 mt-1 mr-2"></i>
                                             <div class="flex-1">
-                                                <h4 class="text-sm font-semibold text-indigo-900 mb-1">Managed Teams</h4>
-                                                <p class="text-xs text-indigo-700">Select which teams this manager can oversee. Managers will only have access to teams they're assigned to.</p>
+                                                <h4 class="text-sm font-semibold text-indigo-900 dark:text-indigo-300 mb-1">Managed Teams</h4>
+                                                <p class="text-xs text-indigo-700 dark:text-indigo-400">Select which teams this manager can oversee. Managers will only have access to teams they're assigned to.</p>
                                             </div>
                                         </div>
                                         <div class="space-y-2">
                                             @foreach($teams as $team)
-                                                <label class="flex items-center p-2 rounded hover:bg-white transition-colors cursor-pointer">
+                                                <label class="flex items-center p-2 rounded hover:bg-white dark:hover:bg-gray-800 transition-colors cursor-pointer">
                                                     <input type="checkbox"
                                                            name="managed_teams[]"
                                                            value="{{ $team->id }}"
                                                            {{ in_array($team->id, old('managed_teams', [])) ? 'checked' : '' }}
-                                                           class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                                    <span class="ml-3 text-sm text-gray-700">{{ $team->name }}</span>
+                                                           class="w-4 h-4 text-indigo-600 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500">
+                                                    <span class="ml-3 text-sm text-gray-700 dark:text-gray-300">{{ $team->name }}</span>
                                                     @if($team->description)
-                                                        <span class="ml-2 text-xs text-gray-500">({{ $team->description }})</span>
+                                                        <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">({{ $team->description }})</span>
                                                     @endif
                                                 </label>
                                             @endforeach
@@ -435,13 +482,13 @@
                             </div>
 
                             <!-- Account Status Section -->
-                            <div class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center">
-                                        <i class="fas fa-toggle-on text-2xl text-green-600 mr-3" id="activeStatusIcon"></i>
+                                        <i class="fas fa-toggle-on text-2xl text-green-600 dark:text-green-400 mr-3" id="activeStatusIcon"></i>
                                         <div>
-                                            <h4 class="text-sm font-semibold text-gray-900">Account Status</h4>
-                                            <p class="text-xs text-gray-500" id="activeStatusText">User can login and access the system</p>
+                                            <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Account Status</h4>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400" id="activeStatusText">User can login and access the system</p>
                                         </div>
                                     </div>
                                     <label class="relative inline-flex items-center cursor-pointer">
@@ -449,8 +496,8 @@
                                                {{ old('is_active', '1') ? 'checked' : '' }}
                                                class="sr-only peer"
                                                onchange="toggleActiveStatus()">
-                                        <div class="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:transition-all peer-checked:bg-green-600"></div>
-                                        <span class="ml-3 text-sm font-medium text-gray-700" id="activeStatusLabel">Active</span>
+                                        <div class="w-14 h-7 bg-gray-300 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 dark:peer-focus:ring-green-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:transition-all peer-checked:bg-green-600"></div>
+                                        <span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300" id="activeStatusLabel">Active</span>
                                     </label>
                                 </div>
                             </div>
@@ -459,14 +506,14 @@
                             <div class="mt-6">
                                 <div class="flex items-center justify-between mb-4">
                                     <button type="button"
-                                            class="flex items-center text-base font-semibold text-gray-900 hover:text-indigo-600 transition-colors"
+                                            class="flex items-center text-base font-semibold text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                                             onclick="toggleAdditionalPermissions()">
-                                        <i class="fas fa-key mr-2 text-indigo-500 text-sm"></i>
+                                        <i class="fas fa-key mr-2 text-indigo-500 dark:text-indigo-400 text-sm"></i>
                                         Additional Permissions
                                         <i class="fas fa-chevron-down ml-2 text-sm transition-transform duration-200" id="additionalPermissionsIcon"></i>
                                     </button>
                                     <button type="button"
-                                            class="text-xs text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
+                                            class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium transition-colors"
                                             onclick="toggleAllAccordions()">
                                         <i class="fas fa-expand-alt mr-1"></i>
                                         <span id="toggleAllText">Expand All</span>
@@ -474,17 +521,17 @@
                                 </div>
                                 <div class="space-y-2 hidden" id="permissionsAccordion">
                                     @foreach($permissions as $group => $groupPermissions)
-                                        <div class="permissions-accordion-item border border-gray-200 rounded-lg overflow-hidden transition-all duration-200">
+                                        <div class="permissions-accordion-item border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden transition-all duration-200">
                                             <button type="button"
-                                                    class="accordion-header w-full px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-purple-50 flex items-center justify-between text-left transition-all duration-200"
+                                                    class="accordion-header w-full px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-800 hover:from-indigo-50 hover:to-purple-50 dark:hover:from-indigo-500/10 dark:hover:to-purple-500/10 flex items-center justify-between text-left transition-all duration-200"
                                                     onclick="toggleAccordion(this)">
                                                 <div class="flex items-center">
                                                     <div class="flex items-center justify-center w-6 h-6 bg-indigo-500 text-white rounded mr-3">
                                                         <i class="fas fa-chevron-down text-xs transition-transform duration-200 accordion-icon"></i>
                                                     </div>
                                                     <div class="text-left">
-                                                        <h5 class="text-sm font-semibold text-gray-900 capitalize">{{ $group }}</h5>
-                                                        <p class="text-xs text-gray-500">{{ count($groupPermissions) }} permissions</p>
+                                                        <h5 class="text-sm font-semibold text-gray-900 dark:text-gray-100 capitalize">{{ $group }}</h5>
+                                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ count($groupPermissions) }} permissions</p>
                                                     </div>
                                                 </div>
                                                 <div class="flex items-center space-x-2">
@@ -493,36 +540,36 @@
                                                             return collect($groupPermissions)->pluck('id')->contains($perm);
                                                         })->count();
                                                     @endphp
-                                                    <span class="text-xs font-medium text-gray-600 bg-gray-200 px-2 py-1 rounded">
+                                                    <span class="text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">
                                                         {{ $checkedCount }}/{{ count($groupPermissions) }}
                                                     </span>
-                                                    <i class="fas fa-shield-alt text-indigo-400 text-sm"></i>
+                                                    <i class="fas fa-shield-alt text-indigo-400 dark:text-indigo-400 text-sm"></i>
                                                 </div>
                                             </button>
                                             <div class="accordion-content hidden">
-                                                <div class="px-4 py-3 bg-white border-t border-gray-200">
+                                                <div class="px-4 py-3 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
                                                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                                                         @foreach($groupPermissions as $permission)
-                                                            <label class="flex items-center p-2 hover:bg-indigo-50 rounded cursor-pointer transition-colors duration-200 border border-transparent hover:border-indigo-200 group">
+                                                            <label class="flex items-center p-2 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded cursor-pointer transition-colors duration-200 border border-transparent hover:border-indigo-200 dark:hover:border-indigo-800 group">
                                                                 <input type="checkbox" name="permissions[]" value="{{ $permission->id }}"
                                                                        {{ in_array($permission->id, old('permissions', [])) ? 'checked' : '' }}
-                                                                       class="mr-2 w-3.5 h-3.5 text-indigo-600 bg-indigo-100 border-indigo-300 rounded focus:ring-indigo-500 focus:ring-2">
+                                                                       class="mr-2 w-3.5 h-3.5 text-indigo-600 bg-indigo-100 dark:bg-gray-800 border-indigo-300 dark:border-gray-600 rounded focus:ring-indigo-500 focus:ring-2">
                                                                 <div class="flex-1 min-w-0">
-                                                                    <div class="text-xs font-medium text-gray-900 truncate">{{ ucfirst(str_replace('-', ' ', $permission->name)) }}</div>
-                                                                    <div class="text-xs text-gray-400 truncate">{{ $permission->name }}</div>
+                                                                    <div class="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">{{ ucfirst(str_replace('-', ' ', $permission->name)) }}</div>
+                                                                    <div class="text-xs text-gray-400 dark:text-gray-500 truncate">{{ $permission->name }}</div>
                                                                 </div>
                                                             </label>
                                                         @endforeach
                                                     </div>
                                                     @if(count($groupPermissions) > 4)
-                                                        <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+                                                        <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
                                                             <button type="button"
-                                                                    class="text-xs text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
+                                                                    class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium transition-colors"
                                                                     onclick="toggleAllPermissions(this, '{{ $group }}')">
                                                                 <i class="fas fa-check-square mr-1"></i>
                                                                 <span class="toggle-all-text">Select All {{ ucfirst($group) }}</span>
                                                             </button>
-                                                            <span class="text-xs text-gray-400">
+                                                            <span class="text-xs text-gray-400 dark:text-gray-500">
                                                                 {{ round(collect(old('permissions', []))->filter(function($perm) use ($groupPermissions) {
                                                                     return collect($groupPermissions)->pluck('id')->contains($perm);
                                                                 })->count() / count($groupPermissions) * 100) }}% selected
@@ -534,9 +581,9 @@
                                         </div>
                                     @endforeach
                                 </div>
-                                <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                    <p class="text-xs text-blue-700 flex items-center">
-                                        <i class="fas fa-info-circle mr-2 text-blue-500"></i>
+                                <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-500/10 rounded-lg border border-blue-200 dark:border-blue-900">
+                                    <p class="text-xs text-blue-700 dark:text-blue-400 flex items-center">
+                                        <i class="fas fa-info-circle mr-2 text-blue-500 dark:text-blue-400"></i>
                                         Default permissions are automatically assigned based on the selected role. Additional permissions are optional extras beyond the role defaults.
                                     </p>
                                 </div>
@@ -546,12 +593,12 @@
                         <!-- Form Actions -->
                         <div class="flex flex-col sm:flex-row justify-between gap-3">
                             <button type="button" onclick="goToStep(3)"
-                                    class="px-5 py-2 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200 text-sm">
+                                    class="px-5 py-2 border-2 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 text-sm">
                                 <i class="fas fa-arrow-left mr-1.5 text-xs"></i> Previous
                             </button>
                             <div class="flex gap-3">
                                 <a href="{{ route('users.index') }}"
-                                   class="px-5 py-2 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200 text-sm">
+                                   class="px-5 py-2 border-2 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 text-sm">
                                     <i class="fas fa-times mr-1.5 text-xs"></i> Cancel
                                 </a>
                                 <button type="submit"
@@ -771,6 +818,11 @@
         background-color: #eef2ff;
         border-color: #4f46e5;
     }
+
+    .dark .permissions-accordion-item label:has(input:checked) {
+        background-color: rgba(99, 102, 241, 0.1);
+        border-color: #6366f1;
+    }
 </style>
 @endpush
 
@@ -953,12 +1005,12 @@ function goToStep(stepNumber) {
 
         if (stepIndicator) {
             stepIndicator.classList.remove('bg-indigo-600', 'text-white');
-            stepIndicator.classList.add('bg-gray-300', 'text-gray-600');
+            stepIndicator.classList.add('bg-gray-300', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300');
         }
 
         if (progressElement) {
             progressElement.classList.remove('bg-indigo-600');
-            progressElement.classList.add('bg-gray-300');
+            progressElement.classList.add('bg-gray-300', 'dark:bg-gray-700');
         }
     }
 
@@ -974,7 +1026,7 @@ function goToStep(stepNumber) {
     }
 
     if (currentStepIndicator) {
-        currentStepIndicator.classList.remove('bg-gray-300', 'text-gray-600');
+        currentStepIndicator.classList.remove('bg-gray-300', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300');
         currentStepIndicator.classList.add('bg-indigo-600', 'text-white');
     }
 
@@ -982,7 +1034,7 @@ function goToStep(stepNumber) {
     for (let i = 1; i < stepNumber; i++) {
         const progressElement = document.getElementById('progress' + i);
         if (progressElement) {
-            progressElement.classList.remove('bg-gray-300');
+            progressElement.classList.remove('bg-gray-300', 'dark:bg-gray-700');
             progressElement.classList.add('bg-indigo-600');
         }
     }

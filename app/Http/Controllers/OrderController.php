@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreOrderRequest;
+use App\Http\Requests\UpdateOrderRequest;
 use App\Mail\OrderAssignmentNotification;
 use App\Models\Order;
+use App\Models\OrderAudit;
 use App\Models\OrderStatus;
 use App\Models\OrderStatusHistory;
 use App\Models\Profile;
@@ -12,8 +15,12 @@ use App\Models\TechStack;
 use App\Models\User;
 use App\Notifications\OrderStatusNotification;
 use App\Services\EmailService;
+use App\Services\OrderDocumentService;
+use App\Services\RichTextSanitizer;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class OrderController extends Controller
 {
@@ -81,6 +88,11 @@ class OrderController extends Controller
         $query = Order::query()->with(['team', 'techStack', 'freelanceProfile', 'creator', 'users']);
 
         $user = auth()->user();
+
+        // Sales people only ever see what they (or their group) sold.
+        if ($user->isSales()) {
+            $query->visibleToSalesUser($user);
+        }
 
         // Team leaders and stack leaders only see their own team's orders
         if ($user->hasRole(['team-leader', 'stack-leader'])) {
@@ -163,6 +175,13 @@ class OrderController extends Controller
             // Note: Column 0 is checkbox (null data), so subtract 1 from client-side column index
             $adjustedColumn = $orderColumn - 1;
             $columns = ['order_id', 'name', 'status', 'priority', 'actual_revenue', 'team_id', 'tech_stack_id', 'freelance_profile_id', 'end_date', 'created_at', 'delivered_at'];
+
+            // Sales people do not get the team and assignee columns, so the
+            // client side indexes shift by two from that point on.
+            if ($user->isSales()) {
+                unset($columns[5], $columns[6]);
+                $columns = array_values($columns);
+            }
             if (isset($columns[$adjustedColumn])) {
                 $query->orderBy($columns[$adjustedColumn], $orderDir);
             }
@@ -215,7 +234,8 @@ class OrderController extends Controller
                 'tech_stack' => $order->techStack ? $order->techStack->name : 'N/A',
                 'freelance_profile' => $order->freelanceProfile ? $order->freelanceProfile->username : 'N/A',
                 'freelance_profile_id' => $order->freelance_profile_id,
-                'order_sheet_url' => $order->order_sheet_url,
+                'progress' => $order->progress ?? 0,
+                'documents_count' => count($order->documents()),
                 'special_status' => $order->special_status?->value,
                 'last_update_date' => $order->last_update_date ? $order->last_update_date->format('Y-m-d H:i:s') : null,
                 'is_assigned' => $order->users->contains('id', $currentUserId),
@@ -237,6 +257,63 @@ class OrderController extends Controller
             'recordsFiltered' => $totalRecords,
             'data' => $data,
         ]);
+    }
+
+    /**
+     * Open an order from the sales side: the deal facts only. Operations picks
+     * it up from there and fills in team, dates and delivery.
+     *
+     * @param  array<string, mixed>  $validated
+     */
+    protected function storeSalesOrder(array $validated, StoreOrderRequest $request, OrderDocumentService $documentService)
+    {
+        $orderValue = $validated['value'] ?? null;
+
+        $order = Order::create([
+            'order_id' => $validated['order_id'] ?? null,
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+            'notes' => $validated['notes'] ?? null,
+            'credentials' => RichTextSanitizer::clean($validated['credentials'] ?? null),
+            'value' => $orderValue,
+            'actual_revenue' => $orderValue ? round($orderValue * 0.80, 2) : null,
+            'freelance_profile_id' => $validated['freelance_profile_id'] ?? null,
+            'status' => 'pending',
+            'progress' => 0,
+            'priority' => 'medium',
+            'start_date' => now()->toDateString(),
+            'created_by' => auth()->id(),
+            'sales_user_id' => auth()->id(),
+        ]);
+
+        $documentService->store($order, $request->file('client_documents', []));
+
+        return redirect()->route('orders.index')
+            ->with('success', 'Order added. Operations will pick it up from here.');
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    protected function updateSalesOrder(array $validated, UpdateOrderRequest $request, Order $order, OrderDocumentService $documentService)
+    {
+        $orderValue = $validated['value'] ?? null;
+
+        $order->update([
+            'order_id' => $validated['order_id'] ?? null,
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+            'notes' => $validated['notes'] ?? null,
+            'credentials' => RichTextSanitizer::clean($validated['credentials'] ?? null),
+            'value' => $orderValue,
+            'actual_revenue' => $orderValue ? round($orderValue * 0.80, 2) : $order->actual_revenue,
+            'freelance_profile_id' => $validated['freelance_profile_id'] ?? null,
+        ]);
+
+        $documentService->store($order, $request->file('client_documents', []));
+
+        return redirect()->route('orders.index')
+            ->with('success', 'Order updated successfully.');
     }
 
     public function searchMembers(Request $request)
@@ -309,31 +386,15 @@ class OrderController extends Controller
         return view('orders.create', compact('teams', 'techStacks', 'statuses', 'users', 'profiles', 'isTeamLeader', 'profilePlatforms'));
     }
 
-    public function store(Request $request)
+    public function store(StoreOrderRequest $request, OrderDocumentService $documentService)
     {
-
-        $this->authorize('create', Order::class);
-
         $user = auth()->user();
 
-        $validated = $request->validate([
-            'order_id' => 'nullable|string|unique:orders,order_id',
-            'name' => 'required|string|max:255|unique:orders,name',
-            'description' => 'nullable|string',
-            'status' => 'required|string',
-            'priority' => 'required|in:low,medium,high',
-            'value' => 'nullable|numeric|min:0',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'actual_revenue' => 'nullable|numeric|min:0',
-            'team_id' => 'nullable|exists:teams,id',
-            'tech_stack_id' => 'nullable|exists:tech_stacks,id',
-            'freelance_profile_id' => 'nullable|exists:profiles,id',
-            'order_sheet_url' => 'nullable|url|max:2048',
-            'special_status' => 'nullable|in:selected_for_delivery,continue_for_next,stuck_order',
-            'users' => 'nullable|array',
-            'users.*' => 'exists:users,id',
-        ]);
+        $validated = $request->validated();
+
+        if ($user->isSales()) {
+            return $this->storeSalesOrder($validated, $request, $documentService);
+        }
 
         // For team leaders and stack leaders, set appropriate filters
         if (! $user->hasRole(['admin', 'operation-manager', 'project-manager']) && $user->team_id) {
@@ -348,7 +409,10 @@ class OrderController extends Controller
             'order_id' => $validated['order_id'] ?? null,
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
+            'notes' => $validated['notes'] ?? null,
+            'credentials' => RichTextSanitizer::clean($validated['credentials'] ?? null),
             'status' => $validated['status'],
+            'progress' => $validated['progress'] ?? 0,
             'priority' => $validated['priority'],
             'value' => $orderValue,
             'start_date' => $validated['start_date'] ?? null,
@@ -357,14 +421,19 @@ class OrderController extends Controller
             'team_id' => $validated['team_id'] ?? null,
             'tech_stack_id' => $validated['tech_stack_id'] ?? null,
             'freelance_profile_id' => $validated['freelance_profile_id'] ?? null,
-            'order_sheet_url' => $validated['order_sheet_url'] ?? null,
             'special_status' => $validated['special_status'] ?? null,
             'created_by' => auth()->id(),
         ]);
 
+        $documentService->store($order, $request->file('client_documents', []));
+
         // Attach users
         if (! empty($validated['users'])) {
             $order->users()->attach($validated['users']);
+
+            OrderAudit::record($order, 'members_updated', [], [
+                'members' => User::whereIn('id', $validated['users'])->pluck('name')->all(),
+            ]);
 
             // Send notifications to assigned users
             foreach ($validated['users'] as $userId) {
@@ -392,13 +461,60 @@ class OrderController extends Controller
             ->with('success', 'Order created successfully.');
     }
 
+    /**
+     * Change log entries loaded per page, on first paint and per "load more".
+     */
+    private const AUDITS_PER_PAGE = 15;
+
     public function show(Order $order)
     {
         $this->authorize('view', $order);
 
-        $order->load(['team', 'techStack', 'creator', 'users', 'statusHistory.changedByUser']);
+        $order->load([
+            'team',
+            'techStack',
+            'freelanceProfile',
+            'creator',
+            'users',
+            'statusHistory.changedByUser',
+        ]);
 
-        return view('orders.show', compact('order'));
+        $audits = $order->audits()->with('user')->paginate(self::AUDITS_PER_PAGE);
+        $auditsTotal = $audits->total();
+
+        return view('orders.show', compact('order', 'audits', 'auditsTotal'));
+    }
+
+    /**
+     * A page of change log entries, rendered server side so the markup stays
+     * identical to first paint.
+     */
+    public function audits(Request $request, Order $order)
+    {
+        $this->authorize('view', $order);
+
+        $validated = $request->validate([
+            'filter' => 'nullable|string|in:all,fields,people,files',
+            'page' => 'nullable|integer|min:1',
+        ]);
+
+        $filter = $validated['filter'] ?? 'all';
+
+        $query = $order->audits()->with('user');
+
+        if ($filter !== 'all') {
+            $query->whereIn('event', OrderAudit::filterGroups()[$filter]);
+        }
+
+        $audits = $query->paginate(self::AUDITS_PER_PAGE, ['*'], 'page', $validated['page'] ?? 1);
+
+        return response()->json([
+            'html' => view('orders.partials.audit-entries', compact('audits', 'order'))->render(),
+            'has_more' => $audits->hasMorePages(),
+            'next_page' => $audits->currentPage() + 1,
+            'total' => $audits->total(),
+            'showing' => $audits->count() + ($audits->currentPage() - 1) * self::AUDITS_PER_PAGE,
+        ]);
     }
 
     public function edit(Order $order)
@@ -425,31 +541,17 @@ class OrderController extends Controller
         return view('orders.edit', compact('order', 'teams', 'techStacks', 'statuses', 'users', 'profiles', 'profilePlatforms'));
     }
 
-    public function update(Request $request, Order $order)
+    public function update(UpdateOrderRequest $request, Order $order, OrderDocumentService $documentService)
     {
-        $this->authorize('update', $order);
-        $validated = $request->validate([
-            'order_id' => 'nullable|string|unique:orders,order_id,'.$order->id,
-            'name' => 'required|string|max:255|unique:orders,name,'.$order->id,
-            'description' => 'nullable|string',
-            'status' => 'required|string',
-            'priority' => 'required|in:low,medium,high',
-            'value' => 'nullable|numeric|min:0',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'actual_revenue' => 'nullable|numeric|min:0',
-            'team_id' => 'nullable|exists:teams,id',
-            'tech_stack_id' => 'nullable|exists:tech_stacks,id',
-            'freelance_profile_id' => 'nullable|exists:profiles,id',
-            'order_sheet_url' => 'nullable|url|max:2048',
-            'special_status' => 'nullable|in:selected_for_delivery,continue_for_next,stuck_order',
-            'users' => 'nullable|array',
-            'users.*' => 'exists:users,id',
-            'notes' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
+
+        if (auth()->user()->isSales()) {
+            return $this->updateSalesOrder($validated, $request, $order, $documentService);
+        }
 
         $oldStatus = $order->status;
         $oldRevenue = $order->actual_revenue;
+        $oldMembers = $order->users()->pluck('name', 'users.id');
 
         // Auto-calculate net revenue (80% of order amount after Fiverr's 20% fee)
         $orderValue = $validated['value'] ?? null;
@@ -459,7 +561,10 @@ class OrderController extends Controller
             'order_id' => $validated['order_id'] ?? null,
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
+            'notes' => $validated['notes'] ?? null,
+            'credentials' => RichTextSanitizer::clean($validated['credentials'] ?? null),
             'status' => $validated['status'],
+            'progress' => $validated['progress'] ?? $order->progress,
             'priority' => $validated['priority'],
             'value' => $orderValue,
             'start_date' => $validated['start_date'] ?? null,
@@ -468,13 +573,23 @@ class OrderController extends Controller
             'team_id' => $validated['team_id'] ?? null,
             'tech_stack_id' => $validated['tech_stack_id'] ?? null,
             'freelance_profile_id' => $validated['freelance_profile_id'] ?? null,
-            'order_sheet_url' => $validated['order_sheet_url'] ?? null,
             'special_status' => $validated['special_status'] ?? null,
         ]);
+
+        $documentService->store($order, $request->file('client_documents', []));
 
         // Sync users
         if (isset($validated['users'])) {
             $order->users()->sync($validated['users']);
+
+            $newMembers = $order->users()->pluck('name', 'users.id');
+
+            if ($oldMembers->keys()->sort()->values()->all() !== $newMembers->keys()->sort()->values()->all()) {
+                OrderAudit::record($order, 'members_updated',
+                    ['members' => $oldMembers->values()->all()],
+                    ['members' => $newMembers->values()->all()],
+                );
+            }
         }
 
         // Create status history if status or revenue changed
@@ -483,7 +598,6 @@ class OrderController extends Controller
                 'order_id' => $order->id,
                 'status' => $order->status,
                 'changed_by' => auth()->id(),
-                'notes' => $validated['notes'] ?? null,
                 'actual_revenue' => $order->actual_revenue,
             ]);
         }
@@ -509,6 +623,10 @@ class OrderController extends Controller
             'action' => 'required|string|in:mark-completed,mark-in-progress,mark-pending,mark-on-hold,mark-cancelled,delete',
         ]);
 
+        if (auth()->user()->isSales()) {
+            return response()->json(['message' => 'Sales cannot change order status or delete orders.'], 403);
+        }
+
         $ids = $validated['ids'];
         $action = $validated['action'];
 
@@ -524,10 +642,12 @@ class OrderController extends Controller
             }
         }
 
+        // Acted on one by one so every change lands in the order's change log.
+        $orders = $orders->get();
         $count = $orders->count();
 
         if ($action === 'delete') {
-            $orders->delete();
+            $orders->each->delete();
 
             return response()->json([
                 'message' => "{$count} order(s) deleted successfully.",
@@ -543,7 +663,7 @@ class OrderController extends Controller
         ];
 
         $newStatus = $statusMap[$action];
-        $orders->update(['status' => $newStatus]);
+        $orders->each->update(['status' => $newStatus]);
 
         $statusLabel = ucfirst(str_replace('-', ' ', $newStatus));
 
@@ -568,11 +688,12 @@ class OrderController extends Controller
 
     public function quickUpdate(Request $request, Order $order)
     {
-        $this->authorize('update', $order);
+        $this->authorize('manageOperations', $order);
 
         $validated = $request->validate([
             'status' => 'nullable|string',
             'priority' => 'nullable|in:low,medium,high',
+            'progress' => 'nullable|integer|min:0|max:100',
             'delivered_at' => 'nullable|date',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
@@ -588,6 +709,44 @@ class OrderController extends Controller
         ]);
     }
 
+    /**
+     * Stream a stored client document back to the browser.
+     */
+    public function downloadDocument(Order $order, string $document): StreamedResponse
+    {
+        $this->authorize('view', $order);
+
+        $file = $order->findDocument($document);
+
+        abort_if($file === null, 404);
+
+        $disk = Storage::disk($file['disk'] ?? config('filesystems.default'));
+
+        abort_unless($disk->exists($file['path']), 404);
+
+        return $disk->download($file['path'], $file['name']);
+    }
+
+    public function destroyDocument(Order $order, string $document, OrderDocumentService $documentService)
+    {
+        $this->authorize('update', $order);
+
+        $removed = $documentService->delete($order, $document);
+
+        if ($removed === null) {
+            return response()->json(['message' => 'Document not found.'], 404);
+        }
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'message' => 'Document removed successfully.',
+                'documents' => $order->documents(),
+            ]);
+        }
+
+        return back()->with('success', 'Document removed successfully.');
+    }
+
     public function getUsers(Order $order)
     {
         $this->authorize('view', $order);
@@ -601,15 +760,23 @@ class OrderController extends Controller
 
     public function assignUsers(Request $request, Order $order)
     {
-        $this->authorize('update', $order);
+        $this->authorize('manageOperations', $order);
 
         $validated = $request->validate([
             'users' => 'required|array',
             'users.*' => 'exists:users,id',
         ]);
 
+        $oldMembers = $order->users()->pluck('name')->all();
+
         // Sync users to the order
         $order->users()->sync($validated['users']);
+
+        $newMembers = $order->users()->pluck('name')->all();
+
+        if ($oldMembers !== $newMembers) {
+            OrderAudit::record($order, 'members_updated', ['members' => $oldMembers], ['members' => $newMembers]);
+        }
 
         // Send notifications to newly assigned users
         foreach ($validated['users'] as $userId) {

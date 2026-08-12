@@ -16,6 +16,10 @@ class OrderDashboardController extends Controller
 
     public function index(Request $request)
     {
+        if (auth()->user()->isSales()) {
+            return redirect()->route('sales.dashboard');
+        }
+
         $user = auth()->user();
 
         $selectedMonth = $request->input('month', now()->format('Y-m'));

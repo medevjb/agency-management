@@ -22,6 +22,219 @@
     .progress-bar {
         transition: width 0.6s ease;
     }
+
+    /* ---- Sales band ---- */
+    .sales-band {
+        padding: 1.5rem;
+        border-radius: 1.25rem;
+        background-color: #fffbeb;
+        border: 1px solid #fde68a;
+    }
+
+    .dark .sales-band {
+        background-color: rgba(245, 158, 11, 0.05);
+        border-color: rgba(245, 158, 11, 0.2);
+    }
+
+    .sales-band-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.125rem;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        color: #111827;
+    }
+
+    .dark .sales-band-title {
+        color: #f3f4f6;
+    }
+
+    .sales-band-dot {
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 9999px;
+        background-image: linear-gradient(135deg, #f59e0b, #f97316);
+    }
+
+    .sales-num {
+        font-variant-numeric: tabular-nums;
+        font-feature-settings: 'tnum';
+    }
+
+    .sales-hero {
+        font-size: 2.25rem;
+        line-height: 1.1;
+        font-weight: 800;
+        letter-spacing: -0.035em;
+        color: #111827;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .dark .sales-hero {
+        color: #ffffff;
+    }
+
+    .sales-delta {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.125rem 0.5rem;
+        border-radius: 9999px;
+        font-weight: 800;
+    }
+
+    .sales-delta.is-up { background-color: #d1fae5; color: #047857; }
+    .sales-delta.is-down { background-color: #fee2e2; color: #b91c1c; }
+    .dark .sales-delta.is-up { background-color: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
+    .dark .sales-delta.is-down { background-color: rgba(239, 68, 68, 0.15); color: #fca5a5; }
+
+    .sales-pct {
+        font-size: 1.125rem;
+        font-weight: 800;
+    }
+
+    .sales-pct.is-met { color: #059669; }
+    .sales-pct.is-close { color: #d97706; }
+    .sales-pct.is-behind { color: #dc2626; }
+    .sales-pct.is-none { color: #9ca3af; }
+
+    .dark .sales-pct.is-met { color: #34d399; }
+    .dark .sales-pct.is-close { color: #fbbf24; }
+    .dark .sales-pct.is-behind { color: #f87171; }
+
+    .sales-bar {
+        height: 0.5rem;
+        border-radius: 9999px;
+        background-color: #f1f5f9;
+        overflow: hidden;
+    }
+
+    .sales-bar.is-slim {
+        height: 0.25rem;
+        margin-top: 0.3125rem;
+    }
+
+    .dark .sales-bar {
+        background-color: #1f2937;
+    }
+
+    .sales-bar span {
+        display: block;
+        height: 100%;
+        border-radius: 9999px;
+    }
+
+    .sales-bar span.is-met { background-image: linear-gradient(90deg, #059669, #10b981); }
+    .sales-bar span.is-close { background-image: linear-gradient(90deg, #d97706, #f59e0b); }
+    .sales-bar span.is-behind { background-image: linear-gradient(90deg, #dc2626, #f87171); }
+    .sales-bar span.is-none { background-color: #cbd5e1; }
+
+    .sales-mini {
+        padding: 0.75rem;
+        border-radius: 0.75rem;
+        background-color: #f9fafb;
+        border: 1px solid #f1f5f9;
+    }
+
+    .dark .sales-mini {
+        background-color: rgba(31, 41, 55, 0.5);
+        border-color: #1f2937;
+    }
+
+    .sales-mini-label {
+        font-size: 0.6875rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #9ca3af;
+    }
+
+    .sales-mini-value {
+        margin-top: 0.125rem;
+        font-size: 1.125rem;
+        font-weight: 800;
+        color: #111827;
+    }
+
+    .dark .sales-mini-value {
+        color: #f3f4f6;
+    }
+
+    /* ---- Leaderboard ---- */
+    .board-row {
+        display: grid;
+        grid-template-columns: 1.75rem minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 0.875rem;
+        padding: 0.625rem 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .board-row:last-child { border-bottom: 0; }
+    .dark .board-row { border-bottom-color: #1f2937; }
+
+    .board-rank {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.75rem;
+        height: 1.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+        background-color: #f3f4f6;
+        color: #6b7280;
+    }
+
+    .dark .board-rank { background-color: #1f2937; color: #9ca3af; }
+
+    .board-rank.rank-1 { background-image: linear-gradient(135deg, #f59e0b, #fbbf24); color: #ffffff; }
+    .board-rank.rank-2 { background-image: linear-gradient(135deg, #94a3b8, #cbd5e1); color: #ffffff; }
+    .board-rank.rank-3 { background-image: linear-gradient(135deg, #b45309, #d97706); color: #ffffff; }
+
+    .board-name {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: #111827;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .dark .board-name { color: #f3f4f6; }
+
+    .board-tag {
+        margin-left: 0.375rem;
+        padding: 0.0625rem 0.375rem;
+        border-radius: 9999px;
+        font-size: 0.5625rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        background-color: #eef2ff;
+        color: #4338ca;
+    }
+
+    .dark .board-tag { background-color: rgba(99, 102, 241, 0.15); color: #a5b4fc; }
+
+    .board-meta {
+        margin-top: 0.25rem;
+        font-size: 0.6875rem;
+        color: #9ca3af;
+    }
+
+    .board-amount {
+        font-size: 0.9375rem;
+        font-weight: 800;
+        color: #111827;
+    }
+
+    .dark .board-amount { color: #f3f4f6; }
+
+    .board-row.is-first .board-amount { color: #b45309; }
+    .dark .board-row.is-first .board-amount { color: #fbbf24; }
 </style>
 @endpush
 
@@ -30,20 +243,20 @@
     <!-- Page Header -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p class="text-gray-600 mt-1">Welcome back, {{ Auth::user()->name }}! Here's your order overview.</p>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">Dashboard</h1>
+            <p class="text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-1">Welcome back, {{ Auth::user()->name }}! Here's your order overview.</p>
         </div>
         <div class="flex flex-wrap gap-3 items-center">
             <!-- Month Filter -->
             <div class="relative">
-                <select id="monthFilter" class="appearance-none bg-white border border-gray-200 text-gray-700 py-2.5 pl-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer shadow-sm font-medium text-sm">
+                <select id="monthFilter" class="appearance-none bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 dark:text-gray-200 dark:text-gray-700 py-2.5 pl-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer shadow-sm font-medium text-sm">
                     @foreach($availableMonths as $value => $label)
                         <option value="{{ $value }}" {{ $selectedMonth === $value ? 'selected' : '' }}>
                             {{ $label }}
                         </option>
                     @endforeach
                 </select>
-                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500">
                     <i class="fas fa-calendar-alt text-sm"></i>
                 </div>
             </div>
@@ -131,18 +344,18 @@
     </div>
 
     <!-- Quick Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         @php
             $myTasks = \App\Models\Task::where('assigned_to', Auth::id())->where('status', '!=', 'completed')->count();
         @endphp
 
         <!-- Total Orders -->
-        <div class="stat-card bg-white rounded-2xl shadow-md p-6 border border-gray-100">
+        <div class="stat-card bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-100 dark:border-gray-800">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-500 mb-1">Total Orders</p>
-                    <p class="text-3xl font-bold text-gray-900">{{ number_format($stats['total']) }}</p>
-                    <p class="text-xs text-gray-500 mt-2"><i class="fas fa-folder mr-1"></i>All orders</p>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-1">Total Orders</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ number_format($stats['total']) }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-2"><i class="fas fa-folder mr-1"></i>All orders</p>
                 </div>
                 <div class="gradient-icon w-14 h-14 rounded-2xl flex items-center justify-center" style="--icon-from: #6366f1; --icon-to: #8b5cf6;">
                     <i class="fas fa-folder text-white text-xl"></i>
@@ -151,12 +364,12 @@
         </div>
 
         <!-- Delivered Orders (Revenue Generating) -->
-        <div class="stat-card bg-white rounded-2xl shadow-md p-6 border border-gray-100">
+        <div class="stat-card bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-100 dark:border-gray-800">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-500 mb-1">Delivered</p>
-                    <p class="text-3xl font-bold text-gray-900">{{ number_format($stats['delivered']) }}</p>
-                    <p class="text-xs text-green-600 mt-2"><i class="fas fa-check-circle mr-1"></i>Revenue earned</p>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-1">Delivered</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ number_format($stats['delivered']) }}</p>
+                    <p class="text-xs text-green-600 dark:text-green-400 mt-2"><i class="fas fa-check-circle mr-1"></i>Revenue earned</p>
                 </div>
                 <div class="gradient-icon w-14 h-14 rounded-2xl flex items-center justify-center" style="--icon-from: #10b981; --icon-to: #34d399;">
                     <i class="fas fa-check-circle text-white text-xl"></i>
@@ -165,12 +378,12 @@
         </div>
 
         <!-- Workload (Active Orders) -->
-        <div class="stat-card bg-white rounded-2xl shadow-md p-6 border border-gray-100">
+        <div class="stat-card bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-100 dark:border-gray-800">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-500 mb-1">Workload</p>
-                    <p class="text-3xl font-bold text-gray-900">{{ number_format($stats['workload']) }}</p>
-                    <p class="text-xs text-blue-600 mt-2"><i class="fas fa-dollar-sign mr-1"></i>${{ number_format($stats['workloadValue'], 0) }} running value</p>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-1">Workload</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ number_format($stats['workload']) }}</p>
+                    <p class="text-xs text-blue-600 dark:text-blue-400 mt-2"><i class="fas fa-dollar-sign mr-1"></i>${{ number_format($stats['workloadValue'], 0) }} running value</p>
                 </div>
                 <div class="gradient-icon w-14 h-14 rounded-2xl flex items-center justify-center" style="--icon-from: #3b82f6; --icon-to: #60a5fa;">
                     <i class="fas fa-spinner text-white text-xl"></i>
@@ -179,16 +392,172 @@
         </div>
 
         <!-- Delivered Revenue -->
-        <div class="stat-card bg-white rounded-2xl shadow-md p-6 border border-gray-100">
+        <div class="stat-card bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-100 dark:border-gray-800">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-500 mb-1">Delivered Revenue</p>
-                    <p class="text-3xl font-bold text-gray-900">${{ number_format($stats['revenue'], 0) }}</p>
-                    <p class="text-xs text-purple-600 mt-2"><i class="fas fa-check-circle mr-1"></i>{{ $stats['delivered'] }} orders this month</p>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-1">Delivered Revenue</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">${{ number_format($stats['revenue'], 0) }}</p>
+                    <p class="text-xs text-purple-600 dark:text-purple-400 mt-2"><i class="fas fa-check-circle mr-1"></i>{{ $stats['delivered'] }} orders this month</p>
                 </div>
                 <div class="gradient-icon w-14 h-14 rounded-2xl flex items-center justify-center" style="--icon-from: #8b5cf6; --icon-to: #a78bfa;">
                     <i class="fas fa-chart-line text-white text-xl"></i>
                 </div>
+            </div>
+        </div>
+
+        <!-- Sales This Month (gross sold, before delivery) -->
+        <div class="stat-card bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-100 dark:border-gray-800">
+            <div class="flex items-center justify-between">
+                <div class="min-w-0">
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Sales This Month</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-gray-100 sales-num">${{ number_format($salesStats['sold'], 0) }}</p>
+                    <p class="text-xs mt-2 sales-num">
+                        @if($salesStats['achievement'] !== null)
+                            <span class="{{ $salesStats['achievement'] >= 100 ? 'text-green-600 dark:text-green-400' : ($salesStats['achievement'] >= 60 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400') }}">
+                                <i class="fas fa-bullseye mr-1"></i>{{ $salesStats['achievement'] }}% of target
+                            </span>
+                        @else
+                            <span class="text-amber-600 dark:text-amber-400">
+                                <i class="fas fa-sack-dollar mr-1"></i>{{ $salesStats['count'] }} {{ \Illuminate\Support\Str::plural('order', $salesStats['count']) }} sold
+                            </span>
+                        @endif
+                    </p>
+                </div>
+                <div class="gradient-icon w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style="--icon-from: #f59e0b; --icon-to: #f97316;">
+                    <i class="fas fa-sack-dollar text-white text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= SALES ================= -->
+    @php
+        $salesAchievement = $salesStats['achievement'];
+        $salesTone = $salesAchievement === null
+            ? 'is-none'
+            : ($salesAchievement >= 100 ? 'is-met' : ($salesAchievement >= 60 ? 'is-close' : 'is-behind'));
+        $topAmount = max(1, (float) collect($leaderboard)->max('amount'));
+    @endphp
+
+    <div class="sales-band">
+        <div class="flex flex-wrap items-baseline justify-between gap-3 mb-4">
+            <h2 class="sales-band-title">
+                <span class="sales-band-dot"></span>
+                Sales
+            </h2>
+            <a href="{{ route('sales.dashboard') }}" class="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
+                Full sales dashboard <i class="fas fa-arrow-right text-xs ml-1"></i>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <!-- Sold this month, against target -->
+            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-100 dark:border-gray-800">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Sold in {{ $availableMonths[$selectedMonth] ?? '' }}</p>
+                        <p class="sales-hero">${{ number_format($salesStats['sold'], 0) }}</p>
+                        <div class="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                            @if($salesStats['change'] !== null)
+                                <span class="sales-delta {{ $salesStats['change'] >= 0 ? 'is-up' : 'is-down' }}">
+                                    <i class="fas fa-arrow-{{ $salesStats['change'] >= 0 ? 'up' : 'down' }}"></i>
+                                    {{ abs($salesStats['change']) }}%
+                                </span>
+                            @endif
+                            <span class="text-gray-500 dark:text-gray-400 sales-num">
+                                {{ $salesStats['count'] }} {{ \Illuminate\Support\Str::plural('order', $salesStats['count']) }} ·
+                                ${{ number_format($salesStats['averageDeal'], 0) }} average deal
+                            </span>
+                        </div>
+                    </div>
+                    <div class="gradient-icon w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style="--icon-from: #f59e0b; --icon-to: #f97316;">
+                        <i class="fas fa-sack-dollar text-white text-xl"></i>
+                    </div>
+                </div>
+
+                @if($salesStats['target'] > 0)
+                    <div class="mt-5 pt-4 border-t border-dashed border-gray-200 dark:border-gray-800">
+                        <div class="flex items-baseline justify-between gap-3 mb-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Company target</span>
+                            <span class="sales-pct {{ $salesTone }} sales-num">{{ $salesAchievement }}%</span>
+                        </div>
+                        <div class="sales-bar">
+                            <span class="{{ $salesTone }}" style="width: {{ min(100, $salesAchievement) }}%"></span>
+                        </div>
+                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400 sales-num">
+                            ${{ number_format($salesStats['sold'], 0) }} of ${{ number_format($salesStats['target'], 0) }}
+                            @if($salesStats['remaining'] > 0)
+                                · <strong>${{ number_format($salesStats['remaining'], 0) }} to go</strong>
+                            @else
+                                · target met
+                            @endif
+                        </p>
+                    </div>
+                @else
+                    <div class="mt-5 pt-4 border-t border-dashed border-gray-200 dark:border-gray-800">
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            No sales targets set yet — add a monthly target on a sales person's profile to track achievement here.
+                        </p>
+                    </div>
+                @endif
+
+                <div class="grid grid-cols-2 gap-3 mt-5">
+                    <div class="sales-mini">
+                        <p class="sales-mini-label">Sold, still in delivery</p>
+                        <p class="sales-mini-value sales-num">${{ number_format($salesStats['inDelivery'], 0) }}</p>
+                    </div>
+                    <div class="sales-mini">
+                        <p class="sales-mini-label">Sales people</p>
+                        <p class="sales-mini-value sales-num">{{ $salesStats['sellers'] }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top performers -->
+            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-100 dark:border-gray-800">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-base font-bold text-gray-900 dark:text-gray-100">
+                        <i class="fas fa-trophy text-amber-500 mr-2"></i>Top performers
+                    </h3>
+                    <span class="text-xs text-gray-400 dark:text-gray-500">this month</span>
+                </div>
+
+                @forelse($leaderboard as $index => $seller)
+                    @php
+                        $sellerTone = $seller['achievement'] === null
+                            ? 'is-none'
+                            : ($seller['achievement'] >= 100 ? 'is-met' : ($seller['achievement'] >= 60 ? 'is-close' : 'is-behind'));
+                    @endphp
+                    <div class="board-row {{ $index === 0 && $seller['amount'] > 0 ? 'is-first' : '' }}">
+                        <span class="board-rank rank-{{ $index + 1 }}">{{ $index + 1 }}</span>
+                        <div class="min-w-0">
+                            <p class="board-name">
+                                {{ $seller['name'] }}
+                                @if($seller['is_leader'])
+                                    <span class="board-tag">Leader</span>
+                                @endif
+                            </p>
+                            <div class="sales-bar is-slim">
+                                <span class="{{ $sellerTone }}"
+                                      style="width: {{ $seller['achievement'] === null ? round($seller['amount'] / $topAmount * 100) : min(100, $seller['achievement']) }}%"></span>
+                            </div>
+                            <p class="board-meta sales-num">
+                                {{ $seller['count'] }} {{ \Illuminate\Support\Str::plural('order', $seller['count']) }}
+                                @if($seller['achievement'] !== null)
+                                    · {{ $seller['achievement'] }}% of ${{ number_format($seller['target'], 0) }}
+                                @else
+                                    · no target set
+                                @endif
+                            </p>
+                        </div>
+                        <p class="board-amount sales-num">${{ number_format($seller['amount'], 0) }}</p>
+                    </div>
+                @empty
+                    <div class="py-8 text-center">
+                        <i class="fas fa-trophy text-3xl text-gray-200 dark:text-gray-700"></i>
+                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Nobody has sold anything this month yet.</p>
+                    </div>
+                @endforelse
             </div>
         </div>
     </div>
@@ -198,14 +567,14 @@
         <!-- Left Column - 2/3 width -->
         <div class="lg:col-span-2 space-y-6">
             <!-- Daily Revenue Chart - Full Width -->
-            <div class="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
+            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-100 dark:border-gray-800">
                 <div class="flex justify-between items-center mb-4">
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900">Delivered Revenue</h3>
-                        <p class="text-sm text-gray-500">{{ $availableMonths[$selectedMonth] ?? 'Selected Month' }} - Daily (Days 1-{{ $daysInMonth }})</p>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Delivered Revenue</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ $availableMonths[$selectedMonth] ?? 'Selected Month' }} - Daily (Days 1-{{ $daysInMonth }})</p>
                     </div>
-                    <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
-                        <i class="fas fa-dollar-sign text-green-600"></i>
+                    <div class="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-500/10 flex items-center justify-center">
+                        <i class="fas fa-dollar-sign text-green-600 dark:text-green-400"></i>
                     </div>
                 </div>
                 <div class="chart-container" style="position: relative; height: 250px; width: 100%;">
@@ -216,14 +585,14 @@
             <!-- Daily Orders & Delivered vs Workload - Side by Side -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Daily Orders Chart -->
-                <div class="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
+                <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-100 dark:border-gray-800">
                     <div class="flex justify-between items-center mb-4">
                         <div>
-                            <h3 class="text-lg font-semibold text-gray-900">Daily Orders</h3>
-                            <p class="text-sm text-gray-500">{{ $availableMonths[$selectedMonth] ?? 'Selected Month' }} - All Orders</p>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Daily Orders</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ $availableMonths[$selectedMonth] ?? 'Selected Month' }} - All Orders</p>
                         </div>
-                        <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
-                            <i class="fas fa-shopping-cart text-blue-600"></i>
+                        <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center">
+                            <i class="fas fa-shopping-cart text-blue-600 dark:text-blue-400"></i>
                         </div>
                     </div>
                     <div class="chart-container" style="position: relative; height: 200px; width: 100%;">
@@ -232,14 +601,14 @@
                 </div>
 
                 <!-- Delivered vs Workload -->
-                <div class="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
+                <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-100 dark:border-gray-800">
                     <div class="flex justify-between items-center mb-4">
                         <div>
-                            <h3 class="text-lg font-semibold text-gray-900">Delivered vs Workload</h3>
-                            <p class="text-sm text-gray-500">Revenue-generating vs Active</p>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Delivered vs Workload</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Revenue-generating vs Active</p>
                         </div>
-                        <div class="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
-                            <i class="fas fa-chart-pie text-indigo-600"></i>
+                        <div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-500/10 flex items-center justify-center">
+                            <i class="fas fa-chart-pie text-indigo-600 dark:text-indigo-400"></i>
                         </div>
                     </div>
                     <div class="chart-container" style="position: relative; height: 200px; width: 100%;">
@@ -249,32 +618,32 @@
             </div>
 
             <!-- Recent Orders Table - Delivered & Workload -->
-            <div class="bg-white rounded-2xl shadow-md border border-gray-100 ">
-                <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
+            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-md border border-gray-100 dark:border-gray-800 ">
+                <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900">Recent Delivered</h3>
-                        <p class="text-sm text-gray-500">Revenue-generating orders</p>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Delivered</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Revenue-generating orders</p>
                     </div>
-                    <a href="{{ route('orders.index') }}?status=completed" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                    <a href="{{ route('orders.index') }}?status=completed" class="inline-flex items-center text-indigo-600 dark:text-indigo-400 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-medium">
                         View All <i class="fas fa-arrow-right ml-2"></i>
                     </a>
                 </div>
-                <div class="divide-y divide-gray-100">
+                <div class="divide-y divide-gray-100 dark:divide-gray-800">
                     @forelse($recentDelivered as $order)
-                        <a href="{{ route('orders.show', $order->id) }}" class="order-card block px-6 py-4 hover:bg-gray-50 transition-colors">
+                        <a href="{{ route('orders.show', $order->id) }}" class="order-card block px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-4 flex-1">
-                                    <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-green-100">
-                                        <i class="fas fa-check-circle text-green-600"></i>
+                                    <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-green-100 dark:bg-green-500/10">
+                                        <i class="fas fa-check-circle text-green-600 dark:text-green-400"></i>
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <div class="flex items-center gap-2 mb-1">
-                                            <p class="text-sm font-semibold text-gray-900 truncate">{{ $order->name }}</p>
+                                            <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{{ $order->name }}</p>
                                             @if($order->priority === 'high')
-                                                <span class="flex-shrink-0 px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded-full">High</span>
+                                                <span class="flex-shrink-0 px-2 py-0.5 bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400 text-xs font-medium rounded-full">High</span>
                                             @endif
                                         </div>
-                                        <div class="flex items-center gap-3 text-xs text-gray-500">
+                                        <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">
                                             @if($order->team)
                                                 <span><i class="fas fa-users mr-1"></i>{{ $order->team->name }}</span>
                                             @endif
@@ -290,62 +659,62 @@
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-3 ml-4">
-                                    <span class="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                    <span class="px-3 py-1 text-xs font-medium rounded-full bg-green-100 dark:bg-green-500/10 text-green-800 dark:text-green-400">
                                         Delivered
                                     </span>
-                                    <i class="fas fa-chevron-right text-gray-400"></i>
+                                    <i class="fas fa-chevron-right text-gray-400 dark:text-gray-500"></i>
                                 </div>
                             </div>
                         </a>
                     @empty
                         <div class="px-6 py-8 text-center">
-                            <i class="fas fa-check-circle text-4xl text-gray-200 mb-3"></i>
-                            <p class="text-gray-500">No delivered orders yet</p>
+                            <i class="fas fa-check-circle text-4xl text-gray-200 dark:text-gray-700 mb-3"></i>
+                            <p class="text-gray-500 dark:text-gray-400 dark:text-gray-500">No delivered orders yet</p>
                         </div>
                     @endforelse
                 </div>
             </div>
 
             <!-- Workload Orders -->
-            <div class="bg-white rounded-2xl shadow-md border border-gray-100">
-                <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
+            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-md border border-gray-100 dark:border-gray-800">
+                <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900">Current Workload</h3>
-                        <p class="text-sm text-gray-500">Active orders in progress</p>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Current Workload</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Active orders in progress</p>
                     </div>
-                    <a href="{{ route('orders.index') }}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                    <a href="{{ route('orders.index') }}" class="inline-flex items-center text-indigo-600 dark:text-indigo-400 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-medium">
                         View All <i class="fas fa-arrow-right ml-2"></i>
                     </a>
                 </div>
-                <div class="divide-y divide-gray-100">
+                <div class="divide-y divide-gray-100 dark:divide-gray-800">
                     @forelse($recentWorkload as $order)
-                        <a href="{{ route('orders.show', $order->id) }}" class="order-card block px-6 py-4 hover:bg-gray-50 transition-colors">
+                        <a href="{{ route('orders.show', $order->id) }}" class="order-card block px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-4 flex-1">
                                     <div class="w-12 h-12 rounded-xl flex items-center justify-center
-                                        @if($order->status === 'in-progress') bg-blue-100
-                                        @elseif($order->status === 'on-hold') bg-yellow-100
-                                        @else bg-gray-100 @endif">
+                                        @if($order->status === 'in-progress') bg-blue-100 dark:bg-blue-500/10
+                                        @elseif($order->status === 'on-hold') bg-yellow-100 dark:bg-yellow-500/10
+                                        @else bg-gray-100 dark:bg-gray-700 @endif">
                                         <i class="fas fa-spinner
-                                            @if($order->status === 'in-progress') text-blue-600
-                                            @elseif($order->status === 'on-hold') text-yellow-600
-                                            @else text-gray-600 @endif"></i>
+                                            @if($order->status === 'in-progress') text-blue-600 dark:text-blue-400
+                                            @elseif($order->status === 'on-hold') text-yellow-600 dark:text-yellow-400
+                                            @else text-gray-600 dark:text-gray-400 dark:text-gray-500 @endif"></i>
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <div class="flex items-center gap-2 mb-1">
-                                            <p class="text-sm font-semibold text-gray-900 truncate">{{ $order->name }}</p>
+                                            <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{{ $order->name }}</p>
                                             @if($order->priority === 'high')
-                                                <span class="flex-shrink-0 px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded-full">High</span>
+                                                <span class="flex-shrink-0 px-2 py-0.5 bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400 text-xs font-medium rounded-full">High</span>
                                             @endif
                                         </div>
-                                        <div class="flex items-center gap-3 text-xs text-gray-500">
+                                        <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">
                                             @if($order->team)
                                                 <span><i class="fas fa-users mr-1"></i>{{ $order->team->name }}</span>
                                             @endif
                                             @if($order->end_date)
                                                 <span><i class="far fa-calendar mr-1"></i>{{ $order->end_date->format('M d') }}</span>
                                                 @if($order->end_date->isPast())
-                                                    <span class="text-red-600"><i class="fas fa-exclamation-triangle mr-1"></i>Overdue</span>
+                                                    <span class="text-red-600 dark:text-red-400"><i class="fas fa-exclamation-triangle mr-1"></i>Overdue</span>
                                                 @endif
                                             @endif
                                         </div>
@@ -353,36 +722,36 @@
                                 </div>
                                 <div class="flex items-center gap-3 ml-4">
                                     <span class="px-3 py-1 text-xs font-medium rounded-full
-                                        @if($order->status === 'in-progress') bg-blue-100 text-blue-800
-                                        @elseif($order->status === 'on-hold') bg-yellow-100 text-yellow-800
-                                        @else bg-gray-100 text-gray-800 @endif">
+                                        @if($order->status === 'in-progress') bg-blue-100 dark:bg-blue-500/10 text-blue-800 dark:text-blue-400
+                                        @elseif($order->status === 'on-hold') bg-yellow-100 dark:bg-yellow-500/10 text-yellow-800 dark:text-yellow-400
+                                        @else bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 @endif">
                                         {{ ucfirst(str_replace('-', ' ', $order->status)) }}
                                     </span>
-                                    <i class="fas fa-chevron-right text-gray-400"></i>
+                                    <i class="fas fa-chevron-right text-gray-400 dark:text-gray-500"></i>
                                 </div>
                             </div>
                         </a>
                     @empty
                         <div class="px-6 py-8 text-center">
-                            <i class="fas fa-spinner text-4xl text-gray-200 mb-3"></i>
-                            <p class="text-gray-500">No active orders</p>
+                            <i class="fas fa-spinner text-4xl text-gray-200 dark:text-gray-700 mb-3"></i>
+                            <p class="text-gray-500 dark:text-gray-400 dark:text-gray-500">No active orders</p>
                         </div>
                     @endforelse
                 </div>
             </div>
 
             <!-- My Tasks Section -->
-            <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
-                <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
+            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-md border border-gray-100 dark:border-gray-800 overflow-hidden">
+                <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900">My Tasks</h3>
-                        <p class="text-sm text-gray-500">{{ $myTasks }} tasks assigned to you</p>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">My Tasks</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ $myTasks }} tasks assigned to you</p>
                     </div>
-                    <a href="{{ route('tasks.index') }}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                    <a href="{{ route('tasks.index') }}" class="inline-flex items-center text-indigo-600 dark:text-indigo-400 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-medium">
                         View All <i class="fas fa-arrow-right ml-2"></i>
                     </a>
                 </div>
-                <div class="divide-y divide-gray-100">
+                <div class="divide-y divide-gray-100 dark:divide-gray-800">
                     @php
                         $myTasks = \App\Models\Task::with(['order', 'assignedTo'])
                             ->where('assigned_to', Auth::id())
@@ -391,43 +760,43 @@
                             ->get();
                     @endphp
                     @forelse($myTasks as $task)
-                        <a href="{{ route('tasks.show', $task->id) }}" class="block px-6 py-4 hover:bg-gray-50 transition-colors">
+                        <a href="{{ route('tasks.show', $task->id) }}" class="block px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-4">
                                     <div class="w-10 h-10 rounded-xl flex items-center justify-center
-                                        @if($task->status === 'completed') bg-green-100
-                                        @elseif($task->priority === 'urgent') bg-red-100
-                                        @elseif($task->priority === 'high') bg-orange-100
-                                        @elseif($task->status === 'in-progress') bg-blue-100
-                                        @else bg-gray-100 @endif">
+                                        @if($task->status === 'completed') bg-green-100 dark:bg-green-500/10
+                                        @elseif($task->priority === 'urgent') bg-red-100 dark:bg-red-500/10
+                                        @elseif($task->priority === 'high') bg-orange-100 dark:bg-orange-500/10
+                                        @elseif($task->status === 'in-progress') bg-blue-100 dark:bg-blue-500/10
+                                        @else bg-gray-100 dark:bg-gray-700 @endif">
                                         @if($task->status === 'completed')
-                                            <i class="fas fa-check text-green-600"></i>
+                                            <i class="fas fa-check text-green-600 dark:text-green-400"></i>
                                         @elseif($task->priority === 'urgent')
-                                            <i class="fas fa-exclamation text-red-600"></i>
+                                            <i class="fas fa-exclamation text-red-600 dark:text-red-400"></i>
                                         @elseif($task->priority === 'high')
-                                            <i class="fas fa-arrow-up text-orange-600"></i>
+                                            <i class="fas fa-arrow-up text-orange-600 dark:text-orange-400"></i>
                                         @elseif($task->status === 'in-progress')
-                                            <i class="fas fa-spinner text-blue-600"></i>
+                                            <i class="fas fa-spinner text-blue-600 dark:text-blue-400"></i>
                                         @else
-                                            <i class="fas fa-circle text-gray-400"></i>
+                                            <i class="fas fa-circle text-gray-400 dark:text-gray-500"></i>
                                         @endif
                                     </div>
                                     <div>
-                                        <p class="text-sm font-medium text-gray-900">{{ $task->title }}</p>
-                                        <p class="text-xs text-gray-500">{{ $task->order?->name ?? 'No order' }}</p>
+                                        <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $task->title }}</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ $task->order?->name ?? 'No order' }}</p>
                                     </div>
                                 </div>
                                 <div class="text-right">
                                     @if($task->due_date)
-                                        <p class="text-xs text-gray-500 mb-1">
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-1">
                                             <i class="far fa-calendar mr-1"></i>{{ $task->due_date->format('M d') }}
                                         </p>
                                     @endif
                                     <span class="inline-block px-2 py-0.5 text-xs rounded-full
-                                        @if($task->status === 'completed') bg-green-100 text-green-800
-                                        @elseif($task->status === 'in-progress') bg-blue-100 text-blue-800
-                                        @elseif($task->status === 'pending') bg-yellow-100 text-yellow-800
-                                        @else bg-gray-100 text-gray-800 @endif">
+                                        @if($task->status === 'completed') bg-green-100 dark:bg-green-500/10 text-green-800 dark:text-green-400
+                                        @elseif($task->status === 'in-progress') bg-blue-100 dark:bg-blue-500/10 text-blue-800 dark:text-blue-400
+                                        @elseif($task->status === 'pending') bg-yellow-100 dark:bg-yellow-500/10 text-yellow-800 dark:text-yellow-400
+                                        @else bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 @endif">
                                         {{ ucfirst($task->status) }}
                                     </span>
                                 </div>
@@ -435,8 +804,8 @@
                         </a>
                     @empty
                         <div class="px-6 py-8 text-center">
-                            <i class="fas fa-tasks text-4xl text-gray-200 mb-3"></i>
-                            <p class="text-gray-500">No tasks assigned to you</p>
+                            <i class="fas fa-tasks text-4xl text-gray-200 dark:text-gray-700 mb-3"></i>
+                            <p class="text-gray-500 dark:text-gray-400 dark:text-gray-500">No tasks assigned to you</p>
                         </div>
                     @endforelse
                 </div>
@@ -446,14 +815,14 @@
         <!-- Right Column - 1/3 width -->
         <div class="space-y-6">
             <!-- Order Priority Breakdown -->
-            <div class="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
+            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-100 dark:border-gray-800">
                 <div class="flex justify-between items-center mb-6">
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900">Priority</h3>
-                        <p class="text-sm text-gray-500">By urgency</p>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Priority</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">By urgency</p>
                     </div>
-                    <div class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
-                        <i class="fas fa-flag text-orange-600"></i>
+                    <div class="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-500/10 flex items-center justify-center">
+                        <i class="fas fa-flag text-orange-600 dark:text-orange-400"></i>
                     </div>
                 </div>
                 @php
@@ -470,13 +839,13 @@
                         @if($priorityStats[$priority] > 0)
                             <div>
                                 <div class="flex items-center justify-between text-sm mb-2">
-                                    <span class="flex items-center gap-2 text-gray-700">
+                                    <span class="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                                         <i class="{{ $config['icon'] }} text-{{ $config['color'] }}-600"></i>
                                         <span class="font-medium capitalize">{{ $priority }}</span>
                                     </span>
-                                    <span class="font-bold text-gray-900">{{ $priorityStats[$priority] }}</span>
+                                    <span class="font-bold text-gray-900 dark:text-gray-100">{{ $priorityStats[$priority] }}</span>
                                 </div>
-                                <div class="w-full bg-gray-100 rounded-full h-2">
+                                <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
                                     <div class="progress-bar h-2 rounded-full bg-{{ $config['color'] }}-500"
                                          style="width: {{ ($priorityStats[$priority] / $totalOrders) * 100 }}%"></div>
                                 </div>
@@ -488,14 +857,14 @@
 
             <!-- Team Performance -->
             @can('view teams')
-            <div class="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
+            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-100 dark:border-gray-800">
                 <div class="flex justify-between items-center mb-6">
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900">Teams</h3>
-                        <p class="text-sm text-gray-500">Active teams</p>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Teams</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Active teams</p>
                     </div>
-                    <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
-                        <i class="fas fa-users text-blue-600"></i>
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center">
+                        <i class="fas fa-users text-blue-600 dark:text-blue-400"></i>
                     </div>
                 </div>
                 @php
@@ -503,22 +872,22 @@
                 @endphp
                 <div class="space-y-3">
                     @forelse($teams as $team)
-                        <a href="{{ route('teams.show', $team->id) }}" class="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors border border-gray-100">
+                        <a href="{{ route('teams.show', $team->id) }}" class="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors border border-gray-100 dark:border-gray-800">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
-                                    <i class="fas fa-users text-indigo-600"></i>
+                                <div class="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-500/10 flex items-center justify-center">
+                                    <i class="fas fa-users text-indigo-600 dark:text-indigo-400"></i>
                                 </div>
                                 <div>
-                                    <p class="text-sm font-medium text-gray-900">{{ $team->name }}</p>
-                                    <p class="text-xs text-gray-500">{{ $team->orders_count }} orders</p>
+                                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $team->name }}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ $team->orders_count }} orders</p>
                                 </div>
                             </div>
-                            <i class="fas fa-chevron-right text-gray-400"></i>
+                            <i class="fas fa-chevron-right text-gray-400 dark:text-gray-500"></i>
                         </a>
                     @empty
                         <div class="text-center py-6">
-                            <i class="fas fa-users text-3xl text-gray-200 mb-2"></i>
-                            <p class="text-sm text-gray-500">No teams yet</p>
+                            <i class="fas fa-users text-3xl text-gray-200 dark:text-gray-700 mb-2"></i>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">No teams yet</p>
                         </div>
                     @endforelse
                 </div>
@@ -547,14 +916,14 @@
             </div>
 
             <!-- Upcoming Deadlines -->
-            <div class="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
+            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-100 dark:border-gray-800">
                 <div class="flex justify-between items-center mb-6">
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900">Due Soon</h3>
-                        <p class="text-sm text-gray-500">Orders ending soon</p>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Due Soon</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Orders ending soon</p>
                     </div>
-                    <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
-                        <i class="fas fa-clock text-red-600"></i>
+                    <div class="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-500/10 flex items-center justify-center">
+                        <i class="fas fa-clock text-red-600 dark:text-red-400"></i>
                     </div>
                 </div>
                 @php
@@ -569,19 +938,19 @@
                 @endphp
                 <div class="space-y-3">
                     @forelse($dueSoon as $order)
-                        <a href="{{ route('orders.show', $order->id) }}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors border border-gray-100">
-                            <div class="w-10 h-10 rounded-lg @if($order->end_date->isPast()) bg-red-100 @elseif($order->end_date->diffInDays(now()) <= 3) bg-orange-100 @else bg-yellow-100 @endif flex items-center justify-center">
-                                <i class="fas fa-calendar @if($order->end_date->isPast()) text-red-600 @elseif($order->end_date->diffInDays(now()) <= 3) text-orange-600 @else text-yellow-600 @endif"></i>
+                        <a href="{{ route('orders.show', $order->id) }}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors border border-gray-100 dark:border-gray-800">
+                            <div class="w-10 h-10 rounded-lg @if($order->end_date->isPast()) bg-red-100 dark:bg-red-500/10 @elseif($order->end_date->diffInDays(now()) <= 3) bg-orange-100 dark:bg-orange-500/10 @else bg-yellow-100 dark:bg-yellow-500/10 @endif flex items-center justify-center">
+                                <i class="fas fa-calendar @if($order->end_date->isPast()) text-red-600 dark:text-red-400 @elseif($order->end_date->diffInDays(now()) <= 3) text-orange-600 dark:text-orange-400 @else text-yellow-600 dark:text-yellow-400 @endif"></i>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-gray-900 truncate">{{ $order->name }}</p>
-                                <p class="text-xs text-gray-500">{{ $order->end_date->diffForHumans() }}</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ $order->name }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ $order->end_date->diffForHumans() }}</p>
                             </div>
                         </a>
                     @empty
                         <div class="text-center py-6">
-                            <i class="fas fa-calendar-check text-3xl text-gray-200 mb-2"></i>
-                            <p class="text-sm text-gray-500">No upcoming deadlines</p>
+                            <i class="fas fa-calendar-check text-3xl text-gray-200 dark:text-gray-700 mb-2"></i>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">No upcoming deadlines</p>
                         </div>
                     @endforelse
                 </div>
@@ -608,6 +977,12 @@ document.addEventListener('DOMContentLoaded', function() {
 let revenueChartInstance = null;
 let ordersChartInstance = null;
 let statusChartInstance = null;
+
+// Theme-aware chart colors (Chart.js bakes colors into the canvas, so this
+// is read once at render time; the theme toggle does a full page reload)
+const isDarkMode = document.documentElement.classList.contains('dark');
+const chartGridColor = isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+const chartTickColor = isDarkMode ? '#9ca3af' : '#6b7280';
 
 // Store order status data
 const orderStatusData = {
@@ -687,8 +1062,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 scales: {
                     y: {
                         beginAtZero: true,
-                        grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                        grid: { color: chartGridColor },
                         ticks: {
+                            color: chartTickColor,
                             callback: function(value) {
                                 return '$' + (value >= 1000 ? (value / 1000).toFixed(0) + 'k' : value);
                             },
@@ -698,6 +1074,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     x: {
                         grid: { display: false },
                         ticks: {
+                            color: chartTickColor,
                             font: { size: 10 },
                             maxRotation: 0,
                             autoSkip: true,
@@ -751,8 +1128,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 scales: {
                     y: {
                         beginAtZero: true,
-                        grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                        grid: { color: chartGridColor },
                         ticks: {
+                            color: chartTickColor,
                             stepSize: 1,
                             font: { size: 10 }
                         }
@@ -760,6 +1138,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     x: {
                         grid: { display: false },
                         ticks: {
+                            color: chartTickColor,
                             font: { size: 10 },
                             maxTicksLimit: 10
                         }
@@ -798,6 +1177,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         legend: {
                             position: 'bottom',
                             labels: {
+                                color: chartTickColor,
                                 padding: 12,
                                 usePointStyle: true,
                                 pointStyle: 'circle',

@@ -6,12 +6,13 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class RoleAndPermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         // 1. Define all permissions grouped by module
         $permissions = [
@@ -87,6 +88,13 @@ class RoleAndPermissionSeeder extends Seeder
             'view dashboard',
             'view team dashboard',
             'manage settings',
+
+            // Sales
+            'view sales dashboard',
+            'view own sales orders',
+            'view team sales orders',
+            'create sales orders',
+            'edit sales orders',
         ];
 
         foreach ($permissions as $permission) {
@@ -169,6 +177,31 @@ class RoleAndPermissionSeeder extends Seeder
             'view dashboard', 'view team dashboard',
         ]);
 
+        // SALES LEADER — Owns a group of sales members; sees every order sold by
+        // that group. No access to operational team, member or delivery data.
+        $salesLeader = Role::firstOrCreate(['name' => 'sales-leader']);
+        $salesLeader->syncPermissions([
+            'view orders', 'create orders', 'edit orders', 'view order amounts',
+            'view own sales orders', 'view team sales orders', 'create sales orders', 'edit sales orders',
+            'view sales dashboard',
+            'view tasks', 'create tasks', 'edit tasks', 'edit task status', 'submit tasks', 'view assigned tasks',
+            'view profiles', 'view freelance profiles',
+            'view bug reports', 'create bug reports',
+            'view own portfolio', 'create portfolio', 'edit own portfolio', 'delete own portfolio',
+        ]);
+
+        // SALES MEMBER — Sells under one sales leader; sees only their own orders.
+        $salesMember = Role::firstOrCreate(['name' => 'sales-member']);
+        $salesMember->syncPermissions([
+            'view orders', 'create orders', 'edit orders', 'view order amounts',
+            'view own sales orders', 'create sales orders', 'edit sales orders',
+            'view sales dashboard',
+            'view tasks', 'create tasks', 'edit tasks', 'edit task status', 'submit tasks', 'view assigned tasks',
+            'view profiles', 'view freelance profiles',
+            'view bug reports', 'create bug reports',
+            'view own portfolio', 'create portfolio', 'edit own portfolio', 'delete own portfolio',
+        ]);
+
         // 3. Migrate old roles to team-member
         $oldRoles = ['developer', 'designer', 'qa'];
         foreach ($oldRoles as $oldRoleName) {
@@ -196,6 +229,6 @@ class RoleAndPermissionSeeder extends Seeder
             ]
         )->assignRole('admin');
 
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
     }
 }

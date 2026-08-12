@@ -4,10 +4,12 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BugReportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FreelanceProfileController;
+use App\Http\Controllers\GitHubController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderDashboardController;
 use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SalesDashboardController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TaskController;
@@ -39,6 +41,9 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Orders routes
+    // Sales
+    Route::get('/sales/dashboard', [SalesDashboardController::class, 'index'])->name('sales.dashboard');
+
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/dashboard', [OrderDashboardController::class, 'index'])->name('orders.dashboard');
     Route::get('/orders/dashboard/chart-data', [OrderDashboardController::class, 'getChartData'])->name('orders.dashboard.chart-data');
@@ -52,6 +57,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit');
     Route::patch('/orders/{order}', [OrderController::class, 'update'])->name('orders.update');
     Route::post('/orders/{order}/quick-update', [OrderController::class, 'quickUpdate'])->name('orders.quick-update');
+    Route::get('/orders/{order}/audits', [OrderController::class, 'audits'])->name('orders.audits');
+    Route::get('/orders/{order}/documents/{document}', [OrderController::class, 'downloadDocument'])->name('orders.documents.download');
+    Route::delete('/orders/{order}/documents/{document}', [OrderController::class, 'destroyDocument'])->name('orders.documents.destroy');
     Route::get('/orders/{order}/users', [OrderController::class, 'getUsers'])->name('orders.users');
     Route::post('/orders/{order}/assign-users', [OrderController::class, 'assignUsers'])->name('orders.assign-users');
     Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
@@ -186,6 +194,25 @@ Route::middleware(['auth', 'role:admin'])->prefix('settings')->name('settings.')
     Route::post('/project-statuses', [SettingsController::class, 'addProjectStatus'])->name('project-statuses.store');
     Route::put('/project-statuses/{key}', [SettingsController::class, 'updateProjectStatus'])->name('project-statuses.update');
     Route::delete('/project-statuses/{key}', [SettingsController::class, 'deleteProjectStatus'])->name('project-statuses.destroy');
+});
+
+// GitHub Integration Routes - viewing for admins/managers, managing for admins only
+Route::prefix('admin/github')->name('admin.github.')->group(function () {
+    // No auth: the callback may complete in a browser with no PMT session (see GitHubController::callback).
+    // It is protected instead by the one-time token minted for the admin who started the connection.
+    Route::get('/callback', [GitHubController::class, 'callback'])->name('callback');
+
+    Route::middleware(['auth', 'role:admin|operation-manager|project-manager'])->group(function () {
+        Route::get('/', [GitHubController::class, 'index'])->name('index');
+        Route::get('/tracked-repositories/{repository}/branches', [GitHubController::class, 'branches'])->name('branches');
+    });
+
+    Route::middleware(['auth', 'role:admin'])->group(function () {
+        Route::get('/connect', [GitHubController::class, 'connect'])->name('connect');
+        Route::delete('/accounts/{account}', [GitHubController::class, 'destroyAccount'])->name('accounts.destroy');
+        Route::get('/accounts/{account}/repositories', [GitHubController::class, 'repositories'])->name('repositories');
+        Route::put('/accounts/{account}/repositories', [GitHubController::class, 'syncRepositories'])->name('repositories.sync');
+    });
 });
 
 require __DIR__.'/auth.php';

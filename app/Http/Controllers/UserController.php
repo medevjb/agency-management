@@ -4,17 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreUserRequest;
 use App\Mail\WelcomeEmail;
+use App\Models\SalesTarget;
 use App\Models\Team;
 use App\Models\TechStack;
 use App\Models\User;
 use App\Services\EmailService;
 use App\Services\TeamMemberService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\View\View;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Yajra\DataTables\DataTables;
 
 class UserController extends Controller
@@ -99,8 +104,8 @@ class UserController extends Controller
                 return '<div class="flex items-center">
                     <img src="https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=4F46E5&color=fff" alt="'.$user->name.'" class="w-8 h-8 rounded-full mr-3">
                     <div>
-                        <div class="font-medium text-gray-900">'.$user->name.'</div>
-                        <div class="text-xs text-gray-500">ID: '.$user->employee_id.'</div>
+                        <div class="font-medium text-gray-900 dark:text-gray-100">'.$user->name.'</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">ID: '.$user->employee_id.'</div>
                     </div>
                 </div>';
             })
@@ -117,14 +122,14 @@ class UserController extends Controller
                 return $user->position ?: 'N/A';
             })
             ->addColumn('team', function ($user) {
-                return $user->team ? '<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">'.$user->team->name.'</span>' : 'N/A';
+                return $user->team ? '<span class="px-2 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-500/10 text-blue-800 dark:text-blue-400">'.$user->team->name.'</span>' : 'N/A';
             })
             ->addColumn('tech_stack', function ($user) {
-                return $user->techStack ? '<span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">'.$user->techStack->name.'</span>' : 'N/A';
+                return $user->techStack ? '<span class="px-2 py-1 text-xs rounded-full bg-green-100 dark:bg-green-500/10 text-green-800 dark:text-green-400">'.$user->techStack->name.'</span>' : 'N/A';
             })
             ->addColumn('role', function ($user) {
                 $roles = $user->roles->pluck('name')->map(function ($role) {
-                    return '<span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">'.ucfirst($role).'</span>';
+                    return '<span class="px-2 py-1 text-xs rounded-full bg-purple-100 dark:bg-purple-500/10 text-purple-800 dark:text-purple-400">'.ucfirst($role).'</span>';
                 })->implode(' ');
 
                 return $roles ?: 'N/A';
@@ -136,7 +141,7 @@ class UserController extends Controller
                 // Color classes based on status
                 $bgColor = $user->is_active ? 'bg-green-600' : 'bg-red-600';
                 $focusRingColor = $user->is_active ? 'peer-focus:ring-green-300' : 'peer-focus:ring-red-300';
-                $bgInactiveColor = $user->is_active ? 'bg-gray-200' : 'bg-red-200';
+                $bgInactiveColor = $user->is_active ? 'bg-gray-200 dark:bg-gray-700' : 'bg-red-200 dark:bg-red-900';
 
                 return '<div class="flex items-center">
                     <label class="relative inline-flex items-center cursor-pointer">
@@ -155,16 +160,16 @@ class UserController extends Controller
             })
             ->addColumn('actions', function ($user) {
                 return '<div class="flex items-center space-x-2">
-                    <a href="'.route('users.show', $user->id).'" class="group inline-flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-indigo-100 to-indigo-200 text-indigo-600 hover:from-indigo-200 hover:to-indigo-300 transition-all duration-200 hover:scale-110 shadow-sm" title="View">
+                    <a href="'.route('users.show', $user->id).'" class="group inline-flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-indigo-100 to-indigo-200 dark:from-indigo-500/10 dark:to-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:from-indigo-200 hover:to-indigo-300 dark:hover:from-indigo-500/20 dark:hover:to-indigo-500/20 transition-all duration-200 hover:scale-110 shadow-sm" title="View">
                         <i class="fas fa-eye"></i>
                     </a>
-                    <a href="'.route('admin.users.roles', $user->id).'" class="group inline-flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-purple-100 to-purple-200 text-purple-600 hover:from-purple-200 hover:to-purple-300 transition-all duration-200 hover:scale-110 shadow-sm" title="Manage Roles">
+                    <a href="'.route('admin.users.roles', $user->id).'" class="group inline-flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-purple-100 to-purple-200 dark:from-purple-500/10 dark:to-purple-500/10 text-purple-600 dark:text-purple-400 hover:from-purple-200 hover:to-purple-300 dark:hover:from-purple-500/20 dark:hover:to-purple-500/20 transition-all duration-200 hover:scale-110 shadow-sm" title="Manage Roles">
                         <i class="fas fa-user-tag"></i>
                     </a>
-                    <a href="'.route('users.edit', $user->id).'" class="group inline-flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-emerald-100 to-emerald-200 text-emerald-600 hover:from-emerald-200 hover:to-emerald-300 transition-all duration-200 hover:scale-110 shadow-sm" title="Edit">
+                    <a href="'.route('users.edit', $user->id).'" class="group inline-flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-emerald-100 to-emerald-200 dark:from-emerald-500/10 dark:to-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:from-emerald-200 hover:to-emerald-300 dark:hover:from-emerald-500/20 dark:hover:to-emerald-500/20 transition-all duration-200 hover:scale-110 shadow-sm" title="Edit">
                         <i class="fas fa-edit"></i>
                     </a>
-                    <button onclick="deleteUser('.$user->id.', \''.$user->name.'\')" class="group inline-flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-red-100 to-red-200 text-red-600 hover:from-red-200 hover:to-red-300 transition-all duration-200 hover:scale-110 shadow-sm" title="Delete">
+                    <button onclick="deleteUser('.$user->id.', \''.$user->name.'\')" class="group inline-flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-red-100 to-red-200 dark:from-red-500/10 dark:to-red-500/10 text-red-600 dark:text-red-400 hover:from-red-200 hover:to-red-300 dark:hover:from-red-500/20 dark:hover:to-red-500/20 transition-all duration-200 hover:scale-110 shadow-sm" title="Delete">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>';
@@ -315,7 +320,10 @@ class UserController extends Controller
                     'is_active' => $validated['is_active'] ?? true,
                     'team_id' => $validated['team_id'] ?? null,
                     'tech_stack_id' => $validated['tech_stack_id'] ?? null,
+                    'sales_leader_id' => $validated['sales_leader_id'] ?? null,
                 ]);
+
+                $this->recordSalesTarget($user, $validated);
 
                 // Assign role
                 if (! empty($validated['role'])) {
@@ -483,6 +491,9 @@ class UserController extends Controller
             'is_active' => 'boolean',
             'team_id' => 'nullable|exists:teams,id',
             'tech_stack_id' => 'nullable|exists:tech_stacks,id',
+            'sales_leader_id' => 'nullable|exists:users,id',
+            'sales_target' => 'nullable|numeric|min:0|max:99999999.99',
+            'sales_target_month' => 'nullable|date_format:Y-m',
             'role' => 'nullable|exists:roles,name',
             'permissions' => 'nullable|array',
             'permissions.*' => 'exists:permissions,id',
@@ -512,6 +523,7 @@ class UserController extends Controller
                     'address' => $validated['address'] ?? null,
                     'team_id' => $validated['team_id'] ?? null,
                     'tech_stack_id' => $validated['tech_stack_id'] ?? null,
+                    'sales_leader_id' => $validated['sales_leader_id'] ?? null,
                 ];
 
                 // Only update password if provided
@@ -525,6 +537,8 @@ class UserController extends Controller
                 }
 
                 $user->update($updateData);
+
+                $this->recordSalesTarget($user, $validated);
 
                 // Update role
                 if (isset($validated['role'])) {
@@ -562,6 +576,25 @@ class UserController extends Controller
                 'message' => 'Failed to update user: '.$e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Store the monthly sales target the admin entered, if any. Targets are
+     * kept per month and carry forward until a newer one is set.
+     *
+     * @param  array<string, mixed>  $validated
+     */
+    protected function recordSalesTarget(User $user, array $validated): void
+    {
+        if (! isset($validated['sales_target']) || $validated['sales_target'] === '') {
+            return;
+        }
+
+        $month = ! empty($validated['sales_target_month'])
+            ? Carbon::createFromFormat('Y-m', $validated['sales_target_month'])
+            : now();
+
+        SalesTarget::setFor($user->id, $month->startOfMonth(), (float) $validated['sales_target']);
     }
 
     /**
@@ -666,7 +699,7 @@ class UserController extends Controller
     /**
      * Export users to Excel/CSV.
      */
-    public function export(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    public function export(Request $request): BinaryFileResponse
     {
         $query = User::with(['team', 'techStack', 'roles'])
             ->where('id', '!=', auth()->id());
@@ -996,7 +1029,7 @@ class UserController extends Controller
     /**
      * Display team members for team leaders and stack leaders.
      */
-    public function teamMembers(Request $request): \Illuminate\View\View
+    public function teamMembers(Request $request): View
     {
         $user = auth()->user();
 
@@ -1021,7 +1054,7 @@ class UserController extends Controller
     /**
      * Update team member information (for team leaders and stack leaders).
      */
-    public function updateTeamMember(Request $request, User $teamMember): \Illuminate\Http\RedirectResponse
+    public function updateTeamMember(Request $request, User $teamMember): RedirectResponse
     {
         $user = auth()->user();
 
@@ -1054,27 +1087,27 @@ class UserController extends Controller
     /**
      * Show the form for creating a new team member.
      */
-    public function createTeamMember(Request $request): \Illuminate\View\View
+    public function createTeamMember(Request $request): View
     {
         $user = auth()->user();
 
         $assignableRoles = collect();
         if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
-            $assignableRoles = \Spatie\Permission\Models\Role::all();
+            $assignableRoles = Role::all();
         } elseif ($user->hasRole('team-leader')) {
-            $assignableRoles = \Spatie\Permission\Models\Role::whereIn('name', ['team-member', 'stack-leader'])->get();
+            $assignableRoles = Role::whereIn('name', ['team-member', 'stack-leader'])->get();
         } elseif ($user->hasRole('stack-leader')) {
-            $assignableRoles = \Spatie\Permission\Models\Role::whereIn('name', ['team-member'])->get();
+            $assignableRoles = Role::whereIn('name', ['team-member'])->get();
         }
 
         // Get teams if user is team leader
         $teams = collect();
         $defaultTeam = null;
         if ($user->hasRole('team-leader') && $user->team_id) {
-            $teams = \App\Models\Team::where('id', $user->team_id)->get();
+            $teams = Team::where('id', $user->team_id)->get();
             $defaultTeam = $user->team_id;
         } elseif ($user->hasRole(['admin', 'operation-manager'])) {
-            $teams = \App\Models\Team::all();
+            $teams = Team::all();
         }
 
         return view('users.create-team-member', compact('assignableRoles', 'teams', 'defaultTeam'));
@@ -1083,7 +1116,7 @@ class UserController extends Controller
     /**
      * Store a newly created team member.
      */
-    public function storeTeamMember(Request $request): \Illuminate\Http\RedirectResponse
+    public function storeTeamMember(Request $request): RedirectResponse
     {
         $user = auth()->user();
 

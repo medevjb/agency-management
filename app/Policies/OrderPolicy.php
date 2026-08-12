@@ -19,10 +19,20 @@ class OrderPolicy
     /**
      * Admin, OM, PM, and team members can view any order.
      * Team leaders and stack leaders can only view their own team's orders.
+     * Sales members see the orders they sold; sales leaders also see everything
+     * sold by their group.
      */
     public function view(User $user, Order $order): bool
     {
-        if ($user->hasRole(['admin', 'operation-manager', 'project-manager', 'team-member'])) {
+        if ($user->hasRole('admin')) {
+            return true;
+        }
+
+        if ($user->isSales()) {
+            return in_array($order->sales_user_id, $user->salesVisibleUserIds(), true);
+        }
+
+        if ($user->hasRole(['operation-manager', 'project-manager', 'team-member'])) {
             return true;
         }
 
@@ -56,12 +66,14 @@ class OrderPolicy
             return true;
         }
 
-        return false;
+        return $user->isSales();
     }
 
     /**
      * Admin, OM, PM can update any order.
      * Team leader can update their team's orders.
+     * Sales people can update the orders they can see — but only the sales
+     * fields, which `manageOperations` gates.
      */
     public function update(User $user, Order $order): bool
     {
@@ -73,7 +85,24 @@ class OrderPolicy
             return true;
         }
 
+        if ($user->isSales()) {
+            return $this->view($user, $order);
+        }
+
         return false;
+    }
+
+    /**
+     * Who may touch the delivery side of an order: status, progress, team,
+     * tech stack, assignees and dates. Never sales.
+     */
+    public function manageOperations(User $user, Order $order): bool
+    {
+        if ($user->isSales()) {
+            return false;
+        }
+
+        return $this->update($user, $order);
     }
 
     /**
@@ -82,6 +111,10 @@ class OrderPolicy
      */
     public function delete(User $user, Order $order): bool
     {
+        if ($user->isSales()) {
+            return false;
+        }
+
         if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
             return true;
         }

@@ -7,7 +7,7 @@
         <nav class="flex" aria-label="Breadcrumb">
             <ol class="flex items-center space-x-4">
                 <li>
-                    <a href="{{ route('users.index') }}" class="inline-flex items-center text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                    <a href="{{ route('users.index') }}" class="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-200">
                         <i class="fas fa-arrow-left mr-2 text-sm"></i>
                         <span class="text-sm font-medium">Back to Users</span>
                     </a>
@@ -15,14 +15,14 @@
             </ol>
         </nav>
         <div class="mt-6">
-            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Edit User</h1>
-            <p class="text-gray-600 text-lg">Update {{ $user->name }}'s information, roles, and permissions</p>
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">Edit User</h1>
+            <p class="text-gray-600 dark:text-gray-400 text-lg">Update {{ $user->name }}'s information, roles, and permissions</p>
         </div>
     </div>
 
     <!-- Edit User Form -->
     <div class="max-w-6xl mx-auto">
-        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 overflow-hidden">
             <!-- Form Header -->
             <div class="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-8 text-center">
                 <div class="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl mb-4">
@@ -41,22 +41,22 @@
                         <div class="flex items-center justify-center space-x-4">
                             <div class="flex items-center">
                                 <div class="flex items-center justify-center w-10 h-10 bg-indigo-600 rounded-full text-white font-semibold" id="step1">1</div>
-                                <span class="ml-2 font-medium text-gray-900">Basic Info</span>
+                                <span class="ml-2 font-medium text-gray-900 dark:text-gray-100">Basic Info</span>
                             </div>
-                            <div class="w-12 h-1 bg-gray-300 rounded" id="progress1"></div>
+                            <div class="w-12 h-1 bg-gray-300 dark:bg-gray-700 rounded" id="progress1"></div>
                             <div class="flex items-center">
-                                <div class="flex items-center justify-center w-10 h-10 bg-gray-300 rounded-full text-gray-600 font-semibold" id="step2">2</div>
-                                <span class="ml-2 font-medium text-gray-500">Professional</span>
+                                <div class="flex items-center justify-center w-10 h-10 bg-gray-300 dark:bg-gray-700 rounded-full text-gray-600 dark:text-gray-300 font-semibold" id="step2">2</div>
+                                <span class="ml-2 font-medium text-gray-500 dark:text-gray-400">Professional</span>
                             </div>
-                            <div class="w-12 h-1 bg-gray-300 rounded" id="progress2"></div>
+                            <div class="w-12 h-1 bg-gray-300 dark:bg-gray-700 rounded" id="progress2"></div>
                             <div class="flex items-center">
-                                <div class="flex items-center justify-center w-10 h-10 bg-gray-300 rounded-full text-gray-600 font-semibold" id="step3">3</div>
-                                <span class="ml-2 font-medium text-gray-500">Assignments</span>
+                                <div class="flex items-center justify-center w-10 h-10 bg-gray-300 dark:bg-gray-700 rounded-full text-gray-600 dark:text-gray-300 font-semibold" id="step3">3</div>
+                                <span class="ml-2 font-medium text-gray-500 dark:text-gray-400">Assignments</span>
                             </div>
-                            <div class="w-12 h-1 bg-gray-300 rounded" id="progress3"></div>
+                            <div class="w-12 h-1 bg-gray-300 dark:bg-gray-700 rounded" id="progress3"></div>
                             <div class="flex items-center">
-                                <div class="flex items-center justify-center w-10 h-10 bg-gray-300 rounded-full text-gray-600 font-semibold" id="step4">4</div>
-                                <span class="ml-2 font-medium text-gray-500">Permissions</span>
+                                <div class="flex items-center justify-center w-10 h-10 bg-gray-300 dark:bg-gray-700 rounded-full text-gray-600 dark:text-gray-300 font-semibold" id="step4">4</div>
+                                <span class="ml-2 font-medium text-gray-500 dark:text-gray-400">Permissions</span>
                             </div>
                         </div>
                     </div>
@@ -64,64 +64,64 @@
                     <!-- Step 1: Basic Information -->
                     <div id="step1Content" class="space-y-8">
                         <div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                                <div class="bg-blue-100 rounded-lg p-3 mr-3">
-                                    <i class="fas fa-info-circle text-blue-600"></i>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
+                                <div class="bg-blue-100 dark:bg-blue-500/10 rounded-lg p-3 mr-3">
+                                    <i class="fas fa-info-circle text-blue-600 dark:text-blue-400"></i>
                                 </div>
                                 Basic User Information
                             </h3>
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div>
-                                    <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label for="name" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                         Full Name <span class="text-red-500">*</span>
                                     </label>
                                     <input type="text" id="name" name="name" required
                                            value="{{ old('name', $user->name) }}"
-                                           class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
+                                           class="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200 text-base"
                                            placeholder="Enter full name">
                                 </div>
 
                                 <div>
-                                    <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label for="email" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                         Email Address <span class="text-red-500">*</span>
                                     </label>
                                     <input type="email" id="email" name="email" required
                                            value="{{ old('email', $user->email) }}"
-                                           class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
+                                           class="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200 text-base"
                                            placeholder="user@company.com">
                                 </div>
 
                                 <div>
-                                    <label for="employee_id" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label for="employee_id" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                         Employee ID
                                     </label>
                                     <input type="text" id="employee_id" name="employee_id"
                                            value="{{ old('employee_id', $user->employee_id) }}"
                                            maxlength="13"
-                                           class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
+                                           class="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200 text-base"
                                            placeholder="13 characters (optional)">
                                 </div>
 
                                 <div>
-                                    <label for="phone" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label for="phone" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                         Phone Number
                                     </label>
                                     <input type="tel" id="phone" name="phone"
                                            value="{{ old('phone', $user->phone) }}"
-                                           class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
+                                           class="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200 text-base"
                                            placeholder="+1 (555) 123-4567">
                                 </div>
 
                                 <div class="lg:col-span-2">
-                                    <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label for="password" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                         Password (leave blank to keep current)
                                     </label>
                                     <div class="relative">
                                         <input type="password" id="password" name="password"
-                                               class="w-full px-4 py-2.5 pr-12 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
+                                               class="w-full px-4 py-2.5 pr-12 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200 text-base"
                                                placeholder="Enter new password (optional)">
                                         <button type="button" onclick="togglePasswordVisibility('password')"
-                                                class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-gray-600">
+                                                class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                                             <i id="password-toggle-icon" class="fas fa-eye"></i>
                                         </button>
                                     </div>
@@ -140,38 +140,38 @@
                     <!-- Step 2: Professional Information -->
                     <div id="step2Content" class="space-y-8 hidden">
                         <div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                                <div class="bg-purple-100 rounded-lg p-3 mr-3">
-                                    <i class="fas fa-briefcase text-purple-600"></i>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
+                                <div class="bg-purple-100 dark:bg-purple-500/10 rounded-lg p-3 mr-3">
+                                    <i class="fas fa-briefcase text-purple-600 dark:text-purple-400"></i>
                                 </div>
                                 Professional Information
                             </h3>
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div>
-                                    <label for="department" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label for="department" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                         Department
                                     </label>
                                     <input type="text" id="department" name="department"
                                            value="{{ old('department', $user->department) }}"
-                                           class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
+                                           class="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200 text-base"
                                            placeholder="Engineering">
                                 </div>
 
                                 <div>
-                                    <label for="position" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label for="position" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                         Position
                                     </label>
                                     <input type="text" id="position" name="position"
                                            value="{{ old('position', $user->position) }}"
-                                           class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base"
+                                           class="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200 text-base"
                                            placeholder="Senior Developer">
                                 </div>
                                 <div class="lg:col-span-2">
-                                    <label for="address" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label for="address" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                         Address
                                     </label>
                                     <textarea id="address" name="address" rows="2"
-                                              class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base resize-none"
+                                              class="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200 text-base resize-none"
                                               placeholder="Enter full address">{{ old('address', $user->address) }}</textarea>
                                 </div>
                             </div>
@@ -192,15 +192,15 @@
                     <!-- Step 3: Assignments -->
                     <div id="step3Content" class="space-y-8 hidden">
                         <div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                                <div class="bg-green-100 rounded-lg p-3 mr-3">
-                                    <i class="fas fa-sitemap text-green-600"></i>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
+                                <div class="bg-green-100 dark:bg-green-500/10 rounded-lg p-3 mr-3">
+                                    <i class="fas fa-sitemap text-green-600 dark:text-green-400"></i>
                                 </div>
                                 Team & Tech Stack Assignments
                             </h3>
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Team</label>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Team</label>
                                     <x-ajax-select name="team_id"
                                                    :url="route('search.teams')"
                                                    :value="$user->team_id"
@@ -209,13 +209,63 @@
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tech Stack</label>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Tech Stack</label>
                                     <x-ajax-select name="tech_stack_id"
                                                    :url="route('search.tech-stacks')"
                                                    :value="$user->tech_stack_id"
                                                    :label="$user->techStack?->name"
                                                    placeholder="Search tech stacks..." />
                                 </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Sales Leader</label>
+                                    <select name="sales_leader_id"
+                                            class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm">
+                                        <option value="">No sales leader</option>
+                                        @foreach(\App\Models\User::withRoleName('sales-leader')->orderBy('name')->get() as $leader)
+                                            <option value="{{ $leader->id }}" {{ (int) old('sales_leader_id', $user->sales_leader_id) === $leader->id ? 'selected' : '' }}>
+                                                {{ $leader->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        Only used for sales members — the leader sees every order their members sell.
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Monthly Sales Target</label>
+                                    <div class="flex gap-2">
+                                        <div class="relative flex-1">
+                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                            <input type="number" step="0.01" min="0" name="sales_target"
+                                                   value="{{ old('sales_target', $user->salesTargetFor()) }}"
+                                                   class="w-full pl-7 pr-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
+                                                   placeholder="0.00">
+                                        </div>
+                                        <input type="month" name="sales_target_month"
+                                               value="{{ old('sales_target_month', now()->format('Y-m')) }}"
+                                               class="w-40 px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm">
+                                    </div>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        The minimum this person should sell from that month on. It carries forward until you set a new one.
+                                    </p>
+
+                                    @if($user->salesTargets->isNotEmpty())
+                                        <div class="mt-2 rounded-lg border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-800">
+                                            @foreach($user->salesTargets->take(6) as $target)
+                                                <div class="flex items-center justify-between px-3 py-1.5 text-xs">
+                                                    <span class="text-gray-500 dark:text-gray-400">From {{ $target->month->format('F Y') }}</span>
+                                                    <span class="font-semibold text-gray-900 dark:text-gray-100">${{ number_format((float) $target->amount, 2) }}</span>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                    @error('sales_target')
+                                        <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
                             </div>
                         </div>
 
@@ -234,20 +284,20 @@
                     <!-- Step 4: Permissions -->
                     <div id="step4Content" class="space-y-8 hidden">
                         <div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                                <div class="bg-red-100 rounded-lg p-3 mr-3">
-                                    <i class="fas fa-shield-alt text-red-600"></i>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
+                                <div class="bg-red-100 dark:bg-red-500/10 rounded-lg p-3 mr-3">
+                                    <i class="fas fa-shield-alt text-red-600 dark:text-red-400"></i>
                                 </div>
                                 Role & Permissions
                             </h3>
 
                             <div class="space-y-6">
                                 <div>
-                                    <label for="role" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label for="role" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                         Primary Role
                                     </label>
                                     <select id="role" name="role"
-                                            class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-base">
+                                            class="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200 text-base">
                                         <option value="">No Role</option>
                                         @foreach($roles as $role)
                                             <option value="{{ $role->name }}" {{ old('role', $user->roles->first()?->name) == $role->name ? 'selected' : '' }}>
@@ -259,25 +309,25 @@
 
                                 <!-- Managed Teams Section (only for managers) -->
                                 <div id="managedTeamsSection" class="hidden">
-                                    <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                                    <div class="bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-900 rounded-lg p-4">
                                         <div class="flex items-start mb-3">
-                                            <i class="fas fa-users-cog text-indigo-600 mt-1 mr-2"></i>
+                                            <i class="fas fa-users-cog text-indigo-600 dark:text-indigo-400 mt-1 mr-2"></i>
                                             <div class="flex-1">
-                                                <h4 class="text-sm font-semibold text-indigo-900 mb-1">Managed Teams</h4>
-                                                <p class="text-xs text-indigo-700">Select which teams this manager can oversee. Managers will only have access to teams they're assigned to.</p>
+                                                <h4 class="text-sm font-semibold text-indigo-900 dark:text-indigo-300 mb-1">Managed Teams</h4>
+                                                <p class="text-xs text-indigo-700 dark:text-indigo-400">Select which teams this manager can oversee. Managers will only have access to teams they're assigned to.</p>
                                             </div>
                                         </div>
                                         <div class="space-y-2">
                                             @foreach($teams as $team)
-                                                <label class="flex items-center p-2 rounded hover:bg-white transition-colors cursor-pointer">
+                                                <label class="flex items-center p-2 rounded hover:bg-white dark:hover:bg-gray-800 transition-colors cursor-pointer">
                                                     <input type="checkbox"
                                                            name="managed_teams[]"
                                                            value="{{ $team->id }}"
                                                            {{ in_array($team->id, old('managed_teams', $user->managedTeams->pluck('id')->toArray())) ? 'checked' : '' }}
-                                                           class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                                    <span class="ml-3 text-sm text-gray-700">{{ $team->name }}</span>
+                                                           class="w-4 h-4 text-indigo-600 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500">
+                                                    <span class="ml-3 text-sm text-gray-700 dark:text-gray-300">{{ $team->name }}</span>
                                                     @if($team->description)
-                                                        <span class="ml-2 text-xs text-gray-500">({{ $team->description }})</span>
+                                                        <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">({{ $team->description }})</span>
                                                     @endif
                                                 </label>
                                             @endforeach
@@ -285,11 +335,11 @@
                                     </div>
                                 </div>
 
-                                <div class="border-t border-gray-200 pt-6">
+                                <div class="border-t border-gray-200 dark:border-gray-800 pt-6">
                                     <div class="flex items-center justify-between mb-4">
-                                        <h4 class="text-lg font-semibold text-gray-900">Additional Permissions</h4>
+                                        <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Additional Permissions</h4>
                                         <button type="button" onclick="toggleAllAccordions()"
-                                                class="text-sm px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200">
+                                                class="text-sm px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg transition-colors duration-200">
                                             <i class="fas fa-expand-alt mr-1"></i>
                                             <span id="toggleAllText">Expand All</span>
                                         </button>
@@ -297,38 +347,38 @@
 
                                     <div class="space-y-4" id="permissionsContainer">
                                         @foreach($permissions as $group => $groupPermissions)
-                                            <div class="permissions-accordion-item border border-gray-200 rounded-lg overflow-hidden">
+                                            <div class="permissions-accordion-item border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                                                 <button type="button" onclick="toggleAccordion(this)"
-                                                        class="w-full px-6 py-4 bg-gray-50 hover:bg-gray-100 flex items-center justify-between transition-colors duration-200">
+                                                        class="w-full px-6 py-4 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between transition-colors duration-200">
                                                     <div class="flex items-center">
-                                                        <i class="fas fa-folder text-indigo-500 mr-3"></i>
-                                                        <span class="font-semibold text-gray-900">{{ ucfirst($group) }}</span>
+                                                        <i class="fas fa-folder text-indigo-500 dark:text-indigo-400 mr-3"></i>
+                                                        <span class="font-semibold text-gray-900 dark:text-gray-100">{{ ucfirst($group) }}</span>
                                                     </div>
                                                     <div class="flex items-center space-x-4">
-                                                        <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm font-medium">
+                                                        <span class="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full text-sm font-medium">
                                                             {{ $user->permissions->whereIn('id', $groupPermissions->pluck('id'))->count() }}/{{ $groupPermissions->count() }}
                                                         </span>
-                                                        <span class="text-gray-400 text-sm">{{ round($user->permissions->whereIn('id', $groupPermissions->pluck('id'))->count() / max($groupPermissions->count(), 1) * 100) }}% selected</span>
+                                                        <span class="text-gray-400 dark:text-gray-500 text-sm">{{ round($user->permissions->whereIn('id', $groupPermissions->pluck('id'))->count() / max($groupPermissions->count(), 1) * 100) }}% selected</span>
                                                         <i class="fas fa-chevron-down accordion-icon transition-transform duration-200"></i>
                                                     </div>
                                                 </button>
 
-                                                <div class="accordion-content hidden border-t border-gray-200 bg-white p-6">
+                                                <div class="accordion-content hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
                                                     <div class="flex items-center justify-between mb-4">
-                                                        <p class="text-sm text-gray-600">Select additional {{ $group }} permissions for this user</p>
+                                                        <p class="text-sm text-gray-600 dark:text-gray-400">Select additional {{ $group }} permissions for this user</p>
                                                         <button type="button" onclick="toggleAllPermissions(this, '{{ $group }}')"
-                                                                class="text-sm px-3 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg transition-colors duration-200">
+                                                                class="text-sm px-3 py-1.5 bg-indigo-100 dark:bg-indigo-500/10 hover:bg-indigo-200 dark:hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 rounded-lg transition-colors duration-200">
                                                             <span class="toggle-all-text">Select All {{ ucfirst($group) }}</span>
                                                         </button>
                                                     </div>
 
                                                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                                         @foreach($groupPermissions as $permission)
-                                                            <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 cursor-pointer transition-all duration-200">
+                                                            <label class="flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 cursor-pointer transition-all duration-200">
                                                                 <input type="checkbox" name="permissions[]" value="{{ $permission->id }}"
                                                                        {{ $user->permissions->contains($permission->id) ? 'checked' : '' }}
-                                                                       class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                                                <span class="text-sm text-gray-700">{{ ucfirst(str_replace('-', ' ', str_replace($group . ' ', '', $permission->name))) }}</span>
+                                                                       class="w-4 h-4 text-indigo-600 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500">
+                                                                <span class="text-sm text-gray-700 dark:text-gray-300">{{ ucfirst(str_replace('-', ' ', str_replace($group . ' ', '', $permission->name))) }}</span>
                                                             </label>
                                                         @endforeach
                                                     </div>
@@ -347,7 +397,7 @@
                             </button>
                             <div class="flex gap-3">
                                 <a href="{{ route('users.index') }}"
-                                   class="px-5 py-2 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200 text-sm">
+                                   class="px-5 py-2 border-2 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 text-sm">
                                     <i class="fas fa-times mr-1.5 text-xs"></i> Cancel
                                 </a>
                                 <button type="submit"
@@ -414,9 +464,9 @@ function goToStep(stepNumber) {
         if (stepContent) stepContent.classList.add('hidden');
         if (stepIndicator) {
             stepIndicator.classList.remove('bg-indigo-600', 'text-white');
-            stepIndicator.classList.add('bg-gray-300', 'text-gray-600');
+            stepIndicator.classList.add('bg-gray-300', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300');
         }
-        if (progressElement) progressElement.classList.add('bg-gray-300');
+        if (progressElement) progressElement.classList.add('bg-gray-300', 'dark:bg-gray-700');
     }
 
     const currentStepContent = document.getElementById('step' + stepNumber + 'Content');
@@ -424,14 +474,14 @@ function goToStep(stepNumber) {
 
     if (currentStepContent) currentStepContent.classList.remove('hidden');
     if (currentStepIndicator) {
-        currentStepIndicator.classList.remove('bg-gray-300', 'text-gray-600');
+        currentStepIndicator.classList.remove('bg-gray-300', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300');
         currentStepIndicator.classList.add('bg-indigo-600', 'text-white');
     }
 
     for (let i = 1; i < stepNumber; i++) {
         const progressElement = document.getElementById('progress' + i);
         if (progressElement) {
-            progressElement.classList.remove('bg-gray-300');
+            progressElement.classList.remove('bg-gray-300', 'dark:bg-gray-700');
             progressElement.classList.add('bg-indigo-600');
         }
     }

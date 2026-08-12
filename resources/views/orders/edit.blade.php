@@ -3,6 +3,7 @@
 @section('title', 'Edit Order')
 
 @section('content')
+@php $isSalesUser = auth()->user()->isSales(); @endphp
 <div class="px-4 sm:px-6 lg:px-8 py-6 max-w-5xl mx-auto">
     <!-- Page Header -->
     <div class="mb-6">
@@ -12,33 +13,33 @@
                     <i class="fas fa-edit text-white"></i>
                 </div>
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Edit Order</h1>
-                    <p class="text-sm text-gray-500">Update order information</p>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Edit Order</h1>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Update order information</p>
                 </div>
             </div>
             <a href="{{ route('orders.index') }}"
-               class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium transition-all">
+               class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 text-sm font-medium transition-all">
                 <i class="fas fa-arrow-left mr-2"></i>
                 Back
             </a>
         </div>
     </div>
 
-    <form action="{{ route('orders.update', $order->id) }}" method="POST">
+    <form action="{{ route('orders.update', $order->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PATCH')
 
         <!-- Main Form Container -->
-        <div class="bg-white rounded-xl shadow-lg border border-gray-200 ">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 ">
             <div class="p-6 space-y-6">
                 <!-- Row 1: Client Name & Order ID -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Client Name <span class="text-red-500">*</span>
                         </label>
                         <input type="text" name="name" required value="{{ $order->name }}"
-                               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm"
+                               class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
                                placeholder="Enter client name">
                         @error('name')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -46,11 +47,11 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Order ID
                         </label>
                         <input type="text" name="order_id" value="{{ $order->order_id }}"
-                               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm"
+                               class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
                                placeholder="ORD-2024-001">
                         @error('order_id')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -60,25 +61,46 @@
 
                 <!-- Row 2: Description -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Description
                     </label>
                     <textarea name="description" rows="2"
-                              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm resize-none"
-                              placeholder="Brief description of the order...">{{ $order->description ?? '' }}</textarea>
+                              class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm resize-none"
+                              placeholder="Brief description of the order...">{{ old('description', $order->description) }}</textarea>
                     @error('description')
                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <!-- Row 3: Status & Priority -->
+                <!-- Row 2b: Notes -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Notes
+                    </label>
+                    <textarea name="notes" rows="4"
+                              class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
+                              placeholder="Anything the team should know about this order...">{{ old('notes', $order->notes) }}</textarea>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Visible to everyone who can see this order.
+                    </p>
+                    @error('notes')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Row 2c: Credentials (rich text) -->
+                @include('orders.partials.credentials-editor', ['value' => old('credentials', $order->credentials ?? '')])
+
+                @unless($isSalesUser)
+<!-- Row 3: Status & Priority -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Status <span class="text-red-500">*</span>
                         </label>
                         <select name="status" required id="status"
-                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white text-sm">
+                                class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm">
                             <option value="">Select status</option>
                             <option value="nra" {{ $order->status === 'nra' ? 'selected' : '' }}>NRA</option>
                             <option value="pending" {{ $order->status === 'pending' ? 'selected' : '' }}>Pending</option>
@@ -93,11 +115,11 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Priority <span class="text-red-500">*</span>
                         </label>
                         <select name="priority" required
-                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white text-sm">
+                                class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm">
                             <option value="low" {{ $order->priority === 'low' ? 'selected' : '' }}>Low</option>
                             <option value="medium" {{ $order->priority === 'medium' ? 'selected' : '' }}>Medium</option>
                             <option value="high" {{ $order->priority === 'high' ? 'selected' : '' }}>High</option>
@@ -108,16 +130,20 @@
                     </div>
                 </div>
 
+                <!-- Row 3b: Progress -->
+                @include('orders.partials.progress-field', ['value' => (int) old('progress', $order->progress ?? 0)])
+                @endunless
+
                 <!-- Row 4: Amount Split & Dates -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Amount Section -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Order Amount ($) <span class="text-gray-400 font-normal" id="amountLabel">— select a profile</span>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Order Amount ($) <span class="text-gray-400 dark:text-gray-500 font-normal" id="amountLabel">— select a profile</span>
                         </label>
                         <input type="number" name="value" id="orderAmount" step="0.01" min="0"
                                value="{{ old('value', $order->value) }}"
-                               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm"
+                               class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
                                placeholder="0.00">
                         @error('value')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -125,30 +151,30 @@
 
                         <!-- Visual Split -->
                         <div id="amountSplit" class="mt-3 hidden">
-                            <div class="bg-gray-50 rounded-lg border border-gray-200 p-3 space-y-2">
+                            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 space-y-2">
                                 <div class="flex items-center justify-between text-sm">
-                                    <span class="text-gray-600 flex items-center gap-1.5">
+                                    <span class="text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
                                         <span class="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block"></span>
                                         Order Amount
                                     </span>
-                                    <span class="font-semibold text-gray-900" id="splitAmount">$0.00</span>
+                                    <span class="font-semibold text-gray-900 dark:text-gray-100" id="splitAmount">$0.00</span>
                                 </div>
                                 <div class="flex items-center justify-between text-sm">
-                                    <span class="text-gray-600 flex items-center gap-1.5">
+                                    <span class="text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
                                         <span class="w-2.5 h-2.5 rounded-full bg-red-400 inline-block"></span>
                                         <span id="feeLabel">Platform Fee</span>
                                     </span>
-                                    <span class="font-semibold text-red-500" id="splitFee">-$0.00</span>
+                                    <span class="font-semibold text-red-500 dark:text-red-400" id="splitFee">-$0.00</span>
                                 </div>
-                                <div class="border-t border-gray-200 pt-2 flex items-center justify-between text-sm">
-                                    <span class="text-gray-900 font-semibold flex items-center gap-1.5">
+                                <div class="border-t border-gray-200 dark:border-gray-700 pt-2 flex items-center justify-between text-sm">
+                                    <span class="text-gray-900 dark:text-gray-100 font-semibold flex items-center gap-1.5">
                                         <span class="w-2.5 h-2.5 rounded-full bg-green-500 inline-block"></span>
                                         <span id="netLabel">Net Value</span>
                                     </span>
-                                    <span class="font-bold text-green-600 text-base" id="splitNet">$0.00</span>
+                                    <span class="font-bold text-green-600 dark:text-green-400 text-base" id="splitNet">$0.00</span>
                                 </div>
                                 <!-- Progress bar -->
-                                <div class="flex h-2 rounded-full overflow-hidden bg-gray-200 mt-1">
+                                <div class="flex h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 mt-1">
                                     <div id="progressNet" class="bg-green-500 transition-all duration-300" style="width: 80%"></div>
                                     <div id="progressFee" class="bg-red-400 transition-all duration-300" style="width: 20%"></div>
                                 </div>
@@ -157,15 +183,16 @@
                         <input type="hidden" name="actual_revenue" id="actualRevenue" value="{{ old('actual_revenue', $order->actual_revenue) }}">
                     </div>
 
+                    @unless($isSalesUser)
                     <!-- Dates -->
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Start Date
                             </label>
                             <input type="text" name="start_date" id="start_date" readonly
                                    value="{{ $order->start_date ? $order->start_date->format('Y-m-d') : '' }}"
-                                   class="datepicker w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm cursor-pointer bg-white"
+                                   class="datepicker w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm cursor-pointer"
                                    placeholder="Select start date">
                             @error('start_date')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -173,24 +200,26 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 End Date
                             </label>
                             <input type="text" name="end_date" id="end_date" readonly
                                    value="{{ $order->end_date ? $order->end_date->format('Y-m-d') : '' }}"
-                                   class="datepicker w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm cursor-pointer bg-white"
+                                   class="datepicker w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm cursor-pointer"
                                    placeholder="Select end date">
                             @error('end_date')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
                     </div>
+                    @endunless
                 </div>
 
-                <!-- Row 5: Team & Tech Stack -->
+                @unless($isSalesUser)
+<!-- Row 5: Team & Tech Stack -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Team</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Team</label>
                         <x-ajax-select name="team_id"
                                        :url="route('search.teams')"
                                        :value="$order->team_id"
@@ -202,7 +231,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tech Stack</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tech Stack</label>
                         <x-ajax-select name="tech_stack_id"
                                        :url="route('search.tech-stacks')"
                                        :value="$order->tech_stack_id"
@@ -213,10 +242,11 @@
                         @enderror
                     </div>
                 </div>
+                @endunless
 
                 <!-- Row 6: Freelance Profile -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Freelance Profile</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Freelance Profile</label>
                     @php
                         $profileLabel = $order->freelanceProfile
                             ? $order->freelanceProfile->username . ' (' . ucfirst($order->freelanceProfile->platform) . ')'
@@ -232,15 +262,16 @@
                     @enderror
                 </div>
 
-                <!-- Row 7: Assign Users -->
+                @unless($isSalesUser)
+<!-- Row 7: Assign Users -->
                 <div id="userSelectorContainer">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Assign Users
                     </label>
 
                     <!-- Selected Users Display -->
-                    <div id="selectedUsersDisplay" class="border border-gray-300 rounded-lg p-3 min-h-[60px] bg-gray-50 mb-2">
-                        <span class="text-gray-400 text-sm">No users assigned</span>
+                    <div id="selectedUsersDisplay" class="border border-gray-300 dark:border-gray-700 rounded-lg p-3 min-h-[60px] bg-gray-50 dark:bg-gray-800 mb-2">
+                        <span class="text-gray-400 dark:text-gray-500 text-sm">No users assigned</span>
                     </div>
 
                     <!-- Hidden inputs for selected users will be added dynamically -->
@@ -249,15 +280,15 @@
                     <div class="relative">
                         <input type="text" id="userSearchInput"
                                placeholder="Search users by name or email..."
-                               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm">
+                               class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm">
 
                         <!-- Dropdown List -->
-                        <div id="userDropdown" class="hidden absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        <div id="userDropdown" class="hidden absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                             <!-- Users will be populated here by JavaScript -->
                         </div>
                     </div>
 
-                    <p class="mt-1 text-xs text-gray-500">
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         <i class="fas fa-info-circle mr-1"></i>
                         Start typing to search and add users
                     </p>
@@ -304,10 +335,10 @@
                         // Render dropdown with users
                         function renderDropdown(users) {
                             if (users.length === 0) {
-                                dropdown.innerHTML = '<div class="px-4 py-3 text-sm text-gray-500 text-center">No users found</div>';
+                                dropdown.innerHTML = '<div class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 text-center">No users found</div>';
                             } else {
                                 dropdown.innerHTML = users.map(user => `
-                                    <div class="user-option flex items-center gap-3 p-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 last:border-0 transition-colors"
+                                    <div class="user-option flex items-center gap-3 p-3 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors"
                                          data-user-id="${user.id}"
                                          data-user-name="${user.name}"
                                          data-user-email="${user.email}">
@@ -316,17 +347,17 @@
                                         </div>
                                         <div class="flex-1 min-w-0">
                                             <div class="flex items-center gap-2 mb-0.5 flex-wrap">
-                                                <div class="font-semibold text-sm text-gray-900 truncate">${user.name}</div>
+                                                <div class="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">${user.name}</div>
                                                 <span class="text-xs text-white bg-indigo-500 px-2 py-0.5 rounded-full flex-shrink-0">${user.employee_id || 'N/A'}</span>
                                                 ${user.team ? `<span class="text-xs text-white bg-purple-500 px-2 py-0.5 rounded-full flex-shrink-0"><i class="fas fa-users mr-1"></i>${user.team.name}</span>` : ''}
                                             </div>
-                                            <div class="text-xs text-gray-500 truncate">
-                                                ${user.position ? `<span class="font-medium text-gray-600">${user.position}</span> &bull; ` : ''}${user.email}
+                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                                ${user.position ? `<span class="font-medium text-gray-600 dark:text-gray-300">${user.position}</span> &bull; ` : ''}${user.email}
                                             </div>
                                         </div>
                                         <div class="flex-shrink-0">
-                                            <div class="w-8 h-8 rounded-full bg-indigo-100 hover:bg-indigo-200 flex items-center justify-center transition-colors">
-                                                <i class="fas fa-plus text-indigo-600 text-xs"></i>
+                                            <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-500/10 hover:bg-indigo-200 dark:hover:bg-indigo-500/20 flex items-center justify-center transition-colors">
+                                                <i class="fas fa-plus text-indigo-600 dark:text-indigo-400 text-xs"></i>
                                             </div>
                                         </div>
                                     </div>
@@ -393,12 +424,12 @@
                         // Update selected users display
                         function updateSelectedDisplay() {
                             if (selectedUsers.length === 0) {
-                                selectedDisplay.innerHTML = '<span class="text-gray-400 text-sm">No users assigned</span>';
+                                selectedDisplay.innerHTML = '<span class="text-gray-400 dark:text-gray-500 text-sm">No users assigned</span>';
                             } else {
                                 selectedDisplay.innerHTML = selectedUsers.map(user => `
-                                    <span class="inline-flex items-center gap-1 px-3 py-1 m-1 bg-indigo-100 text-indigo-800 rounded-lg text-sm">
+                                    <span class="inline-flex items-center gap-1 px-3 py-1 m-1 bg-indigo-100 dark:bg-indigo-500/10 text-indigo-800 dark:text-indigo-400 rounded-lg text-sm">
                                         <span>${user.name}</span>
-                                        <button type="button" class="remove-user-btn hover:text-red-600 transition-colors" data-user-id="${user.id}">
+                                        <button type="button" class="remove-user-btn hover:text-red-600 dark:hover:text-red-400 transition-colors" data-user-id="${user.id}">
                                             <i class="fas fa-times text-xs"></i>
                                         </button>
                                     </span>
@@ -467,44 +498,37 @@
                         updateSelectedDisplay();
                     })();
                 </script>
+                @endunless
 
-                <!-- Row 8: Order Sheet URL -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Order Sheet URL
-                    </label>
-                    <input type="url" name="order_sheet_url" value="{{ $order->order_sheet_url ?? '' }}"
-                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm"
-                           placeholder="https://docs.google.com/document/d/...">
-                    @error('order_sheet_url')
-                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+                <!-- Row 8: Initial Client Documents -->
+                @include('orders.partials.documents-field', ['order' => $order])
 
+                @unless($isSalesUser)
                 <!-- Row 9: Delivered Date -->
                 <div id="deliveredDateContainer" class="{{ $order->status !== 'delivered' ? 'hidden' : '' }}">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Delivered Date
                     </label>
                     <input type="text" name="delivered_at" id="delivered_at" readonly
                            value="{{ $order->delivered_at ? $order->delivered_at->format('Y-m-d H:i:s') : '' }}"
-                           class="datetimepicker w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm cursor-pointer bg-white"
+                           class="datetimepicker w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm cursor-pointer"
                            placeholder="Select delivered date and time">
-                    <p class="mt-1 text-xs text-gray-500">
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         <i class="fas fa-info-circle mr-1"></i>
                         Automatically set when status changes to delivered
                     </p>
                 </div>
+                @endunless
             </div>
 
             <!-- Form Actions -->
-            <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-3">
+            <div class="bg-gray-50 dark:bg-gray-800 px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-end gap-3">
                 <a href="{{ route('orders.show', $order->id) }}"
-                   class="px-5 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 text-sm font-medium transition-all">
+                   class="px-5 py-2.5 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-medium transition-all">
                     View Order
                 </a>
                 <a href="{{ route('orders.index') }}"
-                   class="px-5 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 text-sm font-medium transition-all">
+                   class="px-5 py-2.5 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-medium transition-all">
                     Cancel
                 </a>
                 <button type="submit"
@@ -533,6 +557,11 @@
             const progressNet = document.getElementById('progressNet');
             const progressFee = document.getElementById('progressFee');
             const platformFees = {fiverr: 0.20, upwork: 0.10};
+
+            if (!orderAmountInput) {
+                return;
+            }
+
             const platformNames = {fiverr: 'Fiverr', upwork: 'Upwork'};
 
             function getProfileLabelInput() {
@@ -595,6 +624,11 @@
             calculateSplit();
 
             const statusSelect = document.getElementById('status');
+
+            if (!statusSelect) {
+                return;
+            }
+
             const deliveredDateContainer = document.getElementById('deliveredDateContainer');
             const deliveredDateInput = document.getElementById('delivered_at');
 

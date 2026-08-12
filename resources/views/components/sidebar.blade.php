@@ -59,6 +59,35 @@
             </div>
         @endrole
 
+        <!-- Sales Section - sales roles only -->
+        @role(['sales-leader', 'sales-member', 'admin'])
+            <div class="mb-2 sidebar-section" data-section="sales">
+                <button
+                    class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                    <div class="flex items-center">
+                        <i class="fas fa-chart-line w-5 text-emerald-400 group-hover:text-emerald-300 transition-colors"></i>
+                        <span class="ml-3">Sales</span>
+                    </div>
+                    <i
+                        class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron {{ request()->routeIs('sales.*') ? 'rotate-180' : '' }}"></i>
+                </button>
+                <div class="sidebar-content mt-1 space-y-1 ml-4 {{ ! request()->routeIs('sales.*') ? 'hidden' : '' }}">
+                    <a href="{{ route('sales.dashboard') }}"
+                        class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('sales.dashboard') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                        <i class="fas fa-sack-dollar w-5 mr-2"></i>
+                        {{ auth()->user()->isSales() ? 'My Sales' : 'Sales Overview' }}
+                    </a>
+                    @if(auth()->user()->isSales())
+                        <a href="{{ route('orders.create') }}"
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('orders.create') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            <i class="fas fa-plus w-5 mr-2"></i>
+                            Add Order
+                        </a>
+                    @endif
+                </div>
+            </div>
+        @endrole
+
         <!-- Orders Section -->
         <div class="mb-2 sidebar-section" data-section="orders">
             <button
@@ -71,15 +100,17 @@
                     class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron {{ $currentSection === 'orders' ? 'rotate-180' : '' }}"></i>
             </button>
             <div class="sidebar-content mt-1 space-y-1 ml-4 {{ $currentSection !== 'orders' ? 'hidden' : '' }}">
-                <a href="{{ route('orders.dashboard') }}"
-                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('orders.dashboard') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
-                    <i class="fas fa-chart-line w-5 mr-2"></i>
-                    Dashboard
-                </a>
+                @unless(auth()->user()->isSales())
+                    <a href="{{ route('orders.dashboard') }}"
+                        class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('orders.dashboard') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                        <i class="fas fa-chart-line w-5 mr-2"></i>
+                        Dashboard
+                    </a>
+                @endunless
                 <a href="{{ route('orders.index') }}"
                     class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('orders.index') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
                     <i class="fas fa-list w-5 mr-2"></i>
-                    All Orders
+                    {{ auth()->user()->isSales() ? 'My Orders' : 'All Orders' }}
                 </a>
                 @can('create', \App\Models\Order::class)
                     <a href="{{ route('orders.create') }}"
@@ -274,6 +305,11 @@
                         <i class="fas fa-key w-5 mr-2"></i>
                         Roles & Permissions
                     </a>
+                    <a href="{{ route('admin.github.index') }}"
+                        class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('admin.github.*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
+                        <i class="fas fa-code-branch w-5 mr-2"></i>
+                        GitHub Commits
+                    </a>
                     <a href="{{ route('settings.index') }}"
                         class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('settings.*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
                         <i class="fas fa-cog w-5 mr-2"></i>
@@ -305,6 +341,11 @@
                         class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('users.team-members') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
                         <i class="fas fa-users w-5 mr-2"></i>
                         My Team Members
+                    </a>
+                    <a href="{{ route('admin.github.index') }}"
+                        class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('admin.github.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                        <i class="fas fa-code-branch w-5 mr-2"></i>
+                        GitHub Commits
                     </a>
                 </div>
             </div>

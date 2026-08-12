@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreUserRequest extends FormRequest
@@ -17,7 +18,7 @@ class StoreUserRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -36,6 +37,9 @@ class StoreUserRequest extends FormRequest
             'is_active' => 'boolean',
             'role' => 'nullable|string|max:255|exists:roles,name',
             'team_id' => 'nullable|exists:teams,id',
+            'sales_leader_id' => 'nullable|exists:users,id',
+            'sales_target' => 'nullable|numeric|min:0|max:99999999.99',
+            'sales_target_month' => 'nullable|date_format:Y-m',
             'tech_stack_id' => 'nullable|exists:tech_stacks,id',
             'permissions' => 'nullable|array',
             'permissions.*' => 'exists:permissions,id',
@@ -81,6 +85,7 @@ class StoreUserRequest extends FormRequest
             'address.max' => 'Address cannot exceed 1000 characters.',
             'role.exists' => 'Selected role does not exist.',
             'team_id.exists' => 'Selected team does not exist.',
+            'sales_leader_id.exists' => 'Selected sales leader does not exist.',
             'tech_stack_id.exists' => 'Selected tech stack does not exist.',
             'permissions.array' => 'Permissions must be an array.',
             'permissions.*.exists' => 'One or more selected permissions are invalid.',
