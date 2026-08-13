@@ -838,6 +838,32 @@
     .icon-blue { color: #3b82f6; }
     .icon-orange { color: #f97316; }
 
+    .credit-share-pct {
+        margin-left: 0.375rem;
+        padding: 0.0625rem 0.375rem;
+        border-radius: 9999px;
+        font-size: 0.625rem;
+        font-weight: 800;
+        background-color: #eef2ff;
+        color: #4338ca;
+    }
+
+    .dark .credit-share-pct {
+        background-color: rgba(99, 102, 241, 0.15);
+        color: #a5b4fc;
+    }
+
+    .credit-unattributed {
+        margin-top: 0.625rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #b45309;
+    }
+
+    .dark .credit-unattributed {
+        color: #fcd34d;
+    }
+
     /* Visible keyboard focus everywhere on this page. */
     .panel a:focus-visible,
     .panel button:focus-visible,
@@ -1374,7 +1400,7 @@
                 @endunless
                 @if($showsSalesOwner && $order->salesUser)
                     <div class="meta-row">
-                        <span class="meta-key">Sold by</span>
+                        <span class="meta-key">Opened by</span>
                         <span class="meta-value">{{ $order->salesUser->name }}</span>
                     </div>
                 @endif
@@ -1391,6 +1417,31 @@
                     <span class="meta-value num">#{{ $order->id }}</span>
                 </div>
             </div>
+
+            @if($showsSalesOwner && $order->salesShares->isNotEmpty())
+                @php $creditTotal = (float) $order->salesShares->sum('amount'); @endphp
+                <div class="panel p-5">
+                    <p class="eyebrow mb-1"><i class="fas fa-handshake icon-emerald"></i>Sales credit</p>
+                    @foreach($order->salesShares->sortByDesc('amount') as $share)
+                        <div class="meta-row">
+                            <span class="meta-key">
+                                {{ $share->user?->name ?? 'Removed user' }}
+                                @if($creditTotal > 0)
+                                    <span class="credit-share-pct">{{ round((float) $share->amount / $creditTotal * 100) }}%</span>
+                                @endif
+                            </span>
+                            <span class="meta-value num">${{ number_format((float) $share->amount, 2) }}</span>
+                        </div>
+                    @endforeach
+
+                    @if($order->unattributedAmount() > 0.009)
+                        <p class="credit-unattributed num">
+                            <i class="fas fa-triangle-exclamation mr-1"></i>
+                            ${{ number_format($order->unattributedAmount(), 2) }} of this order is not credited to anyone.
+                        </p>
+                    @endif
+                </div>
+            @endif
 
             <div class="panel p-5">
                 <p class="eyebrow mb-1"><i class="fas fa-calendar-days icon-orange"></i>Dates</p>

@@ -7,25 +7,25 @@
         <nav class="flex" aria-label="Breadcrumb">
             <ol class="flex items-center space-x-4">
                 <li>
-                    <a href="{{ route('tech-stacks.index') }}" class="text-gray-500 hover:text-gray-700">
+                    <a href="{{ route('tech-stacks.index') }}" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
                         <i class="fas fa-arrow-left mr-2"></i>Back to Tech Stacks
                     </a>
                 </li>
             </ol>
         </nav>
-        <h1 class="text-3xl font-bold text-gray-900 mt-4">Create New Tech Stack</h1>
-        <p class="text-gray-600 mt-2">Create a new technology stack and assign stack leader and members</p>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-4">Create New Tech Stack</h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-2">Create a new technology stack and assign stack leader and members</p>
     </div>
 
     <!-- Create Tech Stack Form -->
-    <div class="bg-white rounded-xl shadow-lg">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg dark:ring-1 dark:ring-gray-800">
         <div class="p-8">
             <form method="POST" action="{{ route('tech-stacks.store') }}">
                 @csrf
                 <div class="space-y-8">
                     <!-- Tech Stack Information -->
                     <div>
-                        <h2 class="text-lg font-bold text-gray-900 mb-6 flex items-center">
+                        <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
                             <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
                                 <i class="fas fa-layer-group text-white"></i>
                             </div>
@@ -34,14 +34,14 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
-                                    <i class="fas fa-tag mr-2 text-indigo-500"></i>Tech Stack Name <span class="text-red-500">*</span>
+                                <label for="name" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                    <i class="fas fa-tag mr-2 text-indigo-500 dark:text-indigo-400"></i>Tech Stack Name <span class="text-red-500">*</span>
                                 </label>
                                 <input type="text" id="name" name="name" required
-                                       class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                                       class="w-full border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-all"
                                        placeholder="e.g., Full Stack Web Development">
                                 @error('name')
-                                    <p class="mt-2 text-sm text-red-600 flex items-center">
+                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center">
                                         <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
                                     </p>
                                 @enderror
@@ -52,14 +52,14 @@
                                 <input type="hidden" name="team_id" value="{{ auth()->user()->team_id }}">
                             @else
                                 <div>
-                                    <label for="team_id" class="block text-sm font-semibold text-gray-700 mb-2">
-                                        <i class="fas fa-users mr-2 text-indigo-500"></i>Team <span class="text-red-500">*</span>
+                                    <label for="team_id" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                        <i class="fas fa-users mr-2 text-indigo-500 dark:text-indigo-400"></i>Team <span class="text-red-500">*</span>
                                     </label>
                                     <x-ajax-select name="team_id"
                                                    url="{{ route('search.teams') }}"
                                                    placeholder="Search team..." />
                                     @error('team_id')
-                                        <p class="mt-2 text-sm text-red-600 flex items-center">
+                                        <p class="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center">
                                             <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
                                         </p>
                                     @enderror
@@ -68,14 +68,14 @@
                         </div>
 
                         <div class="mt-4">
-                            <label for="description" class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-align-left mr-2 text-indigo-500"></i>Description
+                            <label for="description" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-align-left mr-2 text-indigo-500 dark:text-indigo-400"></i>Description
                             </label>
                             <textarea id="description" name="description" rows="4"
-                                      class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-none"
+                                      class="w-full border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-all resize-none"
                                       placeholder="Describe the technologies and focus of this stack..."></textarea>
                             @error('description')
-                                <p class="mt-2 text-sm text-red-600 flex items-center">
+                                <p class="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center">
                                     <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
                                 </p>
                             @enderror
@@ -86,7 +86,7 @@
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         <!-- Stack Leader -->
                         <div>
-                            <h2 class="text-lg font-bold text-gray-900 mb-6 flex items-center">
+                            <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
                                 <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
                                     <i class="fas fa-user-tie text-white"></i>
                                 </div>
@@ -94,13 +94,13 @@
                             </h2>
 
                             <div>
-                                <label for="stack_leader_id" class="block text-sm font-semibold text-gray-700 mb-2">
-                                    <i class="fas fa-crown mr-2 text-purple-500"></i>Select Leader
+                                <label for="stack_leader_id" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                    <i class="fas fa-crown mr-2 text-purple-500 dark:text-purple-400"></i>Select Leader
                                 </label>
 
                                 <div class="relative">
                                     <select id="stack_leader_id" name="stack_leader_id"
-                                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all appearance-none bg-white">
+                                            class="w-full border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all appearance-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                                         <option value="">Select a stack leader</option>
                                         @foreach($users as $user)
                                             <option value="{{ $user->id }}" {{ old('stack_leader_id') == $user->id ? 'selected' : '' }}>
@@ -109,12 +109,12 @@
                                         @endforeach
                                     </select>
                                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-chevron-down text-gray-400"></i>
+                                        <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500"></i>
                                     </div>
                                 </div>
 
                                 @error('stack_leader_id')
-                                    <p class="mt-2 text-sm text-red-600 flex items-center">
+                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center">
                                         <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
                                     </p>
                                 @enderror
@@ -123,7 +123,7 @@
 
                         <!-- Stack Members -->
                         <div>
-                            <h2 class="text-lg font-bold text-gray-900 mb-6 flex items-center">
+                            <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
                                 <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
                                     <i class="fas fa-users text-white"></i>
                                 </div>
@@ -131,13 +131,13 @@
                             </h2>
 
                             <div id="memberSelectorContainer">
-                                <label for="memberSearch" class="block text-sm font-semibold text-gray-700 mb-2">
-                                    <i class="fas fa-user-plus mr-2 text-blue-500"></i>Search & Add Members
+                                <label for="memberSearch" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                    <i class="fas fa-user-plus mr-2 text-blue-500 dark:text-blue-400"></i>Search & Add Members
                                 </label>
 
                                 <!-- Selected Members Display -->
-                                <div id="selectedMembersDisplay" class="border border-gray-300 rounded-xl p-3 min-h-[60px] bg-gray-50 mb-2">
-                                    <span class="text-gray-400 text-sm">No members selected</span>
+                                <div id="selectedMembersDisplay" class="border border-gray-300 dark:border-gray-700 rounded-xl p-3 min-h-[60px] bg-gray-50 dark:bg-gray-800 mb-2">
+                                    <span class="text-gray-400 dark:text-gray-500 text-sm">No members selected</span>
                                 </div>
 
                                 <!-- Hidden inputs for selected members will be added dynamically -->
@@ -145,22 +145,22 @@
                                 <!-- Search and Add Members -->
                                 <div class="relative">
                                     <input type="text" id="memberSearch"
-                                           class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                           class="w-full border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-all"
                                            placeholder="Search members by name or email..."
                                            autocomplete="off">
 
                                     <!-- Dropdown List -->
-                                    <div id="memberDropdown" class="hidden absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                                    <div id="memberDropdown" class="hidden absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl shadow-lg max-h-60 overflow-y-auto">
                                         <!-- Members will be populated here by JavaScript -->
                                     </div>
                                 </div>
 
-                                <p class="mt-1 text-xs text-gray-500">
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                     <i class="fas fa-info-circle mr-1"></i>
                                     Start typing to search and add team members
                                 </p>
                                 @error('members')
-                                    <p class="mt-2 text-sm text-red-600 flex items-center">
+                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center">
                                         <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
                                     </p>
                                 @enderror
@@ -170,9 +170,9 @@
                 </div>
 
                 <!-- Form Actions -->
-                <div class="mt-8 pt-6 border-t border-gray-200 flex justify-end space-x-4">
+                <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800 flex justify-end space-x-4">
                     <a href="{{ route('tech-stacks.index') }}"
-                       class="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-all duration-200 font-semibold">
+                       class="px-6 py-3 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 font-semibold">
                         <i class="fas fa-times mr-2"></i>Cancel
                     </a>
                     <button type="submit"
@@ -252,10 +252,10 @@
     // Render dropdown with members
     function renderDropdown(members) {
         if (members.length === 0) {
-            dropdown.innerHTML = '<div class="px-4 py-3 text-sm text-gray-500 text-center">No team members found</div>';
+            dropdown.innerHTML = '<div class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 text-center">No team members found</div>';
         } else {
             dropdown.innerHTML = members.map(member => `
-                <div class="member-option flex items-center gap-3 p-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0 transition-colors"
+                <div class="member-option flex items-center gap-3 p-3 hover:bg-blue-50 dark:hover:bg-blue-500/10 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors"
                      data-member-id="${member.id}"
                      data-member-name="${member.name}"
                      data-member-email="${member.email}"
@@ -265,17 +265,17 @@
                     </div>
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2 mb-0.5 flex-wrap">
-                            <div class="font-semibold text-sm text-gray-900 truncate">${member.name}</div>
+                            <div class="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">${member.name}</div>
                             <span class="text-xs text-white bg-blue-500 px-2 py-0.5 rounded-full flex-shrink-0">${member.employee_id || 'N/A'}</span>
-                            ${member.position ? `<span class="text-xs text-gray-600 px-2 py-0.5 rounded-full bg-gray-100 flex-shrink-0">${member.position}</span>` : ''}
+                            ${member.position ? `<span class="text-xs text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 flex-shrink-0">${member.position}</span>` : ''}
                         </div>
-                        <div class="text-xs text-gray-500 truncate">
+                        <div class="text-xs text-gray-500 dark:text-gray-400 truncate">
                             ${member.email}
                         </div>
                     </div>
                     <div class="flex-shrink-0">
-                        <div class="w-8 h-8 rounded-full bg-blue-100 hover:bg-blue-200 flex items-center justify-center transition-colors">
-                            <i class="fas fa-plus text-blue-600 text-xs"></i>
+                        <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-500/10 hover:bg-blue-200 dark:hover:bg-blue-500/20 flex items-center justify-center transition-colors">
+                            <i class="fas fa-plus text-blue-600 dark:text-blue-400 text-xs"></i>
                         </div>
                     </div>
                 </div>
@@ -331,12 +331,12 @@
     // Update selected members display
     function updateSelectedDisplay() {
         if (selectedMembers.length === 0) {
-            selectedDisplay.innerHTML = '<span class="text-gray-400 text-sm">No members selected</span>';
+            selectedDisplay.innerHTML = '<span class="text-gray-400 dark:text-gray-500 text-sm">No members selected</span>';
         } else {
             selectedDisplay.innerHTML = selectedMembers.map(member => `
-                <span class="inline-flex items-center gap-1 px-3 py-1 m-1 bg-blue-100 text-blue-800 rounded-lg text-sm">
+                <span class="inline-flex items-center gap-1 px-3 py-1 m-1 bg-blue-100 dark:bg-blue-500/10 text-blue-800 dark:text-blue-400 rounded-lg text-sm">
                     <span>${member.name}</span>
-                    <button type="button" class="remove-member-btn hover:text-red-600 transition-colors" data-member-id="${member.id}">
+                    <button type="button" class="remove-member-btn hover:text-red-600 dark:hover:text-red-400 transition-colors" data-member-id="${member.id}">
                         <i class="fas fa-times text-xs"></i>
                     </button>
                 </span>

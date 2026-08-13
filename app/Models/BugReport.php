@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
+use Database\Factories\BugReportFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class BugReport extends Model
 {
-    /** @use HasFactory<\Database\Factories\BugReportFactory> */
+    /** @use HasFactory<BugReportFactory> */
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
@@ -22,34 +25,39 @@ class BugReport extends Model
         'resolved_at',
         'published_at',
         'resolved_by',
+        'ai_triage_reasoning',
+        'ai_triage_confidence',
+        'ai_triaged_at',
     ];
 
     protected $casts = [
         'resolved_at' => 'datetime',
         'published_at' => 'datetime',
+        'ai_triage_confidence' => 'integer',
+        'ai_triaged_at' => 'datetime',
     ];
 
-    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function category(): BelongsTo
     {
         return $this->belongsTo(BugCategory::class, 'bug_category_id');
     }
 
-    public function priority(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function priority(): BelongsTo
     {
         return $this->belongsTo(BugPriority::class, 'bug_priority_id');
     }
 
-    public function images(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function images(): HasMany
     {
         return $this->hasMany(BugImage::class)->orderBy('sort_order');
     }
 
-    public function resolvedBy(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function resolvedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'resolved_by');
     }

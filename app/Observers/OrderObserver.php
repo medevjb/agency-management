@@ -9,6 +9,15 @@ class OrderObserver
 {
     public function created(Order $order): void
     {
+        // Any order with a sales owner carries credit, so the sales figures can
+        // never silently miss one. A split replaces this row.
+        if ($order->sales_user_id && $order->salesShares()->doesntExist()) {
+            $order->salesShares()->create([
+                'user_id' => $order->sales_user_id,
+                'amount' => $order->value ?? 0,
+            ]);
+        }
+
         $values = array_filter(
             $this->presentable($order->getAttributes()),
             fn ($value) => $value !== null && $value !== '' && $value !== []
@@ -19,6 +28,8 @@ class OrderObserver
 
     public function updated(Order $order): void
     {
+        $this->followAmountChange($order);
+
         $changed = $this->presentable($order->getChanges());
 
         if ($changed === []) {
@@ -41,6 +52,31 @@ class OrderObserver
     public function restored(Order $order): void
     {
         OrderAudit::record($order, 'restored');
+    }
+
+    /**
+     * When an order that is credited to one person changes value, move the
+     * credit with it. A split is left alone — that is a deliberate division
+     * someone has to re-balance themselves.
+     */
+    protected function followAmountChange(Order $order): void
+    {
+        if (! $order->wasChanged('value')) {
+            return;
+        }
+
+        $shares = $order->salesShares()->get();
+
+        if ($shares->count() !== 1) {
+            return;
+        }
+
+        $share = $shares->first();
+        $previousValue = round((float) $order->getOriginal('value'), 2);
+
+        if (round((float) $share->amount, 2) === $previousValue) {
+            $share->update(['amount' => $order->value ?? 0]);
+        }
     }
 
     /**

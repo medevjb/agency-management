@@ -284,6 +284,48 @@
     .dark .s-target-tag.is-behind { background-color: rgba(239, 68, 68, 0.15); color: #fca5a5; }
     .dark .s-target-tag.is-none { background-color: #1f2937; color: #6b7280; }
 
+    .s-primary-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: #ffffff;
+        background-image: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.1);
+        transition: filter 0.15s ease;
+    }
+
+    .s-primary-btn:hover {
+        filter: brightness(1.08);
+    }
+
+    .s-secondary-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid #e5e7eb;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        transition: background-color 0.15s ease;
+    }
+
+    .s-secondary-btn:hover {
+        background-color: #f9fafb;
+    }
+
+    .dark .s-secondary-btn {
+        border-color: #1f2937;
+        color: #d1d5db;
+    }
+
+    .dark .s-secondary-btn:hover {
+        background-color: #1f2937;
+    }
+
     .s-empty {
         border: 1px dashed #e5e7eb;
         border-radius: 0.875rem;
@@ -330,15 +372,27 @@
             </p>
         </div>
 
-        <form method="GET" action="{{ route('sales.dashboard') }}" class="flex items-center gap-2">
-            <label for="month" class="text-sm font-medium text-gray-600 dark:text-gray-400">Month</label>
-            <select name="month" id="month" onchange="this.form.submit()"
-                    class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm">
-                @foreach($availableMonths as $value => $label)
-                    <option value="{{ $value }}" {{ $selectedMonth === $value ? 'selected' : '' }}>{{ $label }}</option>
-                @endforeach
-            </select>
-        </form>
+        <div class="flex flex-wrap items-center gap-2">
+            <form method="GET" action="{{ route('sales.dashboard') }}" class="flex items-center gap-2">
+                <label for="month" class="text-sm font-medium text-gray-600 dark:text-gray-400">Month</label>
+                <select name="month" id="month" onchange="this.form.submit()"
+                        class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm">
+                    @foreach($availableMonths as $value => $label)
+                        <option value="{{ $value }}" {{ $selectedMonth === $value ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </form>
+
+            @can('create', \App\Models\Order::class)
+                <a href="{{ route('orders.create') }}" class="s-primary-btn">
+                    <i class="fas fa-plus mr-2"></i>{{ $user->isSales() ? 'New sale' : 'New order' }}
+                </a>
+            @endcan
+
+            <a href="{{ route('orders.index') }}" class="s-secondary-btn">
+                <i class="fas fa-list mr-2"></i>{{ $user->isSales() ? 'My orders' : 'All orders' }}
+            </a>
+        </div>
     </div>
 
     <!-- Sales amount: the headline -->

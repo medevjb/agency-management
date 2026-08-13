@@ -83,6 +83,7 @@ class OrderAudit extends Model
             'members_updated' => 'Team members updated',
             'document_uploaded' => 'Documents uploaded',
             'document_deleted' => 'Document removed',
+            'sales_credit_updated' => 'Sales credit updated',
             default => ucfirst(str_replace('_', ' ', $this->event)),
         };
     }
@@ -94,6 +95,7 @@ class OrderAudit extends Model
             'deleted' => 'fa-trash',
             'restored' => 'fa-rotate-left',
             'members_updated' => 'fa-users',
+            'sales_credit_updated' => 'fa-handshake',
             'document_uploaded' => 'fa-file-arrow-up',
             'document_deleted' => 'fa-file-circle-xmark',
             default => 'fa-pen',
@@ -110,6 +112,7 @@ class OrderAudit extends Model
             'deleted' => 'delete',
             'restored' => 'restore',
             'members_updated' => 'people',
+            'sales_credit_updated' => 'create',
             'document_uploaded', 'document_deleted' => 'files',
             default => 'edit',
         };
@@ -128,6 +131,7 @@ class OrderAudit extends Model
             'deleted' => 'deleted this order',
             'restored' => 'restored this order',
             'members_updated' => 'changed who is assigned',
+            'sales_credit_updated' => 'changed the sales credit',
             'document_uploaded' => 'uploaded '.$this->documentCount().' '.Str::plural('file', $this->documentCount()),
             'document_deleted' => 'removed '.$this->documentCount().' '.Str::plural('file', $this->documentCount()),
             default => $this->changedFieldsSentence($count),
@@ -143,7 +147,7 @@ class OrderAudit extends Model
     {
         return [
             'fields' => ['created', 'updated', 'deleted', 'restored'],
-            'people' => ['members_updated'],
+            'people' => ['members_updated', 'sales_credit_updated'],
             'files' => ['document_uploaded', 'document_deleted'],
         ];
     }
@@ -228,6 +232,7 @@ class OrderAudit extends Model
             'progress' => 'Progress',
             'notes' => 'Notes',
             'members' => 'Assigned Members',
+            'sales_credit' => 'Sales Credit',
             'documents' => 'Documents',
             default => ucwords(str_replace('_', ' ', $field)),
         };

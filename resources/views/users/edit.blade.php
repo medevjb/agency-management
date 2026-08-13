@@ -196,9 +196,35 @@
                                 <div class="bg-green-100 dark:bg-green-500/10 rounded-lg p-3 mr-3">
                                     <i class="fas fa-sitemap text-green-600 dark:text-green-400"></i>
                                 </div>
-                                Team & Tech Stack Assignments
+                                Assignment
                             </h3>
-                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                            @php $currentTrack = old('track', $user->isSales() ? 'sales' : 'operation'); @endphp
+                            <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Which side of the business is this person on?</p>
+                            <div class="track-choice mb-6">
+                                <label class="track-option">
+                                    <input type="radio" name="track" value="operation" {{ $currentTrack === 'operation' ? 'checked' : '' }}>
+                                    <span class="track-card">
+                                        <span class="track-icon"><i class="fas fa-screwdriver-wrench"></i></span>
+                                        <span>
+                                            <span class="track-name">Operations</span>
+                                            <span class="track-hint">Delivers the work — gets a team and a tech stack</span>
+                                        </span>
+                                    </span>
+                                </label>
+                                <label class="track-option">
+                                    <input type="radio" name="track" value="sales" {{ $currentTrack === 'sales' ? 'checked' : '' }}>
+                                    <span class="track-card">
+                                        <span class="track-icon"><i class="fas fa-handshake"></i></span>
+                                        <span>
+                                            <span class="track-name">Sales</span>
+                                            <span class="track-hint">Brings the work in — gets a sales leader and a target</span>
+                                        </span>
+                                    </span>
+                                </label>
+                            </div>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 {{ $currentTrack !== 'operation' ? 'hidden' : '' }}" data-track-panel="operation">
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Team</label>
                                     <x-ajax-select name="team_id"
@@ -217,6 +243,9 @@
                                                    placeholder="Search tech stacks..." />
                                 </div>
 
+                            </div>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 {{ $currentTrack !== 'sales' ? 'hidden' : '' }}" data-track-panel="sales">
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Sales Leader</label>
                                     <select name="sales_leader_id"
@@ -414,7 +443,152 @@
 </div>
 @endsection
 
+@push('styles')
+<style>
+    .track-choice {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.75rem;
+    }
+
+    @media (min-width: 640px) {
+        .track-choice { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    .track-option input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .track-card {
+        display: flex;
+        align-items: center;
+        gap: 0.875rem;
+        padding: 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.875rem;
+        cursor: pointer;
+        transition: border-color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .dark .track-card { border-color: #374151; }
+
+    .track-card:hover { border-color: #a5b4fc; }
+
+    .track-option input:checked + .track-card {
+        border-color: #4f46e5;
+        background-color: #eef2ff;
+    }
+
+    .dark .track-option input:checked + .track-card {
+        background-color: rgba(99, 102, 241, 0.1);
+    }
+
+    .track-option input:focus-visible + .track-card {
+        outline: 2px solid #6366f1;
+        outline-offset: 2px;
+    }
+
+    .track-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 0.75rem;
+        background-color: #f3f4f6;
+        color: #4f46e5;
+        flex-shrink: 0;
+    }
+
+    .dark .track-icon { background-color: #1f2937; color: #a5b4fc; }
+
+    .track-option input:checked + .track-card .track-icon {
+        background-image: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: #ffffff;
+    }
+
+    .track-name {
+        display: block;
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .dark .track-name { color: #f3f4f6; }
+
+    .track-hint {
+        display: block;
+        margin-top: 0.125rem;
+        font-size: 0.75rem;
+        color: #6b7280;
+    }
+
+    .dark .track-hint { color: #9ca3af; }
+</style>
+@endpush
+
 @push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tracks = document.querySelectorAll('input[name="track"]');
+        const panels = document.querySelectorAll('[data-track-panel]');
+        const roleSelect = document.getElementById('role');
+
+        if (tracks.length === 0) {
+            return;
+        }
+
+        function currentTrack() {
+            return document.querySelector('input[name="track"]:checked')?.value ?? 'operation';
+        }
+
+        function applyTrack(clearHidden) {
+            const track = currentTrack();
+
+            panels.forEach(panel => {
+                const isActive = panel.dataset.trackPanel === track;
+                panel.classList.toggle('hidden', !isActive);
+
+                if (!isActive && clearHidden) {
+                    panel.querySelectorAll('input:not([type="month"]), select').forEach(input => {
+                        input.value = '';
+                    });
+                }
+            });
+
+            if (roleSelect) {
+                let selectedStillValid = false;
+
+                Array.from(roleSelect.options).forEach(option => {
+                    if (option.value === '') {
+                        return;
+                    }
+
+                    const isSalesRole = option.value.startsWith('sales-');
+                    const belongs = track === 'sales' ? isSalesRole : !isSalesRole;
+
+                    option.hidden = !belongs;
+                    option.disabled = !belongs;
+
+                    if (belongs && option.selected) {
+                        selectedStillValid = true;
+                    }
+                });
+
+                if (!selectedStillValid) {
+                    roleSelect.value = '';
+                }
+            }
+        }
+
+        // On load, keep whatever the person already has — only clear fields
+        // once they actively switch tracks.
+        applyTrack(false);
+        tracks.forEach(track => track.addEventListener('change', () => applyTrack(true)));
+    });
+</script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Edit user page loaded');
@@ -749,7 +923,7 @@ function submitUserForm() {
                     if (fieldElement) {
                         const step1Fields = ['name', 'email', 'employee_id', 'phone', 'password'];
                         const step2Fields = ['department', 'position', 'address'];
-                        const step3Fields = ['team_id', 'tech_stack_id'];
+                        const step3Fields = ['team_id', 'tech_stack_id', 'sales_leader_id', 'sales_target', 'sales_target_month'];
                         const step4Fields = ['role'];
 
                         const actualFieldId = firstKey === 'password_confirmation' ? 'password' : firstKey;

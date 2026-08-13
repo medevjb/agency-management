@@ -37,14 +37,14 @@
                             @endif
                         </div>
                         <div>
-                            <h1 class="text-3xl font-bold text-gray-900">
+                            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">
                                 @if ($team)
                                     {{ $team->name }} Dashboard
                                 @else
                                     Orders Dashboard
                                 @endif
                             </h1>
-                            <p class="mt-1 text-sm text-gray-600">
+                            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                                 @if ($team)
                                     Track your team's orders, revenue, and performance metrics
                                 @else
@@ -56,7 +56,7 @@
                 </div>
                 <div class="flex gap-3">
                     <a href="{{ route('orders.index') }}"
-                        class="inline-flex items-center px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-semibold transition-all">
+                        class="inline-flex items-center px-4 py-2 border-2 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 font-semibold transition-all">
                         <i class="fas fa-list mr-2"></i>
                         All Orders
                     </a>
@@ -73,36 +73,36 @@
 
         @if ($team)
             <!-- Team Information Card -->
-            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-md border border-blue-100 p-6 mb-8">
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-500/10 dark:to-indigo-500/10 rounded-xl shadow-md border border-blue-100 dark:border-blue-900 p-6 mb-8">
                 <div class="flex items-start justify-between">
                     <div class="flex-1">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div class="flex items-center gap-3">
-                                <div class="bg-white rounded-lg p-3 shadow-sm">
-                                    <i class="fas fa-user-tie text-green-600 text-lg"></i>
+                                <div class="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
+                                    <i class="fas fa-user-tie text-green-600 dark:text-green-400 text-lg"></i>
                                 </div>
                                 <div>
-                                    <p class="text-xs text-gray-500 uppercase font-semibold">Team Leader</p>
-                                    <p class="text-sm font-semibold text-gray-900">
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">Team Leader</p>
+                                    <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">
                                         {{ $team->teamLeader->name ?? 'Not Assigned' }}</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
-                                <div class="bg-white rounded-lg p-3 shadow-sm">
-                                    <i class="fas fa-users text-blue-600 text-lg"></i>
+                                <div class="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
+                                    <i class="fas fa-users text-blue-600 dark:text-blue-400 text-lg"></i>
                                 </div>
                                 <div>
-                                    <p class="text-xs text-gray-500 uppercase font-semibold">Team Members</p>
-                                    <p class="text-sm font-semibold text-gray-900">{{ $teamMembers->count() }} members</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">Team Members</p>
+                                    <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $teamMembers->count() }} members</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
-                                <div class="bg-white rounded-lg p-3 shadow-sm">
+                                <div class="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
                                     <i class="fas fa-project-diagram text-purple-600 text-lg"></i>
                                 </div>
                                 <div>
-                                    <p class="text-xs text-gray-500 uppercase font-semibold">Active Orders</p>
-                                    <p class="text-sm font-semibold text-gray-900">{{ $stats['workloadOrders'] }} orders</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">Active Orders</p>
+                                    <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $stats['workloadOrders'] }} orders</p>
                                 </div>
                             </div>
                         </div>
@@ -112,15 +112,15 @@
         @endif
 
         <!-- Month Filter -->
-        <div class="bg-white rounded-xl shadow-md border border-gray-100 p-4 mb-6">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-100 dark:border-gray-800 p-4 mb-6">
             <form method="GET" action="{{ route('orders.dashboard') }}" class="flex flex-wrap items-center gap-4">
                 <div class="flex items-center gap-2">
                     <i class="fas fa-calendar-alt text-indigo-500"></i>
-                    <span class="text-sm font-semibold text-gray-700">Select Month:</span>
+                    <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Select Month:</span>
                 </div>
                 <div class="relative">
                     <select name="month" id="monthFilter"
-                            class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white text-sm font-medium min-w-[200px]">
+                            class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm font-medium min-w-[200px]">
                         @foreach($availableMonths as $value => $label)
                             <option value="{{ $value }}" {{ $selectedMonth === $value ? 'selected' : '' }}>
                                 {{ $label }}
@@ -135,7 +135,7 @@
                 </button>
                 @if($selectedMonth !== now()->format('Y-m'))
                     <a href="{{ route('orders.dashboard', ['month' => now()->format('Y-m')]) }}"
-                       class="px-4 py-2 text-gray-600 hover:text-gray-800 font-semibold transition-all">
+                       class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-semibold transition-all">
                         <i class="fas fa-redo mr-1"></i>
                         Back to Current
                     </a>
@@ -219,37 +219,37 @@
         <!-- Secondary Stats -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
             <!-- Delivered -->
-            <div class="bg-white rounded-xl shadow-md border border-gray-100 p-6">
+            <div class="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-100 dark:border-gray-800 p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-gray-600 text-sm font-medium mb-1">Delivered</p>
-                        <p class="text-3xl font-bold text-green-600">{{ $stats['deliveredOrders'] }}</p>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm font-medium mb-1">Delivered</p>
+                        <p class="text-3xl font-bold text-green-600 dark:text-green-400">{{ $stats['deliveredOrders'] }}</p>
                     </div>
-                    <div class="bg-green-100 p-3 rounded-xl">
-                        <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                    <div class="bg-green-100 dark:bg-green-500/10 p-3 rounded-xl">
+                        <i class="fas fa-check-circle text-green-600 dark:text-green-400 text-2xl"></i>
                     </div>
                 </div>
             </div>
 
             <!-- Overdue -->
-            <div class="bg-white rounded-xl shadow-md border border-gray-100 p-6">
+            <div class="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-100 dark:border-gray-800 p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-gray-600 text-sm font-medium mb-1">Overdue</p>
-                        <p class="text-3xl font-bold text-red-600">{{ $stats['overdueOrders'] }}</p>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm font-medium mb-1">Overdue</p>
+                        <p class="text-3xl font-bold text-red-600 dark:text-red-400">{{ $stats['overdueOrders'] }}</p>
                     </div>
-                    <div class="bg-red-100 p-3 rounded-xl">
-                        <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                    <div class="bg-red-100 dark:bg-red-500/10 p-3 rounded-xl">
+                        <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-2xl"></i>
                     </div>
                 </div>
             </div>
 
             <!-- Completion Rate -->
-            <div class="bg-white rounded-xl shadow-md border border-gray-100 p-6">
+            <div class="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-100 dark:border-gray-800 p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-gray-600 text-sm font-medium mb-1">Completion Rate</p>
-                        <p class="text-3xl font-bold text-blue-600">
+                        <p class="text-gray-600 dark:text-gray-400 text-sm font-medium mb-1">Completion Rate</p>
+                        <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">
                             @php
                                 $rate =
                                     $stats['totalOrders'] > 0
@@ -259,8 +259,8 @@
                             {{ $rate }}%
                         </p>
                     </div>
-                    <div class="bg-blue-100 p-3 rounded-xl">
-                        <i class="fas fa-percentage text-blue-600 text-2xl"></i>
+                    <div class="bg-blue-100 dark:bg-blue-500/10 p-3 rounded-xl">
+                        <i class="fas fa-percentage text-blue-600 dark:text-blue-400 text-2xl"></i>
                     </div>
                 </div>
             </div>
@@ -269,8 +269,8 @@
         <!-- Charts Row -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <!-- Monthly Revenue Chart -->
-            <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-4">
+            <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 p-6">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
                     <i class="fas fa-chart-area text-indigo-500 mr-2"></i>
                     Monthly Value ({{ date('Y') }})
                 </h3>
@@ -280,8 +280,8 @@
             </div>
 
             <!-- Orders by Status -->
-            <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-4">
+            <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 p-6">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
                     <i class="fas fa-chart-pie text-purple-500 mr-2"></i>
                     Orders by Status
                 </h3>
@@ -292,9 +292,9 @@
         </div>
 
         <!-- Monthly & Yearly Delivery Analytics -->
-        <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-8">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 p-6 mb-8">
             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-bold text-gray-900">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">
                     <i class="fas fa-truck text-green-500 mr-2"></i>
                     Delivery Analytics
                 </h3>
@@ -304,7 +304,7 @@
                         Monthly ({{ date('Y') }})
                     </button>
                     <button onclick="showDeliveryView('yearly')" id="yearlyBtn"
-                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-300 transition-colors">
+                        class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
                         Yearly
                     </button>
                 </div>
@@ -313,18 +313,18 @@
             <!-- Monthly View -->
             <div id="monthlyView" class="delivery-view">
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+                        <thead class="bg-gray-50 dark:bg-gray-800">
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Month</th>
-                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Total Orders</th>
-                                <th class="px-4 py-3 text-center text-xs font-medium text-green-600 uppercase tracking-wider">Delivered</th>
-                                <th class="px-4 py-3 text-center text-xs font-medium text-green-700 uppercase tracking-wider">Delivered Value</th>
-                                <th class="px-4 py-3 text-center text-xs font-medium text-red-600 uppercase tracking-wider">Cancelled</th>
-                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Delivery Rate</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Month</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Orders</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-green-600 dark:text-green-400 uppercase tracking-wider">Delivered</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-green-700 dark:text-green-400 uppercase tracking-wider">Delivered Value</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-red-600 dark:text-red-400 uppercase tracking-wider">Cancelled</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Delivery Rate</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
                             @php
                                 $monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                             @endphp
@@ -333,39 +333,39 @@
                                     $data = $monthlyDeliveredData[$i] ?? ['delivered_count' => 0, 'delivered_amount' => 0, 'cancelled_count' => 0, 'total_orders' => 0];
                                     $deliveryRate = $data['total_orders'] > 0 ? round(($data['delivered_count'] / $data['total_orders']) * 100, 1) : 0;
                                 @endphp
-                                <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors">
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                         {{ $monthNames[$i - 1] }}
                                     </td>
-                                    <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-700">
+                                    <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-700 dark:text-gray-300">
                                         {{ $data['total_orders'] }}
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap text-center">
-                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 dark:bg-green-500/10 text-green-800 dark:text-green-400">
                                             {{ $data['delivered_count'] }}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-3 whitespace-nowrap text-center text-sm font-semibold text-green-700">
+                                    <td class="px-4 py-3 whitespace-nowrap text-center text-sm font-semibold text-green-700 dark:text-green-400">
                                         ${{ number_format($data['delivered_amount'], 2) }}
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap text-center">
-                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold {{ $data['cancelled_count'] > 0 ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-600' }}">
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold {{ $data['cancelled_count'] > 0 ? 'bg-red-100 dark:bg-red-500/10 text-red-800 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
                                             {{ $data['cancelled_count'] }}
                                         </span>
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap text-center">
                                         <div class="flex items-center justify-center gap-2">
-                                            <div class="w-16 bg-gray-200 rounded-full h-2">
+                                            <div class="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                                                 <div class="h-2 rounded-full {{ $deliveryRate >= 80 ? 'bg-green-500' : ($deliveryRate >= 50 ? 'bg-yellow-500' : 'bg-red-500') }}"
                                                     style="width: {{ $deliveryRate }}%"></div>
                                             </div>
-                                            <span class="text-sm font-medium text-gray-700">{{ $deliveryRate }}%</span>
+                                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $deliveryRate }}%</span>
                                         </div>
                                     </td>
                                 </tr>
                             @endfor
                         </tbody>
-                        <tfoot class="bg-gray-50 font-semibold">
+                        <tfoot class="bg-gray-50 dark:bg-gray-800 font-semibold">
                             @php
                                 $yearlyTotal = array_sum(array_column($monthlyDeliveredData, 'total_orders'));
                                 $monthlyYearlyDelivered = array_sum(array_column($monthlyDeliveredData, 'delivered_count'));
@@ -374,23 +374,23 @@
                                 $yearlyRate = $yearlyTotal > 0 ? round(($monthlyYearlyDelivered / $yearlyTotal) * 100, 1) : 0;
                             @endphp
                             <tr>
-                                <td class="px-4 py-3 text-sm text-gray-900">Yearly Total</td>
-                                <td class="px-4 py-3 text-center text-sm text-gray-900">{{ $yearlyTotal }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">Yearly Total</td>
+                                <td class="px-4 py-3 text-center text-sm text-gray-900 dark:text-gray-100">{{ $yearlyTotal }}</td>
                                 <td class="px-4 py-3 text-center">
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 dark:bg-green-500/10 text-green-800 dark:text-green-400">
                                         {{ $monthlyYearlyDelivered }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-3 text-center text-sm font-bold text-green-700">
+                                <td class="px-4 py-3 text-center text-sm font-bold text-green-700 dark:text-green-400">
                                     ${{ number_format($yearlyDeliveredAmount, 2) }}
                                 </td>
                                 <td class="px-4 py-3 text-center">
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold {{ $yearlyCancelled > 0 ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-600' }}">
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold {{ $yearlyCancelled > 0 ? 'bg-red-100 dark:bg-red-500/10 text-red-800 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
                                         {{ $yearlyCancelled }}
                                     </span>
                                 </td>
                                 <td class="px-4 py-3 text-center">
-                                    <span class="text-sm font-bold text-gray-900">{{ $yearlyRate }}%</span>
+                                    <span class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ $yearlyRate }}%</span>
                                 </td>
                             </tr>
                         </tfoot>
@@ -401,59 +401,59 @@
             <!-- Yearly View -->
             <div id="yearlyView" class="delivery-view hidden">
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+                        <thead class="bg-gray-50 dark:bg-gray-800">
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year</th>
-                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Total Orders</th>
-                                <th class="px-4 py-3 text-center text-xs font-medium text-green-600 uppercase tracking-wider">Delivered</th>
-                                <th class="px-4 py-3 text-center text-xs font-medium text-green-700 uppercase tracking-wider">Delivered Value</th>
-                                <th class="px-4 py-3 text-center text-xs font-medium text-red-600 uppercase tracking-wider">Cancelled</th>
-                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Delivery Rate</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Year</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Orders</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-green-600 dark:text-green-400 uppercase tracking-wider">Delivered</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-green-700 dark:text-green-400 uppercase tracking-wider">Delivered Value</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-red-600 dark:text-red-400 uppercase tracking-wider">Cancelled</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Delivery Rate</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
                             @if($yearlyDelivered->count() > 0)
                                 @foreach($yearlyDelivered as $year => $data)
                                     @php
                                         $totalOrders = (int)$data->total_orders;
                                         $deliveryRate = $totalOrders > 0 ? round(((int)$data->delivered_count / $totalOrders) * 100, 1) : 0;
                                     @endphp
-                                    <tr class="hover:bg-gray-50 transition-colors">
-                                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors">
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                             {{ $data->year }}
                                         </td>
-                                        <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-700">
+                                        <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-700 dark:text-gray-300">
                                             {{ $totalOrders }}
                                         </td>
                                         <td class="px-4 py-3 whitespace-nowrap text-center">
-                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 dark:bg-green-500/10 text-green-800 dark:text-green-400">
                                                 {{ $data->delivered_count }}
                                             </span>
                                         </td>
-                                        <td class="px-4 py-3 whitespace-nowrap text-center text-sm font-semibold text-green-700">
+                                        <td class="px-4 py-3 whitespace-nowrap text-center text-sm font-semibold text-green-700 dark:text-green-400">
                                             ${{ number_format($data->delivered_amount, 2) }}
                                         </td>
                                         <td class="px-4 py-3 whitespace-nowrap text-center">
-                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold {{ $data->cancelled_count > 0 ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-600' }}">
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold {{ $data->cancelled_count > 0 ? 'bg-red-100 dark:bg-red-500/10 text-red-800 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
                                                 {{ $data->cancelled_count }}
                                             </span>
                                         </td>
                                         <td class="px-4 py-3 whitespace-nowrap text-center">
                                             <div class="flex items-center justify-center gap-2">
-                                                <div class="w-16 bg-gray-200 rounded-full h-2">
+                                                <div class="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                                                     <div class="h-2 rounded-full {{ $deliveryRate >= 80 ? 'bg-green-500' : ($deliveryRate >= 50 ? 'bg-yellow-500' : 'bg-red-500') }}"
                                                         style="width: {{ $deliveryRate }}%"></div>
                                                 </div>
-                                                <span class="text-sm font-medium text-gray-700">{{ $deliveryRate }}%</span>
+                                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $deliveryRate }}%</span>
                                             </div>
                                         </td>
                                     </tr>
                                 @endforeach
                             @else
                                 <tr>
-                                    <td colspan="6" class="px-4 py-8 text-center text-gray-500">
-                                        <i class="fas fa-inbox text-4xl text-gray-300 mb-2"></i>
+                                    <td colspan="6" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                                        <i class="fas fa-inbox text-4xl text-gray-300 dark:text-gray-700 mb-2"></i>
                                         <p>No yearly data available</p>
                                     </td>
                                 </tr>
@@ -467,39 +467,39 @@
         <!-- Lists Row -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <!-- Orders Due Soon -->
-            <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-                <div class="p-6 border-b border-gray-100 bg-gradient-to-r from-amber-50 to-yellow-50">
+            <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 overflow-hidden">
+                <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-500/10 dark:to-yellow-500/10">
                     <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-bold text-gray-900 flex items-center">
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center">
                             <i class="fas fa-clock text-amber-600 mr-2"></i>
                             Due Soon
                         </h3>
-                        <span class="text-xs font-semibold text-amber-700 bg-amber-100 px-3 py-1 rounded-full">
+                        <span class="text-xs font-semibold text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-500/10 px-3 py-1 rounded-full">
                             Next 4 Days
                         </span>
                     </div>
                 </div>
-                <div class="divide-y divide-gray-100 max-h-96 overflow-y-auto">
+                <div class="divide-y divide-gray-100 dark:divide-gray-800 max-h-96 overflow-y-auto">
                     @forelse($ordersDueSoon as $order)
-                        <div class="p-4 hover:bg-amber-50 transition-colors">
+                        <div class="p-4 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-colors">
                             <div class="flex items-start justify-between gap-4">
                                 <div class="flex-1 min-w-0">
                                     <a href="{{ route('orders.show', $order) }}"
-                                        class="font-semibold text-gray-900 hover:text-amber-600 block truncate">
+                                        class="font-semibold text-gray-900 dark:text-gray-100 hover:text-amber-600 dark:hover:text-amber-400 block truncate">
                                         {{ $order->name }}
                                     </a>
-                                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-sm text-gray-600">
+                                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-sm text-gray-600 dark:text-gray-400">
                                         <span class="flex items-center">
-                                            <i class="fas fa-building text-gray-400 mr-1.5 text-xs"></i>
+                                            <i class="fas fa-building text-gray-400 dark:text-gray-500 mr-1.5 text-xs"></i>
                                             {{ $order->team?->name ?? 'No team' }}
                                         </span>
                                         <span class="flex items-center">
-                                            <i class="fas fa-calendar text-gray-400 mr-1.5 text-xs"></i>
+                                            <i class="fas fa-calendar text-gray-400 dark:text-gray-500 mr-1.5 text-xs"></i>
                                             {{ $order->end_date?->format('M d, Y') }}
                                         </span>
                                         @if ($order->priority)
                                             <span class="flex items-center">
-                                                <i class="fas fa-flag text-gray-400 mr-1.5 text-xs"></i>
+                                                <i class="fas fa-flag text-gray-400 dark:text-gray-500 mr-1.5 text-xs"></i>
                                                 <span class="capitalize">{{ $order->priority }}</span>
                                             </span>
                                         @endif
@@ -514,7 +514,7 @@
 
                                     // If negative, it's overdue
 if ($diffInSeconds <= 0) {
-    $badgeClass = 'bg-red-100 text-red-700';
+    $badgeClass = 'bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400';
     $badgeText = 'Overdue';
     $badgeIcon = 'fas fa-exclamation-triangle';
 } else {
@@ -526,19 +526,19 @@ if ($diffInSeconds <= 0) {
     if ($days > 0) {
         // More than 24 hours - show days and hours
         if ($days <= 2) {
-            $badgeClass = 'bg-yellow-100 text-yellow-700';
+            $badgeClass = 'bg-yellow-100 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400';
         } else {
-            $badgeClass = 'bg-green-100 text-green-700';
+            $badgeClass = 'bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400';
         }
         $badgeText = $days . 'd ' . $hours . 'h left';
         $badgeIcon = 'fas fa-hourglass';
     } else {
         // 24 hours or less - show hours and minutes
         if ($hours == 0) {
-            $badgeClass = 'bg-orange-100 text-orange-700';
+            $badgeClass = 'bg-orange-100 dark:bg-orange-500/10 text-orange-700 dark:text-orange-400';
             $badgeText = $minutes . 'm left';
         } else {
-            $badgeClass = 'bg-orange-100 text-orange-700';
+            $badgeClass = 'bg-orange-100 dark:bg-orange-500/10 text-orange-700 dark:text-orange-400';
             $badgeText = $hours . 'h ' . $minutes . 'm left';
         }
         $badgeIcon = 'fas fa-clock';
@@ -553,48 +553,48 @@ if ($diffInSeconds <= 0) {
                                     </span>
                                     @if ($order->status)
                                         <span
-                                            class="text-xs font-medium text-gray-500 capitalize">{{ str_replace('-', ' ', $order->status) }}</span>
+                                            class="text-xs font-medium text-gray-500 dark:text-gray-400 capitalize">{{ str_replace('-', ' ', $order->status) }}</span>
                                     @endif
                                 </div>
                             </div>
                         </div>
                     @empty
                         <div class="p-12 text-center">
-                            <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                            <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 dark:bg-green-500/10 rounded-full mb-4">
                                 <i class="fas fa-check-circle text-3xl text-green-500"></i>
                             </div>
-                            <p class="text-gray-600 font-medium">No orders due soon</p>
-                            <p class="text-sm text-gray-500 mt-1">All caught up!</p>
+                            <p class="text-gray-600 dark:text-gray-400 font-medium">No orders due soon</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">All caught up!</p>
                         </div>
                     @endforelse
                 </div>
             </div>
 
             <!-- Overdue Orders -->
-            <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-                <div class="p-6 border-b border-gray-100 bg-gradient-to-r from-red-50 to-pink-50">
+            <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 overflow-hidden">
+                <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-500/10 dark:to-pink-500/10">
                     <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center">
+                            <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 mr-2"></i>
                             Overdue Orders
                         </h3>
-                        <span class="text-xs font-semibold text-red-700 bg-red-100 px-3 py-1 rounded-full">
+                        <span class="text-xs font-semibold text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-500/10 px-3 py-1 rounded-full">
                             Action Required
                         </span>
                     </div>
                 </div>
-                <div class="divide-y divide-gray-100 max-h-96 overflow-y-auto">
+                <div class="divide-y divide-gray-100 dark:divide-gray-800 max-h-96 overflow-y-auto">
                     @forelse($overdueOrders as $order)
-                        <div class="p-4 hover:bg-red-50 transition-colors">
+                        <div class="p-4 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
                             <div class="flex items-start justify-between gap-4">
                                 <div class="flex-1 min-w-0">
                                     <a href="{{ route('orders.show', $order) }}"
-                                        class="font-semibold text-gray-900 hover:text-red-600 block truncate">
+                                        class="font-semibold text-gray-900 dark:text-gray-100 hover:text-red-600 dark:hover:text-red-400 block truncate">
                                         {{ $order->name }}
                                     </a>
-                                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-sm text-gray-600">
+                                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-sm text-gray-600 dark:text-gray-400">
                                         <span class="flex items-center">
-                                            <i class="fas fa-building text-gray-400 mr-1.5 text-xs"></i>
+                                            <i class="fas fa-building text-gray-400 dark:text-gray-500 mr-1.5 text-xs"></i>
                                             {{ $order->team?->name ?? 'No team' }}
                                         </span>
                                         <span class="flex items-center">
@@ -603,7 +603,7 @@ if ($diffInSeconds <= 0) {
                                         </span>
                                         @if ($order->priority)
                                             <span class="flex items-center">
-                                                <i class="fas fa-flag text-gray-400 mr-1.5 text-xs"></i>
+                                                <i class="fas fa-flag text-gray-400 dark:text-gray-500 mr-1.5 text-xs"></i>
                                                 <span class="capitalize">{{ $order->priority }}</span>
                                             </span>
                                         @endif
@@ -622,10 +622,10 @@ if ($diffInSeconds <= 0) {
                                         $minutes = (int) floor(($overdueSeconds % 3600) / 60);
 
                                         if ($hours == 0) {
-                                            $badgeClass = 'bg-pink-100 text-pink-700';
+                                            $badgeClass = 'bg-pink-100 dark:bg-pink-500/10 text-pink-700 dark:text-pink-400';
                                             $badgeText = $minutes . 'm overdue';
                                         } else {
-                                            $badgeClass = 'bg-pink-100 text-pink-700';
+                                            $badgeClass = 'bg-pink-100 dark:bg-pink-500/10 text-pink-700 dark:text-pink-400';
                                             $badgeText = $hours . 'h ' . $minutes . 'm overdue';
                                         }
                                         $badgeIcon = 'fas fa-clock';
@@ -636,13 +636,13 @@ if ($diffInSeconds <= 0) {
                                         $hours = (int) floor($remainingSeconds / 3600);
 
                                         if ($days >= 7) {
-                                            $badgeClass = 'bg-red-100 text-red-700';
+                                            $badgeClass = 'bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400';
                                             $badgeIcon = 'fas fa-exclamation-triangle';
                                         } elseif ($days >= 3) {
-                                            $badgeClass = 'bg-orange-100 text-orange-700';
+                                            $badgeClass = 'bg-orange-100 dark:bg-orange-500/10 text-orange-700 dark:text-orange-400';
                                             $badgeIcon = 'fas fa-exclamation-circle';
                                         } else {
-                                            $badgeClass = 'bg-pink-100 text-pink-700';
+                                            $badgeClass = 'bg-pink-100 dark:bg-pink-500/10 text-pink-700 dark:text-pink-400';
                                             $badgeIcon = 'fas fa-calendar-times';
                                         }
                                         $badgeText = $days . 'd ' . $hours . 'h overdue';
@@ -656,18 +656,18 @@ if ($diffInSeconds <= 0) {
                                     </span>
                                     @if ($order->status)
                                         <span
-                                            class="text-xs font-medium text-gray-500 capitalize">{{ str_replace('-', ' ', $order->status) }}</span>
+                                            class="text-xs font-medium text-gray-500 dark:text-gray-400 capitalize">{{ str_replace('-', ' ', $order->status) }}</span>
                                     @endif
                                 </div>
                             </div>
                         </div>
                     @empty
                         <div class="p-12 text-center">
-                            <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                            <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 dark:bg-green-500/10 rounded-full mb-4">
                                 <i class="fas fa-trophy text-3xl text-green-500"></i>
                             </div>
-                            <p class="text-gray-600 font-medium">No overdue orders!</p>
-                            <p class="text-sm text-gray-500 mt-1">Great job staying on track</p>
+                            <p class="text-gray-600 dark:text-gray-400 font-medium">No overdue orders!</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Great job staying on track</p>
                         </div>
                     @endforelse
                 </div>
@@ -677,37 +677,37 @@ if ($diffInSeconds <= 0) {
         <!-- High Priority & Recent Orders -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <!-- High Priority Orders -->
-            <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-                <div class="p-6 border-b border-gray-100 bg-gradient-to-r from-red-50 to-orange-50">
-                    <h3 class="text-lg font-bold text-gray-900">
-                        <i class="fas fa-flag text-red-600 mr-2"></i>
+            <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 overflow-hidden">
+                <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-500/10 dark:to-orange-500/10">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">
+                        <i class="fas fa-flag text-red-600 dark:text-red-400 mr-2"></i>
                         High Priority Orders
                     </h3>
                 </div>
-                <div class="divide-y divide-gray-100">
+                <div class="divide-y divide-gray-100 dark:divide-gray-800">
                     @forelse($highPriorityOrders as $order)
-                        <div class="p-4 hover:bg-gray-50 transition-colors">
+                        <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors">
                             <div class="flex items-center justify-between">
                                 <div class="flex-1">
                                     <a href="{{ route('orders.show', $order) }}"
-                                        class="font-semibold text-gray-900 hover:text-indigo-600">
+                                        class="font-semibold text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400">
                                         {{ $order->name }}
                                     </a>
-                                    <p class="text-sm text-gray-500 mt-1">
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                         <i class="fas fa-building mr-1"></i>{{ $order->team?->name ?? 'No team' }}
                                         <span class="mx-2">•</span>
                                         <i
                                             class="fas fa-layer-group mr-1"></i>{{ $order->techStack?->name ?? 'No tech stack' }}
                                     </p>
                                 </div>
-                                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 dark:bg-red-500/10 text-red-800 dark:text-red-400">
                                     🔴 High
                                 </span>
                             </div>
                         </div>
                     @empty
-                        <div class="p-8 text-center text-gray-500">
-                            <i class="fas fa-check-double text-4xl text-green-200 mb-3"></i>
+                        <div class="p-8 text-center text-gray-500 dark:text-gray-400">
+                            <i class="fas fa-check-double text-4xl text-green-200 dark:text-green-900 mb-3"></i>
                             <p>No high priority orders</p>
                         </div>
                     @endforelse
@@ -715,23 +715,23 @@ if ($diffInSeconds <= 0) {
             </div>
 
             <!-- Recent Orders -->
-            <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-                <div class="p-6 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-purple-50">
-                    <h3 class="text-lg font-bold text-gray-900">
+            <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 overflow-hidden">
+                <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">
                         <i class="fas fa-history text-indigo-600 mr-2"></i>
                         Recent Orders
                     </h3>
                 </div>
-                <div class="divide-y divide-gray-100">
+                <div class="divide-y divide-gray-100 dark:divide-gray-800">
                     @forelse($recentOrders as $order)
-                        <div class="p-4 hover:bg-gray-50 transition-colors">
+                        <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors">
                             <div class="flex items-center justify-between">
                                 <div class="flex-1">
                                     <a href="{{ route('orders.show', $order) }}"
-                                        class="font-semibold text-gray-900 hover:text-indigo-600">
+                                        class="font-semibold text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400">
                                         {{ $order->name }}
                                     </a>
-                                    <p class="text-sm text-gray-500 mt-1">
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                         @if(in_array($order->status, ['delivered', 'completed']) && $order->delivered_at)
                                             <i class="fas fa-check-circle text-green-500 mr-1"></i>Delivered {{ $order->delivered_at->format('M d, Y') }}
                                         @elseif($order->end_date)
@@ -747,18 +747,18 @@ if ($diffInSeconds <= 0) {
                                 </div>
                                 <span
                                     class="px-3 py-1 rounded-full text-xs font-semibold
-                                @if(in_array($order->status, ['delivered', 'completed'])) bg-green-100 text-green-800
-                                @elseif($order->status === 'in-progress') bg-blue-100 text-blue-800
-                                @elseif($order->status === 'pending') bg-yellow-100 text-yellow-800
-                                @elseif($order->status === 'on-hold') bg-yellow-100 text-yellow-800
-                                @else bg-gray-100 text-gray-800 @endif">
+                                @if(in_array($order->status, ['delivered', 'completed'])) bg-green-100 dark:bg-green-500/10 text-green-800 dark:text-green-400
+                                @elseif($order->status === 'in-progress') bg-blue-100 dark:bg-blue-500/10 text-blue-800 dark:text-blue-400
+                                @elseif($order->status === 'pending') bg-yellow-100 dark:bg-yellow-500/10 text-yellow-800 dark:text-yellow-400
+                                @elseif($order->status === 'on-hold') bg-yellow-100 dark:bg-yellow-500/10 text-yellow-800 dark:text-yellow-400
+                                @else bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 @endif">
                                     {{ ucfirst(str_replace('-', ' ', $order->status)) }}
                                 </span>
                             </div>
                         </div>
                     @empty
-                        <div class="p-8 text-center text-gray-500">
-                            <i class="fas fa-inbox text-4xl text-gray-200 mb-3"></i>
+                        <div class="p-8 text-center text-gray-500 dark:text-gray-400">
+                            <i class="fas fa-inbox text-4xl text-gray-200 dark:text-gray-700 mb-3"></i>
                             <p>No recent orders</p>
                         </div>
                     @endforelse
@@ -768,20 +768,20 @@ if ($diffInSeconds <= 0) {
 
         <!-- Revenue by Team -->
         @if ($revenueByTeam->count() > 0)
-            <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-8">
-                <h3 class="text-lg font-bold text-gray-900 mb-4">
+            <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 p-6 mb-8">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
                     <i class="fas fa-users text-indigo-500 mr-2"></i>
                     Value by Team
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     @foreach ($revenueByTeam->take(8) as $team)
-                        <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 border-2 border-gray-200">
+                        <div class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-800 rounded-xl p-4 border-2 border-gray-200 dark:border-gray-700">
                             <div class="flex items-center justify-between mb-2">
-                                <h4 class="font-semibold text-gray-900">{{ $team['team_name'] }}</h4>
-                                <span class="text-xs font-medium text-gray-600">{{ $team['orders_count'] }}
+                                <h4 class="font-semibold text-gray-900 dark:text-gray-100">{{ $team['team_name'] }}</h4>
+                                <span class="text-xs font-medium text-gray-600 dark:text-gray-400">{{ $team['orders_count'] }}
                                     order{{ $team['orders_count'] > 1 ? 's' : '' }}</span>
                             </div>
-                            <p class="text-2xl font-bold text-green-600">${{ number_format($team['revenue'], 2) }}</p>
+                            <p class="text-2xl font-bold text-green-600 dark:text-green-400">${{ number_format($team['revenue'], 2) }}</p>
                         </div>
                     @endforeach
                 </div>
@@ -800,25 +800,34 @@ if ($diffInSeconds <= 0) {
             const monthlyBtn = document.getElementById('monthlyBtn');
             const yearlyBtn = document.getElementById('yearlyBtn');
 
+            const inactiveClasses = ['bg-gray-200', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-200'];
+            const activeClasses = ['bg-indigo-600', 'text-white'];
+
             if (view === 'monthly') {
                 monthlyView.classList.remove('hidden');
                 yearlyView.classList.add('hidden');
-                monthlyBtn.classList.remove('bg-gray-200', 'text-gray-700');
-                monthlyBtn.classList.add('bg-indigo-600', 'text-white');
-                yearlyBtn.classList.remove('bg-indigo-600', 'text-white');
-                yearlyBtn.classList.add('bg-gray-200', 'text-gray-700');
+                monthlyBtn.classList.remove(...inactiveClasses);
+                monthlyBtn.classList.add(...activeClasses);
+                yearlyBtn.classList.remove(...activeClasses);
+                yearlyBtn.classList.add(...inactiveClasses);
             } else {
                 monthlyView.classList.add('hidden');
                 yearlyView.classList.remove('hidden');
-                yearlyBtn.classList.remove('bg-gray-200', 'text-gray-700');
-                yearlyBtn.classList.add('bg-indigo-600', 'text-white');
-                monthlyBtn.classList.remove('bg-indigo-600', 'text-white');
-                monthlyBtn.classList.add('bg-gray-200', 'text-gray-700');
+                yearlyBtn.classList.remove(...inactiveClasses);
+                yearlyBtn.classList.add(...activeClasses);
+                monthlyBtn.classList.remove(...activeClasses);
+                monthlyBtn.classList.add(...inactiveClasses);
             }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Dashboard loaded, Chart.js available:', typeof Chart !== 'undefined');
+
+            // Theme-aware chart colors (Chart.js bakes colors into the canvas, so
+            // this is read once at render time; the theme toggle does a full page reload)
+            const isDarkMode = document.documentElement.classList.contains('dark');
+            const chartGridColor = isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
+            const chartTickColor = isDarkMode ? '#9ca3af' : '#6b7280';
 
             try {
                 // Revenue Chart
@@ -872,11 +881,17 @@ if ($diffInSeconds <= 0) {
                         scales: {
                             y: {
                                 beginAtZero: true,
+                                grid: { color: chartGridColor },
                                 ticks: {
+                                    color: chartTickColor,
                                     callback: function(value) {
                                         return '$' + value.toLocaleString();
                                     }
                                 }
+                            },
+                            x: {
+                                grid: { color: chartGridColor },
+                                ticks: { color: chartTickColor }
                             }
                         }
                     }
@@ -921,6 +936,7 @@ if ($diffInSeconds <= 0) {
                             legend: {
                                 position: 'bottom',
                                 labels: {
+                                    color: chartTickColor,
                                     padding: 20,
                                     usePointStyle: true
                                 }

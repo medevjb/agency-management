@@ -12,21 +12,21 @@
     {{-- Page Header --}}
     <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">
-                <i class="fas fa-tachometer-alt text-indigo-600 mr-2"></i>Admin Dashboard
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                <i class="fas fa-tachometer-alt text-indigo-600 dark:text-indigo-400 mr-2"></i>Admin Dashboard
             </h1>
-            <p class="text-gray-500 mt-1">{{ $companyName }} — complete system overview</p>
+            <p class="text-gray-500 dark:text-gray-400 mt-1">{{ $companyName }} — complete system overview</p>
         </div>
         <div class="flex gap-3">
             @if($maintenanceMode)
-                <span class="inline-flex items-center px-3 py-2 bg-red-100 text-red-700 rounded-lg text-sm font-medium">
+                <span class="inline-flex items-center px-3 py-2 bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400 rounded-lg text-sm font-medium">
                     <i class="fas fa-tools mr-2"></i>Maintenance Mode ON
                 </span>
             @endif
             <a href="{{ route('settings.index') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors text-sm">
                 <i class="fas fa-cog mr-2"></i>Settings
             </a>
-            <a href="{{ route('users.index') }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg font-medium transition-colors text-sm">
+            <a href="{{ route('users.index') }}" class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-medium transition-colors text-sm">
                 <i class="fas fa-users-cog mr-2"></i>Manage Users
             </a>
         </div>
@@ -56,43 +56,43 @@
         </div>
 
         {{-- Revenue Last Month --}}
-        <div class="bg-white rounded-xl p-5 shadow-md border border-gray-100">
+        <div class="bg-white dark:bg-gray-900 rounded-xl p-5 shadow-md border border-gray-100 dark:border-gray-800">
             <div class="flex items-center justify-between mb-3">
-                <p class="text-gray-500 text-sm font-medium">Last Month</p>
-                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-history text-purple-600"></i>
+                <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Last Month</p>
+                <div class="w-10 h-10 bg-purple-100 dark:bg-purple-500/10 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-history text-purple-600 dark:text-purple-400"></i>
                 </div>
             </div>
-            <p class="text-3xl font-bold text-gray-900">{{ fmtMoney($stats['revenue_last_month'], $currencySymbol, $currencyPosition, $decimalPlaces, $thousandSeparator, $decimalSeparator) }}</p>
-            <p class="text-xs text-gray-400 mt-2">Previous month delivered revenue</p>
+            <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ fmtMoney($stats['revenue_last_month'], $currencySymbol, $currencyPosition, $decimalPlaces, $thousandSeparator, $decimalSeparator) }}</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">Previous month delivered revenue</p>
         </div>
 
         {{-- Revenue This Year --}}
-        <div class="bg-white rounded-xl p-5 shadow-md border border-gray-100">
+        <div class="bg-white dark:bg-gray-900 rounded-xl p-5 shadow-md border border-gray-100 dark:border-gray-800">
             <div class="flex items-center justify-between mb-3">
-                <p class="text-gray-500 text-sm font-medium">This Year</p>
-                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-chart-line text-green-600"></i>
+                <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">This Year</p>
+                <div class="w-10 h-10 bg-green-100 dark:bg-green-500/10 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-chart-line text-green-600 dark:text-green-400"></i>
                 </div>
             </div>
-            <p class="text-3xl font-bold text-gray-900">{{ fmtMoney($stats['revenue_this_year'], $currencySymbol, $currencyPosition, $decimalPlaces, $thousandSeparator, $decimalSeparator) }}</p>
-            <p class="text-xs text-gray-400 mt-2">YTD delivered revenue ({{ now()->year }})</p>
+            <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ fmtMoney($stats['revenue_this_year'], $currencySymbol, $currencyPosition, $decimalPlaces, $thousandSeparator, $decimalSeparator) }}</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">YTD delivered revenue ({{ now()->year }})</p>
         </div>
 
         {{-- Project Completion Rate --}}
-        <div class="bg-white rounded-xl p-5 shadow-md border border-gray-100">
+        <div class="bg-white dark:bg-gray-900 rounded-xl p-5 shadow-md border border-gray-100 dark:border-gray-800">
             <div class="flex items-center justify-between mb-3">
-                <p class="text-gray-500 text-sm font-medium">Completion Rate</p>
-                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-check-double text-blue-600"></i>
+                <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Completion Rate</p>
+                <div class="w-10 h-10 bg-blue-100 dark:bg-blue-500/10 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-check-double text-blue-600 dark:text-blue-400"></i>
                 </div>
             </div>
-            <p class="text-3xl font-bold text-gray-900">{{ $stats['completion_rate'] }}%</p>
+            <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ $stats['completion_rate'] }}%</p>
             <div class="mt-2">
-                <div class="w-full bg-gray-200 rounded-full h-1.5">
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
                     <div class="bg-blue-500 h-1.5 rounded-full" style="width: {{ $stats['completion_rate'] }}%"></div>
                 </div>
-                <p class="text-xs text-gray-400 mt-1">{{ $stats['completed_projects'] }} of {{ $stats['total_projects'] }} orders</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ $stats['completed_projects'] }} of {{ $stats['total_projects'] }} orders</p>
             </div>
         </div>
     </div>
@@ -144,23 +144,23 @@
     {{-- Charts Row --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {{-- Monthly Revenue Chart --}}
-        <div class="bg-white rounded-xl shadow-md p-6">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-md p-6">
             <div class="flex items-center justify-between mb-5">
                 <div>
-                    <h3 class="text-base font-semibold text-gray-900"><i class="fas fa-chart-bar text-indigo-500 mr-2"></i>Monthly Revenue</h3>
-                    <p class="text-xs text-gray-400">{{ now()->year }} — by delivered date</p>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100"><i class="fas fa-chart-bar text-indigo-500 mr-2"></i>Monthly Revenue</h3>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">{{ now()->year }} — by delivered date</p>
                 </div>
-                <span class="text-xs text-gray-400">{{ $currencySymbol }}</span>
+                <span class="text-xs text-gray-400 dark:text-gray-500">{{ $currencySymbol }}</span>
             </div>
             <canvas id="revenueChart" height="200"></canvas>
         </div>
 
         {{-- Monthly Orders Chart --}}
-        <div class="bg-white rounded-xl shadow-md p-6">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-md p-6">
             <div class="flex items-center justify-between mb-5">
                 <div>
-                    <h3 class="text-base font-semibold text-gray-900"><i class="fas fa-chart-line text-green-500 mr-2"></i>Monthly Orders Started</h3>
-                    <p class="text-xs text-gray-400">{{ now()->year }} — by start date</p>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100"><i class="fas fa-chart-line text-green-500 mr-2"></i>Monthly Orders Started</h3>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">{{ now()->year }} — by start date</p>
                 </div>
             </div>
             <canvas id="ordersChart" height="200"></canvas>
@@ -171,105 +171,105 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {{-- System Health --}}
-        <div class="bg-white rounded-xl shadow-md p-6">
-            <h3 class="text-base font-semibold text-gray-900 mb-4">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-md p-6">
+            <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">
                 <i class="fas fa-heartbeat text-red-500 mr-2"></i>System Health
             </h3>
             <div class="space-y-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-full {{ $siteActive ? 'bg-green-100' : 'bg-red-100' }} flex items-center justify-center">
+                        <div class="w-9 h-9 rounded-full {{ $siteActive ? 'bg-green-100 dark:bg-green-500/10' : 'bg-red-100 dark:bg-red-500/10' }} flex items-center justify-center">
                             <i class="fas fa-{{ $siteActive ? 'check' : 'times' }} text-{{ $siteActive ? 'green' : 'red' }}-600 text-sm"></i>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-gray-900">Site Status</p>
-                            <p class="text-xs text-gray-400">{{ $siteName }}</p>
+                            <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Site Status</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500">{{ $siteName }}</p>
                         </div>
                     </div>
-                    <span class="px-2.5 py-1 {{ $siteActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }} rounded-full text-xs font-medium">{{ $siteActive ? 'Active' : 'Inactive' }}</span>
+                    <span class="px-2.5 py-1 {{ $siteActive ? 'bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400' }} rounded-full text-xs font-medium">{{ $siteActive ? 'Active' : 'Inactive' }}</span>
                 </div>
 
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-full {{ $maintenanceMode ? 'bg-orange-100' : 'bg-green-100' }} flex items-center justify-center">
+                        <div class="w-9 h-9 rounded-full {{ $maintenanceMode ? 'bg-orange-100 dark:bg-orange-500/10' : 'bg-green-100 dark:bg-green-500/10' }} flex items-center justify-center">
                             <i class="fas fa-{{ $maintenanceMode ? 'tools' : 'shield-alt' }} text-{{ $maintenanceMode ? 'orange' : 'green' }}-600 text-sm"></i>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-gray-900">Maintenance</p>
-                            <p class="text-xs text-gray-400">{{ $maintenanceMode ? 'System under maintenance' : 'No maintenance scheduled' }}</p>
+                            <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Maintenance</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500">{{ $maintenanceMode ? 'System under maintenance' : 'No maintenance scheduled' }}</p>
                         </div>
                     </div>
-                    <span class="px-2.5 py-1 {{ $maintenanceMode ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700' }} rounded-full text-xs font-medium">{{ $maintenanceMode ? 'ON' : 'OFF' }}</span>
+                    <span class="px-2.5 py-1 {{ $maintenanceMode ? 'bg-orange-100 dark:bg-orange-500/10 text-orange-700 dark:text-orange-400' : 'bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400' }} rounded-full text-xs font-medium">{{ $maintenanceMode ? 'ON' : 'OFF' }}</span>
                 </div>
 
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center">
-                            <i class="fas fa-database text-blue-600 text-sm"></i>
+                        <div class="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center">
+                            <i class="fas fa-database text-blue-600 dark:text-blue-400 text-sm"></i>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-gray-900">Database</p>
-                            <p class="text-xs text-gray-400">Connected</p>
+                            <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Database</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500">Connected</p>
                         </div>
                     </div>
-                    <span class="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">OK</span>
+                    <span class="px-2.5 py-1 bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400 rounded-full text-xs font-medium">OK</span>
                 </div>
 
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center">
-                            <i class="fas fa-money-bill-wave text-purple-600 text-sm"></i>
+                        <div class="w-9 h-9 rounded-full bg-purple-100 dark:bg-purple-500/10 flex items-center justify-center">
+                            <i class="fas fa-money-bill-wave text-purple-600 dark:text-purple-400 text-sm"></i>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-gray-900">Currency</p>
-                            <p class="text-xs text-gray-400">{{ $currencyCode }} — {{ $currencySymbol }}</p>
+                            <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Currency</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500">{{ $currencyCode }} — {{ $currencySymbol }}</p>
                         </div>
                     </div>
-                    <span class="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">{{ $currencyCode }}</span>
+                    <span class="px-2.5 py-1 bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 rounded-full text-xs font-medium">{{ $currencyCode }}</span>
                 </div>
 
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-full bg-yellow-100 flex items-center justify-center">
-                            <i class="fas fa-clock text-yellow-600 text-sm"></i>
+                        <div class="w-9 h-9 rounded-full bg-yellow-100 dark:bg-yellow-500/10 flex items-center justify-center">
+                            <i class="fas fa-clock text-yellow-600 dark:text-yellow-400 text-sm"></i>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-gray-900">Queue Jobs</p>
-                            <p class="text-xs text-gray-400">{{ $stats['pending_jobs'] ?? 0 }} pending</p>
+                            <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Queue Jobs</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500">{{ $stats['pending_jobs'] ?? 0 }} pending</p>
                         </div>
                     </div>
-                    <span class="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">Active</span>
+                    <span class="px-2.5 py-1 bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 rounded-full text-xs font-medium">Active</span>
                 </div>
             </div>
         </div>
 
         {{-- Role Distribution --}}
-        <div class="bg-white rounded-xl shadow-md p-6">
-            <h3 class="text-base font-semibold text-gray-900 mb-4">
-                <i class="fas fa-user-shield text-indigo-600 mr-2"></i>Role Distribution
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-md p-6">
+            <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                <i class="fas fa-user-shield text-indigo-600 dark:text-indigo-400 mr-2"></i>Role Distribution
             </h3>
             <div class="space-y-3">
                 @foreach($roleStats as $role => $count)
                     <div>
                         <div class="flex justify-between text-sm mb-1">
-                            <span class="text-gray-700">{{ ucfirst(str_replace('-', ' ', $role)) }}</span>
-                            <span class="font-semibold text-gray-900">{{ $count }}</span>
+                            <span class="text-gray-700 dark:text-gray-300">{{ ucfirst(str_replace('-', ' ', $role)) }}</span>
+                            <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $count }}</span>
                         </div>
-                        <div class="w-full bg-gray-100 rounded-full h-2">
+                        <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
                             <div class="bg-indigo-500 h-2 rounded-full" style="width: {{ $stats['total_users'] > 0 ? round(($count / $stats['total_users']) * 100) : 0 }}%"></div>
                         </div>
                     </div>
                 @endforeach
             </div>
-            <div class="mt-4 pt-4 border-t border-gray-100 text-sm text-gray-500">
-                <i class="fas fa-info-circle mr-1"></i>Total: <span class="font-semibold text-gray-900">{{ $stats['total_users'] }}</span> users
+            <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 text-sm text-gray-500 dark:text-gray-400">
+                <i class="fas fa-info-circle mr-1"></i>Total: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $stats['total_users'] }}</span> users
             </div>
         </div>
 
         {{-- Project Status Breakdown --}}
-        <div class="bg-white rounded-xl shadow-md p-6">
-            <h3 class="text-base font-semibold text-gray-900 mb-4">
-                <i class="fas fa-chart-pie text-green-600 mr-2"></i>Order Status Breakdown
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-md p-6">
+            <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                <i class="fas fa-chart-pie text-green-600 dark:text-green-400 mr-2"></i>Order Status Breakdown
             </h3>
             <div class="space-y-3">
                 @php
@@ -287,10 +287,10 @@
                     @if($count > 0)
                     <div>
                         <div class="flex justify-between text-sm mb-1">
-                            <span class="text-gray-700">{{ ucfirst(str_replace('-', ' ', $status)) }}</span>
-                            <span class="font-semibold text-gray-900">{{ $count }}</span>
+                            <span class="text-gray-700 dark:text-gray-300">{{ ucfirst(str_replace('-', ' ', $status)) }}</span>
+                            <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $count }}</span>
                         </div>
-                        <div class="w-full bg-gray-100 rounded-full h-2">
+                        <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
                             <div class="{{ $statusColors[$status] ?? 'bg-gray-400' }} h-2 rounded-full"
                                  style="width: {{ $stats['total_projects'] > 0 ? round(($count / $stats['total_projects']) * 100) : 0 }}%"></div>
                         </div>
@@ -298,8 +298,8 @@
                     @endif
                 @endforeach
             </div>
-            <div class="mt-4 pt-4 border-t border-gray-100 text-sm text-gray-500">
-                <i class="fas fa-folder mr-1"></i>Total: <span class="font-semibold text-gray-900">{{ $stats['total_projects'] }}</span> orders
+            <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 text-sm text-gray-500 dark:text-gray-400">
+                <i class="fas fa-folder mr-1"></i>Total: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $stats['total_projects'] }}</span> orders
             </div>
         </div>
     </div>
@@ -308,37 +308,37 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {{-- Top Performing Teams --}}
-        <div class="lg:col-span-2 bg-white rounded-xl shadow-md p-6">
+        <div class="lg:col-span-2 bg-white dark:bg-gray-900 rounded-xl shadow-md p-6">
             <div class="flex items-center justify-between mb-5">
-                <h3 class="text-base font-semibold text-gray-900">
+                <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">
                     <i class="fas fa-trophy text-yellow-500 mr-2"></i>Top Performing Teams
                 </h3>
-                <a href="{{ route('teams.index') }}" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">View All</a>
+                <a href="{{ route('teams.index') }}" class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium">View All</a>
             </div>
             @if($topTeams->isEmpty())
-                <p class="text-sm text-gray-400 text-center py-6">No team revenue data yet.</p>
+                <p class="text-sm text-gray-400 dark:text-gray-500 text-center py-6">No team revenue data yet.</p>
             @else
                 <div class="space-y-4">
                     @foreach($topTeams as $i => $team)
                     <div class="flex items-center gap-4">
                         <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold
-                            @if($i === 0) bg-yellow-100 text-yellow-700
-                            @elseif($i === 1) bg-gray-100 text-gray-600
-                            @elseif($i === 2) bg-orange-100 text-orange-600
-                            @else bg-indigo-50 text-indigo-400 @endif">
+                            @if($i === 0) bg-yellow-100 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400
+                            @elseif($i === 1) bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300
+                            @elseif($i === 2) bg-orange-100 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400
+                            @else bg-indigo-50 dark:bg-indigo-500/10 text-indigo-400 @endif">
                             {{ $i + 1 }}
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center justify-between mb-1">
-                                <span class="text-sm font-medium text-gray-900 truncate">{{ $team['name'] }}</span>
-                                <span class="text-sm font-bold text-gray-900 ml-2">{{ fmtMoney($team['revenue'], $currencySymbol, $currencyPosition, $decimalPlaces, $thousandSeparator, $decimalSeparator) }}</span>
+                                <span class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ $team['name'] }}</span>
+                                <span class="text-sm font-bold text-gray-900 dark:text-gray-100 ml-2">{{ fmtMoney($team['revenue'], $currencySymbol, $currencyPosition, $decimalPlaces, $thousandSeparator, $decimalSeparator) }}</span>
                             </div>
                             <div class="flex items-center gap-3">
-                                <div class="flex-1 bg-gray-100 rounded-full h-1.5">
+                                <div class="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full h-1.5">
                                     <div class="bg-indigo-500 h-1.5 rounded-full"
                                          style="width: {{ $topTeams->max('revenue') > 0 ? round(($team['revenue'] / $topTeams->max('revenue')) * 100) : 0 }}%"></div>
                                 </div>
-                                <span class="text-xs text-gray-400 whitespace-nowrap">{{ $team['orders_count'] }} orders</span>
+                                <span class="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">{{ $team['orders_count'] }} orders</span>
                             </div>
                         </div>
                     </div>
@@ -348,55 +348,55 @@
         </div>
 
         {{-- Company Info --}}
-        <div class="bg-white rounded-xl shadow-md p-6">
-            <h3 class="text-base font-semibold text-gray-900 mb-4">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-md p-6">
+            <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">
                 <i class="fas fa-building text-indigo-500 mr-2"></i>Company Info
             </h3>
             <div class="space-y-3 text-sm">
                 <div class="flex items-start gap-3">
-                    <i class="fas fa-briefcase text-gray-400 mt-0.5 w-4 text-center"></i>
+                    <i class="fas fa-briefcase text-gray-400 dark:text-gray-500 mt-0.5 w-4 text-center"></i>
                     <div>
-                        <p class="text-xs text-gray-400">Company</p>
-                        <p class="font-medium text-gray-800">{{ $companyName }}</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500">Company</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">{{ $companyName }}</p>
                     </div>
                 </div>
                 @if($companyEmail)
                 <div class="flex items-start gap-3">
-                    <i class="fas fa-envelope text-gray-400 mt-0.5 w-4 text-center"></i>
+                    <i class="fas fa-envelope text-gray-400 dark:text-gray-500 mt-0.5 w-4 text-center"></i>
                     <div>
-                        <p class="text-xs text-gray-400">Email</p>
-                        <p class="font-medium text-gray-800 break-all">{{ $companyEmail }}</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500">Email</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200 break-all">{{ $companyEmail }}</p>
                     </div>
                 </div>
                 @endif
                 @if($companyPhone)
                 <div class="flex items-start gap-3">
-                    <i class="fas fa-phone text-gray-400 mt-0.5 w-4 text-center"></i>
+                    <i class="fas fa-phone text-gray-400 dark:text-gray-500 mt-0.5 w-4 text-center"></i>
                     <div>
-                        <p class="text-xs text-gray-400">Phone</p>
-                        <p class="font-medium text-gray-800">{{ $companyPhone }}</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500">Phone</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">{{ $companyPhone }}</p>
                     </div>
                 </div>
                 @endif
                 @if($businessHours)
                 <div class="flex items-start gap-3">
-                    <i class="fas fa-clock text-gray-400 mt-0.5 w-4 text-center"></i>
+                    <i class="fas fa-clock text-gray-400 dark:text-gray-500 mt-0.5 w-4 text-center"></i>
                     <div>
-                        <p class="text-xs text-gray-400">Business Hours</p>
-                        <p class="font-medium text-gray-800">{{ $businessHours }}</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500">Business Hours</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">{{ $businessHours }}</p>
                     </div>
                 </div>
                 @endif
                 <div class="flex items-start gap-3">
-                    <i class="fas fa-coins text-gray-400 mt-0.5 w-4 text-center"></i>
+                    <i class="fas fa-coins text-gray-400 dark:text-gray-500 mt-0.5 w-4 text-center"></i>
                     <div>
-                        <p class="text-xs text-gray-400">Currency</p>
-                        <p class="font-medium text-gray-800">{{ $currencyCode }} ({{ $currencySymbol }})</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500">Currency</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">{{ $currencyCode }} ({{ $currencySymbol }})</p>
                     </div>
                 </div>
             </div>
-            <div class="mt-4 pt-4 border-t border-gray-100">
-                <a href="{{ route('settings.group', 'company') }}" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
+            <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                <a href="{{ route('settings.group', 'company') }}" class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium">
                     <i class="fas fa-edit mr-1"></i>Edit company info
                 </a>
             </div>
@@ -439,33 +439,33 @@
     {{-- Recent Users & Orders Row --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {{-- Recent Users --}}
-        <div class="bg-white rounded-xl shadow-md overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-md overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
                 <div>
-                    <h3 class="text-base font-semibold text-gray-900">Recent Users</h3>
-                    <p class="text-xs text-gray-400">Newly registered</p>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">Recent Users</h3>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">Newly registered</p>
                 </div>
-                <a href="{{ route('users.index') }}" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">View All</a>
+                <a href="{{ route('users.index') }}" class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium">View All</a>
             </div>
-            <div class="divide-y divide-gray-50">
+            <div class="divide-y divide-gray-50 dark:divide-gray-800">
                 @foreach($recentUsers as $user)
-                <div class="px-6 py-3.5 hover:bg-gray-50 transition-colors">
+                <div class="px-6 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <img class="h-9 w-9 rounded-full" src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=4F46E5&color=fff&size=64" alt="{{ $user->name }}">
                             <div>
-                                <p class="text-sm font-medium text-gray-900">{{ $user->name }}</p>
-                                <p class="text-xs text-gray-400">{{ $user->email }}</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $user->name }}</p>
+                                <p class="text-xs text-gray-400 dark:text-gray-500">{{ $user->email }}</p>
                             </div>
                         </div>
                         <div class="text-right">
                             <span class="px-2 py-0.5 text-xs rounded-full
-                                @if($user->role === 'admin') bg-red-100 text-red-700
-                                @elseif(str_contains($user->role ?? '', 'manager')) bg-blue-100 text-blue-700
-                                @else bg-gray-100 text-gray-600 @endif">
+                                @if($user->role === 'admin') bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400
+                                @elseif(str_contains($user->role ?? '', 'manager')) bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400
+                                @else bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 @endif">
                                 {{ ucfirst(str_replace('-', ' ', $user->role ?? 'user')) }}
                             </span>
-                            <p class="text-xs text-gray-400 mt-1">{{ $user->created_at->diffForHumans() }}</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ $user->created_at->diffForHumans() }}</p>
                         </div>
                     </div>
                 </div>
@@ -474,44 +474,44 @@
         </div>
 
         {{-- Recent Orders --}}
-        <div class="bg-white rounded-xl shadow-md overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-md overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
                 <div>
-                    <h3 class="text-base font-semibold text-gray-900">Recent Orders</h3>
-                    <p class="text-xs text-gray-400">Latest activities</p>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">Recent Orders</h3>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">Latest activities</p>
                 </div>
-                <a href="{{ route('orders.index') }}" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">View All</a>
+                <a href="{{ route('orders.index') }}" class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium">View All</a>
             </div>
-            <div class="divide-y divide-gray-50">
+            <div class="divide-y divide-gray-50 dark:divide-gray-800">
                 @foreach($recentOrders as $order)
-                <div class="px-6 py-3.5 hover:bg-gray-50 transition-colors">
+                <div class="px-6 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-lg bg-indigo-100 flex items-center justify-center">
-                                <i class="fas fa-folder text-indigo-600 text-sm"></i>
+                            <div class="w-9 h-9 rounded-lg bg-indigo-100 dark:bg-indigo-500/10 flex items-center justify-center">
+                                <i class="fas fa-folder text-indigo-600 dark:text-indigo-400 text-sm"></i>
                             </div>
                             <div class="min-w-0">
-                                <p class="text-sm font-medium text-gray-900 truncate max-w-[160px]">{{ $order->name }}</p>
-                                <p class="text-xs text-gray-400">{{ $order->creator?->name ?? 'System' }}</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate max-w-[160px]">{{ $order->name }}</p>
+                                <p class="text-xs text-gray-400 dark:text-gray-500">{{ $order->creator?->name ?? 'System' }}</p>
                             </div>
                         </div>
                         <div class="text-right">
                             @php
                                 $sBadge = match($order->status) {
-                                    'delivered','completed' => 'bg-green-100 text-green-700',
-                                    'in-progress' => 'bg-blue-100 text-blue-700',
-                                    'on-hold' => 'bg-yellow-100 text-yellow-700',
-                                    'cancelled' => 'bg-red-100 text-red-700',
-                                    default => 'bg-gray-100 text-gray-600',
+                                    'delivered','completed' => 'bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400',
+                                    'in-progress' => 'bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400',
+                                    'on-hold' => 'bg-yellow-100 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400',
+                                    'cancelled' => 'bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400',
+                                    default => 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300',
                                 };
                             @endphp
                             <span class="px-2 py-0.5 text-xs rounded-full {{ $sBadge }}">
                                 {{ ucfirst(str_replace('-', ' ', $order->status)) }}
                             </span>
                             @if($order->value)
-                                <p class="text-xs font-semibold text-gray-700 mt-1">{{ fmtMoney($order->value, $currencySymbol, $currencyPosition, $decimalPlaces, $thousandSeparator, $decimalSeparator) }}</p>
+                                <p class="text-xs font-semibold text-gray-700 dark:text-gray-300 mt-1">{{ fmtMoney($order->value, $currencySymbol, $currencyPosition, $decimalPlaces, $thousandSeparator, $decimalSeparator) }}</p>
                             @else
-                                <p class="text-xs text-gray-400 mt-1">{{ $order->created_at->diffForHumans() }}</p>
+                                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ $order->created_at->diffForHumans() }}</p>
                             @endif
                         </div>
                     </div>
@@ -530,6 +530,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const revenueData = @json(array_values($monthlyRevenue));
     const ordersData  = @json(array_values($monthlyOrders));
+
+    // Theme-aware chart colors (Chart.js bakes colors into the canvas, so
+    // this is read once at render time; the theme toggle does a full page reload)
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    const chartGridColor = isDarkMode ? 'rgba(255, 255, 255, 0.08)' : '#f3f4f6';
+    const chartTickColor = isDarkMode ? '#9ca3af' : '#6b7280';
 
     // Monthly Revenue Chart
     new Chart(document.getElementById('revenueChart'), {
@@ -556,8 +562,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             },
             scales: {
-                y: { beginAtZero: true, grid: { color: '#f3f4f6' }, ticks: { callback: v => '{{ $currencySymbol }}' + v.toLocaleString() } },
-                x: { grid: { display: false } }
+                y: { beginAtZero: true, grid: { color: chartGridColor }, ticks: { color: chartTickColor, callback: v => '{{ $currencySymbol }}' + v.toLocaleString() } },
+                x: { grid: { display: false }, ticks: { color: chartTickColor } }
             }
         }
     });
@@ -582,8 +588,8 @@ document.addEventListener('DOMContentLoaded', function () {
             responsive: true,
             plugins: { legend: { display: false } },
             scales: {
-                y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
-                x: { grid: { display: false } }
+                y: { beginAtZero: true, grid: { color: chartGridColor }, ticks: { color: chartTickColor } },
+                x: { grid: { display: false }, ticks: { color: chartTickColor } }
             }
         }
     });

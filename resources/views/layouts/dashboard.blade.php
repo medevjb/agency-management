@@ -7,6 +7,15 @@
     <title>{{ config('app.name', 'PMT') }} - Dashboard</title>
     <link rel="icon" type="image/png/jpg" href="{{ asset('image/stv.jpg') }}">
 
+    <!-- Apply saved/system theme before first paint to avoid a light/dark flash -->
+    <script>
+        (function () {
+            const stored = localStorage.getItem('theme');
+            const isDark = stored ? stored === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.classList.toggle('dark', isDark);
+        })();
+    </script>
+
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
@@ -539,10 +548,111 @@
             0% { opacity: 1; transform: scale(1) translateY(0); }
             100% { opacity: 0; transform: scale(0.92) translateY(8px); }
         }
+
+        /* ===== Dark Mode Overrides ===== */
+        /* Flatpickr and SweetAlert2 render their own markup outside Tailwind's
+           reach, so they need plain CSS overrides keyed off the `dark` class
+           on <html> rather than Tailwind's `dark:` utility variant. */
+        .dark .flatpickr-calendar {
+            background: #1f2937;
+            border-color: #374151;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .dark .flatpickr-current-month {
+            color: #f3f4f6;
+        }
+
+        .dark .flatpickr-current-month span.cur-year {
+            color: #9ca3af;
+        }
+
+        .dark .flatpickr-weekday {
+            color: #9ca3af;
+        }
+
+        .dark .flatpickr-months .flatpickr-prev-month,
+        .dark .flatpickr-months .flatpickr-next-month {
+            background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+            color: #e5e7eb;
+            fill: #e5e7eb;
+        }
+
+        .dark .flatpickr-day {
+            color: #e5e7eb;
+        }
+
+        .dark .flatpickr-day.prevMonthDay,
+        .dark .flatpickr-day.nextMonthDay {
+            color: #4b5563;
+        }
+
+        .dark .flatpickr-day.today {
+            background: #1f2937;
+        }
+
+        .dark .flatpickr-day.disabled {
+            background: #111827;
+            color: #4b5563;
+        }
+
+        .dark .flatpickr-day.disabled:hover {
+            background: #111827;
+            color: #4b5563;
+        }
+
+        .dark .flatpickr-time {
+            border-top-color: #374151;
+        }
+
+        .dark .swal2-popup {
+            background: #1f2937 !important;
+            border-color: #374151 !important;
+        }
+
+        .dark .swal2-title {
+            color: #f3f4f6 !important;
+        }
+
+        .dark .swal2-html-container {
+            color: #9ca3af !important;
+        }
+
+        .dark .swal2-popup .swal2-styled.swal2-cancel {
+            background: #374151 !important;
+            color: #e5e7eb !important;
+            border-color: #4b5563 !important;
+        }
+
+        .dark .swal2-popup .swal2-styled.swal2-cancel:hover {
+            background: #4b5563 !important;
+        }
+
+        .dark .swal2-input,
+        .dark .swal2-textarea,
+        .dark .swal2-select {
+            background: #111827 !important;
+            border-color: #4b5563 !important;
+            color: #f3f4f6 !important;
+        }
+
+        .dark .swal2-close {
+            color: #9ca3af !important;
+        }
+
+        .dark .swal2-close:hover {
+            color: #e5e7eb !important;
+            background: #374151 !important;
+        }
+
+        .dark .swal2-footer {
+            border-top-color: #374151 !important;
+            color: #6b7280 !important;
+        }
     </style>
     @stack('styles')
 </head>
-<body class="font-sans antialiased bg-gray-100">
+<body class="font-sans antialiased bg-gray-100 dark:bg-gray-950">
     <!-- Sidebar Component -->
     @include('components.sidebar')
 
@@ -668,12 +778,27 @@
                             <i class="fas fa-key w-5 mr-2"></i>
                             Roles & Permissions
                         </a>
+                        <a href="{{ route('admin.github.index') }}"
+                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('admin.github.*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
+                            <i class="fas fa-code-branch w-5 mr-2"></i>
+                            GitHub Commits
+                        </a>
                         <a href="{{ route('settings.index') }}"
                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('settings.*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
                             <i class="fas fa-cog w-5 mr-2"></i>
                             System Settings
                         </a>
                     </div>
+                </div>
+                @endrole
+
+                @role(['operation-manager', 'project-manager'])
+                <div class="mb-2 sidebar-section" data-section="admin">
+                    <a href="{{ route('admin.github.index') }}"
+                       class="flex items-center px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 {{ request()->routeIs('admin.github.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                        <i class="fas fa-code-branch w-5 mr-2 text-indigo-300"></i>
+                        GitHub Commits
+                    </a>
                 </div>
                 @endrole
 
@@ -715,7 +840,7 @@
         @include('components.header')
 
         <!-- Main Content Area -->
-        <main class="flex-1 overflow-y-auto bg-gray-50">
+        <main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-950">
             @yield('content')
         </main>
     </div>
@@ -851,6 +976,24 @@
     });
     </script>
 
+    <!-- Theme Toggle Script -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const themeToggleBtn = document.getElementById('themeToggle');
+        if (!themeToggleBtn) {
+            return;
+        }
+
+        themeToggleBtn.addEventListener('click', function() {
+            const isDark = !document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            // Reload so canvas-based charts (Chart.js) and any other JS that
+            // bakes colors in at render time pick up the new theme correctly.
+            window.location.reload();
+        });
+    });
+    </script>
+
     <!-- Flatpickr JS -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
@@ -903,16 +1046,16 @@
     <script>
     (function () {
         const statusColors = {
-            'nra':         'bg-gray-100 text-gray-600',
-            'pending':     'bg-yellow-100 text-yellow-700',
-            'in-progress': 'bg-blue-100 text-blue-700',
-            'delivered':   'bg-green-100 text-green-700',
-            'on-hold':     'bg-orange-100 text-orange-700',
-            'cancelled':   'bg-red-100 text-red-600',
+            'nra':         'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300',
+            'pending':     'bg-yellow-100 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400',
+            'in-progress': 'bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400',
+            'delivered':   'bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400',
+            'on-hold':     'bg-orange-100 dark:bg-orange-500/10 text-orange-700 dark:text-orange-400',
+            'cancelled':   'bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400',
         };
 
         function badgeClass(val) {
-            return statusColors[val] || 'bg-purple-100 text-purple-700';
+            return statusColors[val] || 'bg-purple-100 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400';
         }
 
         function initAjaxSelect(wrapper) {
@@ -932,7 +1075,7 @@
 
             function renderOptions(items) {
                 if (!items.length) {
-                    dropdown.innerHTML = '<div class="px-4 py-3 text-sm text-gray-400">No results found</div>';
+                    dropdown.innerHTML = '<div class="px-4 py-3 text-sm text-gray-400 dark:text-gray-500">No results found</div>';
                 } else {
                     dropdown.innerHTML = items.map(item => {
                         const label    = String(item.name || item.label || '');
@@ -940,7 +1083,7 @@
                         return `<button type="button"
                                         data-id="${item.id}"
                                         data-label="${label.replace(/"/g, '&quot;')}"
-                                        class="asi-opt w-full text-left px-4 py-2.5 hover:bg-indigo-50 text-sm border-b border-gray-100 last:border-0 flex items-center justify-between gap-2 transition-colors">
+                                        class="asi-opt w-full text-left px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 text-gray-900 dark:text-gray-100 text-sm border-b border-gray-100 dark:border-gray-700 last:border-0 flex items-center justify-between gap-2 transition-colors">
                                     <span class="truncate">${label}</span>
                                     ${badgeVal ? `<span class="flex-shrink-0 text-xs font-medium px-1.5 py-0.5 rounded ${badgeClass(badgeVal)}">${badgeVal}</span>` : ''}
                                 </button>`;

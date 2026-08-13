@@ -294,7 +294,7 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request)
     {
-        $validated = $request->validated();
+        $validated = $this->applyTrack($request->validated());
 
         // Generate unique employee ID if not provided
         if (empty($validated['employee_id'])) {
@@ -478,6 +478,7 @@ class UserController extends Controller
         }
 
         $validated = $request->validate([
+            'track' => 'nullable|in:operation,sales',
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
             'employee_id' => 'nullable|string|max:13|unique:users,employee_id,'.$user->id,
@@ -500,6 +501,8 @@ class UserController extends Controller
             'managed_teams' => 'nullable|array',
             'managed_teams.*' => 'exists:teams,id',
         ]);
+
+        $validated = $this->applyTrack($validated, $user);
 
         // Ensure permissions array exists (empty array if not provided)
         $validated['permissions'] = $validated['permissions'] ?? [];
@@ -576,6 +579,30 @@ class UserController extends Controller
                 'message' => 'Failed to update user: '.$e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Drop whatever does not belong to the chosen track, so a sales person
+     * never ends up with a team_id and an operational hire never gets a sales
+     * leader or target — no matter what the client sent.
+     *
+     * @param  array<string, mixed>  $validated
+     * @return array<string, mixed>
+     */
+    protected function applyTrack(array $validated, ?User $user = null): array
+    {
+        // Editing without the track field present (a raw API call, or an
+        // update made before this field existed) should not silently wipe
+        // whichever side the person is already on.
+        $track = $validated['track'] ?? ($user?->isSales() ? 'sales' : 'operation');
+
+        if ($track === 'sales') {
+            unset($validated['team_id'], $validated['tech_stack_id']);
+        } else {
+            unset($validated['sales_leader_id'], $validated['sales_target'], $validated['sales_target_month']);
+        }
+
+        return $validated;
     }
 
     /**

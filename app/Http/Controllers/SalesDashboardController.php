@@ -44,11 +44,11 @@ class SalesDashboardController extends Controller
         }
 
         $groupOrders = $this->ordersFor($groupIds, $monthStart, $monthEnd);
-        $mineOrders = $mineIds === [] ? collect() : $groupOrders->whereIn('sales_user_id', $mineIds);
+        $mineOrders = $mineIds === [] ? collect() : $this->ordersFor($mineIds, $monthStart, $monthEnd);
 
         $previousStart = $monthStart->copy()->subMonth();
         $previousGroup = $this->ordersFor($groupIds, $previousStart, $previousStart->copy()->endOfMonth());
-        $previousMine = $mineIds === [] ? collect() : $previousGroup->whereIn('sales_user_id', $mineIds);
+        $previousMine = $mineIds === [] ? collect() : $this->ordersFor($mineIds, $previousStart, $previousStart->copy()->endOfMonth());
 
         // Targets in force this month, per person.
         $targets = SalesTarget::amountsFor($groupIds, $monthStart);
@@ -65,8 +65,8 @@ class SalesDashboardController extends Controller
             return [
                 'label' => $point->format('M Y'),
                 'short' => $point->format('M'),
-                'amount' => round((float) $orders->sum('value'), 2),
-                'mine' => $mineIds === [] ? 0.0 : round((float) $orders->whereIn('sales_user_id', $mineIds)->sum('value'), 2),
+                'amount' => round((float) $orders->sum('credit'), 2),
+                'mine' => $mineIds === [] ? 0.0 : round((float) $this->ordersFor($mineIds, $point->copy()->startOfMonth(), $point->copy()->endOfMonth())->sum('credit'), 2),
                 'count' => $orders->count(),
             ];
         })->values();
@@ -78,7 +78,7 @@ class SalesDashboardController extends Controller
             : collect();
 
         $recentOrders = Order::query()
-            ->whereIn('sales_user_id', $groupIds)
+            ->whereHas('salesShares', fn ($share) => $share->whereIn('user_id', $groupIds))
             ->with('salesUser')
             ->latest()
             ->take(8)
@@ -120,6 +120,9 @@ class SalesDashboardController extends Controller
     }
 
     /**
+     * Orders these people hold sales credit in, each carrying `credit`: the
+     * part of the order amount attributed to this group.
+     *
      * @param  array<int, int>  $sellerIds
      * @return Collection<int, Order>
      */
@@ -130,9 +133,11 @@ class SalesDashboardController extends Controller
         }
 
         return Order::query()
-            ->whereIn('sales_user_id', $sellerIds)
+            ->whereHas('salesShares', fn ($share) => $share->whereIn('user_id', $sellerIds))
             ->whereBetween('created_at', [$from, $to])
-            ->get();
+            ->with(['salesShares' => fn ($share) => $share->whereIn('user_id', $sellerIds)])
+            ->get()
+            ->each(fn (Order $order) => $order->credit = (float) $order->salesShares->sum('amount'));
     }
 
     /**
@@ -143,18 +148,18 @@ class SalesDashboardController extends Controller
      */
     protected function summarise(Collection $orders, Collection $previousOrders, array $sellerIds, Carbon $monthStart, Carbon $monthEnd, float $target = 0.0): array
     {
-        $amount = (float) $orders->sum('value');
-        $previousAmount = (float) $previousOrders->sum('value');
+        $amount = (float) $orders->sum('credit');
+        $previousAmount = (float) $previousOrders->sum('credit');
 
         $delivered = $sellerIds === [] ? collect() : Order::query()
-            ->whereIn('sales_user_id', $sellerIds)
+            ->whereHas('salesShares', fn ($share) => $share->whereIn('user_id', $sellerIds))
             ->whereIn('status', ['delivered', 'completed'])
             ->whereNotNull('delivered_at')
             ->whereBetween('delivered_at', [$monthStart, $monthEnd])
             ->get();
 
         $open = $sellerIds === [] ? collect() : Order::query()
-            ->whereIn('sales_user_id', $sellerIds)
+            ->whereHas('salesShares', fn ($share) => $share->whereIn('user_id', $sellerIds))
             ->whereNotIn('status', ['delivered', 'completed', 'cancelled'])
             ->get();
 
@@ -191,8 +196,8 @@ class SalesDashboardController extends Controller
             ->orderBy('name')
             ->get()
             ->map(function (User $seller) use ($orders, $viewer, $targets) {
-                $sold = $orders->where('sales_user_id', $seller->id);
-                $amount = (float) $sold->sum('value');
+                $sold = $orders->filter(fn (Order $order) => $order->salesShares->contains('user_id', $seller->id));
+                $amount = (float) $sold->sum(fn (Order $order) => $order->salesShareFor($seller->id));
                 $target = (float) ($targets[$seller->id] ?? 0);
 
                 return [

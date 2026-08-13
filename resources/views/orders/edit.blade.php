@@ -215,7 +215,10 @@
                     @endunless
                 </div>
 
-                @unless($isSalesUser)
+                <!-- Row 4b: Sales credit -->
+                @include('orders.partials.sales-credit-field', ['salesPeople' => $salesPeople, 'order' => $order])
+
+@unless($isSalesUser)
 <!-- Row 5: Team & Tech Stack -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>

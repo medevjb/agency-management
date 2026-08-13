@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Models\Order;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class StoreOrderRequest extends FormRequest
 {
@@ -41,6 +42,9 @@ class StoreOrderRequest extends FormRequest
             'special_status' => 'nullable|in:selected_for_delivery,continue_for_next,stuck_order',
             'users' => 'nullable|array',
             'users.*' => 'exists:users,id',
+            'sales_shares' => 'nullable|array',
+            'sales_shares.*.user_id' => 'required|exists:users,id',
+            'sales_shares.*.amount' => 'required|numeric|min:0',
             'client_documents' => 'nullable|array|max:20',
             'client_documents.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,csv,txt,md,json,zip,png,jpg,jpeg,gif,webp',
         ];
@@ -62,9 +66,36 @@ class StoreOrderRequest extends FormRequest
             'credentials' => 'nullable|string|max:65000',
             'value' => 'nullable|numeric|min:0',
             'freelance_profile_id' => 'nullable|exists:profiles,id',
+            'sales_shares' => 'nullable|array',
+            'sales_shares.*.user_id' => 'required|exists:users,id',
+            'sales_shares.*.amount' => 'required|numeric|min:0',
             'client_documents' => 'nullable|array|max:20',
             'client_documents.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,csv,txt,md,json,zip,png,jpg,jpeg,gif,webp',
         ];
+    }
+
+    /**
+     * The split may not promise more than the order is worth.
+     */
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+            $shares = $this->input('sales_shares', []);
+
+            if (! is_array($shares) || $shares === []) {
+                return;
+            }
+
+            $total = round(array_sum(array_map(fn ($share) => (float) ($share['amount'] ?? 0), $shares)), 2);
+            $value = round((float) $this->input('value', 0), 2);
+
+            if ($total > $value) {
+                $validator->errors()->add(
+                    'sales_shares',
+                    'The sales credit adds up to $'.number_format($total, 2).', more than the order amount of $'.number_format($value, 2).'.'
+                );
+            }
+        });
     }
 
     /**

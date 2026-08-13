@@ -190,13 +190,15 @@ class SalesRoleTest extends TestCase
         $this->actingAs($this->operationManager)
             ->get(route('orders.show', $order))
             ->assertOk()
-            ->assertDontSee('Sold by')
+            ->assertDontSee('Opened by')
+            ->assertDontSee('Sales credit')
             ->assertDontSee('Sales Member');
 
         $this->actingAs($this->salesMember)
             ->get(route('orders.show', $order))
             ->assertOk()
-            ->assertSee('Sold by');
+            ->assertSee('Opened by')
+            ->assertSee('Sales credit');
     }
 
     public function test_sales_people_land_on_the_sales_dashboard(): void
@@ -204,6 +206,107 @@ class SalesRoleTest extends TestCase
         $this->actingAs($this->salesMember)->get(route('dashboard'))->assertRedirect(route('sales.dashboard'));
         $this->actingAs($this->salesMember)->get(route('orders.dashboard'))->assertRedirect(route('sales.dashboard'));
         $this->actingAs($this->operationManager)->get(route('sales.dashboard'))->assertForbidden();
+    }
+
+    public function test_a_sale_is_credited_wholly_to_whoever_opened_it(): void
+    {
+        $this->actingAs($this->salesMember)->post(route('orders.store'), [
+            'name' => 'Solo Deal',
+            'value' => 1200,
+        ]);
+
+        $order = Order::first();
+
+        $this->assertCount(1, $order->salesShares);
+        $this->assertSame($this->salesMember->id, $order->salesShares->first()->user_id);
+        $this->assertSame(1200.0, (float) $order->salesShares->first()->amount);
+        $this->assertSame(0.0, $order->unattributedAmount());
+    }
+
+    public function test_an_order_amount_can_be_split_across_several_sales_people(): void
+    {
+        $this->actingAs($this->salesMember)->post(route('orders.store'), [
+            'name' => 'Shared Deal',
+            'value' => 5000,
+            'sales_shares' => [
+                ['user_id' => $this->salesMember->id, 'amount' => 3000],
+                ['user_id' => $this->salesLeader->id, 'amount' => 2000],
+            ],
+        ])->assertRedirect(route('orders.index'));
+
+        $order = Order::first();
+
+        $this->assertSame(3000.0, $order->salesShareFor($this->salesMember->id));
+        $this->assertSame(2000.0, $order->salesShareFor($this->salesLeader->id));
+        $this->assertSame(0.0, $order->unattributedAmount());
+    }
+
+    public function test_the_split_cannot_exceed_the_order_amount(): void
+    {
+        $this->actingAs($this->salesMember)->post(route('orders.store'), [
+            'name' => 'Too Generous',
+            'value' => 1000,
+            'sales_shares' => [
+                ['user_id' => $this->salesMember->id, 'amount' => 800],
+                ['user_id' => $this->salesLeader->id, 'amount' => 500],
+            ],
+        ])->assertSessionHasErrors('sales_shares');
+
+        $this->assertSame(0, Order::count());
+    }
+
+    public function test_a_shared_order_counts_for_each_person_at_their_own_share(): void
+    {
+        $this->actingAs($this->salesMember)->post(route('orders.store'), [
+            'name' => 'Split Deal',
+            'value' => 5000,
+            'sales_shares' => [
+                ['user_id' => $this->salesMember->id, 'amount' => 1500],
+                ['user_id' => $this->salesLeader->id, 'amount' => 3500],
+            ],
+        ]);
+
+        // The member's own figure is their slice, not the whole order.
+        $this->actingAs($this->salesMember)
+            ->get(route('sales.dashboard'))
+            ->assertOk()
+            ->assertSee('$1,500.00')
+            ->assertSee('$5,000.00');   // the team still sold the full amount
+
+        $this->actingAs($this->salesLeader)
+            ->get(route('sales.dashboard'))
+            ->assertOk()
+            ->assertSee('$3,500.00');
+    }
+
+    public function test_a_share_makes_an_order_visible_to_that_person(): void
+    {
+        $order = Order::factory()->create([
+            'sales_user_id' => $this->otherSalesMember->id,
+            'created_by' => $this->otherSalesMember->id,
+            'value' => 2000,
+        ]);
+
+        $this->actingAs($this->salesMember)->get(route('orders.show', $order))->assertForbidden();
+
+        $order->salesShares()->create(['user_id' => $this->salesMember->id, 'amount' => 500]);
+
+        $this->actingAs($this->salesMember)->get(route('orders.show', $order))->assertOk();
+    }
+
+    public function test_changing_the_amount_carries_a_single_person_credit_with_it(): void
+    {
+        $order = Order::factory()->create([
+            'sales_user_id' => $this->salesMember->id,
+            'created_by' => $this->salesMember->id,
+            'value' => 1000,
+        ]);
+
+        $this->assertSame(1000.0, $order->fresh()->salesShareFor($this->salesMember->id));
+
+        $order->update(['value' => 2500]);
+
+        $this->assertSame(2500.0, $order->fresh()->salesShareFor($this->salesMember->id));
     }
 
     public function test_a_member_sees_their_achievement_against_the_month_target(): void

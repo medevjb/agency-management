@@ -722,6 +722,274 @@
             color: #6b7280;
             border: 1px solid #e5e7eb;
         }
+
+        /* ===== Dark Mode ===== */
+        /* This board is styled with plain CSS classes (not Tailwind utilities),
+           so dark mode needs its own override block keyed off the `dark`
+           class on <html> rather than Tailwind's `dark:` variant. */
+        .dark .task-column {
+            background: #111827;
+            border-color: #1f2937;
+        }
+
+        .dark .task-column.drag-over {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+            border-color: #818cf8;
+        }
+
+        .dark .column-pending .task-column-header {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+        }
+
+        .dark .column-in-progress .task-column-header {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+        }
+
+        .dark .column-on-hold .task-column-header {
+            background: rgba(168, 85, 247, 0.15);
+            color: #c084fc;
+        }
+
+        .dark .column-completed .task-column-header {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+        }
+
+        .dark .task-card {
+            background: #1f2937;
+            border-color: #374151;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .dark .task-card:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            border-color: #4b5563;
+        }
+
+        .dark .task-card.dragging {
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .dark .stat-card {
+            background: #1f2937;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .dark .stat-card.active {
+            border-color: #818cf8;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(139, 92, 246, 0.12) 100%);
+        }
+
+        .dark .filter-pill {
+            border-color: #374151;
+            background: #1f2937;
+            color: #e5e7eb;
+        }
+
+        .dark .filter-pill:hover {
+            border-color: #818cf8;
+        }
+
+        .dark .drop-zone.drag-over {
+            background: rgba(99, 102, 241, 0.15);
+            border-color: #818cf8;
+        }
+
+        .dark .drop-zone .add-task-placeholder {
+            background: rgba(31, 41, 55, 0.8);
+            border-color: #4b5563;
+            color: #9ca3af;
+        }
+
+        .dark .column-pending .add-task-placeholder {
+            border-color: rgba(252, 211, 77, 0.4);
+            color: #fbbf24;
+            background: rgba(254, 243, 199, 0.06);
+        }
+
+        .dark .column-pending .add-task-placeholder:hover {
+            border-color: #f59e0b;
+            color: #fcd34d;
+            background: rgba(254, 243, 199, 0.1);
+        }
+
+        .dark .column-in-progress .add-task-placeholder {
+            border-color: rgba(147, 197, 253, 0.4);
+            color: #60a5fa;
+            background: rgba(219, 234, 254, 0.06);
+        }
+
+        .dark .column-in-progress .add-task-placeholder:hover {
+            border-color: #3b82f6;
+            color: #93c5fd;
+            background: rgba(219, 234, 254, 0.1);
+        }
+
+        .dark .column-on-hold .add-task-placeholder {
+            border-color: rgba(216, 180, 254, 0.4);
+            color: #c084fc;
+            background: rgba(243, 232, 255, 0.06);
+        }
+
+        .dark .column-on-hold .add-task-placeholder:hover {
+            border-color: #a855f7;
+            color: #d8b4fe;
+            background: rgba(243, 232, 255, 0.1);
+        }
+
+        .dark .column-completed .add-task-placeholder {
+            border-color: rgba(134, 239, 172, 0.4);
+            color: #4ade80;
+            background: rgba(220, 252, 231, 0.06);
+        }
+
+        .dark .column-completed .add-task-placeholder:hover {
+            border-color: #22c55e;
+            color: #86efac;
+            background: rgba(220, 252, 231, 0.1);
+        }
+
+        .dark .custom-alert {
+            background: #1f2937;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .dark .alert-title {
+            background: linear-gradient(135deg, #f3f4f6 0%, #d1d5db 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .dark .alert-message {
+            color: #9ca3af;
+        }
+
+        .dark .alert-actions {
+            background: #111827;
+            border-top-color: #374151;
+        }
+
+        .dark .alert-btn-secondary {
+            background: #1f2937;
+            color: #9ca3af;
+            border-color: #374151;
+        }
+
+        .dark .alert-btn-secondary:hover {
+            border-color: #818cf8;
+            color: #818cf8;
+        }
+
+        .dark .toast {
+            background: #1f2937;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .dark .toast-title {
+            color: #f3f4f6;
+        }
+
+        .dark .toast-message {
+            color: #9ca3af;
+        }
+
+        .dark .toast-close {
+            background: #374151;
+            color: #9ca3af;
+        }
+
+        .dark .toast-close:hover {
+            background: #4b5563;
+            color: #f3f4f6;
+        }
+
+        .dark .toast.success .toast-icon {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+        }
+
+        .dark .toast.error .toast-icon {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+        }
+
+        .dark .toast.warning .toast-icon {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+        }
+
+        .dark .toast.info .toast-icon {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+        }
+
+        .dark .priority-badge-urgent {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .dark .priority-badge-high {
+            background: rgba(249, 115, 22, 0.1);
+            color: #fb923c;
+            border-color: rgba(249, 115, 22, 0.3);
+        }
+
+        .dark .priority-badge-medium {
+            background: rgba(234, 179, 8, 0.1);
+            color: #facc15;
+            border-color: rgba(234, 179, 8, 0.3);
+        }
+
+        .dark .priority-badge-low {
+            background: rgba(34, 197, 94, 0.1);
+            color: #4ade80;
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        .dark .status-icon-pending {
+            background: rgba(234, 179, 8, 0.15);
+            color: #fbbf24;
+        }
+
+        .dark .status-icon-in-progress {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+        }
+
+        .dark .status-icon-on-hold {
+            background: rgba(168, 85, 247, 0.15);
+            color: #c084fc;
+        }
+
+        .dark .status-icon-completed {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+        }
+
+        .dark .due-badge-overdue {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .dark .due-badge-soon {
+            background: rgba(249, 115, 22, 0.1);
+            color: #fb923c;
+            border-color: rgba(249, 115, 22, 0.3);
+        }
+
+        .dark .due-badge-normal {
+            background: #1f2937;
+            color: #9ca3af;
+            border-color: #374151;
+        }
+
+        .dark .progress-bar-pending {
+            background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+        }
     </style>
 @endpush
 
@@ -730,8 +998,8 @@
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">Task Board</h1>
-            <p class="text-gray-600 mt-1">Drag and drop to organize your tasks</p>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Task Board</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-1">Drag and drop to organize your tasks</p>
         </div>
         <div class="flex items-center gap-3">
             <a href="{{ route('tasks.archived') }}" class="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl font-semibold hover:from-gray-600 hover:to-gray-700 transition-all shadow-lg hover:shadow-xl">
@@ -748,8 +1016,8 @@
         <div class="stat-card" onclick="filterByStatus('all')">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-500 mb-1">All Tasks</p>
-                    <p class="text-3xl font-bold text-gray-900" id="stat-total">0</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">All Tasks</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-gray-100" id="stat-total">0</p>
                 </div>
                 <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
                     <i class="fas fa-tasks text-white text-xl"></i>
@@ -760,8 +1028,8 @@
         <div class="stat-card" onclick="filterByStatus('pending')">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-500 mb-1">Pending</p>
-                    <p class="text-3xl font-bold text-yellow-600" id="stat-pending">0</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Pending</p>
+                    <p class="text-3xl font-bold text-yellow-600 dark:text-yellow-400" id="stat-pending">0</p>
                 </div>
                 <div class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
                     <i class="fas fa-clock text-white text-xl"></i>
@@ -772,8 +1040,8 @@
         <div class="stat-card" onclick="filterByStatus('in-progress')">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-500 mb-1">In Progress</p>
-                    <p class="text-3xl font-bold text-blue-600" id="stat-in-progress">0</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">In Progress</p>
+                    <p class="text-3xl font-bold text-blue-600 dark:text-blue-400" id="stat-in-progress">0</p>
                 </div>
                 <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center">
                     <i class="fas fa-spinner text-white text-xl"></i>
@@ -784,8 +1052,8 @@
         <div class="stat-card" onclick="filterByStatus('completed')">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-500 mb-1">Completed</p>
-                    <p class="text-3xl font-bold text-green-600" id="stat-completed">0</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Completed</p>
+                    <p class="text-3xl font-bold text-green-600 dark:text-green-400" id="stat-completed">0</p>
                 </div>
                 <div class="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl flex items-center justify-center">
                     <i class="fas fa-check-circle text-white text-xl"></i>
@@ -795,12 +1063,12 @@
     </div>
 
     <!-- Filters -->
-    <div class="bg-white rounded-2xl shadow-sm p-4 mb-6">
+    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-4 mb-6">
         <div class="flex flex-wrap items-center gap-4">
             <div class="flex-1 min-w-[300px]">
                 <div class="relative">
-                    <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                    <input type="text" id="searchTasks" placeholder="Search tasks..." class="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-colors">
+                    <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500"></i>
+                    <input type="text" id="searchTasks" placeholder="Search tasks..." class="w-full pl-12 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:outline-none transition-colors bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500">
                 </div>
             </div>
 
@@ -812,7 +1080,7 @@
                 <button class="filter-pill" data-filter="completed" onclick="filterByStatus('completed')">Completed</button>
             </div>
 
-            <select id="filterPriority" onchange="applyFilters()" class="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-colors font-semibold">
+            <select id="filterPriority" onchange="applyFilters()" class="px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:outline-none transition-colors font-semibold bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                 <option value="">All Priorities</option>
                 <option value="urgent">Urgent</option>
                 <option value="high">High</option>
@@ -820,14 +1088,14 @@
                 <option value="low">Low</option>
             </select>
 
-            <select id="filterOrder" onchange="applyFilters()" class="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-colors font-semibold">
+            <select id="filterOrder" onchange="applyFilters()" class="px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:outline-none transition-colors font-semibold bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                 <option value="">All Orders</option>
                 @foreach($orders as $order)
                     <option value="{{ $order->id }}">{{ $order->name }} (ID: {{ $order->id }})</option>
                 @endforeach
             </select>
 
-            <button onclick="toggleBulkMode()" id="bulkModeBtn" class="px-4 py-3 border-2 border-gray-200 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
+            <button onclick="toggleBulkMode()" id="bulkModeBtn" class="px-4 py-3 border-2 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                 <i class="fas fa-check-square mr-2"></i>Select
             </button>
         </div>
@@ -924,11 +1192,11 @@
     <!-- Modal Panel -->
     <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
-                <div class="p-6 border-b border-gray-200">
+            <div class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-gray-900 text-left shadow-xl dark:shadow-2xl dark:shadow-black/60 dark:ring-1 dark:ring-white/10 transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-800">
                     <div class="flex items-center justify-between">
-                        <h3 class="text-xl font-bold text-gray-900" id="modalTitle">Create New Task</h3>
-                        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100" id="modalTitle">Create New Task</h3>
+                        <button onclick="closeModal()" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
                             <i class="fas fa-times text-xl"></i>
                         </button>
                     </div>
@@ -937,19 +1205,19 @@
                     <input type="hidden" id="taskId">
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Title *</label>
-                            <input type="text" id="taskTitle" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none" placeholder="Enter task title">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Title *</label>
+                            <input type="text" id="taskTitle" class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" placeholder="Enter task title">
                             <p class="text-red-500 text-xs mt-1 hidden" id="taskTitleError"></p>
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
-                            <textarea id="taskDescription" rows="3" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none"></textarea>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                            <textarea id="taskDescription" rows="3" class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"></textarea>
                             <p class="text-red-500 text-xs mt-1 hidden" id="taskDescriptionError"></p>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
-                                <select id="taskStatus" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none">
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                                <select id="taskStatus" class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                                     <option value="pending">Pending</option>
                                     <option value="in-progress">In Progress</option>
                                     <option value="on-hold">On Hold</option>
@@ -958,8 +1226,8 @@
                                 <p class="text-red-500 text-xs mt-1 hidden" id="taskStatusError"></p>
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Priority</label>
-                                <select id="taskPriority" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none">
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Priority</label>
+                                <select id="taskPriority" class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                                     <option value="low">Low</option>
                                     <option value="medium">Medium</option>
                                     <option value="high">High</option>
@@ -970,13 +1238,13 @@
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Due Date</label>
-                                <input type="date" id="taskDueDate" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none">
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Due Date</label>
+                                <input type="date" id="taskDueDate" class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                                 <p class="text-red-500 text-xs mt-1 hidden" id="taskDueDateError"></p>
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Assigned To</label>
-                                <select id="taskAssignedTo" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none">
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Assigned To</label>
+                                <select id="taskAssignedTo" class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                                     <option value="" selected>Assign to yourself</option>
                                     @foreach($users as $user)
                                         <option value="{{ $user->id }}">{{ $user->name }}</option>
@@ -986,39 +1254,39 @@
                             </div>
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Order</label>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Order</label>
                             <div class="relative">
                                 <input type="hidden" id="taskOrderId">
                                 <input type="text"
                                        id="taskOrderSearch"
                                        placeholder="Search orders..."
                                        autocomplete="off"
-                                       class="w-full px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none">
+                                       class="w-full px-4 py-3 pr-10 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                                 <button type="button" id="clearTaskOrder"
-                                        class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                                        class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
                                     <i class="fas fa-times text-xs"></i>
                                 </button>
                                 <div id="taskOrderDropdown"
-                                     class="hidden absolute z-[60] w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg max-h-52 overflow-y-auto">
+                                     class="hidden absolute z-[60] w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl shadow-lg max-h-52 overflow-y-auto">
                                 </div>
                             </div>
                             <p class="text-red-500 text-xs mt-1 hidden" id="taskOrderError"></p>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Estimated Hours</label>
-                                <input type="number" id="taskEstimatedHours" min="0" step="0.5" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none">
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Estimated Hours</label>
+                                <input type="number" id="taskEstimatedHours" min="0" step="0.5" class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                                 <p class="text-red-500 text-xs mt-1 hidden" id="taskEstimatedHoursError"></p>
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Actual Hours</label>
-                                <input type="number" id="taskActualHours" min="0" step="0.5" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none">
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Actual Hours</label>
+                                <input type="number" id="taskActualHours" min="0" step="0.5" class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                                 <p class="text-red-500 text-xs mt-1 hidden" id="taskActualHoursError"></p>
                             </div>
                         </div>
                     </div>
                     <div class="flex justify-end gap-3 mt-6">
-                        <button type="button" onclick="closeModal()" class="px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
+                        <button type="button" onclick="closeModal()" class="px-6 py-3 border-2 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                             Cancel
                         </button>
                         <button type="submit" class="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all">
@@ -1039,7 +1307,7 @@
     <!-- Modal Panel -->
     <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
+            <div class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-gray-900 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
                 <!-- Modal Header -->
                 <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
                     <div class="flex items-center justify-between">
@@ -1062,8 +1330,8 @@
                 <div class="px-6 py-6">
                     <!-- Description -->
                     <div class="mb-6">
-                        <h4 class="text-sm font-semibold text-gray-700 mb-2">Description</h4>
-                        <div id="viewModalDescription" class="text-sm text-gray-600 bg-gray-50 rounded-xl p-4">
+                        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Description</h4>
+                        <div id="viewModalDescription" class="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
                             No description provided
                         </div>
                     </div>
@@ -1071,25 +1339,25 @@
                     <!-- Details Grid -->
                     <div class="grid grid-cols-2 gap-4 mb-6">
                         <div>
-                            <h4 class="text-sm font-semibold text-gray-700 mb-2">Status</h4>
+                            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Status</h4>
                             <div id="viewModalStatus" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold">
                                 <!-- Status badge -->
                             </div>
                         </div>
                         <div>
-                            <h4 class="text-sm font-semibold text-gray-700 mb-2">Priority</h4>
+                            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Priority</h4>
                             <div id="viewModalPriority" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-bold uppercase">
                                 <!-- Priority badge -->
                             </div>
                         </div>
                         <div>
-                            <h4 class="text-sm font-semibold text-gray-700 mb-2">Due Date</h4>
-                            <div id="viewModalDueDate" class="text-sm text-gray-900 flex items-center gap-2">
+                            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Due Date</h4>
+                            <div id="viewModalDueDate" class="text-sm text-gray-900 dark:text-gray-100 flex items-center gap-2">
                                 <!-- Due date -->
                             </div>
                         </div>
                         <div>
-                            <h4 class="text-sm font-semibold text-gray-700 mb-2">Assigned To</h4>
+                            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Assigned To</h4>
                             <div id="viewModalAssignedTo" class="flex items-center gap-2">
                                 <!-- Assignee -->
                             </div>
@@ -1098,20 +1366,20 @@
 
                     <!-- Time Tracking -->
                     <div id="viewModalTimeTracking" class="mb-6 hidden">
-                        <h4 class="text-sm font-semibold text-gray-700 mb-2">Time Tracking</h4>
+                        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Time Tracking</h4>
                         <div class="flex items-center gap-4">
-                            <div class="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg">
-                                <i class="fas fa-clock text-gray-500"></i>
+                            <div class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                                <i class="fas fa-clock text-gray-500 dark:text-gray-400"></i>
                                 <div>
-                                    <p class="text-xs text-gray-500">Estimated</p>
-                                    <p id="viewModalEstimatedHours" class="text-sm font-semibold text-gray-900">0h</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Estimated</p>
+                                    <p id="viewModalEstimatedHours" class="text-sm font-semibold text-gray-900 dark:text-gray-100">0h</p>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg border border-blue-200">
-                                <i class="fas fa-stopwatch text-blue-600"></i>
+                            <div class="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-500/10 rounded-lg border border-blue-200 dark:border-blue-900">
+                                <i class="fas fa-stopwatch text-blue-600 dark:text-blue-400"></i>
                                 <div>
-                                    <p class="text-xs text-blue-600">Actual</p>
-                                    <p id="viewModalActualHours" class="text-sm font-semibold text-blue-900">0h</p>
+                                    <p class="text-xs text-blue-600 dark:text-blue-400">Actual</p>
+                                    <p id="viewModalActualHours" class="text-sm font-semibold text-blue-900 dark:text-blue-300">0h</p>
                                 </div>
                             </div>
                         </div>
@@ -1119,16 +1387,16 @@
                 </div>
 
                 <!-- Modal Footer -->
-                <div class="bg-gray-50 px-6 py-4 flex items-center justify-between">
-                    <div class="flex items-center gap-2 text-xs text-gray-500">
+                <div class="bg-gray-50 dark:bg-gray-800 px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                         <i class="fas fa-calendar-alt"></i>
                         <span>Created: <span id="viewModalCreatedAt" class="font-semibold"></span></span>
                     </div>
                     <div class="flex items-center gap-3">
-                        <button id="viewModalArchiveBtn" onclick="archiveTaskFromModal()" class="px-4 py-2 border border-orange-300 rounded-lg font-semibold text-orange-700 hover:bg-orange-50 transition-colors hidden">
+                        <button id="viewModalArchiveBtn" onclick="archiveTaskFromModal()" class="px-4 py-2 border border-orange-300 dark:border-orange-800 rounded-lg font-semibold text-orange-700 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-colors hidden">
                             <i class="fas fa-archive mr-2"></i>Archive
                         </button>
-                        <button onclick="closeViewModal()" class="px-4 py-2 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
+                        <button onclick="closeViewModal()" class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             Close
                         </button>
                         <button id="viewModalEditBtn" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all">
@@ -1235,7 +1503,7 @@ function renderTaskCard(task) {
             <div class="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-lg priority-strip-${task.priority}"></div>
 
             <!-- Status Progress Bar (Top) -->
-            <div class="absolute top-0 left-0 right-0 h-0.5 bg-gray-100">
+            <div class="absolute top-0 left-0 right-0 h-0.5 bg-gray-100 dark:bg-gray-700">
                 <div class="h-full progress-bar-${task.status}" style="width: ${progress}%"></div>
             </div>
 
@@ -1252,7 +1520,7 @@ function renderTaskCard(task) {
                     <div class="flex-1 min-w-0">
                         <!-- Title Row -->
                         <div class="flex items-start justify-between gap-2 mb-2">
-                            <h4 class="font-semibold text-gray-900 text-sm leading-snug group-hover:text-indigo-600 transition-colors flex-1">
+                            <h4 class="font-semibold text-gray-900 dark:text-gray-100 text-sm leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors flex-1">
                                 ${task.title}
                             </h4>
                             <!-- Status Icon Badge -->
@@ -1263,7 +1531,7 @@ function renderTaskCard(task) {
 
                         <!-- Description Preview -->
                         ${task.description ? `
-                            <p class="text-xs text-gray-500 mb-3 line-clamp-2 leading-relaxed">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-3 line-clamp-2 leading-relaxed">
                                 ${task.description.substring(0, 120)}${task.description.length > 120 ? '...' : ''}
                             </p>
                         ` : ''}
@@ -1290,7 +1558,7 @@ function renderTaskCard(task) {
 
                             <!-- Order Badge -->
                             ${task.order ? `
-                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900">
                                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg>
                                     ${task.order.name.length > 20 ? task.order.name.substring(0, 20) + '...' : task.order.name}
                                 </span>
@@ -1298,7 +1566,7 @@ function renderTaskCard(task) {
                         </div>
 
                         <!-- Footer Row: Assignee & Time -->
-                        <div class="flex items-center justify-between pt-2.5 border-t border-gray-100">
+                        <div class="flex items-center justify-between pt-2.5 border-t border-gray-100 dark:border-gray-700">
                             <!-- Left: Assignee -->
                             ${task.assigned_to && task.assignedTo ? `
                                 <div class="flex items-center gap-2">
@@ -1309,16 +1577,16 @@ function renderTaskCard(task) {
                                         <div class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
                                     </div>
                                     <div class="flex flex-col">
-                                        <span class="text-xs font-semibold text-gray-800 leading-tight">${task.assignedTo.name}</span>
-                                        <span class="text-[10px] text-gray-400">Assigned</span>
+                                        <span class="text-xs font-semibold text-gray-800 dark:text-gray-200 leading-tight">${task.assignedTo.name}</span>
+                                        <span class="text-[10px] text-gray-400 dark:text-gray-500">Assigned</span>
                                     </div>
                                 </div>
                             ` : `
                                 <div class="flex items-center gap-2">
-                                    <div class="w-7 h-7 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center">
-                                        <svg class="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+                                    <div class="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center">
+                                        <svg class="w-3 h-3 text-gray-400 dark:text-gray-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
                                     </div>
-                                    <span class="text-xs text-gray-400">Myself</span>
+                                    <span class="text-xs text-gray-400 dark:text-gray-500">Myself</span>
                                 </div>
                             `}
 
@@ -1326,13 +1594,13 @@ function renderTaskCard(task) {
                             ${(task.estimated_hours || task.actual_hours) ? `
                                 <div class="flex items-center gap-2.5">
                                     ${task.estimated_hours ? `
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px] font-semibold">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[10px] font-semibold">
                                             <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg>
                                             ${task.estimated_hours}h
                                         </span>
                                     ` : ''}
                                     ${task.actual_hours ? `
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] font-semibold border border-blue-200">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 text-[10px] font-semibold border border-blue-200 dark:border-blue-900">
                                             <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg>
                                             ${task.actual_hours}h
                                         </span>
@@ -1347,19 +1615,19 @@ function renderTaskCard(task) {
                     <!-- Quick Actions (Right Side) -->
                     <div class="flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200">
                         <button onclick="event.stopPropagation(); openEditModal(${task.id})"
-                                class="w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-sm hover:shadow"
+                                class="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-sm hover:shadow"
                                 title="Edit task">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                         </button>
                         ${task.status === 'completed' ? `
                             <button onclick="event.stopPropagation(); archiveTask(${task.id}, '${task.title.replace(/'/g, "\\'")}')" 
-                                    class="w-7 h-7 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-600 flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-sm hover:shadow"
+                                    class="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-500/10 hover:bg-amber-100 dark:hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-sm hover:shadow"
                                     title="Archive task">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
                             </button>
                         ` : ''}
                         <button onclick="event.stopPropagation(); deleteTask(${task.id}, '${task.title.replace(/'/g, "\\'")}')"
-                                class="w-7 h-7 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-sm hover:shadow"
+                                class="w-7 h-7 rounded-lg bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-sm hover:shadow"
                                 title="Delete task">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button>
@@ -1730,10 +1998,10 @@ function openViewModal(taskId) {
             document.getElementById('viewModalDescription').innerHTML = task.description || 'No description provided';
 
             const statusConfig = {
-                'pending': { icon: 'fa-circle', color: 'bg-yellow-100 text-yellow-800' },
-                'in-progress': { icon: 'fa-spinner fa-spin', color: 'bg-blue-100 text-blue-800' },
-                'on-hold': { icon: 'fa-pause', color: 'bg-purple-100 text-purple-800' },
-                'completed': { icon: 'fa-check', color: 'bg-green-100 text-green-800' }
+                'pending': { icon: 'fa-circle', color: 'bg-yellow-100 dark:bg-yellow-500/10 text-yellow-800 dark:text-yellow-400' },
+                'in-progress': { icon: 'fa-spinner fa-spin', color: 'bg-blue-100 dark:bg-blue-500/10 text-blue-800 dark:text-blue-400' },
+                'on-hold': { icon: 'fa-pause', color: 'bg-purple-100 dark:bg-purple-500/10 text-purple-800 dark:text-purple-400' },
+                'completed': { icon: 'fa-check', color: 'bg-green-100 dark:bg-green-500/10 text-green-800 dark:text-green-400' }
             };
             const status = statusConfig[task.status];
             document.getElementById('viewModalStatus').innerHTML = `<i class="fas ${status.icon} mr-1"></i>${task.status.replace('-', ' ')}`;
@@ -1741,10 +2009,10 @@ function openViewModal(taskId) {
             document.getElementById('viewModalStatusIcon').innerHTML = `<i class="fas ${status.icon} text-white"></i>`;
 
             const priorityConfig = {
-                'urgent': { color: 'bg-red-100 text-red-800', border: 'border-red-200' },
-                'high': { color: 'bg-orange-100 text-orange-800', border: 'border-orange-200' },
-                'medium': { color: 'bg-yellow-100 text-yellow-800', border: 'border-yellow-200' },
-                'low': { color: 'bg-green-100 text-green-800', border: 'border-green-200' }
+                'urgent': { color: 'bg-red-100 dark:bg-red-500/10 text-red-800 dark:text-red-400', border: 'border-red-200 dark:border-red-900' },
+                'high': { color: 'bg-orange-100 dark:bg-orange-500/10 text-orange-800 dark:text-orange-400', border: 'border-orange-200 dark:border-orange-900' },
+                'medium': { color: 'bg-yellow-100 dark:bg-yellow-500/10 text-yellow-800 dark:text-yellow-400', border: 'border-yellow-200 dark:border-yellow-900' },
+                'low': { color: 'bg-green-100 dark:bg-green-500/10 text-green-800 dark:text-green-400', border: 'border-green-200 dark:border-green-900' }
             };
             const priority = priorityConfig[task.priority];
             document.getElementById('viewModalPriority').textContent = task.priority;
@@ -1752,9 +2020,9 @@ function openViewModal(taskId) {
 
             if (task.due_date) {
                 const dueDate = new Date(task.due_date);
-                document.getElementById('viewModalDueDate').innerHTML = `<i class="far fa-calendar-alt text-gray-400"></i>${dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+                document.getElementById('viewModalDueDate').innerHTML = `<i class="far fa-calendar-alt text-gray-400 dark:text-gray-500"></i>${dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
             } else {
-                document.getElementById('viewModalDueDate').innerHTML = '<span class="text-gray-400">No due date</span>';
+                document.getElementById('viewModalDueDate').innerHTML = '<span class="text-gray-400 dark:text-gray-500">No due date</span>';
             }
 
             if (task.assigned_to) {
@@ -1762,10 +2030,10 @@ function openViewModal(taskId) {
                     <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
                         ${task.assigned_to.name[0]}
                     </div>
-                    <span class="text-sm font-medium text-gray-700">${task.assigned_to.name}</span>
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">${task.assigned_to.name}</span>
                 `;
             } else {
-                document.getElementById('viewModalAssignedTo').innerHTML = '<span class="text-sm text-gray-400">Myself</span>';
+                document.getElementById('viewModalAssignedTo').innerHTML = '<span class="text-sm text-gray-400 dark:text-gray-500">Myself</span>';
             }
 
             if (task.estimated_hours || task.actual_hours) {
@@ -2118,28 +2386,28 @@ async function confirmBulkAction() {
     let cachedLatest   = null;
 
     const statusClass = {
-        'nra':         'bg-gray-100 text-gray-600',
-        'pending':     'bg-yellow-100 text-yellow-700',
-        'in-progress': 'bg-blue-100 text-blue-700',
-        'delivered':   'bg-green-100 text-green-700',
-        'on-hold':     'bg-orange-100 text-orange-700',
-        'cancelled':   'bg-red-100 text-red-600',
+        'nra':         'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300',
+        'pending':     'bg-yellow-100 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400',
+        'in-progress': 'bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400',
+        'delivered':   'bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400',
+        'on-hold':     'bg-orange-100 dark:bg-orange-500/10 text-orange-700 dark:text-orange-400',
+        'cancelled':   'bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400',
     };
 
     function getStatusClass(status) {
-        return statusClass[status] || 'bg-gray-100 text-gray-600';
+        return statusClass[status] || 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300';
     }
 
     function renderOptions(orders) {
         if (!orders.length) {
-            dropdown.innerHTML = '<div class="px-4 py-3 text-sm text-gray-400">No orders found</div>';
+            dropdown.innerHTML = '<div class="px-4 py-3 text-sm text-gray-400 dark:text-gray-500">No orders found</div>';
         } else {
             dropdown.innerHTML = orders.map(order => `
                 <button type="button"
                         data-id="${order.id}"
                         data-name="${order.name.replace(/"/g, '&quot;')}"
                         data-status="${order.status || ''}"
-                        class="order-picker-option w-full text-left px-4 py-2.5 hover:bg-indigo-50 text-sm border-b border-gray-100 last:border-0 flex items-center justify-between gap-2 transition-colors">
+                        class="order-picker-option w-full text-left px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 text-gray-900 dark:text-gray-100 text-sm border-b border-gray-100 dark:border-gray-700 last:border-0 flex items-center justify-between gap-2 transition-colors">
                     <span class="truncate">${order.name}</span>
                     <span class="flex-shrink-0 text-xs font-medium px-1.5 py-0.5 rounded ${getStatusClass(order.status)}">${order.status || 'N/A'}</span>
                 </button>

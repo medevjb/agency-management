@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\OrderSalesShare;
 use App\Models\SalesTarget;
 use App\Models\Team;
 use App\Models\User;
@@ -237,47 +238,49 @@ class DashboardController extends Controller
         // tracks against the targets in force, and who is bringing it in.
         $salesUserIds = User::withRoleName(['sales-leader', 'sales-member'])->pluck('id')->all();
 
-        $soldThisMonth = Order::whereNotNull('sales_user_id')
-            ->whereBetween('created_at', [$startDate, $endDate])
+        // Credit, not order value: an order split between two sellers counts
+        // once in total and once per person, at their own share.
+        $sharesThisMonth = OrderSalesShare::with('user')
+            ->whereHas('order', fn ($order) => $order->whereBetween('created_at', [$startDate, $endDate]))
             ->get();
 
-        $soldPreviousMonth = Order::whereNotNull('sales_user_id')
-            ->whereBetween('created_at', [$prevStartDate, $prevEndDate])
+        $previousShares = OrderSalesShare::whereHas('order', fn ($order) => $order->whereBetween('created_at', [$prevStartDate, $prevEndDate]))
             ->get();
 
         $salesTargets = SalesTarget::amountsFor($salesUserIds, $monthDate);
-        $soldAmount = (float) $soldThisMonth->sum('value');
-        $previousSold = (float) $soldPreviousMonth->sum('value');
+        $soldAmount = (float) $sharesThisMonth->sum('amount');
+        $previousSold = (float) $previousShares->sum('amount');
         $targetTotal = (float) $salesTargets->sum();
+        $ordersSold = $sharesThisMonth->pluck('order_id')->unique()->count();
 
         $salesStats = [
             'sold' => $soldAmount,
-            'count' => $soldThisMonth->count(),
-            'averageDeal' => $soldThisMonth->count() ? $soldAmount / $soldThisMonth->count() : 0.0,
+            'count' => $ordersSold,
+            'averageDeal' => $ordersSold ? $soldAmount / $ordersSold : 0.0,
             'target' => $targetTotal,
             'achievement' => $targetTotal > 0 ? (int) round($soldAmount / $targetTotal * 100) : null,
             'remaining' => max(0, $targetTotal - $soldAmount),
             'change' => $previousSold > 0 ? round((($soldAmount - $previousSold) / $previousSold) * 100, 1) : null,
             'previousSold' => $previousSold,
             'sellers' => count($salesUserIds),
-            'inDelivery' => (float) Order::whereNotNull('sales_user_id')
-                ->whereNotIn('status', ['delivered', 'completed', 'cancelled'])
-                ->sum('value'),
+            'inDelivery' => (float) OrderSalesShare::whereHas('order', fn ($order) => $order
+                ->whereNotIn('status', ['delivered', 'completed', 'cancelled']))
+                ->sum('amount'),
         ];
 
-        $leaderboard = User::whereIn('id', $salesUserIds)
-            ->get()
-            ->map(function (User $seller) use ($soldThisMonth, $salesTargets) {
-                $sold = $soldThisMonth->where('sales_user_id', $seller->id);
-                $amount = (float) $sold->sum('value');
-                $target = (float) ($salesTargets[$seller->id] ?? 0);
+        $leaderboard = $sharesThisMonth
+            ->groupBy('user_id')
+            ->map(function ($shares) use ($salesTargets) {
+                $seller = $shares->first()->user;
+                $amount = (float) $shares->sum('amount');
+                $target = (float) ($salesTargets[$seller?->id] ?? 0);
 
                 return [
-                    'id' => $seller->id,
-                    'name' => $seller->name,
-                    'is_leader' => $seller->isSalesLeader(),
+                    'id' => $seller?->id,
+                    'name' => $seller?->name ?? 'Removed user',
+                    'is_leader' => (bool) $seller?->isSalesLeader(),
                     'amount' => $amount,
-                    'count' => $sold->count(),
+                    'count' => $shares->pluck('order_id')->unique()->count(),
                     'target' => $target,
                     'achievement' => $target > 0 ? (int) round($amount / $target * 100) : null,
                 ];

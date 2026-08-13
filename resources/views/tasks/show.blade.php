@@ -5,8 +5,8 @@
     <!-- Page Header -->
     <div class="mb-8 flex flex-col md:flex-row md:justify-between md:items-start gap-4">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">{{ $task->title }}</h1>
-            <p class="text-gray-600 mt-2">Created {{ $task->created_at->diffForHumans() }}</p>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ $task->title }}</h1>
+            <p class="text-gray-600 dark:text-gray-400 dark:text-gray-500 mt-2">Created {{ $task->created_at->diffForHumans() }}</p>
         </div>
         <div class="flex gap-3">
             @if($task->created_by === auth()->id() || auth()->user()->role === 'admin')
@@ -21,7 +21,7 @@
                     </button>
                 </form>
             @endif
-            <a href="{{ route('tasks.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors">
+            <a href="{{ route('tasks.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-medium transition-colors">
                 <i class="fas fa-arrow-left mr-2"></i>Back to Tasks
             </a>
         </div>
@@ -31,12 +31,12 @@
         <!-- Task Details -->
         <div class="lg:col-span-2 space-y-6">
             <!-- Status & Priority -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Status & Priority</h2>
+            <div class="bg-white dark:bg-gray-900 rounded-lg shadow-md p-6">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Status & Priority</h2>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                        <select onchange="updateStatus(this.value)" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                        <select onchange="updateStatus(this.value)" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                             <option value="pending" {{ $task->status === 'pending' ? 'selected' : '' }}>Pending</option>
                             <option value="in-progress" {{ $task->status === 'in-progress' ? 'selected' : '' }}>In Progress</option>
                             <option value="on-hold" {{ $task->status === 'on-hold' ? 'selected' : '' }}>On Hold</option>
@@ -44,12 +44,12 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Priority</label>
                         <span class="px-3 py-2 inline-flex text-sm leading-5 font-semibold rounded-full
-                            @if($task->priority === 'urgent') bg-red-100 text-red-800
-                            @elseif($task->priority === 'high') bg-orange-100 text-orange-800
-                            @elseif($task->priority === 'medium') bg-blue-100 text-blue-800
-                            @else bg-gray-100 text-gray-800 @endif">
+                            @if($task->priority === 'urgent') bg-red-100 dark:bg-red-500/10 text-red-800 dark:text-red-400
+                            @elseif($task->priority === 'high') bg-orange-100 dark:bg-orange-500/10 text-orange-800 dark:text-orange-400
+                            @elseif($task->priority === 'medium') bg-blue-100 dark:bg-blue-500/10 text-blue-800 dark:text-blue-400
+                            @else bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 @endif">
                             {{ ucfirst($task->priority) }} Priority
                         </span>
                     </div>
@@ -57,54 +57,54 @@
             </div>
 
             <!-- Description -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Description</h2>
-                <div class="prose prose-gray max-w-none">
+            <div class="bg-white dark:bg-gray-900 rounded-lg shadow-md p-6">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Description</h2>
+                <div class="prose prose-gray max-w-none dark:text-gray-300">
                     @if($task->description)
                         <p>{{ $task->description }}</p>
                     @else
-                        <p class="text-gray-400 italic">No description provided</p>
+                        <p class="text-gray-400 dark:text-gray-500 italic">No description provided</p>
                     @endif
                 </div>
             </div>
 
             <!-- Dates & Hours -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Timeline & Hours</h2>
+            <div class="bg-white dark:bg-gray-900 rounded-lg shadow-md p-6">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Timeline & Hours</h2>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
-                        <p class="text-sm text-gray-500">Due Date</p>
-                        <p class="text-lg font-semibold text-gray-900">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Due Date</p>
+                        <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                             @if($task->due_date)
-                                <span class="{{ $task->due_date->isPast() && $task->status !== 'completed' ? 'text-red-600' : '' }}">
+                                <span class="{{ $task->due_date->isPast() && $task->status !== 'completed' ? 'text-red-600 dark:text-red-400' : '' }}">
                                     {{ $task->due_date->format('M d, Y') }}
                                 </span>
                             @else
-                                <span class="text-gray-400"></span>
+                                <span class="text-gray-400 dark:text-gray-500"></span>
                             @endif
                         </p>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-500">Created</p>
-                        <p class="text-lg font-semibold text-gray-900">{{ $task->created_at->format('M d, Y') }}</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Created</p>
+                        <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ $task->created_at->format('M d, Y') }}</p>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-500">Estimated Hours</p>
-                        <p class="text-lg font-semibold text-gray-900">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Estimated Hours</p>
+                        <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                             @if($task->estimated_hours)
                                 {{ $task->estimated_hours }}h
                             @else
-                                <span class="text-gray-400"></span>
+                                <span class="text-gray-400 dark:text-gray-500"></span>
                             @endif
                         </p>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-500">Actual Hours</p>
-                        <p class="text-lg font-semibold text-gray-900">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Actual Hours</p>
+                        <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                             @if($task->actual_hours)
                                 {{ $task->actual_hours }}h
                             @else
-                                <span class="text-gray-400"></span>
+                                <span class="text-gray-400 dark:text-gray-500"></span>
                             @endif
                         </p>
                     </div>
@@ -115,50 +115,50 @@
         <!-- Sidebar -->
         <div class="space-y-6">
             <!-- Assigned To -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Assigned To</h2>
+            <div class="bg-white dark:bg-gray-900 rounded-lg shadow-md p-6">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Assigned To</h2>
                 @if($task->assignedTo)
                     <div class="flex items-center">
                         <img class="h-12 w-12 rounded-full" src="https://ui-avatars.com/api/?name={{ $task->assignedTo->name }}&background=random" alt="{{ $task->assignedTo->name }}">
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-900">{{ $task->assignedTo->name }}</p>
-                            <p class="text-xs text-gray-500">{{ ucfirst($task->assignedTo->role) }}</p>
+                            <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $task->assignedTo->name }}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ ucfirst($task->assignedTo->role) }}</p>
                         </div>
                     </div>
                 @else
-                    <p class="text-gray-400">Myself</p>
+                    <p class="text-gray-400 dark:text-gray-500">Myself</p>
                 @endif
             </div>
 
             <!-- Created By -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Created By</h2>
+            <div class="bg-white dark:bg-gray-900 rounded-lg shadow-md p-6">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Created By</h2>
                 @if($task->createdBy)
                     <div class="flex items-center">
                         <img class="h-12 w-12 rounded-full" src="https://ui-avatars.com/api/?name={{ $task->createdBy->name }}&background=4F46E5&color=fff" alt="{{ $task->createdBy->name }}">
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-900">{{ $task->createdBy->name }}</p>
-                            <p class="text-xs text-gray-500">{{ ucfirst($task->createdBy->role) }}</p>
+                            <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $task->createdBy->name }}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ ucfirst($task->createdBy->role) }}</p>
                         </div>
                     </div>
                 @endif
             </div>
 
             <!-- Project -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Order</h2>
+            <div class="bg-white dark:bg-gray-900 rounded-lg shadow-md p-6">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Order</h2>
                 @if($task->project)
-                    <a href="{{ route('orders.show', $task->project->id) }}" class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                        <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-folder text-indigo-600"></i>
+                    <a href="{{ route('orders.show', $task->project->id) }}" class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                        <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-500/10 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-folder text-indigo-600 dark:text-indigo-400"></i>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-gray-900">{{ $task->project->name }}</p>
-                            <p class="text-xs text-gray-500">View Order</p>
+                            <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $task->project->name }}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">View Order</p>
                         </div>
                     </a>
                 @else
-                    <p class="text-gray-400">No order assigned</p>
+                    <p class="text-gray-400 dark:text-gray-500">No order assigned</p>
                 @endif
             </div>
         </div>

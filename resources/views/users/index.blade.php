@@ -262,6 +262,94 @@
             color: #374151;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
+
+        /* ===== Dark Mode: DataTables chrome ===== */
+        /* This build is DataTables 2 + the Bootstrap 5 integration (dt-length,
+           dt-search, dt-info, dt-paging / .page-link), not the classic 1.x
+           dataTables_* class names the rules above target — those rules are
+           inert on this table. Dark mode is added against the real classes,
+           keyed off the `dark` class on <html>. */
+        .dark #usersTable_wrapper {
+            color: #e5e7eb;
+        }
+
+        .dark #usersTable_wrapper .dt-length select,
+        .dark #usersTable_wrapper .dt-search input {
+            border-color: #374151;
+            color: #e5e7eb;
+            background-color: #1f2937;
+        }
+
+        .dark #usersTable_wrapper .dt-length select:hover,
+        .dark #usersTable_wrapper .dt-length select:focus,
+        .dark #usersTable_wrapper .dt-search input:hover,
+        .dark #usersTable_wrapper .dt-search input:focus {
+            border-color: #818cf8;
+        }
+
+        .dark #usersTable_wrapper .dt-length label,
+        .dark #usersTable_wrapper .dt-search label,
+        .dark #usersTable_wrapper .dt-info {
+            color: #9ca3af;
+        }
+
+        .dark #usersTable_wrapper .dt-paging {
+            background: transparent !important;
+        }
+
+        .dark #usersTable_wrapper .dt-paging .page-link {
+            background-color: #1f2937;
+            border-color: #374151;
+            color: #e5e7eb;
+        }
+
+        .dark #usersTable_wrapper .dt-paging .page-link:hover {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #f3f4f6;
+        }
+
+        .dark #usersTable_wrapper .dt-paging .page-item.active .page-link {
+            background-color: #4f46e5;
+            border-color: #4f46e5;
+            color: #ffffff;
+        }
+
+        .dark #usersTable_wrapper .dt-paging .page-item.disabled .page-link {
+            background-color: #111827;
+            border-color: #374151;
+            color: #4b5563;
+        }
+
+        .dark #usersTable.dataTable {
+            color: #e5e7eb;
+            border-color: #374151;
+        }
+
+        .dark #usersTable.dataTable thead th {
+            background-color: #1f2937;
+            color: #9ca3af;
+            border-bottom-color: #374151;
+        }
+
+        .dark #usersTable.dataTable tbody tr {
+            background-color: #111827;
+        }
+
+        .dark #usersTable.dataTable tbody tr:hover {
+            background-color: #1f2937;
+        }
+
+        .dark #usersTable.dataTable tbody td {
+            border-bottom-color: #1f2937;
+            color: #e5e7eb;
+        }
+
+        .dark .dataTables_processing {
+            background-color: rgba(31, 41, 55, 0.95);
+            border-color: #374151;
+            color: #e5e7eb;
+        }
     </style>
 @endpush
 
@@ -270,28 +358,28 @@
         <!-- Page Header -->
         <div class="mb-4">
             <div class="mb-4">
-                <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">User Management</h1>
-                <p class="text-gray-600 text-lg">Manage users, roles, and permissions</p>
+                <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">User Management</h1>
+                <p class="text-gray-600 dark:text-gray-400 text-lg">Manage users, roles, and permissions</p>
             </div>
         </div>
 
         <!-- Filters Section -->
-        <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-4 ">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 p-4 ">
             <div class="flex items-center justify-between mb-3">
-                <h2 class="text-base font-semibold text-gray-800 flex items-center">
+                <h2 class="text-base font-semibold text-gray-800 dark:text-gray-200 flex items-center">
                     <i class="fas fa-filter text-indigo-500 mr-2"></i>
                     Filters
                 </h2>
                 <!-- Toggle Switch -->
                 <div class="flex items-center space-x-2">
-                    <span class="text-sm text-gray-600">Basic</span>
+                    <span class="text-sm text-gray-600 dark:text-gray-400">Basic</span>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="advancedToggle" class="sr-only peer" onchange="toggleFilters()">
                         <div
-                            class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600">
+                            class="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600">
                         </div>
                     </label>
-                    <span class="text-sm text-gray-600">Advanced</span>
+                    <span class="text-sm text-gray-600 dark:text-gray-400">Advanced</span>
                 </div>
             </div>
 
@@ -300,34 +388,34 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                     <!-- Search Input -->
                     <div class="lg:col-span-2">
-                        <label for="search" class="block text-xs font-semibold text-gray-700 mb-1">
+                        <label for="search" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                             <i class="fas fa-search mr-1 text-indigo-500"></i>Search Users
                         </label>
                         <div class="relative">
                             <input type="text" id="search" name="search" value="{{ request('search') }}"
                                 placeholder="Search by name, email, employee ID..."
-                                class="w-full px-3 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white transition-all duration-200 text-sm">
+                                class="w-full px-3 py-2 pl-10 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-all duration-200 text-sm">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                <i class="fas fa-search text-gray-400 text-sm"></i>
+                                <i class="fas fa-search text-gray-400 dark:text-gray-500 text-sm"></i>
                             </div>
                         </div>
                     </div>
 
                     <!-- Quick Status Filter -->
                     <div>
-                        <label for="quick_status" class="block text-xs font-semibold text-gray-700 mb-1">
+                        <label for="quick_status" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                             <i class="fas fa-toggle-on mr-1 text-indigo-500"></i>Status
                         </label>
                         <div class="relative">
                             <select id="quick_status" name="status"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white appearance-none transition-all duration-200 text-sm">
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 appearance-none transition-all duration-200 text-sm">
                                 <option value="">All Status</option>
                                 <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
                                 <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive
                                 </option>
                             </select>
                             <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                                <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500 text-xs"></i>
                             </div>
                         </div>
                     </div>
@@ -349,28 +437,28 @@
                 <!-- Advanced Filters (Hidden by default) -->
                 <div id="advancedFilters"
                     class="overflow-hidden transition-all duration-500 ease-in-out max-h-0 opacity-0">
-                    <div class="pt-4 border-t border-gray-200">
+                    <div class="pt-4 border-t border-gray-200 dark:border-gray-800">
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                             <!-- Employee ID Filter -->
                             <div>
-                                <label for="employee_id" class="block text-xs font-semibold text-gray-700 mb-1">
+                                <label for="employee_id" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                                     <i class="fas fa-id-badge mr-1 text-indigo-500"></i>Employee ID
                                 </label>
                                 <div class="relative">
                                     <input type="text" id="employee_id" name="employee_id"
                                         value="{{ request('employee_id') }}" placeholder="Search by employee ID..."
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white transition-all duration-200 text-sm">
+                                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-all duration-200 text-sm">
                                 </div>
                             </div>
 
                             <!-- Role Filter -->
                             <div>
-                                <label for="role" class="block text-xs font-semibold text-gray-700 mb-1">
+                                <label for="role" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                                     <i class="fas fa-user-tag mr-1 text-indigo-500"></i>Role
                                 </label>
                                 <div class="relative">
                                     <select id="role" name="role"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white appearance-none transition-all duration-200 text-sm">
+                                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 appearance-none transition-all duration-200 text-sm">
                                         <option value="">All Roles</option>
                                         @foreach ($roles as $role)
                                             <option value="{{ $role->name }}"
@@ -380,19 +468,19 @@
                                         @endforeach
                                     </select>
                                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                        <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                                        <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500 text-xs"></i>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Team Filter -->
                             <div>
-                                <label for="team_id" class="block text-xs font-semibold text-gray-700 mb-1">
+                                <label for="team_id" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                                     <i class="fas fa-users mr-1 text-indigo-500"></i>Team
                                 </label>
                                 <div class="relative">
                                     <select id="team_id" name="team_id"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white appearance-none transition-all duration-200 text-sm">
+                                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 appearance-none transition-all duration-200 text-sm">
                                         <option value="">All Teams</option>
                                         @foreach ($teams as $team)
                                             <option value="{{ $team->id }}"
@@ -402,19 +490,19 @@
                                         @endforeach
                                     </select>
                                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                        <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                                        <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500 text-xs"></i>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Tech Stack Filter -->
                             <div>
-                                <label for="tech_stack_id" class="block text-xs font-semibold text-gray-700 mb-1">
+                                <label for="tech_stack_id" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                                     <i class="fas fa-code mr-1 text-indigo-500"></i>Tech Stack
                                 </label>
                                 <div class="relative">
                                     <select id="tech_stack_id" name="tech_stack_id"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white appearance-none transition-all duration-200 text-sm">
+                                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 appearance-none transition-all duration-200 text-sm">
                                         <option value="">All Tech Stacks</option>
                                         @foreach ($techStacks as $techStack)
                                             <option value="{{ $techStack->id }}"
@@ -424,19 +512,19 @@
                                         @endforeach
                                     </select>
                                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                        <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                                        <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500 text-xs"></i>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Department Filter -->
                             <div>
-                                <label for="department" class="block text-xs font-semibold text-gray-700 mb-1">
+                                <label for="department" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                                     <i class="fas fa-building mr-1 text-indigo-500"></i>Department
                                 </label>
                                 <div class="relative">
                                     <select id="department" name="department"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white appearance-none transition-all duration-200 text-sm">
+                                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 appearance-none transition-all duration-200 text-sm">
                                         <option value="">All Departments</option>
                                         @foreach ($departments as $department)
                                             <option value="{{ $department }}"
@@ -446,7 +534,7 @@
                                         @endforeach
                                     </select>
                                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                        <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                                        <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500 text-xs"></i>
                                     </div>
                                 </div>
                             </div>
@@ -459,22 +547,22 @@
 
     <!-- Bulk Operations Section -->
     <div id="bulkOperations"
-        class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-6 hidden">
+        class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-500/10 dark:to-indigo-500/10 border border-blue-200 dark:border-blue-900 rounded-xl p-4 mb-6 hidden">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center space-x-4">
-                <span class="text-sm font-medium text-blue-900">
+                <span class="text-sm font-medium text-blue-900 dark:text-blue-300">
                     <span id="selectedCount">0</span> users selected
                 </span>
-                <button onclick="clearSelection()" class="text-sm text-blue-600 hover:text-blue-800 transition-colors">
+                <button onclick="clearSelection()" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors">
                     Clear Selection
                 </button>
             </div>
             <div class="flex flex-wrap gap-3">
                 <!-- Bulk Role Assignment -->
                 <div class="flex items-center space-x-2">
-                    <label class="text-sm font-medium text-blue-900">Assign Role:</label>
+                    <label class="text-sm font-medium text-blue-900 dark:text-blue-300">Assign Role:</label>
                     <select id="bulkRole"
-                        class="px-3 py-1 text-sm border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        class="px-3 py-1 text-sm border border-blue-300 dark:border-blue-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                         <option value="">Select Role</option>
                         @foreach ($roles as $role)
                             <option value="{{ $role->name }}">{{ ucfirst($role->name) }}</option>
@@ -484,9 +572,9 @@
 
                 <!-- Bulk Team Assignment -->
                 <div class="flex items-center space-x-2">
-                    <label class="text-sm font-medium text-blue-900">Assign Team:</label>
+                    <label class="text-sm font-medium text-blue-900 dark:text-blue-300">Assign Team:</label>
                     <select id="bulkTeam"
-                        class="px-3 py-1 text-sm border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        class="px-3 py-1 text-sm border border-blue-300 dark:border-blue-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                         <option value="">Select Team</option>
                         @foreach ($teams as $team)
                             <option value="{{ $team->id }}">{{ $team->name }}</option>
@@ -511,36 +599,36 @@
 
     
     <!-- Users Table -->
-    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden datatableprimary mb-5">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 overflow-hidden datatableprimary mb-5">
         <div class="overflow-x-auto">
             <table class="display w-full" id="usersTable" style="width:100%">
-                <thead class="bg-gray-50 border-b border-gray-200">
+                <thead class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                     <tr>
                         <th class="px-4 py-4 text-left">
                             <input type="checkbox" id="selectAll"
-                                class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500">
                         </th>
-                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User
+                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">User
                         </th>
-                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee
+                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Employee
                             ID</th>
-                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position
+                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Position
                         </th>
-                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team
+                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Team
                         </th>
-                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tech
+                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tech
                             Stack</th>
-                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role
+                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Role
                         </th>
-                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status
+                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status
                         </th>
-                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created
+                        <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created
                         </th>
-                        <th class="px-4 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-4 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             Actions</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
                     <!-- Table rows will be populated by DataTables -->
                 </tbody>
             </table>

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class StoreUserRequest extends FormRequest
 {
@@ -35,6 +36,7 @@ class StoreUserRequest extends FormRequest
             'salary' => 'nullable|numeric|min:0|max:999999.99',
             'address' => 'nullable|string|max:1000',
             'is_active' => 'boolean',
+            'track' => 'nullable|in:operation,sales',
             'role' => 'nullable|string|max:255|exists:roles,name',
             'team_id' => 'nullable|exists:teams,id',
             'sales_leader_id' => 'nullable|exists:users,id',
@@ -46,6 +48,26 @@ class StoreUserRequest extends FormRequest
             'managed_teams' => 'nullable|array',
             'managed_teams.*' => 'exists:teams,id',
         ];
+    }
+
+    /**
+     * The chosen role must belong to the chosen track — a sales role cannot
+     * be paired with a team, nor an operational role with a sales leader.
+     */
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+            $track = $this->input('track', 'operation');
+            $role = $this->input('role');
+
+            if ($role && str_starts_with($role, 'sales-') && $track !== 'sales') {
+                $validator->errors()->add('role', 'That role belongs to the Sales track.');
+            }
+
+            if ($role && ! str_starts_with($role, 'sales-') && $track === 'sales') {
+                $validator->errors()->add('role', 'That role belongs to the Operations track.');
+            }
+        });
     }
 
     /**

@@ -106,11 +106,49 @@ class Order extends Model
     }
 
     /**
-     * Limit a query to the orders a sales person is allowed to see.
+     * How this order's amount is credited across sales people. One row when a
+     * single person sold it, several when the credit is shared.
+     */
+    public function salesShares(): HasMany
+    {
+        return $this->hasMany(OrderSalesShare::class);
+    }
+
+    public function salesPeople(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'order_sales_shares')
+            ->withPivot('amount')
+            ->withTimestamps();
+    }
+
+    /**
+     * Limit a query to the orders a sales person is allowed to see: the ones
+     * they opened, and the ones they hold a share of.
      */
     public function scopeVisibleToSalesUser(Builder $query, User $user): Builder
     {
-        return $query->whereIn('sales_user_id', $user->salesVisibleUserIds());
+        $ids = $user->salesVisibleUserIds();
+
+        return $query->where(function (Builder $scoped) use ($ids) {
+            $scoped->whereIn('sales_user_id', $ids)
+                ->orWhereHas('salesShares', fn ($share) => $share->whereIn('user_id', $ids));
+        });
+    }
+
+    /**
+     * The part of this order's amount credited to a given sales person.
+     */
+    public function salesShareFor(int $userId): float
+    {
+        return (float) ($this->salesShares->firstWhere('user_id', $userId)?->amount ?? 0);
+    }
+
+    /**
+     * Amount not credited to anyone yet.
+     */
+    public function unattributedAmount(): float
+    {
+        return round((float) ($this->value ?? 0) - (float) $this->salesShares->sum('amount'), 2);
     }
 
     /**

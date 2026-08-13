@@ -7,7 +7,7 @@
         <nav class="flex" aria-label="Breadcrumb">
             <ol class="flex items-center space-x-4">
                 <li>
-                    <a href="{{ route('teams.index') }}" class="inline-flex items-center text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                    <a href="{{ route('teams.index') }}" class="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-200">
                         <i class="fas fa-arrow-left mr-2 text-sm"></i>
                         <span class="text-sm font-medium">Back to Teams</span>
                     </a>
@@ -15,14 +15,14 @@
             </ol>
         </nav>
         <div class="mt-6">
-            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Create New Team</h1>
-            <p class="text-gray-600 text-lg">Build a high-performing team by adding members and defining leadership</p>
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">Create New Team</h1>
+            <p class="text-gray-600 dark:text-gray-400 text-lg">Build a high-performing team by adding members and defining leadership</p>
         </div>
     </div>
 
     <!-- Create Team Form -->
     <div class="max-w-6xl mx-auto">
-        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-visible">
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 overflow-visible">
             <!-- Form Header -->
             <div class="bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 p-8 text-center">
                 <div class="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl mb-4">
@@ -40,17 +40,17 @@
                         <div class="flex items-center justify-center space-x-4">
                             <div class="flex items-center">
                                 <div class="flex items-center justify-center w-10 h-10 bg-indigo-600 rounded-full text-white font-semibold" id="step1">1</div>
-                                <span class="ml-2 font-medium text-gray-900">Basic Info</span>
+                                <span class="ml-2 font-medium text-gray-900 dark:text-gray-100">Basic Info</span>
                             </div>
-                            <div class="w-12 h-1 bg-gray-300 rounded" id="progress1"></div>
+                            <div class="w-12 h-1 bg-gray-300 dark:bg-gray-700 rounded" id="progress1"></div>
                             <div class="flex items-center">
-                                <div class="flex items-center justify-center w-10 h-10 bg-gray-300 rounded-full text-gray-600 font-semibold" id="step2">2</div>
-                                <span class="ml-2 font-medium text-gray-500">Leadership</span>
+                                <div class="flex items-center justify-center w-10 h-10 bg-gray-300 dark:bg-gray-700 rounded-full text-gray-600 dark:text-gray-300 font-semibold" id="step2">2</div>
+                                <span class="ml-2 font-medium text-gray-500 dark:text-gray-400">Leadership</span>
                             </div>
-                            <div class="w-12 h-1 bg-gray-300 rounded" id="progress2"></div>
+                            <div class="w-12 h-1 bg-gray-300 dark:bg-gray-700 rounded" id="progress2"></div>
                             <div class="flex items-center">
-                                <div class="flex items-center justify-center w-10 h-10 bg-gray-300 rounded-full text-gray-600 font-semibold" id="step3">3</div>
-                                <span class="ml-2 font-medium text-gray-500">Members</span>
+                                <div class="flex items-center justify-center w-10 h-10 bg-gray-300 dark:bg-gray-700 rounded-full text-gray-600 dark:text-gray-300 font-semibold" id="step3">3</div>
+                                <span class="ml-2 font-medium text-gray-500 dark:text-gray-400">Members</span>
                             </div>
                         </div>
                     </div>
@@ -58,54 +58,54 @@
                     <!-- Step 1: Basic Information -->
                     <div id="step1Content" class="space-y-8">
                         <div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                                <div class="bg-blue-100 rounded-lg p-3 mr-3">
-                                    <i class="fas fa-info-circle text-blue-600"></i>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
+                                <div class="bg-blue-100 dark:bg-blue-500/10 rounded-lg p-3 mr-3">
+                                    <i class="fas fa-info-circle text-blue-600 dark:text-blue-400"></i>
                                 </div>
                                 Basic Team Information
                             </h3>
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                 <div>
-                                    <label for="name" class="block text-sm font-bold text-gray-700 mb-3 flex items-center">
+                                    <label for="name" class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 flex items-center">
                                         <i class="fas fa-tag mr-2 text-indigo-500"></i>
                                         Team Name <span class="text-red-500 ml-1">*</span>
                                     </label>
                                     <div class="relative">
                                         <input type="text" id="name" name="name" required
                                                value="{{ old('name') }}"
-                                               class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-lg"
+                                               class="w-full px-5 py-4 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200 text-lg"
                                                placeholder="e.g., Development Team Alpha">
                                         <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                            <i class="fas fa-users text-gray-400"></i>
+                                            <i class="fas fa-users text-gray-400 dark:text-gray-500"></i>
                                         </div>
                                     </div>
                                     @error('name')
-                                        <p class="mt-3 text-sm text-red-600 flex items-center font-medium">
+                                        <p class="mt-3 text-sm text-red-600 dark:text-red-400 flex items-center font-medium">
                                             <i class="fas fa-exclamation-circle mr-2"></i>
                                             {{ $message }}
                                         </p>
                                     @enderror
-                                    <p class="mt-2 text-sm text-gray-500">Give your team a memorable and descriptive name</p>
+                                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Give your team a memorable and descriptive name</p>
                                 </div>
 
                                 <div>
-                                    <label for="description" class="block text-sm font-bold text-gray-700 mb-3 flex items-center">
+                                    <label for="description" class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 flex items-center">
                                         <i class="fas fa-align-left mr-2 text-indigo-500"></i>
                                         Team Description
                                     </label>
                                     <div class="relative">
                                         <textarea id="description" name="description" rows="6"
-                                                  class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-lg resize-none"
+                                                  class="w-full px-5 py-4 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200 text-lg resize-none"
                                                   placeholder="Describe the team's purpose, goals, and responsibilities...">{{ old('description') }}</textarea>
-                                        <div class="absolute bottom-4 right-4 text-sm text-gray-400" id="charCount">0/500</div>
+                                        <div class="absolute bottom-4 right-4 text-sm text-gray-400 dark:text-gray-500" id="charCount">0/500</div>
                                     </div>
                                     @error('description')
-                                        <p class="mt-3 text-sm text-red-600 flex items-center font-medium">
+                                        <p class="mt-3 text-sm text-red-600 dark:text-red-400 flex items-center font-medium">
                                             <i class="fas fa-exclamation-circle mr-2"></i>
                                             {{ $message }}
                                         </p>
                                     @enderror
-                                    <p class="mt-2 text-sm text-gray-500">Optional: Briefly explain what this team does</p>
+                                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Optional: Briefly explain what this team does</p>
                                 </div>
                             </div>
                         </div>
@@ -122,20 +122,20 @@
                     <!-- Step 2: Leadership (Hidden by default) -->
                     <div id="step2Content" class="space-y-8 hidden">
                         <div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                                <div class="bg-green-100 rounded-lg p-3 mr-3">
-                                    <i class="fas fa-user-tie text-green-600"></i>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
+                                <div class="bg-green-100 dark:bg-green-500/10 rounded-lg p-3 mr-3">
+                                    <i class="fas fa-user-tie text-green-600 dark:text-green-400"></i>
                                 </div>
                                 Team Leadership
                             </h3>
-                            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+                            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-500/10 dark:to-indigo-500/10 rounded-xl p-6 border border-blue-100 dark:border-blue-900">
                                 <div class="flex items-center mb-4">
-                                    <div class="bg-blue-100 rounded-full p-3 mr-3">
-                                        <i class="fas fa-crown text-blue-600 text-lg"></i>
+                                    <div class="bg-blue-100 dark:bg-blue-500/10 rounded-full p-3 mr-3">
+                                        <i class="fas fa-crown text-blue-600 dark:text-blue-400 text-lg"></i>
                                     </div>
                                     <div>
-                                        <h4 class="font-bold text-gray-900">Assign Team Leader</h4>
-                                        <p class="text-sm text-gray-600">Choose who will lead and coordinate this team</p>
+                                        <h4 class="font-bold text-gray-900 dark:text-gray-100">Assign Team Leader</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">Choose who will lead and coordinate this team</p>
                                     </div>
                                 </div>
 
@@ -144,26 +144,26 @@
                                     <input type="hidden" name="team_leader_id" id="team_leader_id" value="{{ old('team_leader_id') }}">
 
                                     <button type="button" id="leaderDropdownTrigger"
-                                            class="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-left flex items-center justify-between">
+                                            class="w-full px-5 py-4 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 shadow-sm transition-all duration-200 text-left flex items-center justify-between">
                                         <div id="leaderDisplay" class="flex items-center flex-1 min-w-0">
-                                            <span class="text-gray-400 text-lg">Choose a team leader...</span>
+                                            <span class="text-gray-400 dark:text-gray-500 text-lg">Choose a team leader...</span>
                                         </div>
-                                        <i class="fas fa-chevron-down text-gray-400 transition-transform duration-200 ml-2" id="leaderChevron"></i>
+                                        <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500 transition-transform duration-200 ml-2" id="leaderChevron"></i>
                                     </button>
 
-                                    <div id="leaderDropdown" class="hidden absolute z-50 w-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-visible">
-                                        <div class="p-3 border-b border-gray-100 rounded-t-xl bg-white">
+                                    <div id="leaderDropdown" class="hidden absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-visible">
+                                        <div class="p-3 border-b border-gray-100 dark:border-gray-700 rounded-t-xl bg-white dark:bg-gray-800">
                                             <div class="relative">
                                                 <input type="text" id="leaderSearchInput" placeholder="Search by name or employee ID..."
-                                                       class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                                                       class="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm"
                                                        autocomplete="off">
-                                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"></i>
                                             </div>
                                         </div>
-                                        <div id="leaderOptions" class="min-h-[12rem] max-h-80 overflow-y-auto overflow-x-hidden p-2 pb-3 border-b border-gray-100" style="overscroll-behavior: contain;"></div>
-                                        <div class="p-2 border-t border-gray-100 rounded-b-xl bg-white">
+                                        <div id="leaderOptions" class="min-h-[12rem] max-h-80 overflow-y-auto overflow-x-hidden p-2 pb-3 border-b border-gray-100 dark:border-gray-700" style="overscroll-behavior: contain;"></div>
+                                        <div class="p-2 border-t border-gray-100 dark:border-gray-700 rounded-b-xl bg-white dark:bg-gray-800">
                                             <button type="button" id="clearLeaderBtn"
-                                                    class="w-full px-3 py-2 text-sm text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                                    class="w-full px-3 py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors">
                                                 <i class="fas fa-times mr-2"></i>Clear selection
                                             </button>
                                         </div>
@@ -182,7 +182,7 @@
                         <!-- Navigation -->
                         <div class="flex justify-between">
                             <button type="button" onclick="goToStep(1)"
-                                    class="px-8 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors duration-200">
+                                    class="px-8 py-3 border-2 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200">
                                 <i class="fas fa-arrow-left mr-2"></i> Previous
                             </button>
                             <button type="button" onclick="goToStep(3)"
@@ -195,39 +195,39 @@
                     <!-- Step 3: Team Members (Hidden by default) -->
                     <div id="step3Content" class="space-y-8 hidden">
                         <div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                                <div class="bg-purple-100 rounded-lg p-3 mr-3">
-                                    <i class="fas fa-users text-purple-600"></i>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
+                                <div class="bg-purple-100 dark:bg-purple-500/10 rounded-lg p-3 mr-3">
+                                    <i class="fas fa-users text-purple-600 dark:text-purple-400"></i>
                                 </div>
                                 Team Members
                             </h3>
-                            <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-100">
+                            <div class="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-500/10 dark:to-pink-500/10 rounded-xl p-6 border border-purple-100 dark:border-purple-900">
                                 <div class="flex items-center justify-between mb-4">
                                     <div>
-                                        <h4 class="font-bold text-gray-900">Select Team Members</h4>
-                                        <p class="text-sm text-gray-600">Choose who will be part of this team</p>
+                                        <h4 class="font-bold text-gray-900 dark:text-gray-100">Select Team Members</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">Choose who will be part of this team</p>
                                     </div>
                                     <div class="flex items-center space-x-2">
                                         <button type="button" onclick="selectAllMembers()"
-                                                class="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors duration-200 text-sm font-medium">
+                                                class="px-4 py-2 bg-purple-100 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-500/20 transition-colors duration-200 text-sm font-medium">
                                             Select All
                                         </button>
                                         <button type="button" onclick="deselectAllMembers()"
-                                                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200 text-sm font-medium">
+                                                class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200 text-sm font-medium">
                                             Deselect All
                                         </button>
                                     </div>
                                 </div>
                                 <div class="relative mb-4">
                                     <input type="text" id="members_search" placeholder="Search members..."
-                                           class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm text-sm"
+                                           class="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm text-sm"
                                            autocomplete="off">
-                                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"></i>
                                 </div>
-                                <div class="max-h-80 overflow-y-auto space-y-2 border-2 border-purple-100 rounded-xl p-4 bg-white">
+                                <div class="max-h-80 overflow-y-auto space-y-2 border-2 border-purple-100 dark:border-purple-900 rounded-xl p-4 bg-white dark:bg-gray-800">
                                     @foreach($users as $user)
                                         @if($user->id !== auth()->id())
-                                        <label class="member-item flex items-center p-4 rounded-xl hover:bg-purple-50 cursor-pointer transition-all duration-200 border-2 border-transparent hover:border-purple-200"
+                                        <label class="member-item flex items-center p-4 rounded-xl hover:bg-purple-50 dark:hover:bg-purple-500/10 cursor-pointer transition-all duration-200 border-2 border-transparent hover:border-purple-200 dark:hover:border-purple-800"
                                                data-name="{{ strtolower($user->name) }}"
                                                data-employee="{{ strtolower($user->employee_id ?? '') }}"
                                                data-position="{{ strtolower($user->position ?? '') }}">
@@ -236,8 +236,8 @@
                                                    class="mr-4 w-5 h-5 text-purple-600 bg-purple-100 border-purple-300 rounded focus:ring-purple-500 focus:ring-2"
                                                    onchange="updateSelectedCount()">
                                             <div class="flex-1">
-                                                <div class="font-semibold text-gray-900">{{ $user->name }}</div>
-                                                <div class="text-sm text-gray-600 flex items-center mt-1">
+                                                <div class="font-semibold text-gray-900 dark:text-gray-100">{{ $user->name }}</div>
+                                                <div class="text-sm text-gray-600 dark:text-gray-400 flex items-center mt-1">
                                                     @if($user->employee_id)
                                                         <i class="fas fa-id-badge mr-1 text-purple-500"></i>
                                                         {{ $user->employee_id }}
@@ -263,10 +263,10 @@
                                     </p>
                                 @enderror
                                 <div class="mt-4 flex items-center justify-between">
-                                    <span class="text-sm font-medium text-gray-600">
+                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">
                                         <span id="selectedCount">0</span> members selected
                                     </span>
-                                    <span class="text-xs text-gray-500">{{ $users->where('id', '!=', auth()->id())->count() }} available users</span>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ $users->where('id', '!=', auth()->id())->count() }} available users</span>
                                 </div>
                             </div>
                         </div>
@@ -274,12 +274,12 @@
                         <!-- Form Actions -->
                         <div class="flex flex-col sm:flex-row justify-between gap-4">
                             <button type="button" onclick="goToStep(2)"
-                                    class="px-8 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors duration-200">
+                                    class="px-8 py-3 border-2 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200">
                                 <i class="fas fa-arrow-left mr-2"></i> Previous
                             </button>
                             <div class="flex gap-4">
                                 <a href="{{ route('teams.index') }}"
-                                   class="px-8 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors duration-200">
+                                   class="px-8 py-3 border-2 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200">
                                     <i class="fas fa-times mr-2"></i> Cancel
                                 </a>
                                 <button type="submit"
@@ -325,6 +325,14 @@
         background-color: #e0e7ff;
         border-color: #6366f1;
     }
+
+    .dark .leader-option:hover {
+        background-color: rgba(99, 102, 241, 0.1);
+    }
+    .dark .leader-option.selected {
+        background-color: rgba(99, 102, 241, 0.15);
+        border-color: #818cf8;
+    }
 </style>
 @endpush
 
@@ -360,14 +368,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             var isSelected = String(user.id) === String(leaderSelectedId);
-            var selectedClass = isSelected ? 'selected bg-indigo-50 border-indigo-200' : 'border-transparent';
-            var checkIcon = isSelected ? '<i class="fas fa-check text-indigo-600 ml-auto"></i>' : '';
+            var selectedClass = isSelected ? 'selected bg-indigo-50 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-800' : 'border-transparent';
+            var checkIcon = isSelected ? '<i class="fas fa-check text-indigo-600 dark:text-indigo-400 ml-auto"></i>' : '';
 
             html += '<div class="leader-option flex items-center p-3 rounded-lg cursor-pointer border-2 ' + selectedClass + ' mb-1" data-id="' + user.id + '">' +
                 '<img src="https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name) + '&background=4F46E5&color=fff&size=40" class="w-10 h-10 rounded-full mr-3 flex-shrink-0">' +
                 '<div class="flex-1 min-w-0">' +
-                    '<div class="font-semibold text-gray-900 truncate">' + user.name + '</div>' +
-                    '<div class="text-sm text-gray-500">' + (user.employee_id || 'No ID') + (user.position ? ' &bull; ' + user.position : '') + '</div>' +
+                    '<div class="font-semibold text-gray-900 dark:text-gray-100 truncate">' + user.name + '</div>' +
+                    '<div class="text-sm text-gray-500 dark:text-gray-400">' + (user.employee_id || 'No ID') + (user.position ? ' &bull; ' + user.position : '') + '</div>' +
                 '</div>' +
                 checkIcon +
             '</div>';
@@ -375,7 +383,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         if (count === 0) {
-            html = '<div class="p-4 text-center text-gray-500"><i class="fas fa-search mr-2"></i>No users found</div>';
+            html = '<div class="p-4 text-center text-gray-500 dark:text-gray-400"><i class="fas fa-search mr-2"></i>No users found</div>';
         }
 
         optionsContainer.innerHTML = html;
@@ -397,8 +405,8 @@ document.addEventListener('DOMContentLoaded', function() {
             displayEl.innerHTML =
                 '<img src="https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name) + '&background=4F46E5&color=fff&size=40" class="w-8 h-8 rounded-full mr-3 flex-shrink-0">' +
                 '<div class="min-w-0">' +
-                    '<div class="font-semibold text-gray-900 truncate">' + user.name + '</div>' +
-                    '<div class="text-xs text-gray-500">' + (user.employee_id || 'No ID') + '</div>' +
+                    '<div class="font-semibold text-gray-900 dark:text-gray-100 truncate">' + user.name + '</div>' +
+                    '<div class="text-xs text-gray-500 dark:text-gray-400">' + (user.employee_id || 'No ID') + '</div>' +
                 '</div>';
         }
 
@@ -408,7 +416,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function clearLeader() {
         leaderSelectedId = '';
         hiddenInput.value = '';
-        displayEl.innerHTML = '<span class="text-gray-400 text-lg">Choose a team leader...</span>';
+        displayEl.innerHTML = '<span class="text-gray-400 dark:text-gray-500 text-lg">Choose a team leader...</span>';
         closeLeaderDropdown();
     }
 
@@ -469,7 +477,9 @@ document.addEventListener('DOMContentLoaded', function() {
             var count = this.value.length;
             charCount.textContent = count + '/500';
             charCount.classList.toggle('text-red-500', count > 500);
+            charCount.classList.toggle('dark:text-red-400', count > 500);
             charCount.classList.toggle('text-gray-400', count <= 500);
+            charCount.classList.toggle('dark:text-gray-500', count <= 500);
         });
     }
 
@@ -516,15 +526,15 @@ function goToStep(stepNumber) {
         if (stepContent) stepContent.classList.add('hidden');
         if (stepIndicator) {
             stepIndicator.classList.remove('bg-indigo-600', 'text-white');
-            stepIndicator.classList.add('bg-gray-300', 'text-gray-600');
+            stepIndicator.classList.add('bg-gray-300', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300');
         }
         if (stepLabel) {
-            stepLabel.classList.remove('text-gray-900');
-            stepLabel.classList.add('text-gray-500');
+            stepLabel.classList.remove('text-gray-900', 'dark:text-gray-100');
+            stepLabel.classList.add('text-gray-500', 'dark:text-gray-400');
         }
         if (progress) {
             progress.classList.remove('bg-indigo-600');
-            progress.classList.add('bg-gray-300');
+            progress.classList.add('bg-gray-300', 'dark:bg-gray-700');
         }
     }
 
@@ -534,18 +544,18 @@ function goToStep(stepNumber) {
 
     if (currentStepContent) currentStepContent.classList.remove('hidden');
     if (currentStepIndicator) {
-        currentStepIndicator.classList.remove('bg-gray-300', 'text-gray-600');
+        currentStepIndicator.classList.remove('bg-gray-300', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300');
         currentStepIndicator.classList.add('bg-indigo-600', 'text-white');
     }
     if (currentStepLabel) {
-        currentStepLabel.classList.remove('text-gray-500');
-        currentStepLabel.classList.add('text-gray-900');
+        currentStepLabel.classList.remove('text-gray-500', 'dark:text-gray-400');
+        currentStepLabel.classList.add('text-gray-900', 'dark:text-gray-100');
     }
 
     for (var j = 1; j < stepNumber; j++) {
         var p = document.getElementById('progress' + j);
         if (p) {
-            p.classList.remove('bg-gray-300');
+            p.classList.remove('bg-gray-300', 'dark:bg-gray-700');
             p.classList.add('bg-indigo-600');
         }
     }

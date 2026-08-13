@@ -7,7 +7,7 @@
         <nav class="flex" aria-label="Breadcrumb">
             <ol class="flex items-center space-x-4">
                 <li>
-                    <a href="{{ route('teams.index') }}" class="text-gray-500 hover:text-gray-700 flex items-center">
+                    <a href="{{ route('teams.index') }}" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 flex items-center">
                         <i class="fas fa-arrow-left mr-2"></i>Back to Teams
                     </a>
                 </li>
@@ -15,8 +15,8 @@
         </nav>
         <div class="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6">
             <div class="flex-1">
-                <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Edit Team</h1>
-                <p class="text-gray-600 text-lg">Update team information and manage team members</p>
+                <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">Edit Team</h1>
+                <p class="text-gray-600 dark:text-gray-400 text-lg">Update team information and manage team members</p>
             </div>
             <div class="flex-shrink-0">
                 <a href="{{ route('teams.show', $team->id) }}" class="inline-flex items-center justify-center px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105">
@@ -28,13 +28,13 @@
     </div>
 
     <!-- Edit Team Form -->
-    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-visible">
-        <div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 border-b border-gray-200">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 overflow-visible">
+        <div class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10 p-6 border-b border-gray-200 dark:border-gray-700">
             <div class="flex items-center space-x-3">
-                <div class="bg-indigo-100 rounded-lg p-3">
-                    <i class="fas fa-edit text-indigo-600 text-xl"></i>
+                <div class="bg-indigo-100 dark:bg-indigo-500/10 rounded-lg p-3">
+                    <i class="fas fa-edit text-indigo-600 dark:text-indigo-400 text-xl"></i>
                 </div>
-                <h2 class="text-xl font-bold text-gray-900">Edit Team Information</h2>
+                <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">Edit Team Information</h2>
             </div>
         </div>
 
@@ -46,21 +46,21 @@
                     <!-- Team Information -->
                     <div class="space-y-6">
                         <div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                <div class="bg-blue-100 rounded-lg p-2 mr-3">
-                                    <i class="fas fa-info-circle text-blue-600"></i>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+                                <div class="bg-blue-100 dark:bg-blue-500/10 rounded-lg p-2 mr-3">
+                                    <i class="fas fa-info-circle text-blue-600 dark:text-blue-400"></i>
                                 </div>
                                 Basic Information
                             </h3>
                             <div class="space-y-5">
                                 <div>
-                                    <label for="name" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                    <label for="name" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
                                         <i class="fas fa-tag mr-2 text-indigo-500"></i>
                                         Team Name <span class="text-red-500">*</span>
                                     </label>
                                     <input type="text" id="name" name="name" required
                                            value="{{ old('name', $team->name) }}"
-                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200"
+                                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200"
                                            placeholder="Enter team name">
                                     <div id="nameError" class="mt-2 text-sm text-red-600 items-center hidden">
                                         <i class="fas fa-exclamation-circle mr-1"></i>
@@ -75,12 +75,12 @@
                                 </div>
 
                                 <div>
-                                    <label for="description" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                    <label for="description" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
                                         <i class="fas fa-align-left mr-2 text-indigo-500"></i>
                                         Description
                                     </label>
                                     <textarea id="description" name="description" rows="5"
-                                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 resize-none"
+                                              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200 resize-none"
                                               placeholder="Enter team description">{{ old('description', $team->description) }}</textarea>
                                     @error('description')
                                         <p class="mt-2 text-sm text-red-600 flex items-center">
@@ -96,16 +96,16 @@
                     <!-- Team Leadership & Members -->
                     <div class="space-y-6">
                         <div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                <div class="bg-green-100 rounded-lg p-2 mr-3">
-                                    <i class="fas fa-user-tie text-green-600"></i>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+                                <div class="bg-green-100 dark:bg-green-500/10 rounded-lg p-2 mr-3">
+                                    <i class="fas fa-user-tie text-green-600 dark:text-green-400"></i>
                                 </div>
                                 Leadership & Members
                             </h3>
                             <div class="space-y-5">
                                 <!-- Custom Searchable Leader Dropdown -->
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
                                         <i class="fas fa-user-shield mr-2 text-green-500"></i>
                                         Team Leader
                                     </label>
@@ -113,26 +113,26 @@
                                         <input type="hidden" name="team_leader_id" id="team_leader_id" value="{{ old('team_leader_id', $team->team_leader_id) }}">
 
                                         <button type="button" id="leaderDropdownTrigger"
-                                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm transition-all duration-200 text-left flex items-center justify-between">
+                                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200 text-left flex items-center justify-between">
                                             <div id="leaderDisplay" class="flex items-center flex-1 min-w-0">
-                                                <span class="text-gray-400">Select a team leader</span>
+                                                <span class="text-gray-400 dark:text-gray-500">Select a team leader</span>
                                             </div>
-                                            <i class="fas fa-chevron-down text-gray-400 transition-transform duration-200 ml-2" id="leaderChevron"></i>
+                                            <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500 transition-transform duration-200 ml-2" id="leaderChevron"></i>
                                         </button>
 
-                                        <div id="leaderDropdown" class="hidden absolute z-50 w-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-visible">
-                                            <div class="p-3 border-b border-gray-100 rounded-t-xl bg-white">
+                                        <div id="leaderDropdown" class="hidden absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-visible">
+                                            <div class="p-3 border-b border-gray-100 dark:border-gray-700 rounded-t-xl bg-white dark:bg-gray-800">
                                                 <div class="relative">
                                                     <input type="text" id="leaderSearchInput" placeholder="Search by name or employee ID..."
-                                                           class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                                                           class="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm"
                                                            autocomplete="off">
-                                                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"></i>
                                                 </div>
                                             </div>
-                                            <div id="leaderOptions" class="min-h-[12rem] max-h-80 overflow-y-auto overflow-x-hidden p-2 pb-3 border-b border-gray-100" style="overscroll-behavior: contain;"></div>
-                                            <div class="p-2 border-t border-gray-100 rounded-b-xl bg-white">
+                                            <div id="leaderOptions" class="min-h-[12rem] max-h-80 overflow-y-auto overflow-x-hidden p-2 pb-3 border-b border-gray-100 dark:border-gray-700" style="overscroll-behavior: contain;"></div>
+                                            <div class="p-2 border-t border-gray-100 dark:border-gray-700 rounded-b-xl bg-white dark:bg-gray-800">
                                                 <button type="button" id="clearLeaderBtn"
-                                                        class="w-full px-3 py-2 text-sm text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                                        class="w-full px-3 py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors">
                                                     <i class="fas fa-times mr-2"></i>Clear selection
                                                 </button>
                                             </div>
@@ -152,20 +152,20 @@
 
                                 <!-- Team Members -->
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
                                         <i class="fas fa-users mr-2 text-green-500"></i>
                                         Team Members
                                     </label>
                                     <div class="relative mb-2">
                                         <input type="text" id="members_search" placeholder="Search members..."
-                                               class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm text-sm"
+                                               class="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm text-sm"
                                                autocomplete="off">
-                                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"></i>
                                     </div>
-                                    <div id="members_list" class="border border-gray-200 rounded-lg p-4 bg-gray-50 max-h-64 overflow-y-auto">
+                                    <div id="members_list" class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800 max-h-64 overflow-y-auto">
                                         @foreach($users as $user)
                                             @if($user->id !== auth()->id())
-                                            <label class="member-item flex items-center p-3 hover:bg-white rounded-lg cursor-pointer transition-colors duration-200"
+                                            <label class="member-item flex items-center p-3 hover:bg-white dark:hover:bg-gray-700 rounded-lg cursor-pointer transition-colors duration-200"
                                                    data-name="{{ strtolower($user->name) }}"
                                                    data-employee="{{ strtolower($user->employee_id ?? '') }}"
                                                    data-position="{{ strtolower($user->position ?? '') }}">
@@ -173,8 +173,8 @@
                                                        {{ in_array($user->id, old('members', $team->members->pluck('id')->toArray())) ? 'checked' : '' }}
                                                        class="mr-3 w-4 h-4 text-indigo-600 bg-indigo-100 border-indigo-300 rounded focus:ring-2 focus:ring-indigo-500">
                                                 <div class="flex-1">
-                                                    <div class="font-medium text-gray-900">{{ $user->name }}</div>
-                                                    <div class="text-sm text-gray-500">{{ $user->employee_id ?? 'No ID' }} &bull; {{ $user->position ?? 'No position' }}</div>
+                                                    <div class="font-medium text-gray-900 dark:text-gray-100">{{ $user->name }}</div>
+                                                    <div class="text-sm text-gray-500 dark:text-gray-400">{{ $user->employee_id ?? 'No ID' }} &bull; {{ $user->position ?? 'No position' }}</div>
                                                 </div>
                                             </label>
                                             @endif
@@ -193,9 +193,9 @@
                 </div>
 
                 <!-- Form Actions (must be inside form; no nested forms above) -->
-                <div class="mt-8 flex flex-col sm:flex-row justify-end gap-4 pt-6 border-t border-gray-200">
+                <div class="mt-8 flex flex-col sm:flex-row justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-800">
                     <a href="{{ route('teams.index') }}"
-                       class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors duration-200">
+                       class="px-6 py-3 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200">
                         <i class="fas fa-arrow-left mr-2"></i>
                         Cancel
                     </a>
@@ -210,21 +210,21 @@
             <!-- Current Team Members (outside form to avoid nested form breaking submit) -->
             @if($team->members->where('id', '!=', auth()->id())->count() > 0)
             <div class="mt-6">
-                <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center">
                     <i class="fas fa-users mr-2 text-blue-500"></i>
                     Current Members ({{ $team->members->where('id', '!=', auth()->id())->count() }})
                 </label>
                 <div class="space-y-2">
                     @foreach($team->members as $member)
                         @if($member->id !== auth()->id())
-                        <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <div class="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-500/10 rounded-lg border border-blue-200 dark:border-blue-900">
                             <div class="flex items-center">
                                 <img class="h-10 w-10 rounded-full object-cover mr-3"
                                      src="https://ui-avatars.com/api/?name={{ urlencode($member->name) }}&background=3B82F6&color=fff"
                                      alt="{{ $member->name }}">
                                 <div>
-                                    <div class="font-medium text-gray-900">{{ $member->name }}</div>
-                                    <div class="text-sm text-gray-500">{{ $member->employee_id }}</div>
+                                    <div class="font-medium text-gray-900 dark:text-gray-100">{{ $member->name }}</div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">{{ $member->employee_id }}</div>
                                 </div>
                             </div>
                             <form action="{{ route('teams.remove-member', [$team->id, $member->id]) }}"
@@ -232,7 +232,7 @@
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit"
-                                        class="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-colors duration-200"
+                                        class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors duration-200"
                                         title="Remove member">
                                     <i class="fas fa-user-minus"></i>
                                 </button>
@@ -274,6 +274,14 @@
         background-color: #e0e7ff;
         border-color: #6366f1;
     }
+
+    .dark .leader-option:hover {
+        background-color: rgba(99, 102, 241, 0.1);
+    }
+    .dark .leader-option.selected {
+        background-color: rgba(99, 102, 241, 0.15);
+        border-color: #818cf8;
+    }
 </style>
 @endpush
 
@@ -309,14 +317,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             var isSelected = String(user.id) === String(leaderSelectedId);
-            var selectedClass = isSelected ? 'selected bg-indigo-50 border-indigo-200' : 'border-transparent';
-            var checkIcon = isSelected ? '<i class="fas fa-check text-indigo-600 ml-auto"></i>' : '';
+            var selectedClass = isSelected ? 'selected bg-indigo-50 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-800' : 'border-transparent';
+            var checkIcon = isSelected ? '<i class="fas fa-check text-indigo-600 dark:text-indigo-400 ml-auto"></i>' : '';
 
             html += '<div class="leader-option flex items-center p-3 rounded-lg cursor-pointer border-2 ' + selectedClass + ' mb-1" data-id="' + user.id + '">' +
                 '<img src="https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name) + '&background=4F46E5&color=fff&size=40" class="w-10 h-10 rounded-full mr-3 flex-shrink-0">' +
                 '<div class="flex-1 min-w-0">' +
-                    '<div class="font-semibold text-gray-900 truncate">' + user.name + '</div>' +
-                    '<div class="text-sm text-gray-500">' + (user.employee_id || 'No ID') + (user.position ? ' &bull; ' + user.position : '') + '</div>' +
+                    '<div class="font-semibold text-gray-900 dark:text-gray-100 truncate">' + user.name + '</div>' +
+                    '<div class="text-sm text-gray-500 dark:text-gray-400">' + (user.employee_id || 'No ID') + (user.position ? ' &bull; ' + user.position : '') + '</div>' +
                 '</div>' +
                 checkIcon +
             '</div>';
@@ -324,7 +332,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         if (count === 0) {
-            html = '<div class="p-4 text-center text-gray-500"><i class="fas fa-search mr-2"></i>No users found</div>';
+            html = '<div class="p-4 text-center text-gray-500 dark:text-gray-400"><i class="fas fa-search mr-2"></i>No users found</div>';
         }
 
         optionsContainer.innerHTML = html;
@@ -345,8 +353,8 @@ document.addEventListener('DOMContentLoaded', function() {
             displayEl.innerHTML =
                 '<img src="https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name) + '&background=4F46E5&color=fff&size=40" class="w-8 h-8 rounded-full mr-3 flex-shrink-0">' +
                 '<div class="min-w-0">' +
-                    '<div class="font-semibold text-gray-900 truncate">' + user.name + '</div>' +
-                    '<div class="text-xs text-gray-500">' + (user.employee_id || 'No ID') + '</div>' +
+                    '<div class="font-semibold text-gray-900 dark:text-gray-100 truncate">' + user.name + '</div>' +
+                    '<div class="text-xs text-gray-500 dark:text-gray-400">' + (user.employee_id || 'No ID') + '</div>' +
                 '</div>';
         }
         closeLeaderDropdown();
@@ -355,7 +363,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function clearLeader() {
         leaderSelectedId = '';
         hiddenInput.value = '';
-        displayEl.innerHTML = '<span class="text-gray-400">Select a team leader</span>';
+        displayEl.innerHTML = '<span class="text-gray-400 dark:text-gray-500">Select a team leader</span>';
         closeLeaderDropdown();
     }
 

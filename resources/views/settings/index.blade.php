@@ -5,19 +5,19 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Page Header -->
         <div class="mb-6">
-            <h1 class="text-2xl font-bold text-gray-900">
-                <i class="fas fa-cog text-indigo-600 mr-2"></i>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                <i class="fas fa-cog text-indigo-600 dark:text-indigo-400 mr-2"></i>
                 System Settings
             </h1>
-            <p class="mt-1 text-sm text-gray-500">Manage your application settings and preferences</p>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage your application settings and preferences</p>
         </div>
 
         @if(session('success'))
-            <div class="mb-6 bg-green-50 border-l-4 border-green-400 p-4 rounded-md">
+            <div class="mb-6 bg-green-50 dark:bg-green-500/10 border-l-4 border-green-400 dark:border-green-600 p-4 rounded-md">
                 <div class="flex">
-                    <i class="fas fa-check-circle text-green-400 mt-0.5"></i>
+                    <i class="fas fa-check-circle text-green-400 dark:text-green-500 mt-0.5"></i>
                     <div class="ml-3">
-                        <p class="text-sm text-green-700">{{ session('success') }}</p>
+                        <p class="text-sm text-green-700 dark:text-green-400">{{ session('success') }}</p>
                     </div>
                 </div>
             </div>
@@ -26,9 +26,9 @@
         <div class="flex flex-col lg:flex-row gap-6">
             <!-- Sidebar - Settings Groups -->
             <div class="lg:w-64 flex-shrink-0">
-                <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-                    <div class="p-4 bg-gray-50 border-b border-gray-200">
-                        <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">Settings Groups</h2>
+                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm overflow-hidden">
+                    <div class="p-4 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                        <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Settings Groups</h2>
                     </div>
                     <nav class="p-2 space-y-1">
                         @foreach($groups as $groupItem)
@@ -51,8 +51,8 @@
                             <a href="{{ route('settings.group', ['group' => $groupItem]) }}"
                                class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200
                                       {{ $group === $groupItem
-                                          ? 'bg-indigo-50 text-indigo-700 border-l-4 border-indigo-600'
-                                          : 'text-gray-700 hover:bg-gray-100' }}">
+                                          ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-l-4 border-indigo-600'
+                                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                                 <i class="fas fa-{{ $icon }} mr-3 w-5 text-center"></i>
                                 {{ ucfirst($groupItem) }}
                             </a>
@@ -63,8 +63,8 @@
 
             <!-- Main Content - Settings Form -->
             <div class="flex-1">
-                <div class="bg-white rounded-lg shadow-sm">
-                    <div class="p-6 border-b border-gray-200">
+                <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm">
+                    <div class="p-6 border-b border-gray-200 dark:border-gray-800">
                         @php
                             $headerIcon = match($group) {
                                 'general' => 'sliders-h',
@@ -81,34 +81,34 @@
                                 default => 'cog'
                             };
                         @endphp
-                        <h2 class="text-lg font-semibold text-gray-900 flex items-center">
-                            <i class="fas fa-{{ $headerIcon }} text-indigo-600 mr-2"></i>
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
+                            <i class="fas fa-{{ $headerIcon }} text-indigo-600 dark:text-indigo-400 mr-2"></i>
                             {{ ucfirst($group) }} Settings
                         </h2>
-                        <p class="mt-1 text-sm text-gray-500">Configure your {{ $group }} settings below</p>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Configure your {{ $group }} settings below</p>
                     </div>
 
                     @if($group === 'currency')
                         <!-- Currency Preview -->
-                        <div class="bg-gradient-to-r from-indigo-50 to-blue-50 p-6 border-b border-indigo-100">
-                            <h3 class="text-sm font-semibold text-gray-700 mb-4">
-                                <i class="fas fa-eye mr-2 text-indigo-600"></i>Currency Preview
+                        <div class="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-500/10 dark:to-blue-500/10 p-6 border-b border-indigo-100 dark:border-indigo-900">
+                            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
+                                <i class="fas fa-eye mr-2 text-indigo-600 dark:text-indigo-400"></i>Currency Preview
                             </h3>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div class="bg-white p-4 rounded-lg border border-gray-200">
-                                    <div class="text-xs text-gray-500 mb-1">Small Amount</div>
-                                    <div class="text-2xl font-bold text-gray-900">{{ \App\Helpers\CurrencyHelper::format(150.50) }}</div>
+                                <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Small Amount</div>
+                                    <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ \App\Helpers\CurrencyHelper::format(150.50) }}</div>
                                 </div>
-                                <div class="bg-white p-4 rounded-lg border border-gray-200">
-                                    <div class="text-xs text-gray-500 mb-1">Medium Amount</div>
-                                    <div class="text-2xl font-bold text-gray-900">{{ \App\Helpers\CurrencyHelper::format(1500.75) }}</div>
+                                <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Medium Amount</div>
+                                    <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ \App\Helpers\CurrencyHelper::format(1500.75) }}</div>
                                 </div>
-                                <div class="bg-white p-4 rounded-lg border border-gray-200">
-                                    <div class="text-xs text-gray-500 mb-1">Large Amount</div>
-                                    <div class="text-2xl font-bold text-gray-900">{{ \App\Helpers\CurrencyHelper::format(150000.00) }}</div>
+                                <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Large Amount</div>
+                                    <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ \App\Helpers\CurrencyHelper::format(150000.00) }}</div>
                                 </div>
                             </div>
-                            <div class="mt-4 text-xs text-gray-600">
+                            <div class="mt-4 text-xs text-gray-600 dark:text-gray-400">
                                 <strong>Current Settings:</strong>
                                 Code: <span class="font-mono">{{ \App\Helpers\CurrencyHelper::getCode() }}</span> |
                                 Symbol: <span class="font-mono">{{ \App\Helpers\CurrencyHelper::getSymbol() }}</span> |
@@ -124,28 +124,28 @@
                         @if($settings->isEmpty())
                             <!-- Empty State -->
                             <div class="p-12 text-center">
-                                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-50 mb-4">
+                                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-50 dark:bg-indigo-500/10 mb-4">
                                     <i class="fas fa-cog text-2xl text-indigo-400"></i>
                                 </div>
-                                <h3 class="text-lg font-medium text-gray-900 mb-2">No Settings Available</h3>
-                                <p class="text-gray-500">There are no settings configured for this group yet.</p>
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No Settings Available</h3>
+                                <p class="text-gray-500 dark:text-gray-400">There are no settings configured for this group yet.</p>
                             </div>
                         @else
                             <div class="p-6">
                                 <div class="space-y-6">
                                     @foreach($settings as $key => $setting)
-                                <div class="setting-field bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                <div class="setting-field bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                                     @if($setting->type === 'image')
                                         <!-- Image Upload Field -->
                                         <div class="mb-4">
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                 {{ $setting->label }}
                                             </label>
                                             @if($setting->value)
                                                 <div class="mb-3 relative inline-block">
                                                     <img src="{{ asset('storage/' . $setting->value) }}"
                                                          alt="{{ $setting->label }}"
-                                                         class="h-32 rounded-lg border border-gray-300">
+                                                         class="h-32 rounded-lg border border-gray-300 dark:border-gray-700">
                                                     <button type="button"
                                                        onclick="removeSettingImage('{{ route('settings.delete-value', ['key' => $key]) }}')"
                                                        class="absolute -top-2 -right-2 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-600 shadow-lg">
@@ -154,42 +154,42 @@
                                                 </div>
                                             @endif
                                             <div class="mt-2 flex items-center gap-3">
-                                                <label class="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                                                    <i class="fas fa-cloud-upload-alt text-indigo-600 mr-2"></i>
-                                                    <span class="text-sm text-gray-700">Choose File</span>
+                                                <label class="flex items-center px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                                    <i class="fas fa-cloud-upload-alt text-indigo-600 dark:text-indigo-400 mr-2"></i>
+                                                    <span class="text-sm text-gray-700 dark:text-gray-300">Choose File</span>
                                                     <input type="file" name="{{ $key }}" class="hidden" accept="image/*">
                                                 </label>
-                                                <span class="text-sm text-gray-500">JPG, PNG, GIF up to 2MB</span>
+                                                <span class="text-sm text-gray-500 dark:text-gray-400">JPG, PNG, GIF up to 2MB</span>
                                             </div>
                                             @if($setting->description)
-                                                <p class="mt-1 text-xs text-gray-500">{{ $setting->description }}</p>
+                                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ $setting->description }}</p>
                                             @endif
                                         </div>
 
                                     @elseif($setting->type === 'textarea')
                                         <!-- Textarea Field -->
                                         <div>
-                                            <label for="{{ $key }}" class="block text-sm font-medium text-gray-700 mb-1">
+                                            <label for="{{ $key }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                                 {{ $setting->label }}
                                             </label>
                                             <textarea name="{{ $key }}"
                                                       id="{{ $key }}"
                                                       rows="3"
-                                                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">{{ old($key, $setting->value) }}</textarea>
+                                                      class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">{{ old($key, $setting->value) }}</textarea>
                                             @if($setting->description)
-                                                <p class="mt-1 text-xs text-gray-500">{{ $setting->description }}</p>
+                                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ $setting->description }}</p>
                                             @endif
                                         </div>
 
                                     @elseif($setting->type === 'checkbox' || $setting->type === 'boolean')
                                         <!-- Checkbox Field -->
-                                        <div class="flex items-center justify-between py-3 border-b border-gray-200 last:border-0">
+                                        <div class="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-0">
                                             <div>
-                                                <label for="{{ $key }}" class="text-sm font-medium text-gray-700 cursor-pointer">
+                                                <label for="{{ $key }}" class="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
                                                     {{ $setting->label }}
                                                 </label>
                                                 @if($setting->description)
-                                                    <p class="text-xs text-gray-500 mt-0.5">{{ $setting->description }}</p>
+                                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ $setting->description }}</p>
                                                 @endif
                                             </div>
                                             <div class="ml-3">
@@ -198,19 +198,19 @@
                                                        id="{{ $key }}"
                                                        value="1"
                                                        {{ $setting->getValue() ? 'checked' : '' }}
-                                                       class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                                       class="w-5 h-5 text-indigo-600 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500">
                                             </div>
                                         </div>
 
                                     @elseif($setting->type === 'select')
                                         <!-- Select Field -->
                                         <div>
-                                            <label for="{{ $key }}" class="block text-sm font-medium text-gray-700 mb-1">
+                                            <label for="{{ $key }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                                 {{ $setting->label }}
                                             </label>
                                             <select name="{{ $key }}"
                                                     id="{{ $key }}"
-                                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
                                                 @if($key === 'timezone')
                                                     @foreach(['UTC', 'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles', 'Europe/London', 'Europe/Paris', 'Asia/Tokyo', 'Asia/Shanghai', 'Australia/Sydney'] as $tz)
                                                         <option value="{{ $tz }}" {{ $setting->value === $tz ? 'selected' : '' }}>{{ $tz }}</option>
@@ -260,14 +260,14 @@
                                                 @endif
                                             </select>
                                             @if($setting->description)
-                                                <p class="mt-1 text-xs text-gray-500">{{ $setting->description }}</p>
+                                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ $setting->description }}</p>
                                             @endif
                                         </div>
 
                                     @elseif($setting->type === 'number')
                                         <!-- Number Field -->
                                         <div>
-                                            <label for="{{ $key }}" class="block text-sm font-medium text-gray-700 mb-1">
+                                            <label for="{{ $key }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                                 {{ $setting->label }}
                                             </label>
                                             <div class="flex items-center gap-3">
@@ -276,65 +276,65 @@
                                                        id="{{ $key }}"
                                                        value="{{ old($key, $setting->value) }}"
                                                        min="0"
-                                                       class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                                       class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
                                                 @if($key === 'password_expiry_days' || $key === 'api_key_expiry_days' || $key === 'auto_delete_trash_days')
-                                                    <span class="text-sm font-medium text-gray-600 min-w-16">days</span>
+                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-16">days</span>
                                                 @elseif($key === 'session_timeout' || $key === 'login_lockout_duration' || $key === 'task_reminder_hours')
-                                                    <span class="text-sm font-medium text-gray-600 min-w-20">minutes</span>
+                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-20">minutes</span>
                                                 @elseif($key === 'password_min_length')
-                                                    <span class="text-sm font-medium text-gray-600 min-w-16">chars</span>
+                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-16">chars</span>
                                                 @elseif($key === 'items_per_page')
-                                                    <span class="text-sm font-medium text-gray-600 min-w-20">items</span>
+                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-20">items</span>
                                                 @elseif($key === 'max_tasks_per_project' || $key === 'max_teams_per_user' || $key === 'max_team_members')
-                                                    <span class="text-sm font-medium text-gray-600 min-w-20">max</span>
+                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-20">max</span>
                                                 @elseif($key === 'login_max_attempts' || $key === 'api_rate_limit')
-                                                    <span class="text-sm font-medium text-gray-600 min-w-20">attempts</span>
+                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-20">attempts</span>
                                                 @elseif($key === 'max_file_size')
-                                                    <span class="text-sm font-medium text-gray-600 min-w-16">MB</span>
+                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-16">MB</span>
                                                 @elseif($key === 'storage_limit_per_user')
-                                                    <span class="text-sm font-medium text-gray-600 min-w-20">MB</span>
+                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-20">MB</span>
                                                 @elseif($key === 'decimal_places')
-                                                    <span class="text-sm font-medium text-gray-600 min-w-20">places</span>
+                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-20">places</span>
                                                 @elseif($key === 'tax_rate')
-                                                    <span class="text-sm font-medium text-gray-600 min-w-16">%</span>
+                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-16">%</span>
                                                 @else
-                                                    <span class="text-sm font-medium text-gray-600 min-w-16"></span>
+                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-16"></span>
                                                 @endif
                                             </div>
                                             @if($setting->description)
-                                                <p class="mt-1 text-xs text-gray-500">{{ $setting->description }}</p>
+                                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ $setting->description }}</p>
                                             @endif
                                         </div>
 
                                     @elseif($setting->type === 'email')
                                         <!-- Email Field -->
                                         <div>
-                                            <label for="{{ $key }}" class="block text-sm font-medium text-gray-700 mb-1">
+                                            <label for="{{ $key }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                                 {{ $setting->label }}
                                             </label>
                                             <input type="email"
                                                    name="{{ $key }}"
                                                    id="{{ $key }}"
                                                    value="{{ old($key, $setting->value) }}"
-                                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
                                             @if($setting->description)
-                                                <p class="mt-1 text-xs text-gray-500">{{ $setting->description }}</p>
+                                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ $setting->description }}</p>
                                             @endif
                                         </div>
 
                                     @else
                                         <!-- Default Text Field -->
                                         <div>
-                                            <label for="{{ $key }}" class="block text-sm font-medium text-gray-700 mb-1">
+                                            <label for="{{ $key }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                                 {{ $setting->label }}
                                             </label>
                                             <input type="text"
                                                    name="{{ $key }}"
                                                    id="{{ $key }}"
                                                    value="{{ old($key, $setting->value) }}"
-                                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
                                             @if($setting->description)
-                                                <p class="mt-1 text-xs text-gray-500">{{ $setting->description }}</p>
+                                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ $setting->description }}</p>
                                             @endif
                                         </div>
                                     @endif
@@ -343,9 +343,9 @@
                                 </div>
 
                                 <!-- Form Actions -->
-                                <div class="mt-8 pt-6 border-t border-gray-200 flex justify-end gap-3">
+                                <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800 flex justify-end gap-3">
                                     <a href="{{ route('dashboard') }}"
-                                       class="px-5 py-2.5 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200 text-sm">
+                                       class="px-5 py-2.5 border-2 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 text-sm">
                                         <i class="fas fa-times mr-1.5"></i> Cancel
                                     </a>
                                     <button type="submit"
@@ -359,34 +359,34 @@
 
                     @if($group === 'project')
                         <!-- Project Status Management -->
-                        <div class="border-t border-gray-200 p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                                <i class="fas fa-project-diagram text-indigo-600 mr-2"></i>
+                        <div class="border-t border-gray-200 dark:border-gray-800 p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                                <i class="fas fa-project-diagram text-indigo-600 dark:text-indigo-400 mr-2"></i>
                                 Project Status Management
                             </h3>
-                            <p class="text-sm text-gray-500 mb-6">Manage and customize project statuses that can be used across the application</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Manage and customize project statuses that can be used across the application</p>
 
                             <!-- Add New Status Form -->
-                            <div class="bg-gray-50 rounded-lg p-4 mb-6">
-                                <h4 class="text-sm font-semibold text-gray-700 mb-3">Add New Status</h4>
+                            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-6">
+                                <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Add New Status</h4>
                                 <form method="POST" action="{{ route('settings.project-statuses.store') }}" class="grid grid-cols-1 md:grid-cols-5 gap-3">
                                     @csrf
                                     <div>
                                         <input type="text" name="key" placeholder="Key (e.g., in-review)" required
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                                pattern="[a-z0-9-]+" title="Only lowercase letters, numbers, and hyphens">
                                     </div>
                                     <div>
                                         <input type="text" name="label" placeholder="Label (e.g., In Review)" required
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
                                     </div>
                                     <div>
                                         <input type="text" name="icon" placeholder="Icon (e.g., 👀)" required
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
                                     </div>
                                     <div>
                                         <input type="text" name="color" placeholder="Color (e.g., bg-purple-100 text-purple-800)" required
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
                                     </div>
                                     <button type="submit"
                                             class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
@@ -401,12 +401,12 @@
                                     $projectStatuses = \App\Models\Setting::getProjectStatuses();
                                 @endphp
                                 @foreach($projectStatuses as $key => $status)
-                                    <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+                                    <div class="flex items-center justify-between p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow">
                                         <div class="flex items-center space-x-4">
                                             <span class="text-2xl">{{ $status['icon'] }}</span>
                                             <div>
-                                                <div class="font-semibold text-gray-900">{{ $status['label'] }}</div>
-                                                <div class="text-xs text-gray-500">{{ $key }}</div>
+                                                <div class="font-semibold text-gray-900 dark:text-gray-100">{{ $status['label'] }}</div>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ $key }}</div>
                                             </div>
                                             <span class="px-3 py-1 text-xs font-semibold rounded-full {{ $status['color'] }}">
                                                 {{ $status['label'] }}
@@ -429,7 +429,7 @@
                                                 </form>
                                             </div>
                                         @else
-                                            <span class="text-xs text-gray-400 italic">Default status</span>
+                                            <span class="text-xs text-gray-400 dark:text-gray-500 italic">Default status</span>
                                         @endif
                                     </div>
                                 @endforeach
@@ -444,10 +444,10 @@
 
 <!-- Edit Status Modal -->
 <div id="editStatusModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-    <div class="relative mx-auto p-6 border-0 shadow-xl rounded-2xl bg-white w-full max-w-lg mx-4">
+    <div class="relative mx-auto p-6 border-0 shadow-xl rounded-2xl bg-white dark:bg-gray-900 w-full max-w-lg mx-4">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="text-xl font-bold text-gray-900">Edit Project Status</h3>
-            <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">Edit Project Status</h3>
+            <button onclick="closeEditModal()" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                 <i class="fas fa-times text-xl"></i>
             </button>
         </div>
@@ -457,23 +457,23 @@
             <input type="hidden" name="original_key" id="edit_original_key" value="">
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Label</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Label</label>
                     <input type="text" name="label" id="edit_label" required
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Icon</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Icon</label>
                     <input type="text" name="icon" id="edit_icon" required
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Color</label>
                     <input type="text" name="color" id="edit_color" required
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
                 </div>
-                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-800">
                     <button type="button" onclick="closeEditModal()"
-                            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                            class="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
                         Cancel
                     </button>
                     <button type="submit"

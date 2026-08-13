@@ -17,6 +17,7 @@ use App\Notifications\OrderStatusNotification;
 use App\Services\EmailService;
 use App\Services\OrderDocumentService;
 use App\Services\RichTextSanitizer;
+use App\Services\SalesCreditService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -287,6 +288,7 @@ class OrderController extends Controller
         ]);
 
         $documentService->store($order, $request->file('client_documents', []));
+        app(SalesCreditService::class)->apply($order, $validated['sales_shares'] ?? [], auth()->id());
 
         return redirect()->route('orders.index')
             ->with('success', 'Order added. Operations will pick it up from here.');
@@ -311,6 +313,7 @@ class OrderController extends Controller
         ]);
 
         $documentService->store($order, $request->file('client_documents', []));
+        app(SalesCreditService::class)->apply($order, $validated['sales_shares'] ?? [], $order->sales_user_id);
 
         return redirect()->route('orders.index')
             ->with('success', 'Order updated successfully.');
@@ -383,7 +386,9 @@ class OrderController extends Controller
         $profiles = Profile::active()->get();
         $profilePlatforms = $profiles->pluck('platform', 'id');
 
-        return view('orders.create', compact('teams', 'techStacks', 'statuses', 'users', 'profiles', 'isTeamLeader', 'profilePlatforms'));
+        $salesPeople = app(SalesCreditService::class)->creditableUsers($user);
+
+        return view('orders.create', compact('teams', 'techStacks', 'statuses', 'users', 'profiles', 'isTeamLeader', 'profilePlatforms', 'salesPeople'));
     }
 
     public function store(StoreOrderRequest $request, OrderDocumentService $documentService)
@@ -426,6 +431,10 @@ class OrderController extends Controller
         ]);
 
         $documentService->store($order, $request->file('client_documents', []));
+
+        if (! empty($validated['sales_shares'])) {
+            app(SalesCreditService::class)->apply($order, $validated['sales_shares']);
+        }
 
         // Attach users
         if (! empty($validated['users'])) {
@@ -477,6 +486,7 @@ class OrderController extends Controller
             'creator',
             'users',
             'statusHistory.changedByUser',
+            'salesShares.user',
         ]);
 
         $audits = $order->audits()->with('user')->paginate(self::AUDITS_PER_PAGE);
@@ -536,9 +546,10 @@ class OrderController extends Controller
         $statuses = OrderStatus::orderBy('sort_order')->get();
         $profiles = Profile::active()->get();
         $profilePlatforms = $profiles->pluck('platform', 'id');
-        $order->load('users');
+        $order->load(['users', 'salesShares.user']);
+        $salesPeople = app(SalesCreditService::class)->creditableUsers($user);
 
-        return view('orders.edit', compact('order', 'teams', 'techStacks', 'statuses', 'users', 'profiles', 'profilePlatforms'));
+        return view('orders.edit', compact('order', 'teams', 'techStacks', 'statuses', 'users', 'profiles', 'profilePlatforms', 'salesPeople'));
     }
 
     public function update(UpdateOrderRequest $request, Order $order, OrderDocumentService $documentService)
@@ -577,6 +588,10 @@ class OrderController extends Controller
         ]);
 
         $documentService->store($order, $request->file('client_documents', []));
+
+        if (! empty($validated['sales_shares'])) {
+            app(SalesCreditService::class)->apply($order, $validated['sales_shares']);
+        }
 
         // Sync users
         if (isset($validated['users'])) {

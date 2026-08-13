@@ -6,8 +6,8 @@
     <div class="mb-8">
         <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6">
             <div class="flex-1">
-                <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Teams Management</h1>
-                <p class="text-gray-600 text-lg">Organize and manage your development teams efficiently</p>
+                <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">Teams Management</h1>
+                <p class="text-gray-600 dark:text-gray-400 text-lg">Organize and manage your development teams efficiently</p>
             </div>
 
             @can('create', \App\Models\Team::class)
@@ -22,16 +22,16 @@
     </div>
 
     <!-- Teams DataTable -->
-    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 overflow-hidden">
         <!-- Enhanced Filter Section -->
-        <div class="bg-gradient-to-r from-gray-50 to-gray-100 p-6 border-b border-gray-200">
+        <div class="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-800 p-6 border-b border-gray-200 dark:border-gray-700">
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                 <!-- Title Section -->
                 <div class="flex items-center space-x-3">
-                    <div class="bg-indigo-100 rounded-lg p-2">
-                        <i class="fas fa-users text-indigo-600 text-lg"></i>
+                    <div class="bg-indigo-100 dark:bg-indigo-500/10 rounded-lg p-2">
+                        <i class="fas fa-users text-indigo-600 dark:text-indigo-400 text-lg"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900">Teams Directory</h3>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">Teams Directory</h3>
                 </div>
 
                 <!-- Filters and Actions in One Row -->
@@ -39,19 +39,19 @@
                     <!-- Filters -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 xl:gap-2">
                         <div class="relative">
-                            <select id="leaderFilter" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm appearance-none">
+                            <select id="leaderFilter" class="w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm appearance-none">
                                 <option value="">All Leaders</option>
                             </select>
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="fas fa-user-tie text-indigo-500 text-xs"></i>
                             </div>
                             <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                                <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500 text-xs"></i>
                             </div>
                         </div>
 
                         <div class="relative">
-                            <select id="memberCountFilter" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm appearance-none">
+                            <select id="memberCountFilter" class="w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm appearance-none">
                                 <option value="">All Sizes</option>
                                 <option value="1-3">1-3 Members</option>
                                 <option value="4-6">4-6 Members</option>
@@ -61,13 +61,13 @@
                                 <i class="fas fa-users text-green-500 text-xs"></i>
                             </div>
                             <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                                <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500 text-xs"></i>
                             </div>
                         </div>
 
                         <div class="relative">
                             <input type="text" id="searchInput" placeholder="Search teams..."
-                                   class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm">
+                                   class="w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="fas fa-search text-purple-500 text-xs"></i>
                             </div>
@@ -77,7 +77,7 @@
                     
                     <!-- Action Buttons -->
                     <div class="flex items-center gap-2">
-                        <button id="resetFilters" class="inline-flex items-center justify-center px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg shadow-sm hover:shadow-md border border-gray-300 transition-all duration-200 hover:scale-105">
+                        <button id="resetFilters" class="inline-flex items-center justify-center px-4 py-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium rounded-lg shadow-sm hover:shadow-md border border-gray-300 dark:border-gray-700 transition-all duration-200 hover:scale-105">
                             <i class="fas fa-redo mr-2"></i>
                             
                         </button>
@@ -91,38 +91,38 @@
         </div>
 
         <!-- Enhanced Table with Better UX -->
-        <div class="overflow-x-auto bg-white">
+        <div class="overflow-x-auto bg-white dark:bg-gray-900">
             <table id="teams-table" class="w-full" style="border-collapse: separate; border-spacing: 0;">
-                <thead class="bg-gradient-to-r from-indigo-50 to-purple-50">
+                <thead class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10">
                     <tr>
                         <th class="px-6 py-4 text-left">
                             <div class="flex items-center space-x-2">
                                 <i class="fas fa-users text-indigo-600"></i>
-                                <span class="text-sm font-bold text-gray-900 uppercase tracking-wide">Team</span>
+                                <span class="text-sm font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wide">Team</span>
                             </div>
                         </th>
                         <th class="px-6 py-4 text-left">
                             <div class="flex items-center space-x-2">
                                 <i class="fas fa-user-tie text-green-600"></i>
-                                <span class="text-sm font-bold text-gray-900 uppercase tracking-wide">Leader</span>
+                                <span class="text-sm font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wide">Leader</span>
                             </div>
                         </th>
                         <th class="px-6 py-4 text-center">
                             <div class="flex items-center justify-center space-x-2">
                                 <i class="fas fa-users text-blue-600"></i>
-                                <span class="text-sm font-bold text-gray-900 uppercase tracking-wide">Members</span>
+                                <span class="text-sm font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wide">Members</span>
                             </div>
                         </th>
                         <th class="px-6 py-4 text-center">
                             <div class="flex items-center justify-center space-x-2">
                                 <i class="fas fa-project-diagram text-purple-600"></i>
-                                <span class="text-sm font-bold text-gray-900 uppercase tracking-wide">Projects</span>
+                                <span class="text-sm font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wide">Projects</span>
                             </div>
                         </th>
                         <th class="px-6 py-4 text-center">
                             <div class="flex items-center justify-center space-x-2">
-                                <i class="fas fa-cog text-gray-600"></i>
-                                <span class="text-sm font-bold text-gray-900 uppercase tracking-wide">Actions</span>
+                                <i class="fas fa-cog text-gray-600 dark:text-gray-400"></i>
+                                <span class="text-sm font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wide">Actions</span>
                             </div>
                         </th>
                     </tr>
@@ -137,8 +137,8 @@
                                         <i class="fas fa-users text-indigo-600 text-sm"></i>
                                     </div>
                                 </div>
-                                <p class="mt-4 text-gray-600 font-medium">Loading teams...</p>
-                                <p class="text-sm text-gray-400 mt-1">Please wait while we fetch your data</p>
+                                <p class="mt-4 text-gray-600 dark:text-gray-400 font-medium">Loading teams...</p>
+                                <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">Please wait while we fetch your data</p>
                             </div>
                         </td>
                     </tr>
@@ -148,11 +148,11 @@
     </div>
 
     <!-- Table Footer with Compact Stats -->
-    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-        <div class="px-6 py-4 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 overflow-hidden">
+        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-800">
             <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <!-- Showing Info -->
-                <div class="text-sm text-gray-600">
+                <div class="text-sm text-gray-600 dark:text-gray-400">
                     <span id="showingInfo">
                         Showing <span id="showingCount">0</span> of <span id="totalCount">0</span> teams
                     </span>
@@ -164,7 +164,7 @@
                         <div class="bg-blue-500 rounded p-1.5">
                             <i class="fas fa-users text-white text-xs"></i>
                         </div>
-                        <span class="text-sm font-semibold text-gray-700">
+                        <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
                             <span id="totalTeams">0</span> Teams
                         </span>
                     </div>
@@ -172,7 +172,7 @@
                         <div class="bg-green-500 rounded p-1.5">
                             <i class="fas fa-user text-white text-xs"></i>
                         </div>
-                        <span class="text-sm font-semibold text-gray-700">
+                        <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
                             <span id="activeMembers">0</span> Members
                         </span>
                     </div>
@@ -180,7 +180,7 @@
                         <div class="bg-purple-500 rounded p-1.5">
                             <i class="fas fa-project-diagram text-white text-xs"></i>
                         </div>
-                        <span class="text-sm font-semibold text-gray-700">
+                        <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
                             <span id="activeProjects">0</span> Projects
                         </span>
                     </div>
@@ -232,6 +232,22 @@
     .min-w-0 {
         min-width: 0;
     }
+
+    /* ===== Dark Mode ===== */
+    .dark #teams-table th {
+        border-bottom-color: #374151 !important;
+        background-color: #1f2937 !important;
+        color: #e5e7eb !important;
+    }
+
+    .dark #teams-table tbody tr:hover {
+        background-color: #1f2937;
+        box-shadow: none;
+    }
+
+    .dark #teams-table td {
+        border-bottom-color: #1f2937;
+    }
 </style>
 @endpush
 
@@ -280,7 +296,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const tbody = document.getElementById('teams-tbody');
         tbody.innerHTML = `
             <tr>
-                <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                <td colspan="5" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                     <div class="flex items-center justify-center">
                         <svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -321,11 +337,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         <tr>
                             <td colspan="5" class="px-6 py-12">
                                 <div class="flex flex-col items-center justify-center">
-                                    <div class="bg-red-100 rounded-full p-4 mb-4">
+                                    <div class="bg-red-100 dark:bg-red-500/10 rounded-full p-4 mb-4">
                                         <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
                                     </div>
-                                    <p class="text-red-600 font-semibold">Failed to load teams data</p>
-                                    <p class="text-sm text-gray-400 mt-1">Please refresh the page and try again</p>
+                                    <p class="text-red-600 dark:text-red-400 font-semibold">Failed to load teams data</p>
+                                    <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">Please refresh the page and try again</p>
                                 </div>
                             </td>
                         </tr>
@@ -339,11 +355,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     <tr>
                         <td colspan="5" class="px-6 py-12">
                             <div class="flex flex-col items-center justify-center">
-                                <div class="bg-red-100 rounded-full p-4 mb-4">
+                                <div class="bg-red-100 dark:bg-red-500/10 rounded-full p-4 mb-4">
                                     <i class="fas fa-wifi-slash text-red-600 text-2xl"></i>
                                 </div>
-                                <p class="text-red-600 font-semibold">Connection Error</p>
-                                <p class="text-sm text-gray-400 mt-1">Unable to load teams. Please check your connection.</p>
+                                <p class="text-red-600 dark:text-red-400 font-semibold">Connection Error</p>
+                                <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">Unable to load teams. Please check your connection.</p>
                                 <button onclick="loadTeams()" class="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors duration-200">
                                     <i class="fas fa-redo mr-2"></i>Try Again
                                 </button>
@@ -362,11 +378,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 <tr>
                     <td colspan="5" class="px-6 py-12">
                         <div class="flex flex-col items-center justify-center">
-                            <div class="bg-gray-100 rounded-full p-6 mb-4">
-                                <i class="fas fa-users-slash text-gray-400 text-3xl"></i>
+                            <div class="bg-gray-100 dark:bg-gray-800 rounded-full p-6 mb-4">
+                                <i class="fas fa-users-slash text-gray-400 dark:text-gray-500 text-3xl"></i>
                             </div>
-                            <p class="text-gray-600 font-semibold text-lg">No teams found</p>
-                            <p class="text-sm text-gray-400 mt-1">Try adjusting your search filters or create a new team</p>
+                            <p class="text-gray-600 dark:text-gray-400 font-semibold text-lg">No teams found</p>
+                            <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">Try adjusting your search filters or create a new team</p>
                             @can('create', \App\Models\Team::class)
                             <a href="{{ route('teams.create') }}" class="mt-4 inline-flex items-center justify-center px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105">
                                 <i class="fas fa-plus mr-2"></i>
@@ -411,7 +427,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 : description;
 
             return `
-            <tr class="border-b border-gray-100 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200">
+            <tr class="border-b border-gray-100 dark:border-gray-800 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-500/10 dark:hover:to-indigo-500/10 transition-all duration-200">
                 <td class="px-6 py-5">
                     <div class="flex items-center min-w-0">
                         <div class="flex-shrink-0">
@@ -420,8 +436,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         </div>
                         <div class="ml-4 flex-1 min-w-0">
-                            <div class="text-base font-bold text-gray-900 truncate">${team.name || 'Untitled Team'}</div>
-                            <div class="text-sm text-gray-500 truncate mt-1">${truncatedDescription}</div>
+                            <div class="text-base font-bold text-gray-900 dark:text-gray-100 truncate">${team.name || 'Untitled Team'}</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400 truncate mt-1">${truncatedDescription}</div>
                         </div>
                     </div>
                 </td>
@@ -434,59 +450,59 @@ document.addEventListener('DOMContentLoaded', function() {
                                      alt="${teamLeader.name}">
                             </div>
                             <div class="ml-3 flex-1 min-w-0">
-                                <div class="text-sm font-semibold text-gray-900 truncate">${teamLeader.name}</div>
-                                <div class="text-xs text-gray-500 flex items-center mt-1">
+                                <div class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">${teamLeader.name}</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center mt-1">
                                     <i class="fas fa-id-badge mr-1"></i>
                                     ${teamLeader.employee_id || 'N/A'}
                                 </div>
                             </div>
                         </div>
                     ` : `
-                        <div class="flex items-center text-gray-400">
+                        <div class="flex items-center text-gray-400 dark:text-gray-500">
                             <div class="flex-shrink-0">
-                                <div class="h-12 w-12 rounded-xl bg-gray-200 flex items-center justify-center">
-                                    <i class="fas fa-user-slash text-gray-500"></i>
+                                <div class="h-12 w-12 rounded-xl bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                                    <i class="fas fa-user-slash text-gray-500 dark:text-gray-400"></i>
                                 </div>
                             </div>
                             <div class="ml-3">
                                 <div class="text-sm font-medium">No Leader</div>
-                                <div class="text-xs text-gray-400">Assign a team leader</div>
+                                <div class="text-xs text-gray-400 dark:text-gray-500">Assign a team leader</div>
                             </div>
                         </div>
                     `}
                 </td>
                 <td class="px-6 py-5 text-center">
                     <div class="inline-flex flex-col items-center">
-                        <div class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 shadow-sm">
+                        <div class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-gradient-to-r from-blue-100 to-blue-200 dark:from-blue-500/10 dark:to-blue-500/10 text-blue-800 dark:text-blue-400 shadow-sm">
                             <i class="fas fa-users mr-2"></i>
                             ${membersParts[0] || '0'}
                         </div>
-                        <div class="text-xs text-gray-500 mt-1 font-medium">${membersParts[1] || '0'} active</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">${membersParts[1] || '0'} active</div>
                     </div>
                 </td>
                 <td class="px-6 py-5 text-center">
                     <div class="inline-flex flex-col items-center">
-                        <div class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 shadow-sm">
+                        <div class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-gradient-to-r from-purple-100 to-purple-200 dark:from-purple-500/10 dark:to-purple-500/10 text-purple-800 dark:text-purple-400 shadow-sm">
                             <i class="fas fa-project-diagram mr-2"></i>
                             ${projectsParts[0] || '0'}
                         </div>
-                        <div class="text-xs text-gray-500 mt-1 font-medium">${projectsParts[1] || '0'} active</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">${projectsParts[1] || '0'} active</div>
                     </div>
                 </td>
                 <td class="px-6 py-5 text-center">
                     <div class="flex items-center justify-center space-x-1">
                         <a href="/teams/${teamId}"
-                           class="group inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r from-indigo-100 to-indigo-200 text-indigo-600 hover:from-indigo-200 hover:to-indigo-300 transition-all duration-200 hover:scale-110 shadow-sm"
+                           class="group inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r from-indigo-100 to-indigo-200 dark:from-indigo-500/10 dark:to-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:from-indigo-200 hover:to-indigo-300 dark:hover:from-indigo-500/20 dark:hover:to-indigo-500/20 transition-all duration-200 hover:scale-110 shadow-sm"
                            title="View Team Details">
                             <i class="fas fa-eye text-sm group-hover:scale-110 transition-transform"></i>
                         </a>
                         <a href="/teams/${teamId}/edit"
-                           class="group inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r from-emerald-100 to-emerald-200 text-emerald-600 hover:from-emerald-200 hover:to-emerald-300 transition-all duration-200 hover:scale-110 shadow-sm"
+                           class="group inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r from-emerald-100 to-emerald-200 dark:from-emerald-500/10 dark:to-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:from-emerald-200 hover:to-emerald-300 dark:hover:from-emerald-500/20 dark:hover:to-emerald-500/20 transition-all duration-200 hover:scale-110 shadow-sm"
                            title="Edit Team">
                             <i class="fas fa-edit text-sm group-hover:scale-110 transition-transform"></i>
                         </a>
                         <button onclick="deleteTeam(${teamId})"
-                                class="group inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r from-red-100 to-red-200 text-red-600 hover:from-red-200 hover:to-red-300 transition-all duration-200 hover:scale-110 shadow-sm"
+                                class="group inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r from-red-100 to-red-200 dark:from-red-500/10 dark:to-red-500/10 text-red-600 dark:text-red-400 hover:from-red-200 hover:to-red-300 dark:hover:from-red-500/20 dark:hover:to-red-500/20 transition-all duration-200 hover:scale-110 shadow-sm"
                                 title="Delete Team">
                             <i class="fas fa-trash text-sm group-hover:scale-110 transition-transform"></i>
                         </button>

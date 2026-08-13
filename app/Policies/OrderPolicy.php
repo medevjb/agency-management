@@ -29,7 +29,10 @@ class OrderPolicy
         }
 
         if ($user->isSales()) {
-            return in_array($order->sales_user_id, $user->salesVisibleUserIds(), true);
+            $visibleIds = $user->salesVisibleUserIds();
+
+            return in_array($order->sales_user_id, $visibleIds, true)
+                || $order->salesShares()->whereIn('user_id', $visibleIds)->exists();
         }
 
         if ($user->hasRole(['operation-manager', 'project-manager', 'team-member'])) {

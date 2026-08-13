@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreBugReportRequest;
 use App\Http\Requests\UpdateBugReportRequest;
+use App\Jobs\TriageBugReportJob;
 use App\Models\BugCategory;
 use App\Models\BugImage;
 use App\Models\BugPriority;
 use App\Models\BugReport;
+use App\Services\BugTriageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -74,26 +76,27 @@ class BugReportController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create(): View
+    public function create(BugTriageService $bugTriageService): View
     {
         $this->authorize('create', BugReport::class);
 
         $categories = BugCategory::all();
         $priorities = BugPriority::orderBy('level')->get();
+        $aiTriageAvailable = $bugTriageService->isConfigured();
 
-        return view('bug-reports.create', compact('categories', 'priorities'));
+        return view('bug-reports.create', compact('categories', 'priorities', 'aiTriageAvailable'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreBugReportRequest $request): RedirectResponse
+    public function store(StoreBugReportRequest $request, BugTriageService $bugTriageService): RedirectResponse
     {
         $this->authorize('create', BugReport::class);
 
         $bugReport = BugReport::create([
             'user_id' => auth()->id(),
-            'bug_category_id' => null,
+            'bug_category_id' => $request->bug_category_id,
             'bug_priority_id' => $request->bug_priority_id,
             'title' => $request->title,
             'description' => $request->description,
@@ -114,6 +117,10 @@ class BugReportController extends Controller
                     'sort_order' => $index,
                 ]);
             }
+        }
+
+        if ($bugTriageService->isConfigured() && (! $request->bug_category_id || ! $request->bug_priority_id)) {
+            TriageBugReportJob::dispatch($bugReport->fresh(['images']));
         }
 
         return redirect()->route('bug-reports.show', $bugReport)
@@ -154,7 +161,7 @@ class BugReportController extends Controller
         $this->authorize('update', $bugReport);
 
         $bugReport->update([
-            'bug_category_id' => null,
+            'bug_category_id' => $request->bug_category_id,
             'bug_priority_id' => $request->bug_priority_id,
             'title' => $request->title,
             'description' => $request->description,
