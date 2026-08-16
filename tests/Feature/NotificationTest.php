@@ -15,7 +15,7 @@ class NotificationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_order_assignment_notification_renders(): void
+    public function test_order_assignment_notification_renders_and_addresses_the_recipient(): void
     {
         $user = User::factory()->create();
         $order = Order::create([
@@ -26,41 +26,28 @@ class NotificationTest extends TestCase
             'created_by' => $user->id,
         ]);
 
-        $mail = new OrderAssignmentNotification($order, $user, false);
-        $rendered = $mail->render();
+        $rendered = (new OrderAssignmentNotification($order, $user, false))->render();
 
         $this->assertStringContainsString('Test Order', $rendered);
         $this->assertStringContainsString('Test Description', $rendered);
         $this->assertStringContainsString('Pending', $rendered);
         $this->assertStringContainsString('High', $rendered);
+        $this->assertStringContainsString('You have been assigned', $rendered);
     }
 
-    public function test_task_assignment_notification_renders(): void
+    public function test_order_notification_for_team_leader(): void
     {
         $user = User::factory()->create();
-        $task = Task::create([
-            'title' => 'Test Task',
-            'description' => 'Task Description',
+        $order = Order::create([
+            'name' => 'Team Order',
             'status' => 'pending',
             'priority' => 'medium',
             'created_by' => $user->id,
-            'assigned_to' => $user->id,
         ]);
 
-        $mail = new TaskAssignmentNotification($task, $user);
-        $rendered = $mail->render();
+        $rendered = (new OrderAssignmentNotification($order, $user, true))->render();
 
-        $this->assertStringContainsString('Test Task', $rendered);
-        $this->assertStringContainsString('Task Description', $rendered);
-        $this->assertStringContainsString('Pending', $rendered);
-        $this->assertStringContainsString('Medium', $rendered);
-    }
-
-    public function test_email_service_checks_queue_enabled(): void
-    {
-        // Test that the method returns boolean
-        $result = EmailService::isQueueEnabled();
-        $this->assertIsBool($result);
+        $this->assertStringContainsString('Your team has been assigned', $rendered);
     }
 
     public function test_order_notification_subject(): void
@@ -73,10 +60,32 @@ class NotificationTest extends TestCase
             'created_by' => $user->id,
         ]);
 
-        $mail = new OrderAssignmentNotification($order, $user, false);
-        $envelope = $mail->envelope();
+        $envelope = (new OrderAssignmentNotification($order, $user, false))->envelope();
 
         $this->assertEquals('New Order Assignment - My Test Order', $envelope->subject);
+    }
+
+    public function test_task_assignment_notification_renders_and_includes_details(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::create([
+            'title' => 'Test Task',
+            'description' => 'Task Description',
+            'due_date' => now()->addDays(7),
+            'estimated_hours' => 8,
+            'status' => 'pending',
+            'priority' => 'medium',
+            'created_by' => $user->id,
+            'assigned_to' => $user->id,
+        ]);
+
+        $rendered = (new TaskAssignmentNotification($task, $user))->render();
+
+        $this->assertStringContainsString('Test Task', $rendered);
+        $this->assertStringContainsString('Task Description', $rendered);
+        $this->assertStringContainsString('Pending', $rendered);
+        $this->assertStringContainsString('Medium', $rendered);
+        $this->assertStringContainsString('8h', $rendered);
     }
 
     public function test_task_notification_subject(): void
@@ -90,61 +99,17 @@ class NotificationTest extends TestCase
             'assigned_to' => $user->id,
         ]);
 
-        $mail = new TaskAssignmentNotification($task, $user);
-        $envelope = $mail->envelope();
+        $envelope = (new TaskAssignmentNotification($task, $user))->envelope();
 
         $this->assertEquals('New Task Assignment - My Test Task', $envelope->subject);
     }
 
-    public function test_order_notification_for_team_leader(): void
+    public function test_email_service_queue_flag_follows_config(): void
     {
-        $user = User::factory()->create();
-        $order = Order::create([
-            'name' => 'Team Order',
-            'status' => 'pending',
-            'priority' => 'medium',
-            'created_by' => $user->id,
-        ]);
+        config(['mail.queue_enabled' => true]);
+        $this->assertTrue(EmailService::isQueueEnabled());
 
-        $mail = new OrderAssignmentNotification($order, $user, true);
-        $rendered = $mail->render();
-
-        $this->assertStringContainsString('Your team has been assigned', $rendered);
-    }
-
-    public function test_order_notification_for_individual_user(): void
-    {
-        $user = User::factory()->create();
-        $order = Order::create([
-            'name' => 'User Order',
-            'status' => 'pending',
-            'priority' => 'medium',
-            'created_by' => $user->id,
-        ]);
-
-        $mail = new OrderAssignmentNotification($order, $user, false);
-        $rendered = $mail->render();
-
-        $this->assertStringContainsString('You have been assigned', $rendered);
-    }
-
-    public function test_task_notification_contains_task_details(): void
-    {
-        $user = User::factory()->create();
-        $task = Task::create([
-            'title' => 'Important Task',
-            'due_date' => now()->addDays(7),
-            'estimated_hours' => 8,
-            'status' => 'pending',
-            'priority' => 'medium',
-            'created_by' => $user->id,
-            'assigned_to' => $user->id,
-        ]);
-
-        $mail = new TaskAssignmentNotification($task, $user);
-        $rendered = $mail->render();
-
-        $this->assertStringContainsString('Important Task', $rendered);
-        $this->assertStringContainsString('8h', $rendered);
+        config(['mail.queue_enabled' => false]);
+        $this->assertFalse(EmailService::isQueueEnabled());
     }
 }

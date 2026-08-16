@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Services\PlatformFeeCalculator;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
@@ -26,11 +27,13 @@ class UpdateOrderRequest extends FormRequest
 
         return [
             'order_id' => 'nullable|string|unique:orders,order_id,'.$orderId,
-            'name' => 'required|string|max:255|unique:orders,name,'.$orderId,
+            'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'notes' => 'nullable|string|max:20000',
             'credentials' => 'nullable|string|max:65000',
             'status' => 'required|string',
+            'is_repeat' => 'sometimes|boolean',
+            'repeat_client_key' => 'nullable|string|max:255',
             'progress' => 'nullable|integer|min:0|max:100',
             'priority' => 'required|in:low,medium,high',
             'value' => 'nullable|numeric|min:0',
@@ -60,12 +63,14 @@ class UpdateOrderRequest extends FormRequest
     {
         return [
             'order_id' => 'nullable|string|unique:orders,order_id,'.$orderId,
-            'name' => 'required|string|max:255|unique:orders,name,'.$orderId,
+            'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'notes' => 'nullable|string|max:20000',
             'credentials' => 'nullable|string|max:65000',
             'value' => 'nullable|numeric|min:0',
             'freelance_profile_id' => 'nullable|exists:profiles,id',
+            'is_repeat' => 'sometimes|boolean',
+            'repeat_client_key' => 'nullable|string|max:255',
             'sales_shares' => 'nullable|array',
             'sales_shares.*.user_id' => 'required|exists:users,id',
             'sales_shares.*.amount' => 'required|numeric|min:0',
@@ -88,11 +93,15 @@ class UpdateOrderRequest extends FormRequest
 
             $total = round(array_sum(array_map(fn ($share) => (float) ($share['amount'] ?? 0), $shares)), 2);
             $value = round((float) $this->input('value', 0), 2);
+            $freelanceProfileId = $this->input('freelance_profile_id');
 
-            if ($total > $value) {
+            // Calculate net revenue after platform fees for comparison
+            $netRevenue = $value > 0 ? PlatformFeeCalculator::netFor($value, $freelanceProfileId) : 0;
+
+            if ($total > $netRevenue) {
                 $validator->errors()->add(
                     'sales_shares',
-                    'The sales credit adds up to $'.number_format($total, 2).', more than the order amount of $'.number_format($value, 2).'.'
+                    'The sales credit adds up to $'.number_format($total, 2).', more than the net revenue of $'.number_format($netRevenue, 2).' after platform fees.'
                 );
             }
         });
@@ -105,7 +114,6 @@ class UpdateOrderRequest extends FormRequest
     {
         return [
             'name.required' => 'The client name is required.',
-            'name.unique' => 'Another order already uses this client name.',
             'order_id.unique' => 'This order ID is already in use.',
             'status.required' => 'Please select a status for the order.',
             'priority.in' => 'The priority must be low, medium, or high.',

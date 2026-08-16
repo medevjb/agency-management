@@ -26,10 +26,19 @@ class OverdueSectionTest extends TestCase
 
         $response->assertOk()
             ->assertSee('Orders are overdue')
-            ->assertSee('Worst is 12 days past deadline')
+            ->assertSee('Worst is')
+            ->assertSee('12 days')
+            ->assertSee('past deadline')
             ->assertSeeInOrder(['Very Late', 'Recent Late'])
             ->assertSee('aria-controls="overdue-detail-', false);
 
         $this->assertStringNotContainsString('fa-skull-crossbones', $response->getContent());
+
+        // Regression: the body must be hidden via the `hidden` attribute
+        // only — not also a "hidden" CSS class, which (being !important)
+        // would permanently override the JS's attribute toggle and make
+        // the "Show" button unable to ever reveal the list.
+        $html = $response->getContent();
+        $this->assertStringContainsString('<div class="overdue-body" id="overdueBody" hidden>', $html);
     }
 }

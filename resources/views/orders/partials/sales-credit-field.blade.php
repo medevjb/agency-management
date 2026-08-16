@@ -2,23 +2,20 @@
     Who gets credited for this order's amount.
     Expects: $salesPeople (Collection<User>), $order (Order|null).
 
-    Left alone, a sale is credited entirely to the person who opened it — the
-    rows only matter when two or more people share it.
+    The surrounding "Sales Credit" section header owns the label and the
+    remaining-balance badge; this partial renders the rows, the split
+    actions and their styles/scripts only.
+
+    Distribution always happens against the NET amount (the order value
+    after the freelance platform's fee) — the backend validates shares
+    against net revenue, so the frontend must split the same number.
 --}}
 @php
     $existingShares = $order?->salesShares ?? collect();
-    $orderValue = (float) ($order->value ?? 0);
 @endphp
 
 @if($salesPeople->isNotEmpty())
     <div id="salesCreditField">
-        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Sales Credit
-            </label>
-            <span id="salesCreditRemaining" class="credit-remaining" data-order-value="{{ $orderValue }}"></span>
-        </div>
-
         <div id="salesCreditRows" class="space-y-2">
             @forelse($existingShares as $share)
                 <div class="credit-row" data-credit-row>
@@ -67,7 +64,7 @@
 
         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
             <i class="fas fa-info-circle mr-1"></i>
-            Leave one person to credit the whole amount to them. Everyone here counts this order towards their own target.
+            Leave one person to credit the whole net amount to them. Everyone here counts this order towards their own target.
         </p>
 
         @error('sales_shares')
@@ -204,10 +201,17 @@
             const rows = document.getElementById('salesCreditRows');
             const template = document.getElementById('salesCreditTemplate');
             const remaining = document.getElementById('salesCreditRemaining');
-            const amountInput = document.getElementById('orderAmount');
+            const netInput = document.getElementById('actualRevenue');
 
+            // Sales credit is split against the NET amount (after the platform
+            // fee). #actualRevenue is kept in sync by the amount-split helper
+            // and carries the same number the backend validates against.
             function orderValue() {
-                return parseFloat(amountInput?.value ?? remaining.dataset.orderValue) || 0;
+                const net = netInput ? parseFloat(netInput.value) : NaN;
+
+                return Number.isFinite(net) && net > 0
+                    ? net
+                    : parseFloat(remaining?.dataset.orderValue) || 0;
             }
 
             function creditedTotal() {
@@ -232,7 +236,7 @@
                     remaining.textContent = money(left) + ' not credited';
                 } else {
                     remaining.classList.add('is-over');
-                    remaining.textContent = money(Math.abs(left)) + ' over the order amount';
+                    remaining.textContent = money(Math.abs(left)) + ' over the net amount';
                 }
             }
 
@@ -277,7 +281,7 @@
             });
 
             rows.addEventListener('input', refresh);
-            amountInput?.addEventListener('input', refresh);
+            netInput?.addEventListener('input', refresh);
             refresh();
         });
     </script>

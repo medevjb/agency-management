@@ -2,9 +2,9 @@
     One page of change log entries, grouped by day.
     Expects: $audits (iterable of App\Models\OrderAudit), $order (App\Models\Order).
 
-    Rendered both on first paint and by the load-more endpoint, so the markup
-    must stand alone — day sections carry data-log-day so the client can merge
-    a page that continues the day it already has on screen.
+    Rendered both on first paint and by the pagination endpoint, so the markup
+    must stand alone — day sections carry data-log-day so each page stays a
+    self-contained list.
 --}}
 @php
     // Operations never learns who on the sales side touched an order, so a

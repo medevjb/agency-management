@@ -2,9 +2,14 @@
 
 @section('content')
 @php
-    function fmtMoney($amount, $symbol, $position, $decimals, $thousands, $decimal) {
-        $formatted = number_format($amount, $decimals, $decimal, $thousands);
-        return $position === 'after' ? $formatted . $symbol : $symbol . $formatted;
+    // Guarded: this view can render more than once per PHP process (tests
+    // hitting the route twice, Octane/persistent workers), and a bare
+    // function declaration would fatal with "cannot redeclare" the second time.
+    if (! function_exists('fmtMoney')) {
+        function fmtMoney($amount, $symbol, $position, $decimals, $thousands, $decimal) {
+            $formatted = number_format($amount, $decimals, $decimal, $thousands);
+            return $position === 'after' ? $formatted . $symbol : $symbol . $formatted;
+        }
     }
 @endphp
 <div class="p-6 space-y-8">
@@ -17,7 +22,12 @@
             </h1>
             <p class="text-gray-500 dark:text-gray-400 mt-1">{{ $companyName }} — complete system overview</p>
         </div>
-        <div class="flex gap-3">
+        <div class="flex flex-wrap gap-3 items-center">
+            {{-- Set once from the header picker, shared by every dashboard. --}}
+            <span class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 text-sm font-semibold">
+                <i class="fas fa-calendar-alt text-xs"></i>
+                {{ $availableMonths[$selectedMonth] ?? $selectedMonth }}
+            </span>
             @if($maintenanceMode)
                 <span class="inline-flex items-center px-3 py-2 bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400 rounded-lg text-sm font-medium">
                     <i class="fas fa-tools mr-2"></i>Maintenance Mode ON
@@ -42,7 +52,7 @@
                     <i class="fas fa-dollar-sign text-white"></i>
                 </div>
             </div>
-            <p class="text-3xl font-bold">{{ fmtMoney($stats['revenue_this_month'], $currencySymbol, $currencyPosition, $decimalPlaces, $thousandSeparator, $decimalSeparator) }}</p>
+            <p class="text-3xl font-bold dash-num">{{ fmtMoney($stats['revenue_this_month'], $currencySymbol, $currencyPosition, $decimalPlaces, $thousandSeparator, $decimalSeparator) }}</p>
             <div class="mt-2 flex items-center gap-2 text-sm">
                 @if($stats['revenue_growth'] > 0)
                     <span class="text-green-300"><i class="fas fa-arrow-up"></i> {{ $stats['revenue_growth'] }}%</span>
@@ -63,7 +73,7 @@
                     <i class="fas fa-history text-purple-600 dark:text-purple-400"></i>
                 </div>
             </div>
-            <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ fmtMoney($stats['revenue_last_month'], $currencySymbol, $currencyPosition, $decimalPlaces, $thousandSeparator, $decimalSeparator) }}</p>
+            <p class="text-3xl font-bold text-gray-900 dark:text-gray-100 dash-num">{{ fmtMoney($stats['revenue_last_month'], $currencySymbol, $currencyPosition, $decimalPlaces, $thousandSeparator, $decimalSeparator) }}</p>
             <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">Previous month delivered revenue</p>
         </div>
 
@@ -75,8 +85,8 @@
                     <i class="fas fa-chart-line text-green-600 dark:text-green-400"></i>
                 </div>
             </div>
-            <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ fmtMoney($stats['revenue_this_year'], $currencySymbol, $currencyPosition, $decimalPlaces, $thousandSeparator, $decimalSeparator) }}</p>
-            <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">YTD delivered revenue ({{ now()->year }})</p>
+            <p class="text-3xl font-bold text-gray-900 dark:text-gray-100 dash-num">{{ fmtMoney($stats['revenue_this_year'], $currencySymbol, $currencyPosition, $decimalPlaces, $thousandSeparator, $decimalSeparator) }}</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">YTD delivered revenue ({{ $monthDate->year }})</p>
         </div>
 
         {{-- Project Completion Rate --}}
@@ -87,7 +97,7 @@
                     <i class="fas fa-check-double text-blue-600 dark:text-blue-400"></i>
                 </div>
             </div>
-            <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ $stats['completion_rate'] }}%</p>
+            <p class="text-3xl font-bold text-gray-900 dark:text-gray-100 dash-num">{{ $stats['completion_rate'] }}%</p>
             <div class="mt-2">
                 <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
                     <div class="bg-blue-500 h-1.5 rounded-full" style="width: {{ $stats['completion_rate'] }}%"></div>
@@ -148,7 +158,7 @@
             <div class="flex items-center justify-between mb-5">
                 <div>
                     <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100"><i class="fas fa-chart-bar text-indigo-500 mr-2"></i>Monthly Revenue</h3>
-                    <p class="text-xs text-gray-400 dark:text-gray-500">{{ now()->year }} — by delivered date</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">{{ $monthDate->year }} — by delivered date</p>
                 </div>
                 <span class="text-xs text-gray-400 dark:text-gray-500">{{ $currencySymbol }}</span>
             </div>
@@ -160,7 +170,7 @@
             <div class="flex items-center justify-between mb-5">
                 <div>
                     <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100"><i class="fas fa-chart-line text-green-500 mr-2"></i>Monthly Orders Started</h3>
-                    <p class="text-xs text-gray-400 dark:text-gray-500">{{ now()->year }} — by start date</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">{{ $monthDate->year }} — by start date</p>
                 </div>
             </div>
             <canvas id="ordersChart" height="200"></canvas>

@@ -52,6 +52,29 @@ class Setting extends Model
     }
 
     /**
+     * Get many setting values in a single query, keyed by setting key.
+     *
+     * @param  array<string, mixed>  $defaults  key → fallback value
+     * @return array<string, mixed>
+     */
+    public static function getMany(array $keys, array $defaults = []): array
+    {
+        if (! static::tableExists() || $keys === []) {
+            return array_merge(array_fill_keys($keys, null), $defaults);
+        }
+
+        $rows = static::whereIn('key', $keys)->get();
+
+        $values = [];
+        foreach ($keys as $key) {
+            $setting = $rows->firstWhere('key', $key);
+            $values[$key] = $setting ? $setting->getValue() : ($defaults[$key] ?? null);
+        }
+
+        return $values;
+    }
+
+    /**
      * Whether the settings table exists yet (false on a fresh/unmigrated database).
      */
     protected static function tableExists(): bool

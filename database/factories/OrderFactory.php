@@ -25,6 +25,7 @@ class OrderFactory extends Factory
             'name' => fake()->unique()->company(),
             'description' => fake()->sentence(),
             'status' => 'in-progress',
+            'is_repeat' => false,
             'progress' => 0,
             'priority' => 'medium',
             'value' => $value,

@@ -212,6 +212,10 @@
 </div>
 
 <script>
+const ROUTES = {
+    destroy: @js(route('portfolios.destroy', ['portfolio' => '__ID__'])),
+};
+
 function deletePortfolio(portfolioId) {
     event.preventDefault();
 
@@ -219,7 +223,7 @@ function deletePortfolio(portfolioId) {
         if (confirm('Are you sure you want to delete this portfolio project?')) {
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = `/portfolios/${portfolioId}`;
+            form.action = ROUTES.destroy.replace('__ID__', portfolioId);
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             const methodField = document.createElement('input');
             methodField.type = 'hidden';
@@ -250,7 +254,7 @@ function deletePortfolio(portfolioId) {
         if (result.isConfirmed) {
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = `/portfolios/${portfolioId}`;
+            form.action = ROUTES.destroy.replace('__ID__', portfolioId);
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             const methodField = document.createElement('input');
             methodField.type = 'hidden';

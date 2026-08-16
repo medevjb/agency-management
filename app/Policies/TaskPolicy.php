@@ -202,4 +202,17 @@ class TaskPolicy
     {
         return $user->hasRole('admin');
     }
+
+    /**
+     * Who can manage task user assignments.
+     * Sales users cannot manage task assignments.
+     */
+    public function manageAssignment(User $user, Task $task): bool
+    {
+        if ($user->isSales()) {
+            return false;
+        }
+
+        return $this->update($user, $task);
+    }
 }

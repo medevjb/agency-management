@@ -23,7 +23,7 @@ class SalesCreditService
         $shares = $this->normalise($shares);
 
         if ($shares === [] && $fallbackUserId !== null) {
-            $shares = [$fallbackUserId => (float) ($order->value ?? 0)];
+            $shares = [$fallbackUserId => (float) ($order->actual_revenue ?? $order->value ?? 0)];
         }
 
         $before = $this->describe($order);

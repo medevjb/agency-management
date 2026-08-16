@@ -95,6 +95,15 @@ class SettingSeeder extends Seeder
                 'description' => 'Enable or disable the application',
                 'is_public' => false,
             ],
+            [
+                'group' => 'general',
+                'key' => 'month_cycle_start_day',
+                'value' => '26',
+                'type' => 'number',
+                'label' => 'Month Cycle Start Day',
+                'description' => 'The day of the month every "month" filter, dashboard, and revenue period actually starts on. E.g. 26 means the "August" period runs July 26 – August 25. Use 1 for an ordinary calendar month.',
+                'is_public' => false,
+            ],
 
             // Company/Organization Settings
             [

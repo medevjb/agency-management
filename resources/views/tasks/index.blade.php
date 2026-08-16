@@ -44,7 +44,8 @@
 
         .task-column-header {
             display: flex;
-            items-center: justify-between;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 1rem;
             padding: 0.75rem;
             border-radius: 12px;
@@ -1431,6 +1432,16 @@
 
 @push('scripts')
 <script>
+const ROUTES = {
+    show: @js(route('tasks.show', ['task' => '__ID__'])),
+    edit: @js(route('tasks.edit', ['task' => '__ID__'])),
+    destroy: @js(route('tasks.destroy', ['task' => '__ID__'])),
+    archive: @js(route('tasks.archive', ['task' => '__ID__'])),
+    updateStatus: @js(route('tasks.update-status', ['task' => '__ID__'])),
+    bulkUpdate: @js(route('tasks.bulk-update')),
+    index: @js(route('tasks.index')),
+};
+
 // Task Management State
 let tasksData = @js($tasks);
 let selectedTasks = new Set();
@@ -1711,7 +1722,7 @@ async function handleDrop(event, newStatus) {
 
     // API call
     try {
-        const response = await axios.patch(`/tasks/${taskId}/status`, { status: newStatus });
+        const response = await axios.patch(ROUTES.updateStatus.replace('__ID__', taskId), { status: newStatus });
 
         showToast('Success!', response.data.message || 'Task status updated!', 'success');
     } catch (error) {
@@ -1844,7 +1855,7 @@ async function quickUpdateStatus(taskId, status) {
     updateStats();
 
     try {
-        await axios.patch(`/tasks/${taskId}/status`, { status });
+        await axios.patch(ROUTES.updateStatus.replace('__ID__', taskId), { status });
         showToast('Success!', 'Task status updated successfully!', 'success');
     } catch (error) {
         task.status = oldStatus;
@@ -1880,7 +1891,7 @@ async function confirmDeleteTask(taskId) {
     hideAlert();
 
     try {
-        await axios.delete(`/tasks/${taskId}`);
+        await axios.delete(ROUTES.destroy.replace('__ID__', taskId));
 
         tasksData = tasksData.filter(t => t.id !== taskId);
         renderTasks();
@@ -1917,7 +1928,7 @@ async function confirmArchiveTask(taskId) {
     hideAlert();
 
     try {
-        await axios.post(`/tasks/${taskId}/archive`);
+        await axios.post(ROUTES.archive.replace('__ID__', taskId));
 
         tasksData = tasksData.filter(t => t.id !== taskId);
         renderTasks();
@@ -1948,7 +1959,7 @@ function openCreateModalForStatus(status) {
 }
 
 function openEditModal(taskId) {
-    axios.get(`/tasks/${taskId}/edit`)
+    axios.get(ROUTES.edit.replace('__ID__', taskId))
         .then(response => {
             const task = response.data.task;
             document.getElementById('modalTitle').textContent = 'Edit Task';
@@ -1985,7 +1996,7 @@ function openViewModal(taskId) {
         return;
     }
 
-    axios.get(`/tasks/${taskId}`, {
+    axios.get(ROUTES.show.replace('__ID__', taskId), {
         headers: {
             'Accept': 'application/json'
         }
@@ -2080,7 +2091,7 @@ async function archiveTaskFromModal() {
     hideAlert();
 
     try {
-        await axios.post(`/tasks/${window.currentViewTaskId}/archive`);
+        await axios.post(ROUTES.archive.replace('__ID__', window.currentViewTaskId));
 
         tasksData = tasksData.filter(t => t.id !== window.currentViewTaskId);
         renderTasks();
@@ -2121,7 +2132,7 @@ document.getElementById('taskForm').addEventListener('submit', async function(e)
         data.assigned_to = assignedToValue;
     }
 
-    const url = taskId ? `/tasks/${taskId}` : '/tasks';
+    const url = taskId ? ROUTES.show.replace('__ID__', taskId) : ROUTES.index;
 
     try {
         const response = await axios.post(url, data);
@@ -2343,7 +2354,7 @@ async function executeBulkAction(action, status) {
     }
 
     try {
-        await axios.post('/tasks/bulk-update', data);
+        await axios.post(ROUTES.bulkUpdate, data);
 
         // Update local state
         if (action === 'delete') {

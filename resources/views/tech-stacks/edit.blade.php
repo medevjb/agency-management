@@ -215,7 +215,7 @@ const techStackMembers = @json($techStack->users->pluck('id'));
                 params.append('exclude', excludeIds.join(','));
             }
 
-            const response = await axios.get(`/tech-stacks/search-members/{{ $techStack->team_id }}?${params}`);
+            const response = await axios.get(`{{ route('tech-stacks.search-members', ['teamId' => '__ID__']) }}?${params}`.replace('__ID__', {{ $techStack->team_id }}));
             currentMembers = response.data.users;
             return currentMembers;
         } catch (error) {

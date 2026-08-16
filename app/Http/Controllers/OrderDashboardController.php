@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Team;
-use Carbon\Carbon;
+use App\Support\GlobalMonth;
 use Illuminate\Http\Request;
 
 class OrderDashboardController extends Controller
@@ -22,40 +22,42 @@ class OrderDashboardController extends Controller
 
         $user = auth()->user();
 
-        $selectedMonth = $request->input('month', now()->format('Y-m'));
-        $monthDate = Carbon::createFromFormat('Y-m', $selectedMonth);
-        $startDate = $monthDate->copy()->startOfMonth()->format('Y-m-d');
-        $endDate = $monthDate->copy()->endOfMonth()->format('Y-m-d');
-
-        // Generate list of available months (last 12 months + current)
-        $availableMonths = collect();
-        for ($i = 0; $i < 12; $i++) {
-            $date = now()->subMonths($i);
-            $availableMonths->put($date->format('Y-m'), $date->format('F Y'));
-        }
+        $monthDate = GlobalMonth::current();
+        $selectedMonth = GlobalMonth::key();
+        $availableMonths = GlobalMonth::available();
+        [$periodStart, $periodEnd] = GlobalMonth::periodFor($monthDate);
+        $startDate = $periodStart->format('Y-m-d');
+        $endDate = $periodEnd->format('Y-m-d');
 
         $isTeamScoped = $user->hasRole(['team-leader', 'stack-leader']);
 
-        // Finished statuses — 'delivered' auto-sets delivered_at via model observer,
-        // 'completed' is set via bulk action and may not have delivered_at.
-        $finishedStatuses = ['delivered', 'completed'];
+        // Statuses that stop an order from carrying into the next month's
+        // view. 'delivered' is just another active/carrying status now —
+        // only 'completed' and 'cancelled' take an order off the board.
+        $stopCarryingStatuses = ['completed', 'cancelled'];
 
         // Carry-forward logic: an order is visible in month M if:
         // - It started on or before the last day of M
-        // - AND it was not finished before M began
-        //   (active orders have no delivered_at; finished orders must have delivered_at >= startDate
-        //    or be 'completed' without delivered_at, which we include everywhere)
-        $carryForwardFilter = function ($q) use ($startDate, $endDate, $finishedStatuses) {
+        // - AND it did not stop carrying before M began (each stop-carrying
+        //   status is gated on its own timestamp: completed_at for
+        //   'completed', cancelled_at for 'cancelled')
+        $carryForwardFilter = function ($q) use ($startDate, $endDate) {
             $q->where('start_date', '<=', $endDate.' 23:59:59')
-                ->where(function ($inner) use ($startDate, $finishedStatuses) {
-                    // Active orders (not delivered/completed/cancelled)
-                    $inner->whereNotIn('status', array_merge($finishedStatuses, ['cancelled']))
-                        // OR delivered/completed with delivered_at in or after this month
-                        ->orWhere(function ($done) use ($startDate, $finishedStatuses) {
-                            $done->whereIn('status', $finishedStatuses)
+                ->where(function ($inner) use ($startDate) {
+                    // Still active — never stopped carrying.
+                    $inner->whereNotIn('status', ['completed', 'cancelled'])
+                        ->orWhere(function ($done) use ($startDate) {
+                            $done->where('status', 'completed')
                                 ->where(function ($dt) use ($startDate) {
-                                    $dt->whereNull('delivered_at')
-                                        ->orWhere('delivered_at', '>=', $startDate.' 00:00:00');
+                                    $dt->whereNull('completed_at')
+                                        ->orWhere('completed_at', '>=', $startDate.' 00:00:00');
+                                });
+                        })
+                        ->orWhere(function ($done) use ($startDate) {
+                            $done->where('status', 'cancelled')
+                                ->where(function ($dt) use ($startDate) {
+                                    $dt->whereNull('cancelled_at')
+                                        ->orWhere('cancelled_at', '>=', $startDate.' 00:00:00');
                                 });
                         });
                 });
@@ -68,12 +70,12 @@ class OrderDashboardController extends Controller
 
         $orders = (clone $baseQuery)->where($carryForwardFilter)->get();
 
-        // Revenue: only orders delivered/completed during the selected month
-        $deliveredThisMonth = Order::query()
+        // Revenue: only orders completed during the selected month
+        $completedThisMonth = Order::query()
             ->when($isTeamScoped, fn ($q) => $q->where('team_id', $user->team_id))
-            ->whereIn('status', $finishedStatuses)
-            ->whereNotNull('delivered_at')
-            ->whereBetween('delivered_at', [$startDate.' 00:00:00', $endDate.' 23:59:59'])
+            ->where('status', 'completed')
+            ->whereNotNull('completed_at')
+            ->whereBetween('completed_at', [$startDate.' 00:00:00', $endDate.' 23:59:59'])
             ->get();
 
         // Get team information for team users
@@ -88,9 +90,9 @@ class OrderDashboardController extends Controller
 
         $stats = [
             'totalOrders' => $orders->count(),
-            'deliveredOrders' => $deliveredThisMonth->count(),
+            'deliveredOrders' => $completedThisMonth->count(),
             'workloadOrders' => $workloadOrders->count(),
-            'totalRevenue' => $deliveredThisMonth->sum('actual_revenue'),
+            'totalRevenue' => $completedThisMonth->sum('actual_revenue'),
             'workloadValue' => $workloadOrders->sum('value'),
             'pendingOrders' => $orders->where('status', 'pending')->count(),
             'inProgressOrders' => $orders->where('status', 'in-progress')->count(),
@@ -98,12 +100,14 @@ class OrderDashboardController extends Controller
             'overdueOrders' => $workloadOrders->whereNotNull('end_date')
                 ->where('end_date', '<', now())
                 ->count(),
-            'averageRevenue' => $deliveredThisMonth->where('actual_revenue', '>', 0)->avg('actual_revenue') ?? 0,
+            'averageRevenue' => $completedThisMonth->where('actual_revenue', '>', 0)->avg('actual_revenue') ?? 0,
         ];
 
-        // Status chart: breakdown of all orders visible this month (carry-forward set)
+        // Status chart: breakdown of all orders visible this month (carry-forward set).
+        // This is a status tally, not revenue — 'delivered' and 'completed'
+        // are kept as one visual bucket here, same as before.
         $ordersByStatus = [
-            'delivered' => $orders->whereIn('status', $finishedStatuses)->count(),
+            'delivered' => $orders->whereIn('status', ['delivered', 'completed'])->count(),
             'pending' => $stats['pendingOrders'],
             'in-progress' => $stats['inProgressOrders'],
             'on-hold' => $stats['onHoldOrders'],
@@ -131,7 +135,7 @@ class OrderDashboardController extends Controller
             ->whereNotNull('end_date')
             ->where('end_date', '>=', now())
             ->where('end_date', '<=', now()->addDays(4)->endOfDay())
-            ->whereNotIn('status', array_merge($finishedStatuses, ['cancelled']))
+            ->whereNotIn('status', $stopCarryingStatuses)
             ->orderBy('end_date')
             ->take(5)
             ->get();
@@ -142,7 +146,7 @@ class OrderDashboardController extends Controller
             ->where($carryForwardFilter)
             ->whereNotNull('end_date')
             ->where('end_date', '<', now())
-            ->whereNotIn('status', array_merge($finishedStatuses, ['cancelled']))
+            ->whereNotIn('status', $stopCarryingStatuses)
             ->orderBy('end_date')
             ->take(5)
             ->get();
@@ -152,99 +156,90 @@ class OrderDashboardController extends Controller
             ->when($isTeamScoped, fn ($q) => $q->where('team_id', $user->team_id))
             ->where($carryForwardFilter)
             ->where('priority', 'high')
-            ->whereNotIn('status', array_merge($finishedStatuses, ['cancelled']))
+            ->whereNotIn('status', $stopCarryingStatuses)
             ->latest()
             ->take(5)
             ->get();
 
-        // Revenue by team (delivered in selected month)
+        // Revenue by team (completed in selected month)
         $revenueByTeamQuery = Order::with('team')
             ->whereNotNull('team_id')
             ->whereHas('team')
-            ->whereIn('status', $finishedStatuses)
-            ->whereNotNull('delivered_at')
-            ->whereBetween('delivered_at', [$startDate.' 00:00:00', $endDate.' 23:59:59']);
+            ->where('status', 'completed')
+            ->whereNotNull('completed_at')
+            ->whereBetween('completed_at', [$startDate.' 00:00:00', $endDate.' 23:59:59']);
         if ($isTeamScoped) {
             $revenueByTeamQuery->where('team_id', $user->team_id);
         }
 
-        $revenueByTeam = $revenueByTeamQuery->get()
+        // Revenue per team in one grouped query (SQLite-safe aggregate), with
+        // the team names pulled in by eager load.
+        $revenueByTeam = (clone $revenueByTeamQuery)
+            ->selectRaw('team_id, SUM(actual_revenue) as revenue, COUNT(*) as orders_count')
             ->groupBy('team_id')
-            ->map(function ($group) {
+            ->get()
+            ->map(function ($row) {
                 return [
-                    'team_name' => $group->first()->team->name,
-                    'revenue' => $group->sum('actual_revenue'),
-                    'orders_count' => $group->count(),
+                    'team_name' => $row->team?->name ?? 'Unknown',
+                    'revenue' => (float) $row->revenue,
+                    'orders_count' => (int) $row->orders_count,
                 ];
             })
             ->sortByDesc('revenue')
             ->values();
 
-        // Monthly revenue for the current year (by delivered_at)
-        $monthlyRevenue = Order::selectRaw('MONTH(delivered_at) as month, SUM(actual_revenue) as revenue')
-            ->whereIn('status', $finishedStatuses)
-            ->whereNotNull('delivered_at')
-            ->whereYear('delivered_at', now()->year)
-            ->when($isTeamScoped, fn ($q) => $q->where('team_id', $user->team_id))
-            ->groupBy('month')
-            ->orderBy('month')
-            ->pluck('revenue', 'month')
-            ->toArray();
+        // Monthly + yearly completion analytics. Both read from the same
+        // one-year fetch, and both are cached per team scope + month because
+        // they only change when an order completes.
+        [$monthlyRevenue, $monthlyDeliveredData, $yearlyDelivered] = $this->remember(
+            'orders.dashboard.charts.'.$selectedMonth.'.'.$user->team_id,
+            function () use ($isTeamScoped, $user) {
+                // Note: both queries only fetch status='completed' rows, so
+                // "cancelled_count" is structurally always 0 here — that's an
+                // existing quirk, preserved as-is rather than changed here.
+                $completedThisYear = Order::query()
+                    ->where('status', 'completed')
+                    ->whereNotNull('completed_at')
+                    ->whereYear('completed_at', now()->year)
+                    ->when($isTeamScoped, fn ($q) => $q->where('team_id', $user->team_id))
+                    ->get(['completed_at', 'actual_revenue', 'status']);
 
-        for ($i = 1; $i <= 12; $i++) {
-            if (! isset($monthlyRevenue[$i])) {
-                $monthlyRevenue[$i] = 0;
+                $monthlyRevenue = [];
+                $monthlyDeliveredData = [];
+                for ($i = 1; $i <= 12; $i++) {
+                    $monthRows = $completedThisYear->filter(fn ($order) => (int) $order->completed_at->format('n') === $i);
+
+                    $monthlyRevenue[$i] = (float) $monthRows->sum('actual_revenue');
+                    $monthlyDeliveredData[$i] = [
+                        'delivered_count' => $monthRows->count(),
+                        'delivered_amount' => (float) $monthRows->sum('actual_revenue'),
+                        'cancelled_count' => $monthRows->where('status', 'cancelled')->count(),
+                        'total_orders' => $monthRows->count(),
+                    ];
+                }
+                ksort($monthlyRevenue);
+
+                $completedLastFiveYears = Order::query()
+                    ->where('status', 'completed')
+                    ->whereNotNull('completed_at')
+                    ->whereYear('completed_at', '>=', now()->subYears(5)->year)
+                    ->when($isTeamScoped, fn ($q) => $q->where('team_id', $user->team_id))
+                    ->get(['completed_at', 'actual_revenue', 'status']);
+
+                $yearlyDelivered = $completedLastFiveYears
+                    ->groupBy(fn ($order) => (int) $order->completed_at->format('Y'))
+                    ->map(fn ($rows, $year) => (object) [
+                        'year' => $year,
+                        'delivered_count' => $rows->count(),
+                        'delivered_amount' => (float) $rows->sum('actual_revenue'),
+                        'cancelled_count' => $rows->where('status', 'cancelled')->count(),
+                        'total_orders' => $rows->count(),
+                    ])
+                    ->sortKeys();
+
+                return [$monthlyRevenue, $monthlyDeliveredData, $yearlyDelivered];
             }
-        }
-        ksort($monthlyRevenue);
-
-        // Monthly delivery analytics
-        $monthlyDelivered = Order::selectRaw('
-                MONTH(delivered_at) as month,
-                SUM(CASE WHEN status IN ("delivered", "completed") THEN 1 ELSE 0 END) as delivered_count,
-                SUM(CASE WHEN status IN ("delivered", "completed") THEN actual_revenue ELSE 0 END) as delivered_amount,
-                SUM(CASE WHEN status = "cancelled" THEN 1 ELSE 0 END) as cancelled_count,
-                COUNT(*) as total_orders
-            ')
-            ->whereIn('status', $finishedStatuses)
-            ->whereNotNull('delivered_at')
-            ->whereYear('delivered_at', now()->year)
-            ->when($isTeamScoped, fn ($q) => $q->where('team_id', $user->team_id))
-            ->groupBy('month')
-            ->orderBy('month')
-            ->get()
-            ->keyBy('month');
-
-        $monthlyDeliveredData = [];
-        for ($i = 1; $i <= 12; $i++) {
-            $monthlyDeliveredData[$i] = [
-                'delivered_count' => $monthlyDelivered->get($i)?->delivered_count ?? 0,
-                'delivered_amount' => $monthlyDelivered->get($i)?->delivered_amount ?? 0,
-                'cancelled_count' => $monthlyDelivered->get($i)?->cancelled_count ?? 0,
-                'total_orders' => $monthlyDelivered->get($i)?->total_orders ?? 0,
-            ];
-        }
-
-        // Yearly delivery analytics
-        $yearlyDeliveredResults = Order::selectRaw('
-                YEAR(delivered_at) as year,
-                SUM(CASE WHEN status IN ("delivered", "completed") THEN 1 ELSE 0 END) as delivered_count,
-                SUM(CASE WHEN status IN ("delivered", "completed") THEN actual_revenue ELSE 0 END) as delivered_amount,
-                SUM(CASE WHEN status = "cancelled" THEN 1 ELSE 0 END) as cancelled_count,
-                COUNT(*) as total_orders
-            ')
-            ->whereIn('status', $finishedStatuses)
-            ->whereNotNull('delivered_at')
-            ->whereYear('delivered_at', '>=', now()->subYears(5)->year)
-            ->when($isTeamScoped, fn ($q) => $q->where('team_id', $user->team_id))
-            ->groupBy('year')
-            ->orderBy('year')
-            ->get();
-
-        $yearlyDelivered = collect();
-        foreach ($yearlyDeliveredResults as $result) {
-            $yearlyDelivered->put($result->year, $result);
-        }
+        );
 
         return view('orders.dashboard', compact(
             'stats',
@@ -272,33 +267,37 @@ class OrderDashboardController extends Controller
         $period = $request->input('period', 'month');
         $user = auth()->user();
 
-        $query = Order::query()->whereIn('status', ['delivered', 'completed']);
+        $query = Order::query()->where('status', 'completed')->whereNotNull('completed_at');
 
         if ($user->hasRole(['team-leader', 'stack-leader'])) {
             $query->where('team_id', $user->team_id);
         }
 
-        if ($period === 'week') {
-            $data = $query->selectRaw('DATE(delivered_at) as date, SUM(actual_revenue) as revenue, COUNT(*) as orders')
-                ->whereNotNull('delivered_at')
-                ->where('delivered_at', '>=', now()->subDays(7))
-                ->groupBy('date')
-                ->orderBy('date')
-                ->get();
-        } elseif ($period === 'month') {
-            $data = $query->selectRaw('DATE(delivered_at) as date, SUM(actual_revenue) as revenue, COUNT(*) as orders')
-                ->whereNotNull('delivered_at')
-                ->where('delivered_at', '>=', now()->startOfMonth())
-                ->groupBy('date')
-                ->orderBy('date')
-                ->get();
+        // Grouped in PHP rather than with DATE()/MONTH(), which only exist on MySQL.
+        if ($period === 'week' || $period === 'month') {
+            $since = $period === 'week' ? now()->subDays(7) : now()->startOfMonth();
+
+            $data = (clone $query)->where('completed_at', '>=', $since)
+                ->get(['completed_at', 'actual_revenue'])
+                ->groupBy(fn ($order) => $order->completed_at->format('Y-m-d'))
+                ->map(fn ($rows, $date) => (object) [
+                    'date' => $date,
+                    'revenue' => (float) $rows->sum('actual_revenue'),
+                    'orders' => $rows->count(),
+                ])
+                ->sortKeys()
+                ->values();
         } else {
-            $data = $query->selectRaw('MONTH(delivered_at) as month, SUM(actual_revenue) as revenue, COUNT(*) as orders')
-                ->whereNotNull('delivered_at')
-                ->whereYear('delivered_at', now()->year)
-                ->groupBy('month')
-                ->orderBy('month')
-                ->get();
+            $data = (clone $query)->whereYear('completed_at', now()->year)
+                ->get(['completed_at', 'actual_revenue'])
+                ->groupBy(fn ($order) => (int) $order->completed_at->format('n'))
+                ->map(fn ($rows, $month) => (object) [
+                    'month' => $month,
+                    'revenue' => (float) $rows->sum('actual_revenue'),
+                    'orders' => $rows->count(),
+                ])
+                ->sortKeys()
+                ->values();
         }
 
         return response()->json($data);
