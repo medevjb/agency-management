@@ -37,10 +37,10 @@ class UserTrackFormTest extends TestCase
             ->assertSee('data-track-panel="operation"', false)
             ->assertSee('data-track-panel="sales"', false)
             ->assertSee('Sales Leader')
-            ->assertSee('Monthly Sales Target');
+            ->assertSee('Monthly Minimum Target');
     }
 
-    public function test_choosing_the_operations_track_stores_team_and_ignores_sales_fields(): void
+    public function test_choosing_the_operations_track_stores_team_and_ignores_the_sales_leader(): void
     {
         $team = Team::factory()->create();
         $stack = TechStack::factory()->create();
@@ -58,7 +58,9 @@ class UserTrackFormTest extends TestCase
             'tech_stack_id' => $stack->id,
             // Sent anyway, to prove the server ignores it rather than trusting the client.
             'sales_leader_id' => $leader->id,
+            // Operations members get a minimum target too — this one is kept.
             'sales_target' => 5000,
+            'sales_target_month' => now()->format('Y-m'),
         ])->assertRedirect();
 
         $user = User::where('email', 'ops-hire@example.com')->firstOrFail();
@@ -66,7 +68,7 @@ class UserTrackFormTest extends TestCase
         $this->assertSame($team->id, $user->team_id);
         $this->assertSame($stack->id, $user->tech_stack_id);
         $this->assertNull($user->sales_leader_id);
-        $this->assertNull($user->salesTargetFor());
+        $this->assertSame(5000.0, $user->salesTargetFor());
     }
 
     public function test_choosing_the_sales_track_stores_leader_and_target_and_ignores_team(): void
@@ -91,7 +93,12 @@ class UserTrackFormTest extends TestCase
 
         $user = User::where('email', 'sales-hire@example.com')->firstOrFail();
 
-        $this->assertNull($user->team_id);
+        // The client-sent (unrelated, engineering) team_id is ignored — but
+        // the user still ends up on a team: the one auto-created for their
+        // sales leader, so the shared Team pages show something real.
+        $this->assertNotSame($team->id, $user->team_id);
+        $this->assertNotNull($user->team_id);
+        $this->assertSame($leader->fresh()->team_id, $user->team_id);
         $this->assertSame($leader->id, $user->sales_leader_id);
         $this->assertSame(4500.0, $user->salesTargetFor());
     }

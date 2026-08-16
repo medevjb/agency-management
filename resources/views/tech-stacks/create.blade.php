@@ -240,7 +240,7 @@
                 params.append('exclude', excludeIds.join(','));
             }
 
-            const response = await axios.get(`/tech-stacks/search-members/${currentTeamId}?${params}`);
+            const response = await axios.get(`{{ route('tech-stacks.search-members', ['teamId' => '__ID__']) }}?${params}`.replace('__ID__', currentTeamId));
             currentMembers = response.data.users;
             return currentMembers;
         } catch (error) {

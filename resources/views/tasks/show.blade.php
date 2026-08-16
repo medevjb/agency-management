@@ -147,13 +147,13 @@
             <!-- Project -->
             <div class="bg-white dark:bg-gray-900 rounded-lg shadow-md p-6">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Order</h2>
-                @if($task->project)
-                    <a href="{{ route('orders.show', $task->project->id) }}" class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                @if($task->order)
+                    <a href="{{ route('orders.show', $task->order->id) }}" class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                         <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-500/10 rounded-lg flex items-center justify-center mr-3">
                             <i class="fas fa-folder text-indigo-600 dark:text-indigo-400"></i>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $task->project->name }}</p>
+                            <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $task->order->name }}</p>
                             <p class="text-xs text-gray-500 dark:text-gray-400">View Order</p>
                         </div>
                     </a>
@@ -170,7 +170,7 @@
 axios.defaults.headers.common['X-CSRF-TOKEN'] = '{{ csrf_token() }}';
 
 function updateStatus(status) {
-    axios.patch(`/tasks/{{ $task->id }}/status`, { status: status })
+    axios.patch(@js(route('tasks.update-status', ['task' => $task->id])), { status: status })
         .then(response => {
             const alert = document.createElement('div');
             alert.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';

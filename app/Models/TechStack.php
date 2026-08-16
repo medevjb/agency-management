@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use Database\Factories\TechStackFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TechStack extends Model
 {
-    /** @use HasFactory<\Database\Factories\TechStackFactory> */
+    /** @use HasFactory<TechStackFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -17,34 +21,29 @@ class TechStack extends Model
         'stack_leader_id',
     ];
 
-    public function team(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);
     }
 
-    public function stackLeader(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function stackLeader(): BelongsTo
     {
         return $this->belongsTo(User::class, 'stack_leader_id');
     }
 
-    public function users(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'tech_stack_user')
             ->withPivot('role')
             ->withTimestamps();
     }
 
-    public function projects(): \Illuminate\Database\Eloquent\Relations\HasMany
-    {
-        return $this->hasMany(Order::class, 'tech_stack_id');
-    }
-
-    public function orders(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
     }
 
-    public function portfolios(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function portfolios(): HasMany
     {
         return $this->hasMany(Portfolio::class);
     }

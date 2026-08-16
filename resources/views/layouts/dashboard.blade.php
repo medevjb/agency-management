@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,7 +10,7 @@
 
     <!-- Apply saved/system theme before first paint to avoid a light/dark flash -->
     <script>
-        (function () {
+        (function() {
             const stored = localStorage.getItem('theme');
             const isDark = stored ? stored === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
             document.documentElement.classList.toggle('dark', isDark);
@@ -269,11 +270,13 @@
                 opacity: 0;
                 transform: translateY(-5px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
+
         /* ===== Custom SweetAlert2 Styling ===== */
         .swal2-popup {
             font-family: 'Figtree', system-ui, -apple-system, sans-serif !important;
@@ -540,13 +543,27 @@
         }
 
         @keyframes swalPopIn {
-            0% { opacity: 0; transform: scale(0.92) translateY(8px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); }
+            0% {
+                opacity: 0;
+                transform: scale(0.92) translateY(8px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
         }
 
         @keyframes swalPopOut {
-            0% { opacity: 1; transform: scale(1) translateY(0); }
-            100% { opacity: 0; transform: scale(0.92) translateY(8px); }
+            0% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(0.92) translateY(8px);
+            }
         }
 
         /* ===== Dark Mode Overrides ===== */
@@ -649,25 +666,316 @@
             border-top-color: #374151 !important;
             color: #6b7280 !important;
         }
+
+        /* ---- Global month picker (header) ---- */
+        .month-picker-trigger {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.875rem;
+            border-radius: 9999px;
+            border: 1px solid #e0e7ff;
+            background-color: #eef2ff;
+            color: #4338ca;
+            font-size: 0.8125rem;
+            font-weight: 700;
+            transition: background-color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .month-picker-trigger:hover {
+            background-color: #e0e7ff;
+        }
+
+        .dark .month-picker-trigger {
+            background-color: rgba(99, 102, 241, 0.12);
+            border-color: rgba(99, 102, 241, 0.3);
+            color: #c7d2fe;
+        }
+
+        .dark .month-picker-trigger:hover {
+            background-color: rgba(99, 102, 241, 0.2);
+        }
+
+        .month-picker-chevron {
+            font-size: 0.625rem;
+            transition: transform 0.15s ease;
+        }
+
+        .month-picker-chevron.is-open {
+            transform: rotate(180deg);
+        }
+
+        .month-picker-panel {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 0.5rem);
+            z-index: 50;
+            width: 15rem;
+            padding: 0.75rem;
+            border-radius: 0.875rem;
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 12px 28px rgba(16, 24, 40, 0.14);
+        }
+
+        .dark .month-picker-panel {
+            background-color: #1f2937;
+            border-color: #374151;
+        }
+
+        .month-picker-heading {
+            padding: 0 0.375rem 0.5rem;
+            font-size: 0.6875rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #9ca3af;
+        }
+
+        .month-picker-list {
+            max-height: 16rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.125rem;
+        }
+
+        .month-picker-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0.5rem 0.625rem;
+            border-radius: 0.5rem;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: #374151;
+            text-align: left;
+            transition: background-color 0.15s ease;
+        }
+
+        .month-picker-option:hover {
+            background-color: #f3f4f6;
+        }
+
+        .dark .month-picker-option {
+            color: #d1d5db;
+        }
+
+        .dark .month-picker-option:hover {
+            background-color: #111827;
+        }
+
+        .month-picker-option.is-active {
+            background-color: #eef2ff;
+            color: #4338ca;
+        }
+
+        .dark .month-picker-option.is-active {
+            background-color: rgba(99, 102, 241, 0.15);
+            color: #c7d2fe;
+        }
+
+        .month-picker-footnote {
+            margin-top: 0.5rem;
+            padding: 0.5rem 0.375rem 0;
+            border-top: 1px solid #f3f4f6;
+            font-size: 0.6875rem;
+            color: #9ca3af;
+        }
+
+        .dark .month-picker-footnote {
+            border-top-color: #374151;
+        }
+
+        /* ====================================================================
+           Shared dashboard design system.
+
+           One token set for every analytics page (main dashboard, admin
+           dashboard, orders dashboard, sales dashboards, value distribution),
+           so a viewer moving between them reads it as one suite rather than
+           five separately-designed screens. Values here match the `.s-*` /
+           `.rank-*` classes already used on the sales-family pages — those
+           are left as-is (already shipped, already tested) rather than
+           renamed; this `.dash-*` set is what the other three pages read
+           from, and any dashboard built from here on should use it directly
+           instead of inventing another one-off card style.
+           ==================================================================== */
+        .dash-panel {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 1rem;
+            box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+        }
+
+        .dark .dash-panel {
+            background-color: #111827;
+            border-color: #1f2937;
+            box-shadow: none;
+        }
+
+        .dash-eyebrow {
+            font-size: 0.6875rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #6b7280;
+        }
+
+        .dark .dash-eyebrow {
+            color: #9ca3af;
+        }
+
+        .dash-num {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: 'tnum';
+        }
+
+        .dash-hero {
+            font-size: clamp(2rem, 4vw, 2.75rem);
+            line-height: 1.05;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: #111827;
+        }
+
+        .dark .dash-hero {
+            color: #ffffff;
+        }
+
+        .dash-delta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.1875rem 0.5625rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 800;
+        }
+
+        .dash-delta.is-up {
+            background-color: #d1fae5;
+            color: #047857;
+        }
+
+        .dash-delta.is-down {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .dash-delta.is-flat {
+            background-color: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .dark .dash-delta.is-up {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #6ee7b7;
+        }
+
+        .dark .dash-delta.is-down {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+        }
+
+        .dark .dash-delta.is-flat {
+            background-color: #1f2937;
+            color: #9ca3af;
+        }
+
+        /* Reads the same --icon-from / --icon-to custom properties the
+           existing gradient-icon cards already set inline, so pages don't
+           need their inline styles touched to adopt this. */
+        .dash-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.75rem;
+            height: 2.75rem;
+            border-radius: 0.875rem;
+            color: #ffffff;
+            font-size: 1.0625rem;
+            flex-shrink: 0;
+            background-image: linear-gradient(135deg, var(--icon-from, #6366f1), var(--icon-to, #8b5cf6));
+        }
+
+        .dash-stat-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #6b7280;
+        }
+
+        .dark .dash-stat-label {
+            color: #9ca3af;
+        }
+
+        .dash-stat-foot {
+            margin-top: 0.25rem;
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        .dash-grid-4 {
+            display: grid;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+            gap: 1rem;
+        }
+
+        @media (min-width: 640px) {
+            .dash-grid-4 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .dash-grid-4 {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+
+        .dash-bar {
+            height: 0.375rem;
+            margin-top: 0.5rem;
+            border-radius: 9999px;
+            background-color: #eef2f7;
+            overflow: hidden;
+        }
+
+        .dark .dash-bar {
+            background-color: #1f2937;
+        }
+
+        .dash-bar span {
+            display: block;
+            height: 100%;
+            border-radius: 9999px;
+            background-image: linear-gradient(90deg, #4f46e5 0%, #8b5cf6 100%);
+        }
+
+        span.dt-column-title {
+            text-align: start;
+            margin-left: 20px;
+        }
     </style>
     @stack('styles')
 </head>
+
 <body class="font-sans antialiased bg-gray-100 dark:bg-gray-950">
     <!-- Sidebar Component -->
     @include('components.sidebar')
 
     <!-- Mobile Sidebar Overlay -->
-    <div id="mobileSidebarOverlay" class="hidden fixed inset-0 z-40 lg:hidden bg-gray-600 bg-opacity-75 transition-opacity duration-300"></div>
+    <div id="mobileSidebarOverlay"
+        class="hidden fixed inset-0 z-40 lg:hidden bg-gray-600 bg-opacity-75 transition-opacity duration-300"></div>
 
     <!-- Mobile Sidebar -->
-    <aside id="mobileSidebar" class="hidden fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-indigo-600 to-indigo-800 text-white lg:hidden">
+    <aside id="mobileSidebar"
+        class="hidden fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-indigo-600 to-indigo-800 text-white lg:hidden">
         <div class="flex flex-col h-full">
             <div class="flex items-center justify-between h-16 px-4 border-b border-indigo-700">
                 <div class="flex items-center gap-2">
                     @php $mobileSiteName = \App\Models\Setting::get('site_name', config('app.name', 'PMT')); @endphp
-                    <x-site-logo
-                        img-class="h-8 w-auto max-w-[120px] object-contain"
-                        badge-class="h-8 w-8 text-sm" />
+                    <x-site-logo img-class="h-8 w-auto max-w-[120px] object-contain" badge-class="h-8 w-8 text-sm" />
                     <h1 class="text-xl font-bold">{{ $mobileSiteName }}</h1>
                 </div>
                 <button id="closeMobileSidebar" class="text-white hover:text-gray-300">
@@ -678,46 +986,49 @@
             <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
                 <!-- Dashboard Section - Only for management -->
                 @role(['admin', 'operation-manager', 'project-manager'])
-                <div class="mb-2 sidebar-section" data-section="dashboard">
-                    <button class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
-                        <div class="flex items-center">
-                            <i class="fas fa-th-large w-5 text-indigo-300 group-hover:text-white transition-colors"></i>
-                            <span class="ml-3">Dashboard</span>
+                    <div class="mb-2 sidebar-section" data-section="dashboard">
+                        <button
+                            class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                            <div class="flex items-center">
+                                <i class="fas fa-th-large w-5 text-indigo-300 group-hover:text-white transition-colors"></i>
+                                <span class="ml-3">Dashboard</span>
+                            </div>
+                            <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron"></i>
+                        </button>
+                        <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
+                            <a href="{{ route('dashboard') }}"
+                                class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('dashboard') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                                <i class="fas fa-chart-line w-5 mr-2"></i>
+                                Overview
+                            </a>
                         </div>
-                        <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron"></i>
-                    </button>
-                    <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
-                        <a href="{{ route('dashboard') }}"
-                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('dashboard') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
-                            <i class="fas fa-chart-line w-5 mr-2"></i>
-                            Overview
-                        </a>
                     </div>
-                </div>
                 @endrole
 
                 <!-- Orders Section -->
                 <div class="mb-2 sidebar-section" data-section="orders">
-                    <button class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                    <button
+                        class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
                         <div class="flex items-center">
-                            <i class="fas fa-shopping-cart w-5 text-indigo-300 group-hover:text-white transition-colors"></i>
+                            <i
+                                class="fas fa-shopping-cart w-5 text-indigo-300 group-hover:text-white transition-colors"></i>
                             <span class="ml-3">Orders</span>
                         </div>
                         <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron"></i>
                     </button>
                     <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
                         <a href="{{ route('orders.dashboard') }}"
-                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('orders.dashboard') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('orders.dashboard') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
                             <i class="fas fa-chart-line w-5 mr-2"></i>
                             Dashboard
                         </a>
                         <a href="{{ route('orders.index') }}"
-                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('orders.index') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('orders.index') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
                             <i class="fas fa-list w-5 mr-2"></i>
                             All Orders
                         </a>
                         <a href="{{ route('orders.create') }}"
-                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('orders.create') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('orders.create') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
                             <i class="fas fa-plus w-5 mr-2"></i>
                             Add Order
                         </a>
@@ -726,7 +1037,8 @@
 
                 <!-- Tasks Section -->
                 <div class="mb-2 sidebar-section" data-section="tasks">
-                    <button class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                    <button
+                        class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
                         <div class="flex items-center">
                             <i class="fas fa-tasks w-5 text-cyan-400 group-hover:text-cyan-300 transition-colors"></i>
                             <span class="ml-3">Tasks</span>
@@ -735,17 +1047,17 @@
                     </button>
                     <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
                         <a href="{{ route('tasks.index') }}"
-                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tasks.index') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tasks.index') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
                             <i class="fas fa-list w-5 mr-2"></i>
                             All Tasks
                         </a>
                         <a href="{{ route('tasks.archived') }}"
-                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tasks.archived') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tasks.archived') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
                             <i class="fas fa-archive w-5 mr-2"></i>
                             Archived Tasks
                         </a>
                         <a href="{{ route('tasks.create') }}"
-                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tasks.create') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tasks.create') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
                             <i class="fas fa-plus w-5 mr-2"></i>
                             Add Task
                         </a>
@@ -754,81 +1066,87 @@
 
                 <!-- Admin Section -->
                 @role('admin')
-                <div class="mb-2 sidebar-section" data-section="admin">
-                    <button class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-red-600/30 transition-all duration-200 group">
-                        <div class="flex items-center">
-                            <i class="fas fa-shield-alt w-5 text-red-400 group-hover:text-red-300 transition-colors"></i>
-                            <span class="ml-3">Admin</span>
+                    <div class="mb-2 sidebar-section" data-section="admin">
+                        <button
+                            class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-red-600/30 transition-all duration-200 group">
+                            <div class="flex items-center">
+                                <i
+                                    class="fas fa-shield-alt w-5 text-red-400 group-hover:text-red-300 transition-colors"></i>
+                                <span class="ml-3">Admin</span>
+                            </div>
+                            <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron"></i>
+                        </button>
+                        <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
+                            <a href="{{ route('admin.dashboard') }}"
+                                class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('admin.*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
+                                <i class="fas fa-tachometer-alt w-5 mr-2"></i>
+                                Admin Dashboard
+                            </a>
+                            <a href="{{ route('users.index') }}"
+                                class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('users.*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
+                                <i class="fas fa-users-cog w-5 mr-2"></i>
+                                Manage Users
+                            </a>
+                            <a href="{{ route('admin.roles') }}"
+                                class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('admin.roles*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
+                                <i class="fas fa-key w-5 mr-2"></i>
+                                Roles & Permissions
+                            </a>
+                            <a href="{{ route('admin.github.index') }}"
+                                class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('admin.github.*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
+                                <i class="fas fa-code-branch w-5 mr-2"></i>
+                                GitHub Commits
+                            </a>
+                            <a href="{{ route('settings.index') }}"
+                                class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('settings.*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
+                                <i class="fas fa-cog w-5 mr-2"></i>
+                                System Settings
+                            </a>
                         </div>
-                        <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron"></i>
-                    </button>
-                    <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
-                        <a href="{{ route('admin.dashboard') }}"
-                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('admin.*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
-                            <i class="fas fa-tachometer-alt w-5 mr-2"></i>
-                            Admin Dashboard
-                        </a>
-                        <a href="{{ route('users.index') }}"
-                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('users.*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
-                            <i class="fas fa-users-cog w-5 mr-2"></i>
-                            Manage Users
-                        </a>
-                        <a href="{{ route('admin.roles') }}"
-                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('admin.roles*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
-                            <i class="fas fa-key w-5 mr-2"></i>
-                            Roles & Permissions
-                        </a>
-                        <a href="{{ route('admin.github.index') }}"
-                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('admin.github.*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
-                            <i class="fas fa-code-branch w-5 mr-2"></i>
-                            GitHub Commits
-                        </a>
-                        <a href="{{ route('settings.index') }}"
-                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('settings.*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
-                            <i class="fas fa-cog w-5 mr-2"></i>
-                            System Settings
-                        </a>
                     </div>
-                </div>
                 @endrole
 
                 @role(['operation-manager', 'project-manager'])
-                <div class="mb-2 sidebar-section" data-section="admin">
-                    <a href="{{ route('admin.github.index') }}"
-                       class="flex items-center px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 {{ request()->routeIs('admin.github.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
-                        <i class="fas fa-code-branch w-5 mr-2 text-indigo-300"></i>
-                        GitHub Commits
-                    </a>
-                </div>
+                    <div class="mb-2 sidebar-section" data-section="admin">
+                        <a href="{{ route('admin.github.index') }}"
+                            class="flex items-center px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 {{ request()->routeIs('admin.github.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            <i class="fas fa-code-branch w-5 mr-2 text-indigo-300"></i>
+                            GitHub Commits
+                        </a>
+                    </div>
                 @endrole
 
                 <!-- Team Section -->
-                @if(auth()->user()->can('viewAny', \App\Models\Team::class) || auth()->user()->can('viewAny', \App\Models\TechStack::class))
-                <div class="mb-2 sidebar-section" data-section="team">
-                    <button class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
-                        <div class="flex items-center">
-                            <i class="fas fa-users w-5 text-green-400 group-hover:text-green-300 transition-colors"></i>
-                            <span class="ml-3">Team</span>
+                @if (auth()->user()->can('viewAny', \App\Models\Team::class) ||
+                        auth()->user()->can('viewAny', \App\Models\TechStack::class))
+                    <div class="mb-2 sidebar-section" data-section="team">
+                        <button
+                            class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                            <div class="flex items-center">
+                                <i
+                                    class="fas fa-users w-5 text-green-400 group-hover:text-green-300 transition-colors"></i>
+                                <span class="ml-3">Team</span>
+                            </div>
+                            <i
+                                class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron"></i>
+                        </button>
+                        <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
+                            @can('viewAny', \App\Models\Team::class)
+                                <a href="{{ route('teams.index') }}"
+                                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('teams.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                                    <i class="fas fa-users w-5 mr-2"></i>
+                                    Teams
+                                </a>
+                            @endcan
+                            @can('viewAny', \App\Models\TechStack::class)
+                                <a href="{{ route('tech-stacks.index') }}"
+                                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tech-stacks.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                                    <i class="fas fa-layer-group w-5 mr-2"></i>
+                                    Tech Stacks
+                                </a>
+                            @endcan
                         </div>
-                        <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron"></i>
-                    </button>
-                    <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
-                        @can('viewAny', \App\Models\Team::class)
-                        <a href="{{ route('teams.index') }}"
-                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('teams.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
-                            <i class="fas fa-users w-5 mr-2"></i>
-                            Teams
-                        </a>
-                        @endcan
-                        @can('viewAny', \App\Models\TechStack::class)
-                        <a href="{{ route('tech-stacks.index') }}"
-                           class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tech-stacks.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
-                            <i class="fas fa-layer-group w-5 mr-2"></i>
-                            Tech Stacks
-                        </a>
-                        @endcan
                     </div>
-                </div>
                 @endif
             </nav>
         </div>
@@ -859,139 +1177,143 @@
             },
             buttonsStyling: false,
             reverseButtons: true,
-            showClass: { popup: 'swal2-show' },
-            hideClass: { popup: 'swal2-hide' },
+            showClass: {
+                popup: 'swal2-show'
+            },
+            hideClass: {
+                popup: 'swal2-hide'
+            },
         });
     </script>
 
     <!-- Flash Message Handler -->
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        @if(session('success'))
-            Swal.fire({
-                icon: 'success',
-                title: 'Success',
-                text: @json(session('success')),
-                timer: 2500,
-                timerProgressBar: true,
-                showConfirmButton: false,
-            });
-        @endif
-        @if(session('error'))
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: @json(session('error')),
-            });
-        @endif
-    });
+        document.addEventListener('DOMContentLoaded', function() {
+            @if (session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: @json(session('success')),
+                    timer: 2500,
+                    timerProgressBar: true,
+                    showConfirmButton: false,
+                });
+            @endif
+            @if (session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: @json(session('error')),
+                });
+            @endif
+        });
     </script>
 
     <!-- Sidebar Accordion Script -->
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Get all sidebar sections
-        const sidebarSections = document.querySelectorAll('.sidebar-section');
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get all sidebar sections
+            const sidebarSections = document.querySelectorAll('.sidebar-section');
 
-        // Function to toggle a section (independent - no auto-close of others)
-        function toggleSection(section) {
-            const content = section.querySelector('.sidebar-content');
-            const chevron = section.querySelector('.sidebar-chevron');
+            // Function to toggle a section (independent - no auto-close of others)
+            function toggleSection(section) {
+                const content = section.querySelector('.sidebar-content');
+                const chevron = section.querySelector('.sidebar-chevron');
 
-            // Toggle visibility
-            content.classList.toggle('hidden');
-            chevron.classList.toggle('rotate-180');
-        }
-
-        // Add click listeners to all sidebar toggles
-        sidebarSections.forEach(function(section) {
-            const toggle = section.querySelector('.sidebar-toggle');
-            if (toggle) {
-                toggle.addEventListener('click', function() {
-                    toggleSection(section);
-                });
+                // Toggle visibility
+                content.classList.toggle('hidden');
+                chevron.classList.toggle('rotate-180');
             }
-        });
 
-        // Mobile sidebar functionality
-        const mobileSidebarBtn = document.getElementById('mobileSidebarBtn');
-        const mobileSidebar = document.getElementById('mobileSidebar');
-        const mobileSidebarOverlay = document.getElementById('mobileSidebarOverlay');
-        const closeMobileSidebarBtn = document.getElementById('closeMobileSidebar');
-
-        if (mobileSidebarBtn && mobileSidebar && mobileSidebarOverlay) {
-            // Open mobile sidebar
-            mobileSidebarBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                mobileSidebar.classList.remove('hidden');
-                mobileSidebarOverlay.classList.remove('hidden');
+            // Add click listeners to all sidebar toggles
+            sidebarSections.forEach(function(section) {
+                const toggle = section.querySelector('.sidebar-toggle');
+                if (toggle) {
+                    toggle.addEventListener('click', function() {
+                        toggleSection(section);
+                    });
+                }
             });
 
-            // Close mobile sidebar when clicking overlay
-            mobileSidebarOverlay.addEventListener('click', function() {
-                mobileSidebar.classList.add('hidden');
-                mobileSidebarOverlay.classList.add('hidden');
-            });
+            // Mobile sidebar functionality
+            const mobileSidebarBtn = document.getElementById('mobileSidebarBtn');
+            const mobileSidebar = document.getElementById('mobileSidebar');
+            const mobileSidebarOverlay = document.getElementById('mobileSidebarOverlay');
+            const closeMobileSidebarBtn = document.getElementById('closeMobileSidebar');
 
-            // Close mobile sidebar when clicking close button
-            if (closeMobileSidebarBtn) {
-                closeMobileSidebarBtn.addEventListener('click', function() {
+            if (mobileSidebarBtn && mobileSidebar && mobileSidebarOverlay) {
+                // Open mobile sidebar
+                mobileSidebarBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    mobileSidebar.classList.remove('hidden');
+                    mobileSidebarOverlay.classList.remove('hidden');
+                });
+
+                // Close mobile sidebar when clicking overlay
+                mobileSidebarOverlay.addEventListener('click', function() {
                     mobileSidebar.classList.add('hidden');
                     mobileSidebarOverlay.classList.add('hidden');
                 });
+
+                // Close mobile sidebar when clicking close button
+                if (closeMobileSidebarBtn) {
+                    closeMobileSidebarBtn.addEventListener('click', function() {
+                        mobileSidebar.classList.add('hidden');
+                        mobileSidebarOverlay.classList.add('hidden');
+                    });
+                }
             }
-        }
-    });
+        });
     </script>
 
     <!-- User Dropdown Script -->
     <script>
-    // User dropdown functionality - load when DOM is ready
-    document.addEventListener('DOMContentLoaded', function() {
-        const userDropdownBtn = document.getElementById('user-dropdown-btn');
-        const userDropdown = document.getElementById('user-dropdown');
+        // User dropdown functionality - load when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            const userDropdownBtn = document.getElementById('user-dropdown-btn');
+            const userDropdown = document.getElementById('user-dropdown');
 
-        if (userDropdownBtn && userDropdown) {
-            // Toggle dropdown when button is clicked
-            userDropdownBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                userDropdown.classList.toggle('hidden');
-            });
+            if (userDropdownBtn && userDropdown) {
+                // Toggle dropdown when button is clicked
+                userDropdownBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    userDropdown.classList.toggle('hidden');
+                });
 
-            // Close dropdown when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!userDropdown.contains(e.target) && !userDropdownBtn.contains(e.target)) {
-                    userDropdown.classList.add('hidden');
-                }
-            });
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!userDropdown.contains(e.target) && !userDropdownBtn.contains(e.target)) {
+                        userDropdown.classList.add('hidden');
+                    }
+                });
 
-            // Close dropdown when pressing Escape key
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    userDropdown.classList.add('hidden');
-                }
-            });
-        }
-    });
+                // Close dropdown when pressing Escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        userDropdown.classList.add('hidden');
+                    }
+                });
+            }
+        });
     </script>
 
     <!-- Theme Toggle Script -->
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const themeToggleBtn = document.getElementById('themeToggle');
-        if (!themeToggleBtn) {
-            return;
-        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggleBtn = document.getElementById('themeToggle');
+            if (!themeToggleBtn) {
+                return;
+            }
 
-        themeToggleBtn.addEventListener('click', function() {
-            const isDark = !document.documentElement.classList.contains('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            // Reload so canvas-based charts (Chart.js) and any other JS that
-            // bakes colors in at render time pick up the new theme correctly.
-            window.location.reload();
+            themeToggleBtn.addEventListener('click', function() {
+                const isDark = !document.documentElement.classList.contains('dark');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                // Reload so canvas-based charts (Chart.js) and any other JS that
+                // bakes colors in at render time pick up the new theme correctly.
+                window.location.reload();
+            });
         });
-    });
     </script>
 
     <!-- Flatpickr JS -->
@@ -1013,10 +1335,8 @@
                     monthSelectorType: 'static',
                     appendTo: document.body,
                     position: 'below',
-                    prevArrow:
-                        '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>',
-                    nextArrow:
-                        '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>',
+                    prevArrow: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>',
+                    nextArrow: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>',
                     onChange: function(selectedDates, dateStr, instance) {
                         // If end date exists and is before start date, update it
                         if (instance.element.id === 'start_date' && selectedDates.length > 0) {
@@ -1024,7 +1344,8 @@
                             if (endDateInput) {
                                 const endDate = flatpickr(endDateInput);
                                 endDate.set('minDate', dateStr);
-                                if (endDate.selectedDates.length > 0 && endDate.selectedDates[0] < selectedDates[0]) {
+                                if (endDate.selectedDates.length > 0 && endDate.selectedDates[
+                                        0] < selectedDates[0]) {
                                     endDate.setDate(selectedDates[0]);
                                 }
                             }
@@ -1044,120 +1365,129 @@
 
     {{-- Global AJAX Select Component --}}
     <script>
-    (function () {
-        const statusColors = {
-            'nra':         'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300',
-            'pending':     'bg-yellow-100 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400',
-            'in-progress': 'bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400',
-            'delivered':   'bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400',
-            'on-hold':     'bg-orange-100 dark:bg-orange-500/10 text-orange-700 dark:text-orange-400',
-            'cancelled':   'bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400',
-        };
+        (function() {
+            const statusColors = {
+                'nra': 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300',
+                'pending': 'bg-yellow-100 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400',
+                'in-progress': 'bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400',
+                'delivered': 'bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400',
+                'on-hold': 'bg-orange-100 dark:bg-orange-500/10 text-orange-700 dark:text-orange-400',
+                'cancelled': 'bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400',
+            };
 
-        function badgeClass(val) {
-            return statusColors[val] || 'bg-purple-100 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400';
-        }
+            function badgeClass(val) {
+                return statusColors[val] || 'bg-purple-100 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400';
+            }
 
-        function initAjaxSelect(wrapper) {
-            if (wrapper._asi) return;
-            wrapper._asi = true;
+            function initAjaxSelect(wrapper) {
+                if (wrapper._asi) return;
+                wrapper._asi = true;
 
-            const url      = wrapper.dataset.url;
-            const badgeKey = wrapper.dataset.badge || '';
-            const uid      = wrapper.dataset.uid;
-            const search   = document.getElementById(uid + '_s');
-            const hidden   = document.getElementById(uid + '_h');
-            const dropdown = document.getElementById(uid + '_d');
-            const clear    = document.getElementById(uid + '_c');
+                const url = wrapper.dataset.url;
+                const badgeKey = wrapper.dataset.badge || '';
+                const uid = wrapper.dataset.uid;
+                const search = document.getElementById(uid + '_s');
+                const hidden = document.getElementById(uid + '_h');
+                const dropdown = document.getElementById(uid + '_d');
+                const clear = document.getElementById(uid + '_c');
 
-            let cached = null;
-            let timer  = null;
+                let cached = null;
+                let timer = null;
 
-            function renderOptions(items) {
-                if (!items.length) {
-                    dropdown.innerHTML = '<div class="px-4 py-3 text-sm text-gray-400 dark:text-gray-500">No results found</div>';
-                } else {
-                    dropdown.innerHTML = items.map(item => {
-                        const label    = String(item.name || item.label || '');
-                        const badgeVal = badgeKey ? (item[badgeKey] || '') : '';
-                        return `<button type="button"
+                function renderOptions(items) {
+                    if (!items.length) {
+                        dropdown.innerHTML =
+                            '<div class="px-4 py-3 text-sm text-gray-400 dark:text-gray-500">No results found</div>';
+                    } else {
+                        dropdown.innerHTML = items.map(item => {
+                            const label = String(item.name || item.label || '');
+                            const badgeVal = badgeKey ? (item[badgeKey] || '') : '';
+                            return `<button type="button"
                                         data-id="${item.id}"
                                         data-label="${label.replace(/"/g, '&quot;')}"
                                         class="asi-opt w-full text-left px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 text-gray-900 dark:text-gray-100 text-sm border-b border-gray-100 dark:border-gray-700 last:border-0 flex items-center justify-between gap-2 transition-colors">
                                     <span class="truncate">${label}</span>
                                     ${badgeVal ? `<span class="flex-shrink-0 text-xs font-medium px-1.5 py-0.5 rounded ${badgeClass(badgeVal)}">${badgeVal}</span>` : ''}
                                 </button>`;
-                    }).join('');
+                        }).join('');
 
-                    dropdown.querySelectorAll('.asi-opt').forEach(btn => {
-                        btn.addEventListener('click', () => pick(btn.dataset.id, btn.dataset.label));
-                    });
+                        dropdown.querySelectorAll('.asi-opt').forEach(btn => {
+                            btn.addEventListener('click', () => pick(btn.dataset.id, btn.dataset.label));
+                        });
+                    }
+                    dropdown.classList.remove('hidden');
                 }
-                dropdown.classList.remove('hidden');
-            }
 
-            function pick(id, label) {
-                hidden.value = id;
-                search.value = label;
-                search.classList.add('border-indigo-400', 'bg-indigo-50');
-                clear.classList.remove('hidden');
-                dropdown.classList.add('hidden');
-                hidden.dispatchEvent(new Event('change', {bubbles: true}));
-            }
+                function pick(id, label) {
+                    hidden.value = id;
+                    search.value = label;
+                    search.classList.add('border-indigo-400', 'bg-indigo-50');
+                    clear.classList.remove('hidden');
+                    dropdown.classList.add('hidden');
+                    hidden.dispatchEvent(new Event('change', {
+                        bubbles: true
+                    }));
+                }
 
-            function reset() {
-                hidden.value = '';
-                search.value = '';
-                search.classList.remove('border-indigo-400', 'bg-indigo-50');
-                clear.classList.add('hidden');
-                dropdown.classList.add('hidden');
-                hidden.dispatchEvent(new Event('change', {bubbles: true}));
-            }
+                function reset() {
+                    hidden.value = '';
+                    search.value = '';
+                    search.classList.remove('border-indigo-400', 'bg-indigo-50');
+                    clear.classList.add('hidden');
+                    dropdown.classList.add('hidden');
+                    hidden.dispatchEvent(new Event('change', {
+                        bubbles: true
+                    }));
+                }
 
-            function fetchItems(q) {
-                const endpoint = q ? `${url}?q=${encodeURIComponent(q)}` : url;
-                fetch(endpoint)
-                    .then(r => r.json())
-                    .then(data => {
-                        if (!q) cached = data;
-                        renderOptions(data);
-                    });
-            }
+                function fetchItems(q) {
+                    const endpoint = q ? `${url}?q=${encodeURIComponent(q)}` : url;
+                    fetch(endpoint)
+                        .then(r => r.json())
+                        .then(data => {
+                            if (!q) cached = data;
+                            renderOptions(data);
+                        });
+                }
 
-            search.addEventListener('focus', () => {
-                if (search.value) return;
-                if (cached) renderOptions(cached);
-                else fetchItems('');
-            });
-
-            search.addEventListener('input', () => {
-                const q = search.value.trim();
-                clearTimeout(timer);
-                if (!q) {
+                search.addEventListener('focus', () => {
+                    if (search.value) return;
                     if (cached) renderOptions(cached);
                     else fetchItems('');
-                    return;
-                }
-                timer = setTimeout(() => fetchItems(q), 300);
+                });
+
+                search.addEventListener('input', () => {
+                    const q = search.value.trim();
+                    clearTimeout(timer);
+                    if (!q) {
+                        if (cached) renderOptions(cached);
+                        else fetchItems('');
+                        return;
+                    }
+                    timer = setTimeout(() => fetchItems(q), 300);
+                });
+
+                clear.addEventListener('click', reset);
+
+                document.addEventListener('click', e => {
+                    if (!wrapper.contains(e.target)) dropdown.classList.add('hidden');
+                });
+            }
+
+            function initAll() {
+                document.querySelectorAll('[data-ajax-select]').forEach(initAjaxSelect);
+            }
+
+            document.addEventListener('DOMContentLoaded', initAll);
+
+            // Support dynamic modals — re-init whenever new nodes appear
+            const observer = new MutationObserver(() => initAll());
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
             });
-
-            clear.addEventListener('click', reset);
-
-            document.addEventListener('click', e => {
-                if (!wrapper.contains(e.target)) dropdown.classList.add('hidden');
-            });
-        }
-
-        function initAll() {
-            document.querySelectorAll('[data-ajax-select]').forEach(initAjaxSelect);
-        }
-
-        document.addEventListener('DOMContentLoaded', initAll);
-
-        // Support dynamic modals — re-init whenever new nodes appear
-        const observer = new MutationObserver(() => initAll());
-        observer.observe(document.body, { childList: true, subtree: true });
-    })();
+        })();
     </script>
 </body>
+
 </html>

@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use Database\Factories\TeamFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Team extends Model
 {
-    /** @use HasFactory<\Database\Factories\TeamFactory> */
+    /** @use HasFactory<TeamFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -16,32 +20,27 @@ class Team extends Model
         'team_leader_id',
     ];
 
-    public function teamLeader(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function teamLeader(): BelongsTo
     {
         return $this->belongsTo(User::class, 'team_leader_id');
     }
 
-    public function members(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function members(): HasMany
     {
         return $this->hasMany(User::class, 'team_id');
     }
 
-    public function orders(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function orders(): HasMany
     {
         return $this->hasMany(Order::class, 'team_id');
     }
 
-    public function projects(): \Illuminate\Database\Eloquent\Relations\HasMany
-    {
-        return $this->hasMany(Order::class, 'team_id');
-    }
-
-    public function managers(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function managers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'manager_team');
     }
 
-    public function techStacks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function techStacks(): HasMany
     {
         return $this->hasMany(TechStack::class, 'team_id');
     }

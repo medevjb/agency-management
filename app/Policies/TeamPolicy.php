@@ -38,20 +38,12 @@ class TeamPolicy
     }
 
     /**
-     * Admin/OM/PM can update any team.
-     * Team leader can update their own team.
+     * Only Admin, OM, PM can update teams. Every other role — including
+     * team leaders and sales leaders — gets view-only access.
      */
     public function update(User $user, Team $team): bool
     {
-        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
-            return true;
-        }
-
-        if ($user->hasRole('team-leader') && $user->team_id === $team->id) {
-            return true;
-        }
-
-        return false;
+        return $user->hasRole(['admin', 'operation-manager', 'project-manager']);
     }
 
     /**
@@ -73,36 +65,18 @@ class TeamPolicy
     }
 
     /**
-     * Admin/OM/PM can add members to any team.
-     * Team leader can add members to their own team.
+     * Only Admin, OM, PM can add members to a team.
      */
     public function addMembers(User $user, Team $team): bool
     {
-        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
-            return true;
-        }
-
-        if ($user->hasRole('team-leader') && $user->team_id === $team->id) {
-            return true;
-        }
-
-        return false;
+        return $user->hasRole(['admin', 'operation-manager', 'project-manager']);
     }
 
     /**
-     * Admin/OM/PM can remove members from any team.
-     * Team leader can remove members from their own team.
+     * Only Admin, OM, PM can remove members from a team.
      */
     public function removeMember(User $user, Team $team): bool
     {
-        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
-            return true;
-        }
-
-        if ($user->hasRole('team-leader') && $user->team_id === $team->id) {
-            return true;
-        }
-
-        return false;
+        return $user->hasRole(['admin', 'operation-manager', 'project-manager']);
     }
 }

@@ -7,6 +7,7 @@ use App\Models\Team;
 use App\Models\TechStack;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class SearchControllerTest extends TestCase
@@ -21,87 +22,55 @@ class SearchControllerTest extends TestCase
         $this->user = User::factory()->create();
     }
 
-    // Teams
-
-    public function test_teams_search_returns_json_with_default_results(): void
+    public static function defaultResultsProvider(): array
     {
-        Team::factory()->count(3)->create();
+        return [
+            'teams' => ['/search/teams', fn () => Team::factory()->count(3)->create()],
+            'tech-stacks' => ['/search/tech-stacks', fn () => TechStack::factory()->count(3)->create()],
+            'profiles' => ['/search/profiles', fn () => Profile::factory()->create(['username' => 'johndoe', 'platform' => 'upwork'])],
+        ];
+    }
 
-        $response = $this->actingAs($this->user)->getJson('/search/teams');
+    #[DataProvider('defaultResultsProvider')]
+    public function test_search_returns_json_with_default_results(string $url, \Closure $seed): void
+    {
+        $seed();
 
-        $response->assertOk()
+        $this->actingAs($this->user)->getJson($url)
+            ->assertOk()
             ->assertJsonStructure([['id', 'name']]);
     }
 
-    public function test_teams_search_filters_by_query(): void
+    public static function queryFilterProvider(): array
     {
-        Team::factory()->create(['name' => 'Alpha Squad']);
-        Team::factory()->create(['name' => 'Beta Team']);
+        return [
+            'teams' => [
+                '/search/teams?q=Alpha',
+                fn () => [Team::factory()->create(['name' => 'Alpha Squad']), Team::factory()->create(['name' => 'Beta Team'])],
+                'Alpha Squad',
+            ],
+            'tech-stacks' => [
+                '/search/tech-stacks?q=React',
+                fn () => [TechStack::factory()->create(['name' => 'React Frontend']), TechStack::factory()->create(['name' => 'Laravel Backend'])],
+                'React Frontend',
+            ],
+            'profiles' => [
+                '/search/profiles?q=john',
+                fn () => [Profile::factory()->create(['username' => 'johndoe', 'platform' => 'upwork']), Profile::factory()->create(['username' => 'janedoe', 'platform' => 'fiverr'])],
+                'johndoe (Upwork)',
+            ],
+        ];
+    }
 
-        $response = $this->actingAs($this->user)->getJson('/search/teams?q=Alpha');
+    #[DataProvider('queryFilterProvider')]
+    public function test_search_filters_by_query(string $url, \Closure $seed, string $expectedName): void
+    {
+        $seed();
 
-        $response->assertOk()
+        $this->actingAs($this->user)->getJson($url)
+            ->assertOk()
             ->assertJsonCount(1)
-            ->assertJsonFragment(['name' => 'Alpha Squad']);
-    }
-
-    public function test_teams_search_requires_authentication(): void
-    {
-        $this->getJson('/search/teams')->assertUnauthorized();
-    }
-
-    // Tech Stacks
-
-    public function test_tech_stacks_search_returns_json_with_default_results(): void
-    {
-        TechStack::factory()->count(3)->create();
-
-        $response = $this->actingAs($this->user)->getJson('/search/tech-stacks');
-
-        $response->assertOk()
-            ->assertJsonStructure([['id', 'name']]);
-    }
-
-    public function test_tech_stacks_search_filters_by_query(): void
-    {
-        TechStack::factory()->create(['name' => 'React Frontend']);
-        TechStack::factory()->create(['name' => 'Laravel Backend']);
-
-        $response = $this->actingAs($this->user)->getJson('/search/tech-stacks?q=React');
-
-        $response->assertOk()
-            ->assertJsonCount(1)
-            ->assertJsonFragment(['name' => 'React Frontend']);
-    }
-
-    public function test_tech_stacks_search_requires_authentication(): void
-    {
-        $this->getJson('/search/tech-stacks')->assertUnauthorized();
-    }
-
-    // Profiles
-
-    public function test_profiles_search_returns_json_with_id_and_formatted_name(): void
-    {
-        Profile::factory()->create(['username' => 'johndoe', 'platform' => 'upwork']);
-
-        $response = $this->actingAs($this->user)->getJson('/search/profiles');
-
-        $response->assertOk()
-            ->assertJsonStructure([['id', 'name']])
-            ->assertJsonFragment(['name' => 'johndoe (Upwork)']);
-    }
-
-    public function test_profiles_search_filters_by_username(): void
-    {
-        Profile::factory()->create(['username' => 'johndoe', 'platform' => 'upwork']);
-        Profile::factory()->create(['username' => 'janedoe', 'platform' => 'fiverr']);
-
-        $response = $this->actingAs($this->user)->getJson('/search/profiles?q=john');
-
-        $response->assertOk()
-            ->assertJsonCount(1)
-            ->assertJsonFragment(['name' => 'johndoe (Upwork)']);
+            ->assertJsonFragment(['name' => $expectedName]);
     }
 
     public function test_profiles_search_filters_by_platform(): void
@@ -109,27 +78,33 @@ class SearchControllerTest extends TestCase
         Profile::factory()->create(['username' => 'johndoe', 'platform' => 'upwork']);
         Profile::factory()->create(['username' => 'janedoe', 'platform' => 'fiverr']);
 
-        $response = $this->actingAs($this->user)->getJson('/search/profiles?q=fiverr');
-
-        $response->assertOk()
+        $this->actingAs($this->user)->getJson('/search/profiles?q=fiverr')
+            ->assertOk()
             ->assertJsonCount(1)
             ->assertJsonFragment(['name' => 'janedoe (Fiverr)']);
     }
 
-    public function test_profiles_search_requires_authentication(): void
+    public static function authRequiredProvider(): array
     {
-        $this->getJson('/search/profiles')->assertUnauthorized();
+        return [
+            'teams' => ['/search/teams'],
+            'tech-stacks' => ['/search/tech-stacks'],
+            'profiles' => ['/search/profiles'],
+        ];
     }
 
-    // Result limits
+    #[DataProvider('authRequiredProvider')]
+    public function test_search_requires_authentication(string $url): void
+    {
+        $this->getJson($url)->assertUnauthorized();
+    }
 
     public function test_search_results_are_limited_to_ten(): void
     {
         Team::factory()->count(15)->create();
 
-        $response = $this->actingAs($this->user)->getJson('/search/teams');
-
-        $response->assertOk()
+        $this->actingAs($this->user)->getJson('/search/teams')
+            ->assertOk()
             ->assertJsonCount(10);
     }
 }

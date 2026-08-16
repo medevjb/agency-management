@@ -7,10 +7,12 @@ use App\Http\Requests\UpdateTaskRequest;
 use App\Mail\TaskAssignmentNotification;
 use App\Models\Order;
 use App\Models\Task;
+use App\Models\TaskAudit;
 use App\Models\User;
 use App\Notifications\TaskUpdatedNotification;
 use App\Services\EmailService;
 use App\Services\TaskAssignmentService;
+use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -33,37 +35,11 @@ class TaskController extends Controller
             $teamMemberIds = User::where('team_id', $user->team_id)->pluck('id')->toArray();
         }
 
+        $visibleTo = $this->visibleTo($user, $teamMemberIds);
+
         // Get tasks based on user role
         $tasks = Task::with(['order', 'assignedTo', 'createdBy'])
-            ->when(! $user->hasRole(['admin', 'operation-manager', 'project-manager']), function ($query) use ($user, $teamMemberIds) {
-                // For non-admin users, show tasks they are assigned to or created, OR tasks from their team's orders
-                $query->where(function ($q) use ($user, $teamMemberIds) {
-                    $q->where(function ($query) use ($user) {
-                        // Tasks assigned to or created by the user
-                        $query->where('assigned_to', $user->id)
-                            ->orWhere('created_by', $user->id);
-                    });
-
-                    // Team leaders see their team members' tasks
-                    if ($user->hasRole('team-leader') && ! empty($teamMemberIds)) {
-                        $q->orWhereIn('assigned_to', $teamMemberIds);
-                    }
-
-                    // OR tasks from their team's orders (if they have a team)
-                    if ($user->team_id) {
-                        $q->orWhereHas('order', function ($orderQuery) use ($user) {
-                            $orderQuery->where('team_id', $user->team_id);
-                        });
-                    }
-
-                    // OR tasks from their tech stack orders (if they are stack-leader)
-                    if ($user->hasRole('stack-leader') && $user->tech_stack_id) {
-                        $q->orWhereHas('order', function ($orderQuery) use ($user) {
-                            $orderQuery->where('tech_stack_id', $user->tech_stack_id);
-                        });
-                    }
-                });
-            })
+            ->when(! $user->hasRole(['admin', 'operation-manager', 'project-manager']), $visibleTo)
             ->when($request->status, function ($query, $status) {
                 $query->where('status', $status);
             })
@@ -79,41 +55,60 @@ class TaskController extends Controller
         $orders = Order::all();
         $users = User::all();
 
-        // Calculate stats with same filtering logic
-        $statsQuery = Task::query();
-        if (! $user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
-            $statsQuery->where(function ($q) use ($user, $teamMemberIds) {
+        // Status tallies in a single grouped query — the same role scope
+        // applies, but one GROUP BY replaces four full COUNT scans.
+        $counts = Task::query()
+            ->when(! $user->hasRole(['admin', 'operation-manager', 'project-manager']), $visibleTo)
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $stats = [
+            'total' => (int) $counts->sum(),
+            'pending' => (int) ($counts['pending'] ?? 0),
+            'in_progress' => (int) ($counts['in-progress'] ?? 0),
+            'completed' => (int) ($counts['completed'] ?? 0),
+        ];
+
+        return view('tasks.index', compact('tasks', 'orders', 'users', 'stats'));
+    }
+
+    /**
+     * The role-scoping applied to both the task list and its status tallies:
+     * non-admin users only see tasks they are assigned to or created, plus
+     * tasks on their team's / tech stack's orders.
+     *
+     * @param  array<int, int>  $teamMemberIds
+     */
+    private function visibleTo(User $user, array $teamMemberIds): Closure
+    {
+        return function ($query) use ($user, $teamMemberIds) {
+            $query->where(function ($q) use ($user, $teamMemberIds) {
                 $q->where(function ($query) use ($user) {
                     $query->where('assigned_to', $user->id)
                         ->orWhere('created_by', $user->id);
                 });
 
+                // Team leaders see their team members' tasks
                 if ($user->hasRole('team-leader') && ! empty($teamMemberIds)) {
                     $q->orWhereIn('assigned_to', $teamMemberIds);
                 }
 
+                // OR tasks from their team's orders (if they have a team)
                 if ($user->team_id) {
                     $q->orWhereHas('order', function ($orderQuery) use ($user) {
                         $orderQuery->where('team_id', $user->team_id);
                     });
                 }
 
+                // OR tasks from their tech stack orders (if they are stack-leader)
                 if ($user->hasRole('stack-leader') && $user->tech_stack_id) {
                     $q->orWhereHas('order', function ($orderQuery) use ($user) {
                         $orderQuery->where('tech_stack_id', $user->tech_stack_id);
                     });
                 }
             });
-        }
-
-        $stats = [
-            'total' => (clone $statsQuery)->count(),
-            'pending' => (clone $statsQuery)->where('status', 'pending')->count(),
-            'in_progress' => (clone $statsQuery)->where('status', 'in-progress')->count(),
-            'completed' => (clone $statsQuery)->where('status', 'completed')->count(),
-        ];
-
-        return view('tasks.index', compact('tasks', 'orders', 'users', 'stats'));
+        };
     }
 
     /**
@@ -435,35 +430,7 @@ class TaskController extends Controller
 
         $tasks = Task::with(['order', 'assignedTo', 'createdBy'])
             ->where('status', 'archived')
-            ->when(! $user->hasRole(['admin', 'operation-manager', 'project-manager']), function ($query) use ($user, $teamMemberIds) {
-                // For non-admin users, show archived tasks based on their role
-                $query->where(function ($q) use ($user, $teamMemberIds) {
-                    // Tasks assigned to or created by the user
-                    $q->where(function ($query) use ($user) {
-                        $query->where('assigned_to', $user->id)
-                            ->orWhere('created_by', $user->id);
-                    });
-
-                    // Team leaders see their team members' archived tasks
-                    if ($user->hasRole('team-leader') && ! empty($teamMemberIds)) {
-                        $q->orWhereIn('assigned_to', $teamMemberIds);
-                    }
-
-                    // OR tasks from their team's orders (if they have a team)
-                    if ($user->team_id) {
-                        $q->orWhereHas('order', function ($orderQuery) use ($user) {
-                            $orderQuery->where('team_id', $user->team_id);
-                        });
-                    }
-
-                    // OR tasks from their tech stack orders (if they are stack-leader)
-                    if ($user->hasRole('stack-leader') && $user->tech_stack_id) {
-                        $q->orWhereHas('order', function ($orderQuery) use ($user) {
-                            $orderQuery->where('tech_stack_id', $user->tech_stack_id);
-                        });
-                    }
-                });
-            })
+            ->when(! $user->hasRole(['admin', 'operation-manager', 'project-manager']), $this->visibleTo($user, $teamMemberIds))
             ->orderBy('archived_at', 'desc')
             ->get();
 
@@ -534,35 +501,7 @@ class TaskController extends Controller
         }
 
         $query = Task::with(['order', 'assignedTo', 'createdBy'])
-            ->when(! $user->hasRole(['admin', 'operation-manager', 'project-manager']), function ($query) use ($user, $teamMemberIds) {
-                // For non-admin users, show tasks they are assigned to or created, OR tasks from their team's orders
-                $query->where(function ($q) use ($user, $teamMemberIds) {
-                    $q->where(function ($query) use ($user) {
-                        // Tasks assigned to or created by the user
-                        $query->where('assigned_to', $user->id)
-                            ->orWhere('created_by', $user->id);
-                    });
-
-                    // Team leaders see their team members' tasks
-                    if ($user->hasRole('team-leader') && ! empty($teamMemberIds)) {
-                        $q->orWhereIn('assigned_to', $teamMemberIds);
-                    }
-
-                    // OR tasks from their team's orders (if they have a team)
-                    if ($user->team_id) {
-                        $q->orWhereHas('order', function ($orderQuery) use ($user) {
-                            $orderQuery->where('team_id', $user->team_id);
-                        });
-                    }
-
-                    // OR tasks from their tech stack orders (if they are stack-leader)
-                    if ($user->hasRole('stack-leader') && $user->tech_stack_id) {
-                        $q->orWhereHas('order', function ($orderQuery) use ($user) {
-                            $orderQuery->where('tech_stack_id', $user->tech_stack_id);
-                        });
-                    }
-                });
-            })
+            ->when(! $user->hasRole(['admin', 'operation-manager', 'project-manager']), $this->visibleTo($user, $teamMemberIds))
             ->when($request->status, function ($query, $status) {
                 $query->where('status', $status);
             })
@@ -658,7 +597,7 @@ class TaskController extends Controller
                 'priority' => $task->priority,
                 'due_date' => $task->due_date ? $task->due_date->format('M d, Y') : 'N/A',
                 'assigned_to' => $task->assignedTo ? $task->assignedTo->name : 'Unassigned',
-                'project' => $task->project ? $task->project->name : 'N/A',
+                'project' => $task->order ? $task->order->name : 'N/A',
                 'created_at' => $task->created_at->format('M d, Y'),
                 'actions' => view('tasks.partials.actions', ['task' => $task])->render(),
             ];
@@ -669,6 +608,120 @@ class TaskController extends Controller
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsFiltered,
             'data' => $data,
+        ]);
+    }
+
+    /**
+     * Get users assigned to a task.
+     */
+    public function getUsers(Task $task): JsonResponse
+    {
+        $this->authorize('view', $task);
+
+        $users = $task->users()->get(['users.id', 'users.name', 'users.email']);
+
+        return response()->json([
+            'users' => $users,
+        ]);
+    }
+
+    /**
+     * Assign users to a task.
+     */
+    public function assignUsers(Request $request, Task $task): JsonResponse
+    {
+        $this->authorize('manageAssignment', $task);
+
+        $validated = $request->validate([
+            'users' => 'required|array',
+            'users.*' => 'exists:users,id',
+        ]);
+
+        $oldMembers = $task->users()->pluck('name')->all();
+
+        // Clear existing assignments and add new ones
+        $task->users()->detach();
+
+        foreach ($validated['users'] as $userId) {
+            $task->users()->attach($userId, [
+                'assigned_by' => auth()->id(),
+                'assigned_at' => now(),
+            ]);
+        }
+
+        $newMembers = $task->users()->pluck('name')->all();
+
+        if ($oldMembers !== $newMembers) {
+            TaskAudit::record($task, 'members_updated', ['members' => $oldMembers], ['members' => $newMembers]);
+        }
+
+        // Send notifications to newly assigned users
+        $assignedUsers = User::whereIn('id', $validated['users'])->get();
+
+        foreach ($assignedUsers as $assignedUser) {
+            EmailService::sendTo($assignedUser->email, new TaskAssignmentNotification($task, $assignedUser));
+        }
+
+        return response()->json([
+            'message' => 'User assignments updated successfully.',
+            'users' => $task->users()->get(['users.id', 'users.name', 'users.email']),
+        ]);
+    }
+
+    /**
+     * Search for users to assign to a task.
+     */
+    public function searchUsers(Request $request): JsonResponse
+    {
+        $search = $request->input('search', '');
+        $excludeIds = $request->input('exclude');
+
+        // Convert comma-separated string to array if needed
+        if (is_string($excludeIds)) {
+            $excludeIds = explode(',', $excludeIds);
+        }
+        if (! is_array($excludeIds)) {
+            $excludeIds = [];
+        }
+
+        // Filter out empty values
+        $excludeIds = array_filter($excludeIds, 'strlen');
+        $excludeIds = array_map('intval', $excludeIds);
+
+        $user = auth()->user();
+
+        $query = User::query();
+
+        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
+            // Can see all users
+        } else {
+            $query->where('team_id', $user->team_id);
+        }
+
+        // Exclude already selected users
+        if (! empty($excludeIds)) {
+            $query->whereNotIn('id', $excludeIds);
+        }
+
+        // Apply search filter - search by name, email, employee_id, position
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('employee_id', 'like', "%{$search}%")
+                    ->orWhere('position', 'like', "%{$search}%");
+            });
+        }
+
+        // Limit results and include team relationship
+        $users = $query->with('team:id,name')
+            ->select('id', 'name', 'email', 'employee_id', 'position', 'team_id')
+            ->orderBy('name')
+            ->limit(20)
+            ->get();
+
+        return response()->json([
+            'users' => $users,
         ]);
     }
 }

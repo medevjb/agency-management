@@ -1,31 +1,41 @@
-<div class="bg-white dark:bg-gray-900 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
+@php
+    // Fixed hex pairs rather than dynamic Tailwind color classes, so this
+    // never depends on the JIT purge having seen a particular `bg-{color}-100`
+    // combination somewhere else in the codebase.
+    $iconGradient = match ($color) {
+        'green' => ['#10b981', '#34d399'],
+        'yellow' => ['#f59e0b', '#fbbf24'],
+        'purple' => ['#8b5cf6', '#a78bfa'],
+        'orange' => ['#f97316', '#fb923c'],
+        'red' => ['#ef4444', '#f87171'],
+        default => ['#6366f1', '#8b5cf6'],
+    };
+@endphp
+
+<div class="dash-panel p-6">
     <div class="flex items-center justify-between">
-        <div class="flex-1">
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ $title }}</p>
-            <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-2">{{ $value }}</p>
+        <div class="min-w-0">
+            <p class="dash-stat-label mb-1">{{ $title }}</p>
+            <p class="dash-hero dash-num" style="font-size: 1.75rem;">{{ $value }}</p>
             @if($description)
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ $description }}</p>
+                <p class="dash-stat-foot">{{ $description }}</p>
             @endif
             @if($trend && $trendValue)
-                <div class="flex items-center mt-2">
+                <p class="dash-stat-foot {{ $trend === 'up' ? 'text-green-600 dark:text-green-400' : ($trend === 'down' ? 'text-red-600 dark:text-red-400' : '') }}">
                     @if($trend === 'up')
-                        <i class="fas fa-arrow-up text-green-500 dark:text-green-400 text-xs mr-1"></i>
-                        <span class="text-sm text-green-600 dark:text-green-400">{{ $trendValue }}</span>
+                        <i class="fas fa-arrow-up mr-1"></i>
                     @elseif($trend === 'down')
-                        <i class="fas fa-arrow-down text-red-500 dark:text-red-400 text-xs mr-1"></i>
-                        <span class="text-sm text-red-600 dark:text-red-400">{{ $trendValue }}</span>
+                        <i class="fas fa-arrow-down mr-1"></i>
                     @else
-                        <i class="fas fa-minus text-gray-500 dark:text-gray-400 text-xs mr-1"></i>
-                        <span class="text-sm text-gray-600 dark:text-gray-400">{{ $trendValue }}</span>
+                        <i class="fas fa-minus mr-1"></i>
                     @endif
-                </div>
+                    {{ $trendValue }}
+                </p>
             @endif
         </div>
         @if($icon)
-            <div class="ml-4">
-                <div class="inline-flex items-center justify-center p-3 bg-{{ $color }}-100 dark:bg-{{ $color }}-500/10 rounded-full">
-                    <i class="{{ $icon }} text-{{ $color }}-600 dark:text-{{ $color }}-400 text-xl"></i>
-                </div>
+            <div class="dash-icon" style="--icon-from: {{ $iconGradient[0] }}; --icon-to: {{ $iconGradient[1] }};">
+                <i class="{{ $icon }}"></i>
             </div>
         @endif
     </div>

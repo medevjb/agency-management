@@ -3,10 +3,13 @@
 namespace Tests\Feature;
 
 use App\Models\Order;
+use App\Models\OrderSalesShare;
+use App\Models\Profile;
 use App\Models\SalesTarget;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -86,6 +89,120 @@ class SalesRoleTest extends TestCase
         $this->assertNull($order->end_date);
     }
 
+    public function test_a_sales_person_marks_an_order_as_repeat_when_entering_it(): void
+    {
+        $profile = Profile::factory()->create();
+        Order::factory()->create(['freelance_profile_id' => $profile->id, 'name' => 'Acme Corp', 'value' => 800]);
+
+        $this->actingAs($this->salesMember)->post(route('orders.store'), [
+            'name' => 'Acme Corp',
+            'value' => 1200,
+            'freelance_profile_id' => $profile->id,
+            'is_repeat' => 1,
+            'repeat_client_key' => 'acme corp',
+        ])->assertRedirect(route('orders.index'));
+
+        $repeatOrder = Order::where('name', 'Acme Corp')->orderByDesc('id')->first();
+        $this->assertTrue($repeatOrder->is_repeat);
+        $this->assertSame('acme corp', $repeatOrder->repeat_client_key);
+        $this->assertSame(1, Order::where('name', 'Acme Corp')->where('is_repeat', true)->count());
+    }
+
+    public function test_a_repeat_order_tracks_the_picked_client_even_when_the_name_differs(): void
+    {
+        $profile = Profile::factory()->create();
+        Order::factory()->create(['freelance_profile_id' => $profile->id, 'name' => 'Acme Corp']);
+
+        // The client renamed — the salesperson types the new name but picks
+        // the existing client from the picker, so the repeat is attributed to
+        // that client (acme corp), not to the freshly typed name.
+        $this->actingAs($this->salesMember)->post(route('orders.store'), [
+            'name' => 'Acme Worldwide',
+            'value' => 950,
+            'freelance_profile_id' => $profile->id,
+            'is_repeat' => 1,
+            'repeat_client_key' => 'acme corp',
+        ])->assertRedirect(route('orders.index'));
+
+        $repeatOrder = Order::where('name', 'Acme Worldwide')->first();
+        $this->assertTrue($repeatOrder->is_repeat);
+        $this->assertSame('acme corp', $repeatOrder->repeat_client_key);
+        $this->assertSame('acme worldwide', $repeatOrder->client_key);
+    }
+
+    public function test_a_sales_person_leaves_an_order_fresh_by_default(): void
+    {
+        $this->actingAs($this->salesMember)->post(route('orders.store'), [
+            'name' => 'Brand New Client',
+            'value' => 600,
+        ])->assertRedirect(route('orders.index'));
+
+        $this->assertFalse(Order::first()->is_repeat);
+    }
+
+    public function test_a_repeat_order_may_reuse_the_existing_client_name(): void
+    {
+        $profile = Profile::factory()->create();
+        Order::factory()->create(['freelance_profile_id' => $profile->id, 'name' => 'Acme Corp']);
+
+        // The client name no longer has to be unique — a repeat order for the
+        // same client is exactly what the Fresh/Repeat control produces.
+        $this->actingAs($this->salesMember)->post(route('orders.store'), [
+            'name' => 'Acme Corp',
+            'value' => 900,
+            'freelance_profile_id' => $profile->id,
+            'is_repeat' => 1,
+            'repeat_client_key' => 'acme corp',
+        ])->assertRedirect(route('orders.index'));
+
+        $this->assertSame(2, Order::where('name', 'Acme Corp')->count());
+    }
+
+    public function test_a_sales_person_can_change_an_orders_fresh_repeat_flag(): void
+    {
+        $order = Order::factory()->create([
+            'sales_user_id' => $this->salesMember->id,
+            'created_by' => $this->salesMember->id,
+        ]);
+        $this->assertFalse($order->is_repeat);
+
+        $this->actingAs($this->salesMember)->patch(route('orders.update', $order), [
+            'name' => $order->name,
+            'is_repeat' => 1,
+            'repeat_client_key' => $order->client_key,
+        ])->assertRedirect(route('orders.index'));
+
+        $this->assertTrue($order->fresh()->is_repeat);
+    }
+
+    public function test_the_existing_client_picker_searches_client_names_directly(): void
+    {
+        $profile = Profile::factory()->create();
+        $other = Order::factory()->create(['name' => 'Widget LLC']);
+
+        Order::factory()->create(['freelance_profile_id' => $profile->id, 'name' => 'Acme Corp']);
+
+        // No profile required — the picker searches the orders table by name.
+        $this->actingAs($this->salesMember)
+            ->getJson(route('orders.search-clients', ['q' => 'Acme']))
+            ->assertOk()
+            ->assertJsonPath('clients.0.key', 'acme corp')
+            ->assertJsonPath('clients.0.name', 'Acme Corp')
+            ->assertJsonPath('clients.0.profile_id', $profile->id);
+
+        // A picked client carries its profile so the form can fill it in.
+        $this->actingAs($this->salesMember)
+            ->getJson(route('orders.search-clients', ['q' => 'Acme', 'exclude' => $other->id]))
+            ->assertOk()
+            ->assertJsonPath('clients.0.name', 'Acme Corp');
+
+        // No match, no clients.
+        $this->actingAs($this->salesMember)
+            ->getJson(route('orders.search-clients', ['q' => 'Bolt']))
+            ->assertOk()
+            ->assertJsonPath('clients', []);
+    }
+
     public function test_sales_person_edits_deal_facts_but_never_delivery_fields(): void
     {
         $team = Team::factory()->create();
@@ -114,45 +231,88 @@ class SalesRoleTest extends TestCase
         $this->assertNull($order->team_id);
     }
 
-    public function test_sales_member_only_sees_their_own_orders(): void
+    public static function salesOrderVisibilityProvider(): array
     {
-        $mine = Order::factory()->create(['sales_user_id' => $this->salesMember->id, 'created_by' => $this->salesMember->id]);
+        return [
+            'sales member' => ['salesMember'],
+            'sales leader' => ['salesLeader'],
+        ];
+    }
+
+    #[DataProvider('salesOrderVisibilityProvider')]
+    public function test_a_sales_role_sees_all_orders_with_theirs_highlighted(string $actor): void
+    {
+        $actor = $this->$actor;
+        $mine = Order::factory()->create(['sales_user_id' => $actor->id, 'created_by' => $actor->id]);
         $theirs = Order::factory()->create(['sales_user_id' => $this->otherSalesMember->id, 'created_by' => $this->otherSalesMember->id]);
+        $otherOrder = Order::factory()->create(['sales_user_id' => null, 'created_by' => $this->operationManager->id]);
 
-        $data = $this->actingAs($this->salesMember)->getJson(route('orders.data'))->assertOk()->json('data');
+        $data = $this->actingAs($actor)->getJson(route('orders.data'))->assertOk()->json('data');
 
-        $this->assertSame([$mine->id], array_column($data, 'id'));
+        // Sales roles can now see all orders like admin/OM/PM
+        $visibleIds = array_column($data, 'id');
+        $this->assertContains($mine->id, $visibleIds);
+        $this->assertContains($theirs->id, $visibleIds);
+        $this->assertContains($otherOrder->id, $visibleIds);
 
-        $this->actingAs($this->salesMember)->get(route('orders.show', $theirs))->assertForbidden();
-        $this->actingAs($this->salesMember)->get(route('orders.show', $mine))->assertOk();
+        // Their own order is flagged and sorted ahead of everyone else's.
+        $byId = collect($data)->keyBy('id');
+        $this->assertTrue($byId[$mine->id]['is_my_sale']);
+        $this->assertFalse($byId[$theirs->id]['is_my_sale']);
+        $this->assertSame($mine->id, $data[0]['id']);
+
+        // They can view every order
+        $this->actingAs($actor)->get(route('orders.show', $theirs))->assertOk();
+        $this->actingAs($actor)->get(route('orders.show', $mine))->assertOk();
+        $this->actingAs($actor)->get(route('orders.show', $otherOrder))->assertOk();
     }
 
-    public function test_sales_leader_sees_every_order_sold_by_their_group(): void
+    public function test_a_sales_leader_who_also_holds_team_leader_still_sees_every_order(): void
     {
-        $leaderOrder = Order::factory()->create(['sales_user_id' => $this->salesLeader->id, 'created_by' => $this->salesLeader->id]);
-        $memberOrder = Order::factory()->create(['sales_user_id' => $this->salesMember->id, 'created_by' => $this->salesMember->id]);
-        $outsideOrder = Order::factory()->create(['sales_user_id' => $this->otherSalesMember->id, 'created_by' => $this->otherSalesMember->id]);
+        // A person can pick up both roles in practice — their sales-side
+        // team_id points at an auto-created sales team, not an engineering
+        // delivery team, so the team-leader scoping must not apply to them.
+        Role::create(['name' => 'team-leader']);
+        $this->salesLeader->assignRole('team-leader');
+        $this->salesLeader->update(['team_id' => Team::factory()->create()->id]);
 
-        $data = $this->actingAs($this->salesLeader)->getJson(route('orders.data'))->assertOk()->json('data');
+        $orderOnAnotherTeam = Order::factory()->create([
+            'sales_user_id' => $this->otherSalesMember->id,
+            'created_by' => $this->otherSalesMember->id,
+            'team_id' => Team::factory()->create()->id,
+        ]);
 
-        $this->assertEqualsCanonicalizing([$leaderOrder->id, $memberOrder->id], array_column($data, 'id'));
+        $data = $this->actingAs($this->salesLeader->fresh())
+            ->getJson(route('orders.data'))
+            ->assertOk()
+            ->json('data');
 
-        $this->actingAs($this->salesLeader)->get(route('orders.show', $memberOrder))->assertOk();
-        $this->actingAs($this->salesLeader)->get(route('orders.show', $outsideOrder))->assertForbidden();
+        $this->assertContains($orderOnAnotherTeam->id, array_column($data, 'id'));
     }
 
-    public function test_sales_cannot_touch_operational_endpoints(): void
+    public function test_sales_can_change_operational_fields_inline_but_never_assignment(): void
     {
-        $order = Order::factory()->create(['sales_user_id' => $this->salesMember->id, 'created_by' => $this->salesMember->id]);
+        $order = Order::factory()->create([
+            'sales_user_id' => $this->salesMember->id,
+            'created_by' => $this->salesMember->id,
+            'status' => 'in-progress',
+        ]);
         $worker = User::factory()->create();
 
         $this->actingAs($this->salesMember)
             ->postJson(route('orders.quick-update', $order), ['status' => 'delivered'])
-            ->assertForbidden();
+            ->assertOk();
+
+        $this->assertSame('delivered', $order->fresh()->status);
 
         $this->actingAs($this->salesMember)
             ->postJson(route('orders.assign-users', $order), ['users' => [$worker->id]])
             ->assertForbidden();
+    }
+
+    public function test_sales_cannot_bulk_action_or_delete_orders(): void
+    {
+        $order = Order::factory()->create(['sales_user_id' => $this->salesMember->id, 'created_by' => $this->salesMember->id]);
 
         $this->actingAs($this->salesMember)
             ->postJson(route('orders.bulk-action'), ['ids' => [$order->id], 'action' => 'mark-completed'])
@@ -219,7 +379,8 @@ class SalesRoleTest extends TestCase
 
         $this->assertCount(1, $order->salesShares);
         $this->assertSame($this->salesMember->id, $order->salesShares->first()->user_id);
-        $this->assertSame(1200.0, (float) $order->salesShares->first()->amount);
+        // Sales credit is based on net revenue after default 20% platform fee: 1200 * 0.80 = 960
+        $this->assertSame(960.0, (float) $order->salesShares->first()->amount);
         $this->assertSame(0.0, $order->unattributedAmount());
     }
 
@@ -229,15 +390,16 @@ class SalesRoleTest extends TestCase
             'name' => 'Shared Deal',
             'value' => 5000,
             'sales_shares' => [
-                ['user_id' => $this->salesMember->id, 'amount' => 3000],
-                ['user_id' => $this->salesLeader->id, 'amount' => 2000],
+                // Split the net revenue: 5000 * 0.80 = 4000, split as 2400 + 1600
+                ['user_id' => $this->salesMember->id, 'amount' => 2400],
+                ['user_id' => $this->salesLeader->id, 'amount' => 1600],
             ],
         ])->assertRedirect(route('orders.index'));
 
         $order = Order::first();
 
-        $this->assertSame(3000.0, $order->salesShareFor($this->salesMember->id));
-        $this->assertSame(2000.0, $order->salesShareFor($this->salesLeader->id));
+        $this->assertSame(2400.0, $order->salesShareFor($this->salesMember->id));
+        $this->assertSame(1600.0, $order->salesShareFor($this->salesLeader->id));
         $this->assertSame(0.0, $order->unattributedAmount());
     }
 
@@ -261,8 +423,9 @@ class SalesRoleTest extends TestCase
             'name' => 'Split Deal',
             'value' => 5000,
             'sales_shares' => [
-                ['user_id' => $this->salesMember->id, 'amount' => 1500],
-                ['user_id' => $this->salesLeader->id, 'amount' => 3500],
+                // Split based on net revenue: 5000 * 0.80 = 4000, split as 1200 + 2800
+                ['user_id' => $this->salesMember->id, 'amount' => 1200],
+                ['user_id' => $this->salesLeader->id, 'amount' => 2800],
             ],
         ]);
 
@@ -270,16 +433,16 @@ class SalesRoleTest extends TestCase
         $this->actingAs($this->salesMember)
             ->get(route('sales.dashboard'))
             ->assertOk()
-            ->assertSee('$1,500.00')
+            ->assertSee('$1,200.00')
             ->assertSee('$5,000.00');   // the team still sold the full amount
 
         $this->actingAs($this->salesLeader)
             ->get(route('sales.dashboard'))
             ->assertOk()
-            ->assertSee('$3,500.00');
+            ->assertSee('$2,800.00');
     }
 
-    public function test_a_share_makes_an_order_visible_to_that_person(): void
+    public function test_sales_users_can_see_all_orders_regardless_of_shares(): void
     {
         $order = Order::factory()->create([
             'sales_user_id' => $this->otherSalesMember->id,
@@ -287,8 +450,10 @@ class SalesRoleTest extends TestCase
             'value' => 2000,
         ]);
 
-        $this->actingAs($this->salesMember)->get(route('orders.show', $order))->assertForbidden();
+        // Sales users can see all orders regardless of shares
+        $this->actingAs($this->salesMember)->get(route('orders.show', $order))->assertOk();
 
+        // Shares are still relevant for revenue sharing, but not for visibility
         $order->salesShares()->create(['user_id' => $this->salesMember->id, 'amount' => 500]);
 
         $this->actingAs($this->salesMember)->get(route('orders.show', $order))->assertOk();
@@ -388,6 +553,65 @@ class SalesRoleTest extends TestCase
         );
     }
 
+    public function test_selecting_a_sales_leader_for_a_member_auto_assigns_a_shared_team(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $this->actingAs($admin)->patchJson(route('users.update', $this->otherSalesMember), [
+            'name' => $this->otherSalesMember->name,
+            'email' => $this->otherSalesMember->email,
+            'sales_leader_id' => $this->salesLeader->id,
+        ])->assertOk();
+
+        $leader = $this->salesLeader->fresh();
+        $member = $this->otherSalesMember->fresh();
+
+        $this->assertNotNull($leader->team_id);
+        $this->assertSame($leader->team_id, $member->team_id);
+        $this->assertSame($leader->id, Team::find($leader->team_id)->team_leader_id);
+    }
+
+    public function test_a_new_sales_leader_gets_their_own_team(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $response = $this->actingAs($admin)->postJson(route('users.store'), [
+            'name' => 'Fresh Leader',
+            'email' => 'fresh.leader@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'track' => 'sales',
+            'role' => 'sales-leader',
+        ])->assertOk();
+
+        $newLeader = User::where('email', 'fresh.leader@example.com')->firstOrFail();
+
+        $this->assertNotNull($newLeader->team_id);
+        $this->assertSame($newLeader->id, Team::find($newLeader->team_id)->team_leader_id);
+    }
+
+    public function test_the_sync_command_backfills_teams_for_sales_users_created_before_the_fix(): void
+    {
+        // setUp() creates salesLeader/salesMember straight through the
+        // factory, the way old seed data or a pre-fix signup would — no
+        // team_id, exactly the state that left members with no visible team.
+        $this->assertNull($this->salesLeader->team_id);
+        $this->assertNull($this->salesMember->team_id);
+
+        $this->artisan('sales:sync-teams')->assertSuccessful();
+
+        $leader = $this->salesLeader->fresh();
+        $member = $this->salesMember->fresh();
+
+        $this->assertNotNull($leader->team_id);
+        $this->assertSame($leader->team_id, $member->team_id);
+
+        // A sales member with no leader assigned has nothing to sync to.
+        $this->assertNull($this->otherSalesMember->fresh()->team_id);
+    }
+
     public function test_sales_dashboard_totals_the_sales_amount_for_the_group(): void
     {
         Order::factory()->create(['sales_user_id' => $this->salesMember->id, 'created_by' => $this->salesMember->id, 'value' => 1500]);
@@ -395,13 +619,31 @@ class SalesRoleTest extends TestCase
         Order::factory()->create(['sales_user_id' => $this->otherSalesMember->id, 'created_by' => $this->otherSalesMember->id, 'value' => 9999]);
 
         // The leader leads with the group total and sees who sold what.
+        // ("Other Seller" now legitimately appears too, in the company-wide
+        // running-orders widget — see test_sales_dashboard_shows_every_running_order_not_just_the_group.)
         $this->actingAs($this->salesLeader)
             ->get(route('sales.dashboard'))
             ->assertOk()
             ->assertSee('Your team sold in')
             ->assertSee('$4,000.00')
-            ->assertSee('Sales Member')
-            ->assertDontSee('Other Seller');
+            ->assertSee('Sales Member');
+    }
+
+    public function test_sales_dashboard_shows_every_running_order_not_just_the_group(): void
+    {
+        $mine = Order::factory()->create(['sales_user_id' => $this->salesLeader->id, 'created_by' => $this->salesLeader->id, 'name' => 'Leader Deal']);
+        $outsider = Order::factory()->create(['sales_user_id' => $this->otherSalesMember->id, 'created_by' => $this->otherSalesMember->id, 'name' => 'Outsider Deal']);
+        $finished = Order::factory()->create(['sales_user_id' => $this->otherSalesMember->id, 'created_by' => $this->otherSalesMember->id, 'name' => 'Finished Deal', 'status' => 'completed']);
+
+        $response = $this->actingAs($this->salesLeader)->get(route('sales.dashboard'))->assertOk();
+
+        // Company-wide running orders — not scoped to the leader's own group.
+        $response->assertSee('Leader Deal')->assertSee('Outsider Deal');
+        // But an order that's no longer running doesn't clutter the widget.
+        $response->assertDontSee('Finished Deal');
+
+        $html = $response->getContent();
+        $this->assertTrue(strpos($html, 'Leader Deal') < strpos($html, 'Outsider Deal'), 'The leader\'s own order should be pinned above others.');
     }
 
     public function test_a_member_sees_their_own_number_and_the_team_total(): void
@@ -436,5 +678,59 @@ class SalesRoleTest extends TestCase
             ->assertSee('$2,000.00')
             ->assertSee('Sales Member')
             ->assertSee('Other Seller');
+    }
+
+    public function test_an_admin_sees_running_orders_on_the_sales_dashboard_even_with_no_sales_credit_yet(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        // An order created directly by operations, never touched by the
+        // sales-credit flow — no OrderSalesShare row exists for it at all.
+        $order = Order::factory()->create([
+            'name' => 'Ops-Only Order',
+            'sales_user_id' => null,
+            'status' => 'in-progress',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('sales.dashboard'))
+            ->assertOk()
+            ->assertSee('Ops-Only Order');
+
+        $this->assertSame(0, OrderSalesShare::count());
+    }
+
+    public function test_sales_dashboard_splits_this_months_sales_into_fresh_and_repeat(): void
+    {
+        $profile = Profile::factory()->create();
+
+        // The salesperson flagged the Acme order as repeat when entering it;
+        // the member's order is from a brand new client, so it stays fresh.
+        Order::factory()->create([
+            'freelance_profile_id' => $profile->id,
+            'sales_user_id' => $this->salesLeader->id,
+            'created_by' => $this->salesLeader->id,
+            'name' => 'Acme Corp',
+            'value' => 1500,
+            'is_repeat' => true,
+        ]);
+        Order::factory()->create([
+            'freelance_profile_id' => $profile->id,
+            'sales_user_id' => $this->salesMember->id,
+            'created_by' => $this->salesMember->id,
+            'name' => 'Brand New',
+            'value' => 500,
+        ]);
+
+        // The leader's group (leader + member) sold $2,000: $1,500 repeat
+        // and $500 fresh, and the two sides add up to the headline number.
+        $this->actingAs($this->salesLeader)
+            ->get(route('sales.dashboard'))
+            ->assertOk()
+            ->assertSee('Fresh vs. Repeat')
+            ->assertSee('$2,000.00')   // group sold
+            ->assertSee('$1,500.00')   // repeat
+            ->assertSee('$500.00');    // fresh
     }
 }
