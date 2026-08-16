@@ -262,40 +262,40 @@
                                     </p>
                                 </div>
 
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Monthly Sales Target</label>
-                                    <div class="flex gap-2">
-                                        <div class="relative flex-1">
-                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
-                                            <input type="number" step="0.01" min="0" name="sales_target"
-                                                   value="{{ old('sales_target', $user->salesTargetFor()) }}"
-                                                   class="w-full pl-7 pr-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
-                                                   placeholder="0.00">
-                                        </div>
-                                        <input type="month" name="sales_target_month"
-                                               value="{{ old('sales_target_month', now()->format('Y-m')) }}"
-                                               class="w-40 px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm">
-                                    </div>
-                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                        The minimum this person should sell from that month on. It carries forward until you set a new one.
-                                    </p>
-
-                                    @if($user->salesTargets->isNotEmpty())
-                                        <div class="mt-2 rounded-lg border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-800">
-                                            @foreach($user->salesTargets->take(6) as $target)
-                                                <div class="flex items-center justify-between px-3 py-1.5 text-xs">
-                                                    <span class="text-gray-500 dark:text-gray-400">From {{ $target->month->format('F Y') }}</span>
-                                                    <span class="font-semibold text-gray-900 dark:text-gray-100">${{ number_format((float) $target->amount, 2) }}</span>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    @endif
-                                    @error('sales_target')
-                                        <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                                    @enderror
-                                </div>
-
                             </div>
+                        </div>
+
+                        <div class="mt-6 max-w-md">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Monthly Minimum Target</label>
+                            <div class="flex gap-2">
+                                <div class="relative flex-1">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                    <input type="number" step="0.01" min="0" name="sales_target"
+                                           value="{{ old('sales_target', $user->salesTargetFor()) }}"
+                                           class="w-full pl-8 pr-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
+                                           placeholder="0.00">
+                                </div>
+                                <input type="month" name="sales_target_month"
+                                       value="{{ old('sales_target_month', now()->format('Y-m')) }}"
+                                       class="w-40 px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm">
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                Optional. The minimum this person should sell or be credited from that month on — it carries forward until you set a new one.
+                            </p>
+
+                            @if($user->salesTargets->isNotEmpty())
+                                <div class="mt-2 rounded-lg border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-800">
+                                    @foreach($user->salesTargets->take(6) as $target)
+                                        <div class="flex items-center justify-between px-3 py-1.5 text-xs">
+                                            <span class="text-gray-500 dark:text-gray-400">From {{ $target->month->format('F Y') }}</span>
+                                            <span class="font-semibold text-gray-900 dark:text-gray-100">${{ number_format((float) $target->amount, 2) }}</span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+                            @error('sales_target')
+                                <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div class="flex justify-between">
@@ -627,9 +627,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     goToStep(1);
+
+    // Same as the create wizard: Enter should never submit before the last
+    // step, since the Submit button lives on a step that may still be hidden.
+    const wizardForm = document.getElementById('editUserForm');
+    wizardForm?.addEventListener('keydown', function(event) {
+        if (event.key !== 'Enter' || event.target.tagName === 'TEXTAREA') {
+            return;
+        }
+
+        if (currentWizardStep < 4) {
+            event.preventDefault();
+        }
+    });
 });
 
+let currentWizardStep = 1;
+
 function goToStep(stepNumber) {
+    currentWizardStep = stepNumber;
     for (let i = 1; i <= 4; i++) {
         const stepContent = document.getElementById('step' + i + 'Content');
         const stepIndicator = document.getElementById('step' + i);
@@ -882,7 +898,7 @@ function submitUserForm() {
                 timerProgressBar: true,
                 showConfirmButton: false
             }).then(() => {
-                window.location.href = data.redirect || '/users';
+                window.location.href = data.redirect || @js(route('users.index'));
             });
         } else {
             Swal.fire({

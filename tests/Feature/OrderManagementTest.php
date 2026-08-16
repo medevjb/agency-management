@@ -4,6 +4,10 @@ namespace Tests\Feature;
 
 use App\Models\Order;
 use App\Models\OrderAudit;
+use App\Models\OrderValueDistribution;
+use App\Models\Profile;
+use App\Models\Team;
+use App\Models\TechStack;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -53,6 +57,50 @@ class OrderManagementTest extends TestCase
         $this->assertSame('Client prefers updates on Mondays.', $order->notes);
         $this->assertSame('<p>cPanel: <strong>admin</strong> / secret</p>', $order->credentials);
         $this->assertSame(40, $order->progress);
+    }
+
+    public function test_a_new_order_defaults_to_nra_status_and_zero_progress(): void
+    {
+        $this->actingAs($this->user)->post(route('orders.store'), [
+            'name' => 'Acme Corporation',
+            'priority' => 'medium',
+        ])->assertRedirect(route('orders.index'));
+
+        $order = Order::first();
+        $this->assertSame('nra', $order->status);
+        $this->assertSame(0, $order->progress);
+    }
+
+    public function test_the_create_form_omits_the_workflow_section_and_shows_priority_up_top(): void
+    {
+        $response = $this->actingAs($this->user)->get(route('orders.create'))->assertOk();
+
+        $this->assertStringNotContainsString('name="status"', $response->getContent());
+        $this->assertStringNotContainsString('name="progress"', $response->getContent());
+        $this->assertStringContainsString('name="priority"', $response->getContent());
+    }
+
+    public function test_the_edit_form_still_shows_the_workflow_section(): void
+    {
+        $order = Order::factory()->create(['created_by' => $this->user->id]);
+
+        $response = $this->actingAs($this->user)->get(route('orders.edit', $order))->assertOk();
+
+        $this->assertStringContainsString('name="status"', $response->getContent());
+        $this->assertStringContainsString('name="progress"', $response->getContent());
+    }
+
+    public function test_user_search_includes_team_and_tech_stack(): void
+    {
+        $team = Team::factory()->create(['name' => 'Frontend Guild']);
+        $stack = TechStack::factory()->create(['name' => 'Vue']);
+        User::factory()->create(['name' => 'Dev Team Person', 'team_id' => $team->id, 'tech_stack_id' => $stack->id]);
+
+        $response = $this->actingAs($this->user)->getJson(route('orders.search-users', ['search' => 'Dev Team Person']))
+            ->assertOk();
+
+        $this->assertSame('Frontend Guild', $response->json('users.0.team.name'));
+        $this->assertSame('Vue', $response->json('users.0.tech_stack.name'));
     }
 
     public function test_credentials_are_encrypted_at_rest(): void
@@ -252,13 +300,14 @@ class OrderManagementTest extends TestCase
 
         $response->assertOk()
             ->assertSee('Showing')
-            ->assertSee('Load older changes');
+            ->assertSee('1–15')
+            ->assertSee('auditPager');
 
         // The list markup only; the script block also mentions the attribute.
         $this->assertSame(15, substr_count($response->getContent(), '<article class="log-entry"'));
     }
 
-    public function test_change_log_endpoint_returns_the_next_page(): void
+    public function test_change_log_endpoint_reports_pagination(): void
     {
         $order = Order::factory()->create(['created_by' => $this->user->id]);
 
@@ -268,14 +317,14 @@ class OrderManagementTest extends TestCase
 
         $first = $this->actingAs($this->user)->getJson(route('orders.audits', $order))
             ->assertOk()
-            ->assertJson(['has_more' => true, 'next_page' => 2, 'total' => 21])
+            ->assertJson(['current_page' => 1, 'last_page' => 2, 'total' => 21, 'from' => 1, 'to' => 15])
             ->json();
 
         $this->assertSame(15, substr_count($first['html'], '<article class="log-entry"'));
 
         $second = $this->actingAs($this->user)->getJson(route('orders.audits', [$order, 'page' => 2]))
             ->assertOk()
-            ->assertJson(['has_more' => false])
+            ->assertJson(['current_page' => 2, 'last_page' => 2, 'from' => 16, 'to' => 21])
             ->json();
 
         $this->assertSame(6, substr_count($second['html'], '<article class="log-entry"'));
@@ -377,6 +426,274 @@ class OrderManagementTest extends TestCase
         ])->assertOk();
 
         $this->assertSame(55, $order->fresh()->progress);
+    }
+
+    public function test_a_team_member_assigned_to_an_order_can_update_its_progress(): void
+    {
+        Role::create(['name' => 'team-member']);
+        $member = User::factory()->create();
+        $member->assignRole('team-member');
+
+        $order = Order::factory()->create(['created_by' => $this->user->id, 'progress' => 10]);
+        $order->users()->attach($member->id);
+
+        $this->actingAs($member)->postJson(route('orders.quick-update', $order), [
+            'progress' => 75,
+        ])->assertOk();
+
+        $this->assertSame(75, $order->fresh()->progress);
+    }
+
+    public function test_the_show_page_offers_the_progress_editor_to_an_assigned_team_member(): void
+    {
+        Role::create(['name' => 'team-member']);
+        $member = User::factory()->create();
+        $member->assignRole('team-member');
+
+        $order = Order::factory()->create(['created_by' => $this->user->id]);
+        $order->users()->attach($member->id);
+
+        $this->actingAs($member)
+            ->get(route('orders.show', $order))
+            ->assertOk()
+            ->assertSee('id="progressEditToggle"', false);
+    }
+
+    public function test_a_team_member_not_assigned_to_an_order_cannot_update_its_progress(): void
+    {
+        Role::create(['name' => 'team-member']);
+        $member = User::factory()->create();
+        $member->assignRole('team-member');
+
+        $order = Order::factory()->create(['created_by' => $this->user->id, 'progress' => 10]);
+
+        $this->actingAs($member)->postJson(route('orders.quick-update', $order), [
+            'progress' => 75,
+        ])->assertForbidden();
+
+        $this->assertSame(10, $order->fresh()->progress);
+    }
+
+    public function test_an_assigned_team_member_still_cannot_change_other_fields_via_quick_update(): void
+    {
+        Role::create(['name' => 'team-member']);
+        $member = User::factory()->create();
+        $member->assignRole('team-member');
+
+        $order = Order::factory()->create(['created_by' => $this->user->id, 'status' => 'in-progress']);
+        $order->users()->attach($member->id);
+
+        $this->actingAs($member)->postJson(route('orders.quick-update', $order), [
+            'status' => 'completed',
+        ])->assertForbidden();
+
+        $this->assertSame('in-progress', $order->fresh()->status);
+    }
+
+    public function test_an_assigned_team_member_can_edit_notes_and_credentials(): void
+    {
+        Role::create(['name' => 'team-member']);
+        $member = User::factory()->create();
+        $member->assignRole('team-member');
+
+        $order = Order::factory()->create(['created_by' => $this->user->id]);
+        $order->users()->attach($member->id);
+
+        $this->actingAs($member)->postJson(route('orders.quick-update', $order), [
+            'notes' => 'Client wants a weekly recap.',
+        ])->assertOk();
+
+        $this->assertSame('Client wants a weekly recap.', $order->fresh()->notes);
+    }
+
+    public function test_an_assigned_team_member_can_upload_but_not_delete_documents(): void
+    {
+        Storage::fake(config('filesystems.default'));
+        Role::create(['name' => 'team-member']);
+        $member = User::factory()->create();
+        $member->assignRole('team-member');
+
+        $order = Order::factory()->create(['created_by' => $this->user->id]);
+        $order->users()->attach($member->id);
+
+        $this->actingAs($member)->post(route('orders.documents.store', $order), [
+            'client_documents' => [UploadedFile::fake()->create('brief.pdf', 30, 'application/pdf')],
+        ])->assertRedirect();
+
+        $document = $order->fresh()->documents()[0];
+        $this->assertSame('brief.pdf', $document['name']);
+
+        $this->actingAs($member)
+            ->deleteJson(route('orders.documents.destroy', [$order, $document['id']]))
+            ->assertForbidden();
+
+        $this->assertCount(1, $order->fresh()->documents());
+    }
+
+    public function test_a_team_member_not_assigned_cannot_edit_content(): void
+    {
+        Role::create(['name' => 'team-member']);
+        $member = User::factory()->create();
+        $member->assignRole('team-member');
+
+        $order = Order::factory()->create(['created_by' => $this->user->id]);
+
+        $this->actingAs($member)->postJson(route('orders.quick-update', $order), [
+            'notes' => 'Should not land.',
+        ])->assertForbidden();
+
+        $this->assertNull($order->fresh()->notes);
+    }
+
+    public function test_the_details_page_offers_inline_document_upload_to_an_assigned_team_member(): void
+    {
+        Role::create(['name' => 'team-member']);
+        $member = User::factory()->create();
+        $member->assignRole('team-member');
+
+        $order = Order::factory()->create(['created_by' => $this->user->id]);
+        $order->users()->attach($member->id);
+
+        $this->actingAs($member)
+            ->get(route('orders.show', $order))
+            ->assertOk()
+            ->assertSee('id="inlineDocDropzone"', false);
+    }
+
+    public function test_a_stack_leader_can_update_their_teams_orders_but_not_others(): void
+    {
+        Role::create(['name' => 'stack-leader']);
+        $team = Team::factory()->create();
+        $leader = User::factory()->create(['team_id' => $team->id]);
+        $leader->assignRole('stack-leader');
+
+        $ownOrder = Order::factory()->create(['created_by' => $this->user->id, 'team_id' => $team->id]);
+        $otherTeam = Team::factory()->create();
+        $otherOrder = Order::factory()->create(['created_by' => $this->user->id, 'team_id' => $otherTeam->id]);
+
+        $this->actingAs($leader)->postJson(route('orders.quick-update', $ownOrder), [
+            'status' => 'completed',
+        ])->assertOk();
+
+        $this->assertSame('completed', $ownOrder->fresh()->status);
+
+        $this->actingAs($leader)->postJson(route('orders.quick-update', $otherOrder), [
+            'status' => 'completed',
+        ])->assertForbidden();
+
+        $this->assertSame('in-progress', $otherOrder->fresh()->status);
+    }
+
+    public function test_the_orders_list_offers_completed_as_a_status_option(): void
+    {
+        $response = $this->actingAs($this->user)->get(route('orders.index'))->assertOk();
+
+        // The status filter dropdown and the inline quick-edit dropdown both
+        // need it — count catches a regression to just one of the two.
+        $this->assertSame(2, substr_count($response->getContent(), 'option value="completed"'));
+    }
+
+    public function test_the_orders_list_exposes_completed_at_alongside_delivered_at(): void
+    {
+        $order = Order::factory()->create([
+            'created_by' => $this->user->id,
+            'status' => 'in-progress',
+        ]);
+        $order->update(['status' => 'completed']);
+
+        $data = $this->actingAs($this->user)->getJson(route('orders.data'))->assertOk()->json('data');
+
+        $row = collect($data)->firstWhere('id', $order->id);
+        $this->assertNotNull($row['completed_at']);
+    }
+
+    public function test_delivered_at_cannot_be_set_by_hand_but_completed_at_can_through_quick_update(): void
+    {
+        $order = Order::factory()->create(['created_by' => $this->user->id, 'status' => 'in-progress']);
+        $completedAt = now()->toDateTimeString();
+
+        $this->actingAs($this->user)->postJson(route('orders.quick-update', $order), [
+            'delivered_at' => now()->toDateTimeString(),
+            'completed_at' => $completedAt,
+        ])->assertOk();
+
+        $fresh = $order->fresh();
+        $this->assertNull($fresh->delivered_at);
+        $this->assertSame($completedAt, $fresh->completed_at->toDateTimeString());
+    }
+
+    public function test_freelance_profile_and_order_id_can_be_changed_through_quick_update(): void
+    {
+        $profile = Profile::factory()->create();
+        $order = Order::factory()->create(['created_by' => $this->user->id]);
+
+        $this->actingAs($this->user)->postJson(route('orders.quick-update', $order), [
+            'freelance_profile_id' => $profile->id,
+            'order_id' => 'ORD-2026-001',
+        ])->assertOk();
+
+        $fresh = $order->fresh();
+        $this->assertSame($profile->id, $fresh->freelance_profile_id);
+        $this->assertSame('ORD-2026-001', $fresh->order_id);
+    }
+
+    public function test_a_duplicate_order_id_is_rejected_by_quick_update(): void
+    {
+        Order::factory()->create(['created_by' => $this->user->id, 'order_id' => 'ORD-2026-001']);
+        $order = Order::factory()->create(['created_by' => $this->user->id, 'order_id' => null]);
+
+        $this->actingAs($this->user)->postJson(route('orders.quick-update', $order), [
+            'order_id' => 'ORD-2026-001',
+        ])->assertStatus(422);
+
+        $this->assertNull($order->fresh()->order_id);
+    }
+
+    public function test_an_order_id_can_be_cleared_through_quick_update(): void
+    {
+        $order = Order::factory()->create(['created_by' => $this->user->id, 'order_id' => 'ORD-2026-001']);
+
+        $this->actingAs($this->user)->postJson(route('orders.quick-update', $order), [
+            'order_id' => '',
+        ])->assertOk();
+
+        $this->assertNull($order->fresh()->order_id);
+    }
+
+    public function test_a_completed_order_with_no_value_distribution_is_flagged_as_needing_one(): void
+    {
+        $order = Order::factory()->create([
+            'created_by' => $this->user->id,
+            'status' => 'in-progress',
+            'value' => 1000,
+        ]);
+        $order->update(['status' => 'completed']);
+
+        $data = $this->actingAs($this->user)->getJson(route('orders.data'))->assertOk()->json('data');
+        $row = collect($data)->firstWhere('id', $order->id);
+
+        $this->assertTrue($row['needs_value_distribution']);
+    }
+
+    public function test_a_completed_order_fully_distributed_is_not_flagged(): void
+    {
+        $order = Order::factory()->create([
+            'created_by' => $this->user->id,
+            'status' => 'in-progress',
+            'value' => 1000,
+        ]);
+        $order->update(['status' => 'completed']);
+        OrderValueDistribution::create([
+            'order_id' => $order->id,
+            'user_id' => $this->user->id,
+            'amount' => $order->fresh()->netValue(),
+            'distributed_by' => $this->user->id,
+        ]);
+
+        $data = $this->actingAs($this->user)->getJson(route('orders.data'))->assertOk()->json('data');
+        $row = collect($data)->firstWhere('id', $order->id);
+
+        $this->assertFalse($row['needs_value_distribution']);
     }
 
     public function test_delivering_an_order_completes_its_progress(): void

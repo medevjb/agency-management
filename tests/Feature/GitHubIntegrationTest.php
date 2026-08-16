@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -35,50 +36,41 @@ class GitHubIntegrationTest extends TestCase
         return $user;
     }
 
-    public function test_admin_can_view_the_github_commits_page(): void
+    public static function githubPageAccessProvider(): array
     {
-        $admin = $this->userWithRole('admin');
-
-        $response = $this->actingAs($admin)->get(route('admin.github.index'));
-
-        $response->assertOk();
+        return [
+            'admin' => ['admin', 200],
+            'operation-manager' => ['operation-manager', 200],
+            'team-member' => ['team-member', 403],
+        ];
     }
 
-    public function test_manager_can_view_the_github_commits_page(): void
+    #[DataProvider('githubPageAccessProvider')]
+    public function test_role_access_to_the_github_commits_page(string $role, int $status): void
     {
-        $manager = $this->userWithRole('operation-manager');
-
-        $response = $this->actingAs($manager)->get(route('admin.github.index'));
-
-        $response->assertOk();
+        $this->actingAs($this->userWithRole($role))
+            ->get(route('admin.github.index'))
+            ->assertStatus($status);
     }
 
-    public function test_team_member_cannot_view_the_github_commits_page(): void
+    public static function oauthConnectProvider(): array
     {
-        $teamMember = $this->userWithRole('team-member');
-
-        $response = $this->actingAs($teamMember)->get(route('admin.github.index'));
-
-        $response->assertForbidden();
+        return [
+            'admin' => ['admin', 302],
+            'operation-manager' => ['operation-manager', 403],
+        ];
     }
 
-    public function test_admin_can_initiate_github_oauth_connect(): void
+    #[DataProvider('oauthConnectProvider')]
+    public function test_role_access_to_initiating_github_oauth_connect(string $role, int $status): void
     {
-        $admin = $this->userWithRole('admin');
+        $response = $this->actingAs($this->userWithRole($role))->get(route('admin.github.connect'));
 
-        $response = $this->actingAs($admin)->get(route('admin.github.connect'));
+        $response->assertStatus($status);
 
-        $response->assertRedirect();
-        $this->assertStringContainsString('github.com', $response->headers->get('Location'));
-    }
-
-    public function test_non_admin_cannot_initiate_github_oauth_connect(): void
-    {
-        $manager = $this->userWithRole('operation-manager');
-
-        $response = $this->actingAs($manager)->get(route('admin.github.connect'));
-
-        $response->assertForbidden();
+        if ($status === 302) {
+            $this->assertStringContainsString('github.com', $response->headers->get('Location'));
+        }
     }
 
     protected function seedConnectToken(int $adminId): string
@@ -282,24 +274,13 @@ class GitHubIntegrationTest extends TestCase
         $this->assertTrue($branches[1]['is_default']);
     }
 
-    public function test_manager_can_view_branches(): void
+    #[DataProvider('githubPageAccessProvider')]
+    public function test_role_access_to_view_branches(string $role, int $status): void
     {
         $repo = $this->fakeGitHubBranchesAndCommits();
-        $manager = $this->userWithRole('operation-manager');
 
-        $response = $this->actingAs($manager)->getJson(route('admin.github.branches', $repo));
-
-        $response->assertOk();
-        $this->assertCount(2, $response->json('branches'));
-    }
-
-    public function test_team_member_cannot_view_branches(): void
-    {
-        $repo = $this->fakeGitHubBranchesAndCommits();
-        $teamMember = $this->userWithRole('team-member');
-
-        $response = $this->actingAs($teamMember)->getJson(route('admin.github.branches', $repo));
-
-        $response->assertForbidden();
+        $this->actingAs($this->userWithRole($role))
+            ->getJson(route('admin.github.branches', $repo))
+            ->assertStatus($status);
     }
 }

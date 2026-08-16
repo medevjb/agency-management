@@ -211,6 +211,11 @@
 </div>
 
 <script>
+const ROUTES = {
+    destroy: @js(route('portfolios.destroy', ['portfolio' => '__ID__'])),
+    my: @js(route('portfolios.my')),
+};
+
 let page = 1;
 let loading = false;
 let hasMore = true;
@@ -369,10 +374,10 @@ function deletePortfolio(portfolioId) {
 
     if (typeof Swal === 'undefined') {
         if (confirm('Are you sure you want to delete this portfolio project?')) {
-            axios.delete(`/portfolios/${portfolioId}`)
+            axios.delete(ROUTES.destroy.replace('__ID__', portfolioId))
                 .then(response => {
                     if (response.data.success) {
-                        window.location.href = response.data.redirect || '/portfolios/my';
+                        window.location.href = response.data.redirect || ROUTES.my;
                     }
                 })
                 .catch(error => {
@@ -393,7 +398,7 @@ function deletePortfolio(portfolioId) {
         cancelButtonText: 'Cancel'
     }).then((result) => {
         if (result.isConfirmed) {
-            axios.delete(`/portfolios/${portfolioId}`)
+            axios.delete(ROUTES.destroy.replace('__ID__', portfolioId))
                 .then(response => {
                     if (response.data.success) {
                         Swal.fire({
@@ -403,7 +408,7 @@ function deletePortfolio(portfolioId) {
                             timer: 2000,
                             showConfirmButton: false
                         }).then(() => {
-                            window.location.href = response.data.redirect || '/portfolios/my';
+                            window.location.href = response.data.redirect || ROUTES.my;
                         });
                     }
                 })

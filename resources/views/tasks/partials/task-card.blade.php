@@ -100,10 +100,10 @@
                     @endif
 
                     <!-- Project Badge -->
-                    @if($task->project)
+                    @if($task->order)
                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
                             <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg>
-                            {{ \Illuminate\Support\Str::limit($task->project->name, 20) }}
+                            {{ \Illuminate\Support\Str::limit($task->order->name, 20) }}
                         </span>
                     @endif
                 </div>

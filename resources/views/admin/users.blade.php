@@ -221,10 +221,15 @@
 </div>
 
 <script>
+const ROUTES = {
+    show: @js(route('users.show', ['user' => '__ID__'])),
+    destroy: @js(route('users.destroy', ['user' => '__ID__'])),
+};
+
 function deleteUser(userId) {
     if (typeof Swal === 'undefined') {
         if (confirm('Are you sure you want to delete this user?')) {
-            window.location.href = `/users/${userId}`;
+            window.location.href = ROUTES.show.replace('__ID__', userId);
         }
         return;
     }
@@ -243,7 +248,7 @@ function deleteUser(userId) {
             // Create form for DELETE request
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = `/users/${userId}`;
+            form.action = ROUTES.destroy.replace('__ID__', userId);
             form.style.display = 'none';
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');

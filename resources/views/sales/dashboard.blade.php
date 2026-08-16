@@ -340,6 +340,7 @@
 @section('content')
 @php
     $user = auth()->user();
+    $isPreview = $isPreview ?? false;
     // A member leads with their own number and reads the team total as context;
     // leaders and admins lead with the group.
     $heroStats = $mine && ! $showsBreakdown ? $mine : $group;
@@ -353,16 +354,25 @@
 
 <div class="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto space-y-5">
 
+    @if($isPreview)
+        <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold">
+            <span><i class="fas fa-eye mr-2"></i>Preview — sample data. This is what a sales member's own dashboard looks like; no real account is shown.</span>
+            <a href="{{ route('sales.leadership') }}" class="underline hover:no-underline">Back to Leadership Overview</a>
+        </div>
+    @endif
+
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <p class="s-eyebrow">{{ $isAdmin ? 'All sales' : ($user->isSalesLeader() ? 'Sales team' : 'My sales') }}</p>
+            <p class="s-eyebrow">{{ $isPreview ? 'Preview' : ($isAdmin ? 'All sales' : ($user->isSalesLeader() ? 'Sales team' : 'My sales')) }}</p>
             <h1 class="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {{ $isAdmin ? 'Sales performance' : ($user->isSalesLeader() ? 'Sales performance' : 'Hello, '.explode(' ', $user->name)[0]) }}
+                {{ $isPreview ? 'Sales member dashboard' : ($isAdmin ? 'Sales performance' : ($user->isSalesLeader() ? 'Sales performance' : 'Hello, '.explode(' ', $user->name)[0])) }}
             </h1>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 {{ $monthDate->format('F Y') }}
-                @if($isAdmin)
+                @if($isPreview)
+                    · sample figures, for layout only
+                @elseif($isAdmin)
                     · every sales person
                 @elseif($user->isSalesLeader())
                     · you and your sales members
@@ -372,27 +382,19 @@
             </p>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2">
-            <form method="GET" action="{{ route('sales.dashboard') }}" class="flex items-center gap-2">
-                <label for="month" class="text-sm font-medium text-gray-600 dark:text-gray-400">Month</label>
-                <select name="month" id="month" onchange="this.form.submit()"
-                        class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm">
-                    @foreach($availableMonths as $value => $label)
-                        <option value="{{ $value }}" {{ $selectedMonth === $value ? 'selected' : '' }}>{{ $label }}</option>
-                    @endforeach
-                </select>
-            </form>
+        @unless($isPreview)
+            <div class="flex flex-wrap items-center gap-2">
+                @can('create', \App\Models\Order::class)
+                    <a href="{{ route('orders.create') }}" class="s-primary-btn">
+                        <i class="fas fa-plus mr-2"></i>{{ $user->isSales() ? 'New sale' : 'New order' }}
+                    </a>
+                @endcan
 
-            @can('create', \App\Models\Order::class)
-                <a href="{{ route('orders.create') }}" class="s-primary-btn">
-                    <i class="fas fa-plus mr-2"></i>{{ $user->isSales() ? 'New sale' : 'New order' }}
+                <a href="{{ route('orders.index') }}" class="s-secondary-btn">
+                    <i class="fas fa-list mr-2"></i>{{ $user->isSales() ? 'My orders' : 'All orders' }}
                 </a>
-            @endcan
-
-            <a href="{{ route('orders.index') }}" class="s-secondary-btn">
-                <i class="fas fa-list mr-2"></i>{{ $user->isSales() ? 'My orders' : 'All orders' }}
-            </a>
-        </div>
+            </div>
+        @endunless
     </div>
 
     <!-- Sales amount: the headline -->
@@ -506,11 +508,50 @@
         </div>
     </div>
 
+    <!-- Fresh vs. Repeat -->
+    <div class="s-panel p-5 sm:p-6">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+            <div>
+                <p class="s-eyebrow">Fresh vs. Repeat · {{ $monthDate->format('F Y') }}</p>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Green is fresh (new clients), yellow is repeat (clients who already bought through the same profile).</p>
+            </div>
+            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 text-xs font-bold s-num">
+                <i class="fas fa-rotate-right text-[10px]"></i>{{ $heroStats['repeatRate'] }}% repeat orders
+            </span>
+        </div>
+
+        @php
+            $splitTotal = $heroStats['freshAmount'] + $heroStats['repeatAmount'];
+            $freshPct = $splitTotal > 0 ? round($heroStats['freshAmount'] / $splitTotal * 100) : 0;
+            $repeatPct = 100 - $freshPct;
+        @endphp
+        <div class="grid grid-cols-2 gap-4">
+            <div class="rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 p-4">
+                <p class="flex items-center gap-2 text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>Fresh
+                </p>
+                <p class="mt-1 text-xl font-extrabold text-gray-900 dark:text-gray-100 s-num">${{ number_format($heroStats['freshAmount'], 2) }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 s-num">{{ $heroStats['freshCount'] }} {{ \Illuminate\Support\Str::plural('order', $heroStats['freshCount']) }}</p>
+            </div>
+            <div class="rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 p-4">
+                <p class="flex items-center gap-2 text-xs font-bold text-amber-700 dark:text-amber-400">
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>Repeat
+                </p>
+                <p class="mt-1 text-xl font-extrabold text-gray-900 dark:text-gray-100 s-num">${{ number_format($heroStats['repeatAmount'], 2) }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 s-num">{{ $heroStats['repeatCount'] }} {{ \Illuminate\Support\Str::plural('order', $heroStats['repeatCount']) }}</p>
+            </div>
+        </div>
+        <div class="mt-3 h-2 rounded-full overflow-hidden flex">
+            <div class="bg-emerald-500" style="width: {{ $freshPct }}%"></div>
+            <div class="bg-amber-400" style="width: {{ $repeatPct }}%"></div>
+        </div>
+    </div>
+
     <div class="s-split">
         <!-- Recent orders -->
         <div class="s-panel p-5 sm:p-6">
             <div class="flex items-center justify-between mb-2">
-                <p class="s-eyebrow">Latest orders</p>
+                <p class="s-eyebrow">Running orders — everyone</p>
                 <a href="{{ route('orders.index') }}" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
                     All orders
                 </a>
@@ -519,7 +560,12 @@
             @forelse($recentOrders as $order)
                 <a href="{{ route('orders.show', $order) }}" class="s-row block sm:grid hover:opacity-80 transition-opacity">
                     <span>
-                        <span class="block text-sm font-bold text-gray-900 dark:text-gray-100 truncate">{{ $order->name }}</span>
+                        <span class="block text-sm font-bold text-gray-900 dark:text-gray-100 truncate">
+                            {{ $order->name }}
+                            @if($order->sales_user_id === $user->id)
+                                <span class="s-chip ml-1">You</span>
+                            @endif
+                        </span>
                         <span class="block text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                             {{ $order->created_at->format('M d, Y') }}
                             @if($showsBreakdown && $order->salesUser)
@@ -534,14 +580,19 @@
                 </a>
             @empty
                 <div class="s-empty">
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-300">No orders yet</p>
-                    <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Add the first one and operations takes it from there.</p>
-                    @unless($isAdmin)
-                        <a href="{{ route('orders.create') }}"
-                           class="mt-3 inline-flex items-center px-3.5 py-2 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">
-                            <i class="fas fa-plus mr-1.5"></i>Add an order
-                        </a>
-                    @endunless
+                    @if($isPreview)
+                        <p class="text-sm font-medium text-gray-600 dark:text-gray-300">A real sales member's recent orders appear here</p>
+                        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">This preview doesn't show real order data.</p>
+                    @else
+                        <p class="text-sm font-medium text-gray-600 dark:text-gray-300">No orders yet</p>
+                        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Add the first one and operations takes it from there.</p>
+                        @unless($isAdmin)
+                            <a href="{{ route('orders.create') }}"
+                               class="mt-3 inline-flex items-center px-3.5 py-2 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">
+                                <i class="fas fa-plus mr-1.5"></i>Add an order
+                            </a>
+                        @endunless
+                    @endif
                 </div>
             @endforelse
         </div>
@@ -594,7 +645,13 @@
             @endif
 
             <div class="s-panel p-5">
-                <p class="s-eyebrow mb-3">Month by month</p>
+                <div class="flex items-center justify-between mb-3">
+                    <p class="s-eyebrow">Month by month</p>
+                    <span class="flex items-center gap-2 text-[10px] font-bold text-gray-500 dark:text-gray-400">
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>Fresh</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-400"></span>Repeat</span>
+                    </span>
+                </div>
                 <div class="space-y-2">
                     @foreach($trend->reverse()->take(6) as $point)
                         <div>
@@ -604,6 +661,13 @@
                             </div>
                             <div class="s-share">
                                 <span style="width: {{ round($point['amount'] / $topAmount * 100) }}%"></span>
+                            </div>
+                            @php
+                                $pointFreshPct = $point['amount'] > 0 ? round($point['fresh'] / $point['amount'] * 100) : 0;
+                            @endphp
+                            <div class="mt-1 h-1.5 rounded-full overflow-hidden flex">
+                                <div class="bg-emerald-500" style="width: {{ $pointFreshPct }}%"></div>
+                                <div class="bg-amber-400" style="width: {{ max(0, 100 - $pointFreshPct) }}%"></div>
                             </div>
                         </div>
                     @endforeach

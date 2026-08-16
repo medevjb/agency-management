@@ -3,10 +3,13 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class LandingPageTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_guest_sees_the_landing_page(): void
     {
         $response = $this->get('/');

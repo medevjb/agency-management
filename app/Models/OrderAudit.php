@@ -59,7 +59,8 @@ class OrderAudit extends Model
             'event' => $event,
             'old_values' => $oldValues ?: null,
             'new_values' => $newValues ?: null,
-            'ip_address' => request()->ip(),
+            // CLI / queue contexts have no request to read the IP from.
+            'ip_address' => optional(request())->ip(),
         ]);
     }
 
@@ -84,6 +85,7 @@ class OrderAudit extends Model
             'document_uploaded' => 'Documents uploaded',
             'document_deleted' => 'Document removed',
             'sales_credit_updated' => 'Sales credit updated',
+            'value_distributed' => 'Value distribution updated',
             default => ucfirst(str_replace('_', ' ', $this->event)),
         };
     }
@@ -96,6 +98,7 @@ class OrderAudit extends Model
             'restored' => 'fa-rotate-left',
             'members_updated' => 'fa-users',
             'sales_credit_updated' => 'fa-handshake',
+            'value_distributed' => 'fa-sitemap',
             'document_uploaded' => 'fa-file-arrow-up',
             'document_deleted' => 'fa-file-circle-xmark',
             default => 'fa-pen',
@@ -113,6 +116,7 @@ class OrderAudit extends Model
             'restored' => 'restore',
             'members_updated' => 'people',
             'sales_credit_updated' => 'create',
+            'value_distributed' => 'people',
             'document_uploaded', 'document_deleted' => 'files',
             default => 'edit',
         };
@@ -132,6 +136,7 @@ class OrderAudit extends Model
             'restored' => 'restored this order',
             'members_updated' => 'changed who is assigned',
             'sales_credit_updated' => 'changed the sales credit',
+            'value_distributed' => 'updated the value distribution',
             'document_uploaded' => 'uploaded '.$this->documentCount().' '.Str::plural('file', $this->documentCount()),
             'document_deleted' => 'removed '.$this->documentCount().' '.Str::plural('file', $this->documentCount()),
             default => $this->changedFieldsSentence($count),
@@ -233,6 +238,7 @@ class OrderAudit extends Model
             'notes' => 'Notes',
             'members' => 'Assigned Members',
             'sales_credit' => 'Sales Credit',
+            'value_distribution' => 'Value Distribution',
             'documents' => 'Documents',
             default => ucwords(str_replace('_', ' ', $field)),
         };

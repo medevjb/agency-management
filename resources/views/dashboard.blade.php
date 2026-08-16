@@ -23,6 +23,15 @@
         transition: width 0.6s ease;
     }
 
+    /* This page's stat row wants a fifth column at xl; the shared .dash-grid-4
+       caps at four, so extend it here rather than depend on an arbitrary
+       Tailwind utility that may not be in the compiled bundle. */
+    @media (min-width: 1280px) {
+        .dash-grid-5-at-xl {
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+        }
+    }
+
     /* ---- Sales band ---- */
     .sales-band {
         padding: 1.5rem;
@@ -247,19 +256,12 @@
             <p class="text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-1">Welcome back, {{ Auth::user()->name }}! Here's your order overview.</p>
         </div>
         <div class="flex flex-wrap gap-3 items-center">
-            <!-- Month Filter -->
-            <div class="relative">
-                <select id="monthFilter" class="appearance-none bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 dark:text-gray-200 dark:text-gray-700 py-2.5 pl-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer shadow-sm font-medium text-sm">
-                    @foreach($availableMonths as $value => $label)
-                        <option value="{{ $value }}" {{ $selectedMonth === $value ? 'selected' : '' }}>
-                            {{ $label }}
-                        </option>
-                    @endforeach
-                </select>
-                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500">
-                    <i class="fas fa-calendar-alt text-sm"></i>
-                </div>
-            </div>
+            {{-- The month is now chosen once from the header picker and applies
+                 to every dashboard; this page just reports which one is active. --}}
+            <span class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 text-sm font-semibold">
+                <i class="fas fa-calendar-alt text-xs"></i>
+                {{ $availableMonths[$selectedMonth] ?? $selectedMonth }}
+            </span>
             <a href="{{ route('orders.create') }}" class="inline-flex items-center px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-indigo-200 hover:shadow-xl">
                 <i class="fas fa-plus mr-2"></i>New Order
             </a>
@@ -344,74 +346,74 @@
     </div>
 
     <!-- Quick Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+    <div class="dash-grid-4 dash-grid-5-at-xl">
         @php
             $myTasks = \App\Models\Task::where('assigned_to', Auth::id())->where('status', '!=', 'completed')->count();
         @endphp
 
         <!-- Total Orders -->
-        <div class="stat-card bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-100 dark:border-gray-800">
+        <div class="dash-panel stat-card p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-1">Total Orders</p>
-                    <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ number_format($stats['total']) }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-2"><i class="fas fa-folder mr-1"></i>All orders</p>
+                    <p class="dash-stat-label mb-1">Total Orders</p>
+                    <p class="dash-hero dash-num">{{ number_format($stats['total']) }}</p>
+                    <p class="dash-stat-foot"><i class="fas fa-folder mr-1"></i>All orders</p>
                 </div>
-                <div class="gradient-icon w-14 h-14 rounded-2xl flex items-center justify-center" style="--icon-from: #6366f1; --icon-to: #8b5cf6;">
-                    <i class="fas fa-folder text-white text-xl"></i>
+                <div class="dash-icon" style="--icon-from: #6366f1; --icon-to: #8b5cf6;">
+                    <i class="fas fa-folder"></i>
                 </div>
             </div>
         </div>
 
         <!-- Delivered Orders (Revenue Generating) -->
-        <div class="stat-card bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-100 dark:border-gray-800">
+        <div class="dash-panel stat-card p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-1">Delivered</p>
-                    <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ number_format($stats['delivered']) }}</p>
-                    <p class="text-xs text-green-600 dark:text-green-400 mt-2"><i class="fas fa-check-circle mr-1"></i>Revenue earned</p>
+                    <p class="dash-stat-label mb-1">Delivered</p>
+                    <p class="dash-hero dash-num">{{ number_format($stats['delivered']) }}</p>
+                    <p class="dash-stat-foot text-green-600 dark:text-green-400"><i class="fas fa-check-circle mr-1"></i>Revenue earned</p>
                 </div>
-                <div class="gradient-icon w-14 h-14 rounded-2xl flex items-center justify-center" style="--icon-from: #10b981; --icon-to: #34d399;">
-                    <i class="fas fa-check-circle text-white text-xl"></i>
+                <div class="dash-icon" style="--icon-from: #10b981; --icon-to: #34d399;">
+                    <i class="fas fa-check-circle"></i>
                 </div>
             </div>
         </div>
 
         <!-- Workload (Active Orders) -->
-        <div class="stat-card bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-100 dark:border-gray-800">
+        <div class="dash-panel stat-card p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-1">Workload</p>
-                    <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ number_format($stats['workload']) }}</p>
-                    <p class="text-xs text-blue-600 dark:text-blue-400 mt-2"><i class="fas fa-dollar-sign mr-1"></i>${{ number_format($stats['workloadValue'], 0) }} running value</p>
+                    <p class="dash-stat-label mb-1">Workload</p>
+                    <p class="dash-hero dash-num">{{ number_format($stats['workload']) }}</p>
+                    <p class="dash-stat-foot text-blue-600 dark:text-blue-400 dash-num"><i class="fas fa-dollar-sign mr-1"></i>${{ number_format($stats['workloadValue'], 0) }} running value</p>
                 </div>
-                <div class="gradient-icon w-14 h-14 rounded-2xl flex items-center justify-center" style="--icon-from: #3b82f6; --icon-to: #60a5fa;">
-                    <i class="fas fa-spinner text-white text-xl"></i>
+                <div class="dash-icon" style="--icon-from: #3b82f6; --icon-to: #60a5fa;">
+                    <i class="fas fa-spinner"></i>
                 </div>
             </div>
         </div>
 
         <!-- Delivered Revenue -->
-        <div class="stat-card bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-100 dark:border-gray-800">
+        <div class="dash-panel stat-card p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-1">Delivered Revenue</p>
-                    <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">${{ number_format($stats['revenue'], 0) }}</p>
-                    <p class="text-xs text-purple-600 dark:text-purple-400 mt-2"><i class="fas fa-check-circle mr-1"></i>{{ $stats['delivered'] }} orders this month</p>
+                    <p class="dash-stat-label mb-1">Delivered Revenue</p>
+                    <p class="dash-hero dash-num">${{ number_format($stats['revenue'], 0) }}</p>
+                    <p class="dash-stat-foot text-purple-600 dark:text-purple-400 dash-num"><i class="fas fa-check-circle mr-1"></i>{{ $stats['delivered'] }} orders this month</p>
                 </div>
-                <div class="gradient-icon w-14 h-14 rounded-2xl flex items-center justify-center" style="--icon-from: #8b5cf6; --icon-to: #a78bfa;">
-                    <i class="fas fa-chart-line text-white text-xl"></i>
+                <div class="dash-icon" style="--icon-from: #8b5cf6; --icon-to: #a78bfa;">
+                    <i class="fas fa-chart-line"></i>
                 </div>
             </div>
         </div>
 
         <!-- Sales This Month (gross sold, before delivery) -->
-        <div class="stat-card bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-100 dark:border-gray-800">
+        <div class="dash-panel stat-card p-6">
             <div class="flex items-center justify-between">
                 <div class="min-w-0">
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Sales This Month</p>
-                    <p class="text-3xl font-bold text-gray-900 dark:text-gray-100 sales-num">${{ number_format($salesStats['sold'], 0) }}</p>
-                    <p class="text-xs mt-2 sales-num">
+                    <p class="dash-stat-label mb-1">Sales This Month</p>
+                    <p class="dash-hero dash-num">${{ number_format($salesStats['sold'], 0) }}</p>
+                    <p class="dash-stat-foot dash-num">
                         @if($salesStats['achievement'] !== null)
                             <span class="{{ $salesStats['achievement'] >= 100 ? 'text-green-600 dark:text-green-400' : ($salesStats['achievement'] >= 60 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400') }}">
                                 <i class="fas fa-bullseye mr-1"></i>{{ $salesStats['achievement'] }}% of target
@@ -423,8 +425,8 @@
                         @endif
                     </p>
                 </div>
-                <div class="gradient-icon w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style="--icon-from: #f59e0b; --icon-to: #f97316;">
-                    <i class="fas fa-sack-dollar text-white text-xl"></i>
+                <div class="dash-icon" style="--icon-from: #f59e0b; --icon-to: #f97316;">
+                    <i class="fas fa-sack-dollar"></i>
                 </div>
             </div>
         </div>
@@ -962,17 +964,6 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-// Month filter functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const monthFilter = document.getElementById('monthFilter');
-    if (monthFilter) {
-        monthFilter.addEventListener('change', function() {
-            const url = new URL(window.location);
-            url.searchParams.set('month', this.value);
-            window.location = url.toString();
-        });
-    }
-});
 // Global chart instances to prevent duplicates
 let revenueChartInstance = null;
 let ordersChartInstance = null;

@@ -394,6 +394,12 @@
 
 @push('scripts')
 <script>
+    const ROUTES = {
+        unarchive: @js(route('tasks.unarchive', ['task' => '__ID__'])),
+        updateStatus: @js(route('tasks.update-status', ['task' => '__ID__'])),
+        destroy: @js(route('tasks.destroy', ['task' => '__ID__'])),
+    };
+
     const archiveSearch   = document.getElementById('archiveSearch');
     const archivePriority = document.getElementById('archivePriority');
     const archiveProject  = document.getElementById('archiveProject');
@@ -531,8 +537,8 @@
             cancelButtonText: 'Cancel',
         }).then(result => {
             if (!result.isConfirmed) { return; }
-            axios.post(`/tasks/${taskId}/unarchive`)
-                .then(() => status && status !== 'pending' ? axios.patch(`/tasks/${taskId}/status`, { status }) : null)
+            axios.post(ROUTES.unarchive.replace('__ID__', taskId))
+                .then(() => status && status !== 'pending' ? axios.patch(ROUTES.updateStatus.replace('__ID__', taskId), { status }) : null)
                 .then(() => Swal.fire({ icon: 'success', title: 'Restored!', text: 'Task moved back to active tasks.', timer: 1500, showConfirmButton: false })
                     .then(() => location.reload()))
                 .catch(() => Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to restore task.' }));
@@ -553,7 +559,7 @@
             cancelButtonText: 'Cancel',
         }).then(result => {
             if (!result.isConfirmed) { return; }
-            axios.delete(`/tasks/${taskId}`)
+            axios.delete(ROUTES.destroy.replace('__ID__', taskId))
                 .then(() => Swal.fire({ icon: 'success', title: 'Deleted!', text: 'Task has been removed.', timer: 1500, showConfirmButton: false })
                     .then(() => location.reload()))
                 .catch(() => Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to delete task.' }));

@@ -290,6 +290,12 @@
 
 @push('scripts')
 <script>
+    const ROUTES = {
+        branches: @js(route('admin.github.branches', ['repository' => '__ID__'])),
+        repositories: @js(route('admin.github.repositories', ['account' => '__ID__'])),
+        repositoriesSync: @js(route('admin.github.repositories.sync', ['account' => '__ID__'])),
+    };
+
     let currentRepoAccountId = null;
     let currentRepoData = [];
 
@@ -376,7 +382,7 @@
         branchesEl.innerHTML = skeletonHtml();
         branchesEl.classList.remove('hidden');
 
-        axios.get(`/admin/github/tracked-repositories/${repoId}/branches`, { params: fresh ? { fresh: 1 } : {} })
+        axios.get(ROUTES.branches.replace('__ID__', repoId), { params: fresh ? { fresh: 1 } : {} })
             .then(response => {
                 const branches = response.data.branches;
                 branchesEl.dataset.loaded = '1';
@@ -452,7 +458,7 @@
             document.getElementById('repoModalList').innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">Loading repositories...</p>';
             document.getElementById('repoModal').classList.remove('hidden');
 
-            axios.get(`/admin/github/accounts/${accountId}/repositories`)
+            axios.get(ROUTES.repositories.replace('__ID__', accountId))
                 .then(response => {
                     currentRepoData = response.data.repositories;
                     renderRepoList(currentRepoData);
@@ -499,7 +505,7 @@
                 };
             });
 
-            axios.put(`/admin/github/accounts/${currentRepoAccountId}/repositories`, { repositories: selected })
+            axios.put(ROUTES.repositoriesSync.replace('__ID__', currentRepoAccountId), { repositories: selected })
                 .then(() => window.location.reload())
                 .catch(() => SwalDefault.fire({ icon: 'error', title: 'Could not update repositories' }));
         }

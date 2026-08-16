@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Project extends Model
 {
-    /** @use HasFactory<\Database\Factories\ProjectFactory> */
+    /** @use HasFactory<ProjectFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -29,30 +32,25 @@ class Project extends Model
         'budget' => 'decimal:2',
     ];
 
-    public function team(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);
     }
 
-    public function techStack(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function techStack(): BelongsTo
     {
         return $this->belongsTo(TechStack::class);
     }
 
-    public function createdBy(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function members(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function members(): BelongsToMany
     {
         return $this->belongsToMany(User::class)
             ->withPivot('role')
             ->withTimestamps();
-    }
-
-    public function tasks(): \Illuminate\Database\Eloquent\Relations\HasMany
-    {
-        return $this->hasMany(Task::class);
     }
 }
