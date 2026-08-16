@@ -312,10 +312,10 @@
 
         /* ===== Dark Mode: DataTables chrome ===== */
         /* DataTables renders its own controls outside Tailwind's reach, so
-           these need plain CSS overrides keyed off the `dark` class on <html>.
-           This build is DataTables 2 + the Bootstrap 5 integration (dt-length,
-           dt-search, dt-info, dt-paging / .page-link), not the classic 1.x
-           dataTables_* class names. */
+               these need plain CSS overrides keyed off the `dark` class on <html>.
+               This build is DataTables 2 + the Bootstrap 5 integration (dt-length,
+               dt-search, dt-info, dt-paging / .page-link), not the classic 1.x
+               dataTables_* class names. */
         .dark #ordersTable_wrapper {
             color: #e5e7eb;
         }
@@ -447,8 +447,8 @@
         }
 
         /* ---- Overdue accordion ----
-           Severity is carried by the number and the left rail, so the block can
-           be urgent without shouting in every cell. */
+               Severity is carried by the number and the left rail, so the block can
+               be urgent without shouting in every cell. */
         .overdue {
             margin-bottom: 1.5rem;
             border: 1px solid #fecaca;
@@ -562,9 +562,17 @@
             border-bottom: 0;
         }
 
-        .overdue-item.sev-1 { border-left-color: #fb923c; }
-        .overdue-item.sev-2 { border-left-color: #ef4444; }
-        .overdue-item.sev-3 { border-left-color: #991b1b; }
+        .overdue-item.sev-1 {
+            border-left-color: #fb923c;
+        }
+
+        .overdue-item.sev-2 {
+            border-left-color: #ef4444;
+        }
+
+        .overdue-item.sev-3 {
+            border-left-color: #991b1b;
+        }
 
         .overdue-row {
             display: grid;
@@ -598,13 +606,29 @@
             letter-spacing: -0.04em;
         }
 
-        .sev-1 .overdue-late-num { color: #ea580c; }
-        .sev-2 .overdue-late-num { color: #dc2626; }
-        .sev-3 .overdue-late-num { color: #991b1b; }
+        .sev-1 .overdue-late-num {
+            color: #ea580c;
+        }
 
-        .dark .sev-1 .overdue-late-num { color: #fb923c; }
-        .dark .sev-2 .overdue-late-num { color: #f87171; }
-        .dark .sev-3 .overdue-late-num { color: #ef4444; }
+        .sev-2 .overdue-late-num {
+            color: #dc2626;
+        }
+
+        .sev-3 .overdue-late-num {
+            color: #991b1b;
+        }
+
+        .dark .sev-1 .overdue-late-num {
+            color: #fb923c;
+        }
+
+        .dark .sev-2 .overdue-late-num {
+            color: #f87171;
+        }
+
+        .dark .sev-3 .overdue-late-num {
+            color: #ef4444;
+        }
 
         .overdue-late-unit {
             margin-top: 0.125rem;
@@ -795,6 +819,33 @@
         }
 
         .overdue-btn.is-primary {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            border-color: #4f46e5;
+            color: #ffffff;
+        }
+
+        .overdue-btn.is-primary:hover {
+            background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
+        }
+
+        /* Action menu styles */
+        [id^="action-menu-"],
+        [id^="overdue-menu-"] {
+            min-width: 160px;
+        }
+
+        [id^="action-menu-"] button,
+        [id^="overdue-menu-"] button {
+            width: 100%;
+            text-align: left;
+        }
+        }
+
+        .dark .overdue-btn:hover {
+            background-color: #1f2937;
+        }
+
+        .overdue-btn.is-primary {
             background-color: #dc2626;
             border-color: #dc2626;
             color: #ffffff;
@@ -842,12 +893,11 @@
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
-
     </style>
 @endpush
 
 @section('content')
-@php $isSalesUser = auth()->user()->isSales(); @endphp
+    @php $isSalesUser = auth()->user()->isSales(); @endphp
     <div class="px-4 sm:px-6 lg:px-8 py-8">
         @php
             $dueSoonOrders = \App\Models\Order::with(['team', 'users'])
@@ -882,8 +932,8 @@
         <!-- Overdue: ranked accordion, worst first -->
         @if ($overdueOrders->count() > 0)
             @php
-                $worstOverdue = (int) $overdueOrders->first()->end_date->diffInDays(now());
-                $unassignedOverdue = $overdueOrders->filter(fn ($order) => $order->users->isEmpty())->count();
+                $worstOverdue = (int) round($overdueOrders->first()->end_date->diffInDays(now()));
+                $unassignedOverdue = $overdueOrders->filter(fn($order) => $order->users->isEmpty())->count();
             @endphp
 
             <section class="overdue" id="overduePanel" aria-labelledby="overdueHeading">
@@ -895,24 +945,34 @@
                                 {{ $overdueCount === 1 ? 'Order is overdue' : 'Orders are overdue' }}
                             </h2>
                             <p class="overdue-sub">
-                                Worst is {{ $worstOverdue >= 1 ? $worstOverdue . ' ' . \Illuminate\Support\Str::plural('day', $worstOverdue) : 'less than a day' }} past deadline@if ($unassignedOverdue > 0), and {{ $unassignedOverdue }} {{ $unassignedOverdue === 1 ? 'has' : 'have' }} nobody assigned@endif.
+                                Worst is
+                                @if ($worstOverdue >= 1)
+                                    {{ $worstOverdue }} {{ \Illuminate\Support\Str::plural('day', $worstOverdue) }}
+                                @else
+                                    less than a day
+                                @endif
+                                past deadline
+                                @if ($unassignedOverdue > 0)
+                                    , and {{ $unassignedOverdue }} {{ $unassignedOverdue === 1 ? 'has' : 'have' }} nobody
+                                    assigned.
+                                @endif
                             </p>
                         </div>
                     </div>
 
-                    <button type="button" class="overdue-collapse" id="overdueCollapse"
-                            aria-expanded="true" aria-controls="overdueBody">
-                        <span data-collapse-label>Hide</span>
-                        <i class="fas fa-chevron-up"></i>
+                    <button type="button" class="overdue-collapse" id="overdueCollapse" aria-expanded="false"
+                        aria-controls="overdueBody">
+                        <span data-collapse-label>Show</span>
+                        <i class="fas fa-chevron-down"></i>
                     </button>
                 </header>
 
-                <div class="overdue-body" id="overdueBody">
+                <div class="overdue-body" id="overdueBody" hidden>
                     <ul class="overdue-list">
                         @foreach ($overdueOrders as $overdue)
                             @php
-                                $lateDays = (int) $overdue->end_date->diffInDays(now());
-                                $lateHours = (int) $overdue->end_date->diffInHours(now());
+                                $lateDays = (int) round($overdue->end_date->diffInDays(now()));
+                                $lateHours = (int) round($overdue->end_date->diffInHours(now()));
                                 $severity = $lateDays >= 7 ? 3 : ($lateDays >= 3 ? 2 : 1);
                                 $lateLabel = $lateDays >= 1 ? $lateDays : $lateHours;
                                 $lateUnit = $lateDays >= 1 ? \Illuminate\Support\Str::plural('day', $lateDays) : 'hrs';
@@ -921,7 +981,7 @@
 
                             <li class="overdue-item sev-{{ $severity }}">
                                 <button type="button" class="overdue-row" aria-expanded="false"
-                                        aria-controls="overdue-detail-{{ $overdue->id }}">
+                                    aria-controls="overdue-detail-{{ $overdue->id }}">
                                     <span class="overdue-late">
                                         <span class="overdue-late-num">{{ $lateLabel }}</span>
                                         <span class="overdue-late-unit">{{ $lateUnit }} late</span>
@@ -930,17 +990,20 @@
                                     <span class="overdue-name">
                                         <span class="overdue-client">{{ $overdue->name }}</span>
                                         <span class="overdue-meta">
-                                            {{ $overdue->team?->name ?? 'No team' }} · due {{ $overdue->end_date->format('M d') }}
+                                            {{ $overdue->team?->name ?? 'No team' }} · due
+                                            {{ $overdue->end_date->format('M d') }}
                                         </span>
                                     </span>
 
                                     <span class="overdue-people">
                                         @if ($overdue->users->count() > 0)
                                             @foreach ($overdue->users->take(3) as $assignee)
-                                                <span class="overdue-avatar" title="{{ $assignee->name }}">{{ strtoupper(substr($assignee->name, 0, 1)) }}</span>
+                                                <span class="overdue-avatar"
+                                                    title="{{ $assignee->name }}">{{ strtoupper(substr($assignee->name, 0, 1)) }}</span>
                                             @endforeach
                                             @if ($overdue->users->count() > 3)
-                                                <span class="overdue-avatar is-rest">+{{ $overdue->users->count() - 3 }}</span>
+                                                <span
+                                                    class="overdue-avatar is-rest">+{{ $overdue->users->count() - 3 }}</span>
                                             @endif
                                         @else
                                             <span class="overdue-unassigned">Unassigned</span>
@@ -974,7 +1037,8 @@
                                         </div>
                                         <div class="is-wide">
                                             <dt>Assigned to</dt>
-                                            <dd>{{ $overdue->users->pluck('name')->join(', ') ?: 'Nobody yet — assign someone to unblock this.' }}</dd>
+                                            <dd>{{ $overdue->users->pluck('name')->join(', ') ?: 'Nobody yet — assign someone to unblock this.' }}
+                                            </dd>
                                         </div>
                                     </dl>
 
@@ -982,11 +1046,29 @@
                                         <a href="{{ route('orders.show', $overdue->id) }}" class="overdue-btn is-primary">
                                             Open order
                                         </a>
-                                        @can('update', $overdue)
-                                            <a href="{{ route('orders.edit', $overdue->id) }}" class="overdue-btn">
-                                                Change deadline
-                                            </a>
-                                        @endcan
+                                        <div class="relative inline-block">
+                                            <button onclick="toggleOverdueActionMenu('overdue-menu-{{ $overdue->id }}')"
+                                                    class="overdue-btn">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <div id="overdue-menu-{{ $overdue->id }}"
+                                                 class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10">
+                                                <div class="py-1">
+                                                    <a href="{{ route('orders.show', $overdue->id) }}"
+                                                       class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                                        <i class="fas fa-eye text-purple-500"></i>
+                                                        View Details
+                                                    </a>
+                                                    @can('update', $overdue)
+                                                        <a href="{{ route('orders.edit', $overdue->id) }}"
+                                                           class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                                            <i class="fas fa-edit text-indigo-500"></i>
+                                                            Edit Order
+                                                        </a>
+                                                    @endcan
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </li>
@@ -995,7 +1077,9 @@
 
                     @if ($overdueCount > $overdueOrders->count())
                         <p class="overdue-more">
-                            {{ $overdueCount - $overdueOrders->count() }} more overdue {{ \Illuminate\Support\Str::plural('order', $overdueCount - $overdueOrders->count()) }} — the table below is sorted worst first.
+                            {{ $overdueCount - $overdueOrders->count() }} more overdue
+                            {{ \Illuminate\Support\Str::plural('order', $overdueCount - $overdueOrders->count()) }} — the
+                            table below is sorted worst first.
                         </p>
                     @endif
                 </div>
@@ -1182,7 +1266,8 @@
             <div class="flex flex-wrap items-center gap-3">
                 <!-- Search Field -->
                 <div class="relative flex-shrink-0 flex-grow max-w-xs">
-                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-sm"></i>
+                    <i
+                        class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-sm"></i>
                     <input type="text" id="filterSearch" placeholder="Search orders..."
                         class="w-full pl-9 pr-4 py-1.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 transition-all duration-200 text-sm">
                 </div>
@@ -1203,7 +1288,7 @@
                             </option>
                         @endforeach
                     </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                    <div class="absolute inset-y-0 right-[21px] flex items-center pr-2 pointer-events-none">
                         <i class="fas fa-calendar-alt text-indigo-400 text-xs"></i>
                     </div>
                 </div>
@@ -1217,12 +1302,11 @@
                         <option value="pending">Pending</option>
                         <option value="in-progress">In Progress</option>
                         <option value="delivered">Delivered</option>
+                        <option value="completed">Completed</option>
                         <option value="on-hold">On Hold</option>
                         <option value="cancelled">Cancelled</option>
                     </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                        <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500 text-xs"></i>
-                    </div>
+
                 </div>
 
                 <!-- Team Filter -->
@@ -1234,9 +1318,6 @@
                             <option value="{{ $team->id }}">{{ $team->name }}</option>
                         @endforeach
                     </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                        <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500 text-xs"></i>
-                    </div>
                 </div>
 
                 <!-- Tech Stack Filter -->
@@ -1248,9 +1329,6 @@
                             <option value="{{ $stack->id }}">{{ $stack->name }}</option>
                         @endforeach
                     </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                        <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500 text-xs"></i>
-                    </div>
                 </div>
 
                 <!-- Freelance Profile Filter -->
@@ -1262,9 +1340,6 @@
                             <option value="{{ $profile->id }}">{{ $profile->profile_name }}</option>
                         @endforeach
                     </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                        <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500 text-xs"></i>
-                    </div>
                 </div>
 
                 <!-- Priority Filter -->
@@ -1276,9 +1351,6 @@
                         <option value="medium">Medium</option>
                         <option value="high">High</option>
                     </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                        <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500 text-xs"></i>
-                    </div>
                 </div>
 
                 <!-- Spacer -->
@@ -1335,7 +1407,8 @@
         </div>
 
         <!-- DataTable -->
-        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 datatableprimary mx-0">
+        <div
+            class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 datatableprimary mx-0">
             <div class="datatable-container">
                 <table id="ordersTable" class="display w-full" style="width:100%;">
                     <thead>
@@ -1349,12 +1422,12 @@
                             <th>Status</th>
                             <th>Priority</th>
                             <th>Value</th>
-                            @unless($isSalesUser)
+                            @unless ($isSalesUser)
                                 <th>Team</th>
                                 <th>Users</th>
                             @endunless
                             {{-- <th>Started</th> --}}
-                            <th>Delivered</th>
+                            <th>Completed</th>
                             <th>Deadline</th>
                             <th class="text-center">Progress</th>
                             {{-- <th>Special</th> --}}
@@ -1470,8 +1543,10 @@
                     collapse.querySelector('i').className = collapsed ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
                 }
 
-                // The block is visited daily; keep it the way it was left.
-                setCollapsed(localStorage.getItem(STORAGE_KEY) === '1');
+                // Default to collapsed on first visit, then keep it the way it was left.
+                const storedState = localStorage.getItem(STORAGE_KEY);
+                const initialState = storedState === null ? true : storedState === '1';
+                setCollapsed(initialState);
 
                 collapse.addEventListener('click', function() {
                     const collapsed = !body.hidden;
@@ -1487,7 +1562,8 @@
 
                         panel.querySelectorAll('.overdue-row').forEach(other => {
                             other.setAttribute('aria-expanded', 'false');
-                            document.getElementById(other.getAttribute('aria-controls')).hidden = true;
+                            document.getElementById(other.getAttribute('aria-controls'))
+                                .hidden = true;
                         });
 
                         if (willOpen) {
@@ -1499,41 +1575,23 @@
             });
 
             // DataTables initialization matching users module
+            const ROUTES = {
+                destroy: @js(route('orders.destroy', ['order' => '__ID__'])),
+                quickUpdate: @js(route('orders.quick-update', ['order' => '__ID__'])),
+                users: @js(route('orders.users', ['order' => '__ID__'])),
+                searchUsers: @js(route('orders.search-users')),
+                assignUsers: @js(route('orders.assign-users', ['order' => '__ID__'])),
+            };
+
             document.addEventListener('DOMContentLoaded', function() {
                 console.log('Initializing orders DataTable...');
                 console.log('Total users loaded for modal:', {{ $users->count() }});
 
-                // Check if jQuery is loaded, if not load from CDN
-                if (typeof $ === 'undefined') {
-                    console.log('Loading jQuery from CDN...');
-                    const script = document.createElement('script');
-                    script.src = 'https://code.jquery.com/jquery-3.6.0.min.js';
-                    script.onload = initializeDataTable;
-                    document.head.appendChild(script);
-                } else {
-                    initializeDataTable();
-                }
+                initializeDataTable();
             });
 
             function initializeDataTable() {
-                // Load DataTables CSS if not already loaded
-                if (!document.querySelector('link[href*="dataTables"]')) {
-                    const link = document.createElement('link');
-                    link.rel = 'stylesheet';
-                    link.href = 'https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css';
-                    document.head.appendChild(link);
-                }
-
-                // Load DataTables JS if not available
-                if (typeof $.fn.DataTable === 'undefined') {
-                    console.log('Loading DataTables from CDN...');
-                    const script = document.createElement('script');
-                    script.src = 'https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js';
-                    script.onload = createDataTable;
-                    document.head.appendChild(script);
-                } else {
-                    createDataTable();
-                }
+                createDataTable();
             }
 
             function createDataTable() {
@@ -1541,9 +1599,11 @@
 
                 // Define URL templates
                 const urlTemplates = {
-                    show: '{{ url('/orders/') }}',
-                    edit: '{{ url('/orders') }}',
+                    show: @js(route('orders.show', ['order' => '__ID__'])).replace('__ID__', ''),
+                    edit: @js(route('orders.edit', ['order' => '__ID__'])).replace('/__ID__/edit', ''),
                 };
+                @php($canDistributeValue = auth()->user()->hasRole(['admin', 'operation-manager', 'project-manager', 'team-leader']))
+                const valueDistributionUrl = @json($canDistributeValue ? route('value-distribution.index') : null);
 
                 // Initialize DataTable
                 const table = $('#ordersTable').DataTable({
@@ -1576,7 +1636,10 @@
                             data: 'name',
                             name: 'name',
                             render: function(data, type, row) {
-                                return `<a href="${urlTemplates.show}/${row.id}" class="font-semibold text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">${data}</a>`;
+                                const mineBadge = row.is_my_sale
+                                    ? '<span class="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-indigo-100 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400">Your sale</span>'
+                                    : '';
+                                return `<a href="${urlTemplates.show}${row.id}" class="font-semibold text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">${data}</a>${mineBadge}`;
                             }
                         },
                         {
@@ -1609,6 +1672,10 @@
                                         color: 'bg-green-100 dark:bg-green-500/10 text-green-800 dark:text-green-400',
                                         label: 'Delivered'
                                     },
+                                    'completed': {
+                                        color: 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-400',
+                                        label: 'Completed'
+                                    },
                                     'on-hold': {
                                         color: 'bg-orange-100 dark:bg-orange-500/10 text-orange-800 dark:text-orange-400',
                                         label: 'Hold'
@@ -1630,6 +1697,7 @@
                                         <option value="pending" ${data === 'pending' ? 'selected' : ''}> Pending</option>
                                         <option value="in-progress" ${data === 'in-progress' ? 'selected' : ''}> Progress</option>
                                         <option value="delivered" ${data === 'delivered' ? 'selected' : ''}> Delivered</option>
+                                        <option value="completed" ${data === 'completed' ? 'selected' : ''}> Completed</option>
                                         <option value="on-hold" ${data === 'on-hold' ? 'selected' : ''}>Hold</option>
                                         <option value="cancelled" ${data === 'cancelled' ? 'selected' : ''}> Cancelled</option>
                                     </select>
@@ -1673,115 +1741,103 @@
                             data: 'actual_revenue',
                             name: 'actual_revenue',
                             render: function(data) {
-                                return data ? '<span class="font-semibold text-green-600 dark:text-green-400">$' + parseFloat(data)
-                                    .toFixed(2) + '</span>' : '<span class="text-gray-400 dark:text-gray-500">N/A</span>';
+                                return data ?
+                                    '<span class="font-semibold text-green-600 dark:text-green-400">$' +
+                                    parseFloat(data)
+                                    .toFixed(2) + '</span>' :
+                                    '<span class="text-gray-400 dark:text-gray-500">N/A</span>';
                             }
                         },
-                        @unless($isSalesUser)
-                        {
-                            data: 'team',
-                            name: 'team_id',
-                            render: function(data) {
-                                if (!data || data === 'N/A')
-                                    return '<span class="text-gray-400 dark:text-gray-500 text-xs">No team</span>';
-                                return `<span class="px-2 py-1 rounded-lg text-xs font-semibold bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 inline-block whitespace-nowrap">${data}</span>`;
-                            }
-                        },
+                        @unless ($isSalesUser)
+                            {
+                                data: 'team',
+                                name: 'team_id',
+                                render: function(data) {
+                                    if (!data || data === 'N/A')
+                                        return '<span class="text-gray-400 dark:text-gray-500 text-xs">No team</span>';
+                                    return `<span class="px-2 py-1 rounded-lg text-xs font-semibold bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 inline-block whitespace-nowrap">${data}</span>`;
+                                }
+                            },
 
-                        {
-                            data: 'users',
-                            name: 'users',
-                            render: function(data, type, row) {
-                                if (!data || data.length === 0) {
-                                    return `<button onclick="openUserAssignmentModal(${row.id}, '${row.name.replace(/'/g, "\\'")}')" class="w-9 h-8 flex items-center justify-center rounded-lg text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-all cursor-pointer" title="Assign Users">
+                            {
+                                data: 'users',
+                                name: 'users',
+                                render: function(data, type, row) {
+                                    if (!data || data.length === 0) {
+                                        return `<button onclick="openUserAssignmentModal(${row.id}, '${row.name.replace(/'/g, "\\'")}')" class="w-9 h-8 flex items-center justify-center rounded-lg text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-all cursor-pointer" title="Assign Users">
                                         <i class="fas fa-user-plus "></i>
                                     </button>`;
-                                }
-                                if (data.length === 1) {
-                                    return `<button onclick="openUserAssignmentModal(${row.id}, '${row.name.replace(/'/g, "\\'")}')" class="px-2 py-1 rounded-lg text-xs font-semibold bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 truncate max-w-[100px] inline-block hover:bg-purple-100 dark:hover:bg-purple-500/20 cursor-pointer transition-all" title="${data[0].name}">${data[0].name}</button>`;
-                                }
-                                // Multiple users - show icon with count
-                                return `<button onclick="openUserAssignmentModal(${row.id}, '${row.name.replace(/'/g, "\\'")}')" class="w-12 h-8 px-2 flex items-center justify-center rounded-lg text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-100 dark:hover:bg-purple-500/20 transition-all cursor-pointer" title="${data.length} users: ${row.users_names}">
+                                    }
+                                    if (data.length === 1) {
+                                        return `<button onclick="openUserAssignmentModal(${row.id}, '${row.name.replace(/'/g, "\\'")}')" class="px-2 py-1 rounded-lg text-xs font-semibold bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 truncate max-w-[100px] inline-block hover:bg-purple-100 dark:hover:bg-purple-500/20 cursor-pointer transition-all" title="${data[0].name}">${data[0].name}</button>`;
+                                    }
+                                    // Multiple users - show icon with count
+                                    return `<button onclick="openUserAssignmentModal(${row.id}, '${row.name.replace(/'/g, "\\'")}')" class="w-12 h-8 px-2 flex items-center justify-center rounded-lg text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-100 dark:hover:bg-purple-500/20 transition-all cursor-pointer" title="${data.length} users: ${row.users_names}">
                                     <i class="fas fa-users "></i>
                                     <span class="ml-0.5  font-bold">${data.length}</span>
                                 </button>`;
-                            }
-                        },
+                                }
+                            },
                         @endunless
 
-                       /* {
-                            data: 'start_date',
-                            name: 'start_date',
-                            render: function(data, type, row) {
-                                // For orders without start date, show clickable placeholder
-                                if (!data) {
-                                    return `<input type="text"
-                                                class="start-date-input px-2 py-1 rounded-lg text-xs font-medium border border-gray-300 bg-gray-50 text-gray-400 whitespace-nowrap w-28 cursor-pointer"
-                                                data-order-id="${row.id}"
-                                                data-original-value=""
-                                                placeholder="Set date"
-                                                readonly onclick="handleStartDateClick(this)">`;
-                                }
+                        /* {
+                             data: 'start_date',
+                             name: 'start_date',
+                             render: function(data, type, row) {
+                                 // For orders without start date, show clickable placeholder
+                                 if (!data) {
+                                     return `<input type="text"
+                                         class="start-date-input px-2 py-1 rounded-lg text-xs font-medium border border-gray-300 bg-gray-50 text-gray-400 whitespace-nowrap w-28 cursor-pointer"
+                                         data-order-id="${row.id}"
+                                         data-original-value=""
+                                         placeholder="Set date"
+                                         readonly onclick="handleStartDateClick(this)">`;
+                                 }
 
-                                const date = new Date(data);
-                                const formattedDate = date.toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'short',
-                                    day: 'numeric'
-                                });
-                                const dbDate = data; // Keep original format for database
+                                 const date = new Date(data);
+                                 const formattedDate = date.toLocaleDateString('en-US', {
+                                     year: 'numeric',
+                                     month: 'short',
+                                     day: 'numeric'
+                                 });
+                                 const dbDate = data; // Keep original format for database
 
-                                return `<input type="text"
-                                            class="start-date-input px-2 py-1 rounded-lg text-xs font-medium border border-indigo-300 bg-indigo-50 text-indigo-700 whitespace-nowrap w-28 cursor-pointer"
-                                            value="${formattedDate}"
-                                            data-order-id="${row.id}"
-                                            data-original-value="${dbDate}"
-                                            data-current-value="${dbDate}"
-                                            title="${dbDate}"
-                                            readonly onclick="handleStartDateClick(this)">`;
-                            }
-                        },*/
+                                 return `<input type="text"
+                                     class="start-date-input px-2 py-1 rounded-lg text-xs font-medium border border-indigo-300 bg-indigo-50 text-indigo-700 whitespace-nowrap w-28 cursor-pointer"
+                                     value="${formattedDate}"
+                                     data-order-id="${row.id}"
+                                     data-original-value="${dbDate}"
+                                     data-current-value="${dbDate}"
+                                     title="${dbDate}"
+                                     readonly onclick="handleStartDateClick(this)">`;
+                             }
+                         },*/
                         {
-                            data: 'delivered_at',
-                            name: 'delivered_at',
+                            data: 'completed_at',
+                            name: 'completed_at',
                             render: function(data, type, row) {
-                                // Has a saved date — show it regardless of status
                                 if (data) {
-                                    const date = new Date(data);
-                                    const formattedDate = date.toLocaleDateString('en-US', {
+                                    const formattedDate = new Date(data).toLocaleDateString('en-US', {
                                         year: 'numeric',
                                         month: 'short',
                                         day: 'numeric'
                                     });
-                                    const dbDate = data;
 
                                     return `<input type="text"
-                                                class="delivered-date-input px-2 py-1 rounded-lg text-xs font-medium border border-green-300 dark:border-green-800 bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 whitespace-nowrap w-28 cursor-pointer"
+                                                class="completed-date-input px-2 py-1 rounded-lg text-xs font-medium border border-green-300 dark:border-green-800 bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 whitespace-nowrap w-28 cursor-pointer"
                                                 value="${formattedDate}"
                                                 data-order-id="${row.id}"
-                                                data-original-value="${dbDate}"
-                                                data-current-value="${dbDate}"
-                                                title="${dbDate}"
-                                                readonly onclick="handleDeliveredDateClick(this)">`;
+                                                data-original-value="${data}"
+                                                title="${data}"
+                                                readonly onclick="handleCompletedDateClick(this)">`;
                                 }
 
-                                // Delivered status but no date yet
-                                if (row.status === 'delivered') {
-                                    return `<input type="text"
-                                                class="delivered-date-input px-2 py-1 rounded-lg text-xs font-medium border border-green-300 dark:border-green-800 bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 whitespace-nowrap w-28 cursor-pointer"
-                                                data-order-id="${row.id}"
-                                                data-original-value=""
-                                                placeholder="Set date"
-                                                readonly onclick="handleDeliveredDateClick(this)">`;
-                                }
-
-                                // Non-delivered orders
                                 return `<input type="text"
-                                            class="delivered-date-input px-2 py-1 rounded-lg text-xs font-medium border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500 whitespace-nowrap w-28 cursor-pointer"
+                                            class="completed-date-input px-2 py-1 rounded-lg text-xs font-medium border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500 whitespace-nowrap w-28 cursor-pointer"
                                             data-order-id="${row.id}"
                                             data-original-value=""
                                             placeholder="Set date"
-                                            readonly onclick="handleDeliveredDateClick(this)">`;
+                                            readonly onclick="handleCompletedDateClick(this)">`;
                             }
                         },
                         {
@@ -1791,6 +1847,17 @@
                                 // Check if order is completed
                                 if (row.status === 'delivered') {
                                     return '<span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-green-100 dark:bg-green-500/10 text-green-600 dark:text-green-400"><i class="fas fa-check"></i></span>';
+                                }
+                                if (row.status === 'completed') {
+                                    if (row.needs_value_distribution) {
+                                        const badge = `<span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400" title="Completed — value not distributed yet">
+                                                <i class="fas fa-triangle-exclamation"></i>
+                                            </span>`;
+                                        return valueDistributionUrl
+                                            ? `<a href="${valueDistributionUrl}" class="hover:opacity-80 transition-opacity">${badge}</a>`
+                                            : badge;
+                                    }
+                                    return '<span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-green-100 dark:bg-green-500/10 text-green-600 dark:text-green-400" title="Completed — value distributed"><i class="fas fa-check"></i></span>';
                                 }
                                 if (row.status === 'cancelled') {
                                     return '<span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400"><i class="fas fa-times"></i></span>';
@@ -1829,13 +1896,15 @@
                                 const stroke = progress >= 100 ? '#10b981' : '#6366f1';
                                 const documents = parseInt(row.documents_count) || 0;
                                 const documentsBadge = documents > 0 ?
-                                    `<a href="/orders/${row.id}" class="inline-flex items-center gap-0.5 text-[10px] font-semibold text-blue-500 dark:text-blue-400 hover:underline" title="${documents} document(s)">
+                                    `<a href="${urlTemplates.show}/${row.id}" class="inline-flex items-center gap-0.5 text-[10px] font-semibold text-blue-500 dark:text-blue-400 hover:underline" title="${documents} document(s)">
                                         <i class="fas fa-paperclip text-[9px]"></i>${documents}
                                      </a>` : '';
 
                                 return `
                                     <div class="flex items-center justify-center gap-1.5">
-                                        <div class="progress-ring" title="${progress}% complete">
+                                        <div class="progress-ring cursor-pointer" title="${progress}% complete — click to update"
+                                             data-order-id="${row.id}" data-progress="${progress}"
+                                             onclick="handleProgressClick(this)">
                                             <svg viewBox="0 0 36 36">
                                                 <circle class="progress-ring-track" cx="18" cy="18" r="15.5"></circle>
                                                 <circle class="progress-ring-value" cx="18" cy="18" r="15.5"
@@ -1875,17 +1944,17 @@
                         //         const bgClass = config ? config.color : 'bg-gray-100 text-gray-800';
 
                         //         return `
-                        //             <select class="inline-select px-2 py-1 rounded text-xs font-semibold border-0 cursor-pointer focus:ring-1 focus:ring-offset-1 focus:ring-purple-500 min-w-[70px] max-w-[80px] specialStatusDropdown ${bgClass}"
-                        //                     data-order-id="${row.id}"
-                        //                     data-field="special_status"
-                        //                     data-original-value="${currentStatus}"
-                        //                     onchange="handleQuickUpdate(this)">
-                        //                 <option value="" ${!data ? 'selected' : ''}> None</option>
-                        //                 <option value="selected_for_delivery" ${data === 'selected_for_delivery' ? 'selected' : ''}> Sel</option>
-                        //                 <option value="continue_for_next" ${data === 'continue_for_next' ? 'selected' : ''}> Cont</option>
-                        //                 <option value="stuck_order" ${data === 'stuck_order' ? 'selected' : ''}> Stuck</option>
-                        //             </select>
-                        //         `;
+                //             <select class="inline-select px-2 py-1 rounded text-xs font-semibold border-0 cursor-pointer focus:ring-1 focus:ring-offset-1 focus:ring-purple-500 min-w-[70px] max-w-[80px] specialStatusDropdown ${bgClass}"
+                //                     data-order-id="${row.id}"
+                //                     data-field="special_status"
+                //                     data-original-value="${currentStatus}"
+                //                     onchange="handleQuickUpdate(this)">
+                //                 <option value="" ${!data ? 'selected' : ''}> None</option>
+                //                 <option value="selected_for_delivery" ${data === 'selected_for_delivery' ? 'selected' : ''}> Sel</option>
+                //                 <option value="continue_for_next" ${data === 'continue_for_next' ? 'selected' : ''}> Cont</option>
+                //                 <option value="stuck_order" ${data === 'stuck_order' ? 'selected' : ''}> Stuck</option>
+                //             </select>
+                //         `;
                         //     }
                         // },
                         // Last Update Date Column - Temporarily disabled
@@ -1903,46 +1972,67 @@
                         //             const dbDate = row.last_update_date;
 
                         //             return `<input type="text"
-                        //                         class="last-update-date-input px-2 py-1 rounded-lg text-xs font-medium border border-purple-300 bg-purple-50 text-purple-700 whitespace-nowrap w-28 cursor-pointer"
-                        //                         value="${formattedDate}"
-                        //                         data-order-id="${row.id}"
-                        //                         data-original-value="${dbDate}"
-                        //                         data-current-value="${dbDate}"
-                        //                         title="${dbDate}"
-                        //                         readonly onclick="handleLastUpdateClick(this)">`;
+                //                         class="last-update-date-input px-2 py-1 rounded-lg text-xs font-medium border border-purple-300 bg-purple-50 text-purple-700 whitespace-nowrap w-28 cursor-pointer"
+                //                         value="${formattedDate}"
+                //                         data-order-id="${row.id}"
+                //                         data-original-value="${dbDate}"
+                //                         data-current-value="${dbDate}"
+                //                         title="${dbDate}"
+                //                         readonly onclick="handleLastUpdateClick(this)">`;
                         //         }
 
                         //         // No date set yet
                         //         return `<input type="text"
-                        //                     class="last-update-date-input px-2 py-1 rounded-lg text-xs font-medium border border-gray-300 bg-gray-50 text-gray-400 whitespace-nowrap w-28 cursor-pointer"
-                        //                     data-order-id="${row.id}"
-                        //                     data-original-value=""
-                        //                     placeholder="Set date"
-                        //                     readonly onclick="handleLastUpdateClick(this)">`;
+                //                     class="last-update-date-input px-2 py-1 rounded-lg text-xs font-medium border border-gray-300 bg-gray-50 text-gray-400 whitespace-nowrap w-28 cursor-pointer"
+                //                     data-order-id="${row.id}"
+                //                     data-original-value=""
+                //                     placeholder="Set date"
+                //                     readonly onclick="handleLastUpdateClick(this)">`;
                         //     }
                         // },
                         {
                             data: null,
                             orderable: false,
                             className: 'text-center',
-                            render: function(data) {
+                            render: function(data, type, row) {
                                 return `
-                        <div class="flex items-center justify-center gap-1">
-                            <a href="${urlTemplates.show}/${data.id}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-500/20 transition-all" title="View">
-                                <i class="fas fa-eye text-xs"></i>
-                            </a>
-                            <a href="${urlTemplates.edit}/${data.id}/edit" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-all" title="Edit">
-                                <i class="fas fa-edit text-xs"></i>
-                            </a>
-                            <button onclick="deleteOrder(${data.id})" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 transition-all" title="Delete">
-                                <i class="fas fa-trash text-xs"></i>
+                        <div class="relative inline-block">
+                            <button onclick="toggleActionMenu('action-menu-${row.id}')"
+                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 transition-all"
+                                    title="Actions">
+                                <i class="fas fa-ellipsis-v text-xs"></i>
                             </button>
+                            <div id="action-menu-${row.id}"
+                                 class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10">
+                                <div class="py-1">
+                                    <a href="${urlTemplates.show}/${row.id}"
+                                       class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                        <i class="fas fa-eye text-purple-500"></i>
+                                        View
+                                    </a>
+                                    <a href="${urlTemplates.edit}/${row.id}/edit"
+                                       class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                        <i class="fas fa-edit text-indigo-500"></i>
+                                        Edit
+                                    </a>
+                                    <button onclick="deleteOrder(${row.id})"
+                                            class="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
+                                        <i class="fas fa-trash"></i>
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     `;
                             }
                         }
                     ],
                     order: [],
+                    createdRow: function(row, data) {
+                        if (data.is_my_sale) {
+                            $(row).addClass('bg-indigo-50/60 dark:bg-indigo-500/5');
+                        }
+                    },
                     pageLength: 20,
                     lengthMenu: [
                         [20, 25, 50, -1],
@@ -2239,6 +2329,45 @@
             });
 
             // Delete order function
+            // Toggle action menu
+            function toggleActionMenu(menuId) {
+                toggleMenu(menuId);
+            }
+
+            // Toggle overdue action menu
+            function toggleOverdueActionMenu(menuId) {
+                toggleMenu(menuId);
+            }
+
+            // Generic menu toggle function
+            function toggleMenu(menuId) {
+                // Close all other menus first
+                const allMenus = document.querySelectorAll('[id^="action-menu-"], [id^="overdue-menu-"]');
+                allMenus.forEach(menu => {
+                    if (menu.id !== menuId) {
+                        menu.classList.add('hidden');
+                    }
+                });
+
+                // Toggle the current menu
+                const menu = document.getElementById(menuId);
+                if (menu) {
+                    menu.classList.toggle('hidden');
+                }
+            }
+
+
+            // Close menus when clicking outside
+            document.addEventListener('click', function(event) {
+                const isMenuButton = event.target.closest('[onclick^="toggleActionMenu"]');
+                const isMenuContent = event.target.closest('[id^="action-menu-"]');
+
+                if (!isMenuButton && !isMenuContent) {
+                    const allMenus = document.querySelectorAll('[id^="action-menu-"]');
+                    allMenus.forEach(menu => menu.classList.add('hidden'));
+                }
+            });
+
             function deleteOrder(id) {
                 Swal.fire({
                     title: 'Are you sure?',
@@ -2252,7 +2381,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         Swal.showLoading();
-                        axios.delete(`/orders/${id}`)
+                        axios.delete(ROUTES.destroy.replace('__ID__', id))
                             .then(response => {
                                 Swal.fire({
                                     title: 'Deleted!',
@@ -2294,6 +2423,7 @@
                     'pending': 'Pending',
                     'in-progress': 'In Progress',
                     'delivered': 'Delivered',
+                    'completed': 'Completed',
                     'on-hold': 'On Hold',
                     'cancelled': 'Cancelled',
                     'low': 'Low',
@@ -2321,7 +2451,7 @@
                         const formData = new FormData();
                         formData.append(field, newValue);
 
-                        axios.post(`/orders/${orderId}/quick-update`, formData)
+                        axios.post(ROUTES.quickUpdate.replace('__ID__', orderId), formData)
                             .then(response => {
                                 Swal.fire({
                                     title: 'Updated!',
@@ -2352,7 +2482,57 @@
                 });
             }
 
-            function handleDeliveredDateClick(inputElement) {
+            function handleProgressClick(element) {
+                const orderId = element.dataset.orderId;
+                const currentProgress = parseInt(element.dataset.progress) || 0;
+
+                Swal.fire({
+                    title: 'Update progress',
+                    input: 'range',
+                    inputLabel: 'Progress (%)',
+                    inputAttributes: {
+                        min: 0,
+                        max: 100,
+                        step: 5
+                    },
+                    inputValue: currentProgress,
+                    showCancelButton: true,
+                    confirmButtonColor: '#9333ea',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Yes, update!',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (!result.isConfirmed) {
+                        return;
+                    }
+
+                    Swal.showLoading();
+
+                    axios.post(ROUTES.quickUpdate.replace('__ID__', orderId), { progress: result.value })
+                        .then(response => {
+                            Swal.fire({
+                                title: 'Updated!',
+                                text: response.data.message || 'Progress updated successfully.',
+                                icon: 'success',
+                                confirmButtonColor: '#9333ea',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                $('#ordersTable').DataTable().ajax.reload();
+                            });
+                        })
+                        .catch(error => {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: error.response?.data?.message || 'Something went wrong.',
+                                icon: 'error',
+                                confirmButtonColor: '#dc2626'
+                            });
+                        });
+                });
+            }
+
+            function handleCompletedDateClick(inputElement) {
                 const orderId = inputElement.dataset.orderId;
                 const originalValue = inputElement.dataset.originalValue || '';
 
@@ -2377,8 +2557,8 @@
 
                         if (selectedDates.length > 0) {
                             Swal.fire({
-                                title: 'Update Delivered Date?',
-                                text: `Change delivered date to "${dateStr}"?`,
+                                title: 'Update Completed Date?',
+                                text: `Change completed date to "${dateStr}"?`,
                                 icon: 'question',
                                 showCancelButton: true,
                                 confirmButtonColor: '#9333ea',
@@ -2390,14 +2570,14 @@
                                     Swal.showLoading();
 
                                     const formData = new FormData();
-                                    formData.append('delivered_at', dateStr);
+                                    formData.append('completed_at', dateStr);
 
-                                    axios.post(`/orders/${orderId}/quick-update`, formData)
+                                    axios.post(ROUTES.quickUpdate.replace('__ID__', orderId), formData)
                                         .then(response => {
                                             Swal.fire({
                                                 title: 'Updated!',
                                                 text: response.data.message ||
-                                                    'Delivered date updated successfully.',
+                                                    'Completed date updated successfully.',
                                                 icon: 'success',
                                                 confirmButtonColor: '#9333ea',
                                                 timer: 1500,
@@ -2463,7 +2643,7 @@
                                     const formData = new FormData();
                                     formData.append('start_date', dateStr);
 
-                                    axios.post(`/orders/${orderId}/quick-update`, formData)
+                                    axios.post(ROUTES.quickUpdate.replace('__ID__', orderId), formData)
                                         .then(response => {
                                             Swal.fire({
                                                 title: 'Updated!',
@@ -2538,7 +2718,7 @@
                                         const formData = new FormData();
                                         formData.append('end_date', dateStr);
 
-                                        axios.post(`/orders/${orderId}/quick-update`, formData)
+                                        axios.post(ROUTES.quickUpdate.replace('__ID__', orderId), formData)
                                             .then(response => {
                                                 Swal.fire({
                                                     title: 'Updated!',
@@ -2611,7 +2791,7 @@
                                     const formData = new FormData();
                                     formData.append('last_update_date', dateStr);
 
-                                    axios.post(`/orders/${orderId}/quick-update`, formData)
+                                    axios.post(ROUTES.quickUpdate.replace('__ID__', orderId), formData)
                                         .then(response => {
                                             Swal.fire({
                                                 title: 'Updated!',
@@ -2661,7 +2841,7 @@
                 modal.classList.remove('hidden');
 
                 // Fetch current assigned users for this order
-                axios.get(`/orders/${orderId}/users`)
+                axios.get(ROUTES.users.replace('__ID__', orderId))
                     .then(response => {
                         modalSelectedUsers = response.data.users || [];
                         updateModalSelectedDisplay();
@@ -2699,7 +2879,7 @@
                         params.append('exclude', excludeIds.join(','));
                     }
 
-                    const response = await axios.get(`/orders/search-users?${params}`);
+                    const response = await axios.get(`${ROUTES.searchUsers}?${params}`);
                     modalCurrentUsers = response.data.users;
                     return modalCurrentUsers;
                 } catch (error) {
@@ -2711,7 +2891,8 @@
             function renderModalDropdown(users) {
                 const dropdown = document.getElementById('modalUserDropdown');
                 if (users.length === 0) {
-                    dropdown.innerHTML = '<div class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 text-center">No users found</div>';
+                    dropdown.innerHTML =
+                        '<div class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 text-center">No users found</div>';
                 } else {
                     dropdown.innerHTML = users.map(user => `
                         <div class="user-option flex items-center gap-3 p-3 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors"
@@ -2847,7 +3028,7 @@
                             formData.append('users[]', id);
                         });
 
-                        axios.post(`/orders/${currentOrderId}/assign-users`, formData)
+                        axios.post(ROUTES.assignUsers.replace('__ID__', currentOrderId), formData)
                             .then(response => {
                                 Swal.fire({
                                     title: 'Updated!',
@@ -2999,7 +3180,7 @@
                             'Users',
                             'Start Date',
                             'End Date',
-                            'Delivered At',
+                            'Completed At',
                             'Progress (%)',
                             'Documents'
                         ];
@@ -3019,7 +3200,7 @@
                                 `"${(order.users_names || '').replace(/"/g, '""')}"`,
                                 `"${order.start_date || ''}"`,
                                 `"${order.end_date || ''}"`,
-                                `"${order.delivered_at || ''}"`,
+                                `"${order.completed_at || ''}"`,
                                 `"${order.progress ?? 0}"`,
                                 `"${order.documents_count ?? 0}"`
                             ];

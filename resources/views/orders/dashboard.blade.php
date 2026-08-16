@@ -111,36 +111,16 @@
             </div>
         @endif
 
-        <!-- Month Filter -->
-        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-100 dark:border-gray-800 p-4 mb-6">
-            <form method="GET" action="{{ route('orders.dashboard') }}" class="flex flex-wrap items-center gap-4">
-                <div class="flex items-center gap-2">
-                    <i class="fas fa-calendar-alt text-indigo-500"></i>
-                    <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Select Month:</span>
-                </div>
-                <div class="relative">
-                    <select name="month" id="monthFilter"
-                            class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm font-medium min-w-[200px]">
-                        @foreach($availableMonths as $value => $label)
-                            <option value="{{ $value }}" {{ $selectedMonth === $value ? 'selected' : '' }}>
-                                {{ $label }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <button type="submit"
-                        class="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg font-semibold transition-all shadow-md hover:shadow-lg">
-                    <i class="fas fa-sync-alt mr-2"></i>
-                    Update Dashboard
-                </button>
-                @if($selectedMonth !== now()->format('Y-m'))
-                    <a href="{{ route('orders.dashboard', ['month' => now()->format('Y-m')]) }}"
-                       class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-semibold transition-all">
-                        <i class="fas fa-redo mr-1"></i>
-                        Back to Current
-                    </a>
-                @endif
-            </form>
+        <!-- Selected Month -->
+        {{-- Chosen once from the header picker and shared by every dashboard;
+             this just reports which month is active, it doesn't set it. --}}
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-100 dark:border-gray-800 p-4 mb-6 flex items-center gap-3">
+            <i class="fas fa-calendar-alt text-indigo-500"></i>
+            <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Showing data for</span>
+            <span class="px-3 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 text-sm font-bold">
+                {{ $availableMonths[$selectedMonth] ?? $selectedMonth }}
+            </span>
+            <span class="text-xs text-gray-400 dark:text-gray-500">— change it from the month picker in the header</span>
         </div>
 
         <!-- Stats Cards -->
@@ -223,7 +203,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-gray-600 dark:text-gray-400 text-sm font-medium mb-1">Delivered</p>
-                        <p class="text-3xl font-bold text-green-600 dark:text-green-400">{{ $stats['deliveredOrders'] }}</p>
+                        <p class="text-3xl font-bold text-green-600 dark:text-green-400 dash-num">{{ $stats['deliveredOrders'] }}</p>
                     </div>
                     <div class="bg-green-100 dark:bg-green-500/10 p-3 rounded-xl">
                         <i class="fas fa-check-circle text-green-600 dark:text-green-400 text-2xl"></i>
@@ -236,7 +216,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-gray-600 dark:text-gray-400 text-sm font-medium mb-1">Overdue</p>
-                        <p class="text-3xl font-bold text-red-600 dark:text-red-400">{{ $stats['overdueOrders'] }}</p>
+                        <p class="text-3xl font-bold text-red-600 dark:text-red-400 dash-num">{{ $stats['overdueOrders'] }}</p>
                     </div>
                     <div class="bg-red-100 dark:bg-red-500/10 p-3 rounded-xl">
                         <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-2xl"></i>
@@ -249,7 +229,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-gray-600 dark:text-gray-400 text-sm font-medium mb-1">Completion Rate</p>
-                        <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                        <p class="text-3xl font-bold text-blue-600 dark:text-blue-400 dash-num">
                             @php
                                 $rate =
                                     $stats['totalOrders'] > 0

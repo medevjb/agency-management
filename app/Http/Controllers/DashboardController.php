@@ -7,7 +7,7 @@ use App\Models\OrderSalesShare;
 use App\Models\SalesTarget;
 use App\Models\Team;
 use App\Models\User;
-use Carbon\Carbon;
+use App\Support\GlobalMonth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -28,49 +28,26 @@ class DashboardController extends Controller
             return redirect()->route('orders.dashboard');
         }
 
-        $selectedMonth = $request->input('month', now()->format('Y-m'));
-        $monthDate = Carbon::createFromFormat('Y-m', $selectedMonth);
-        $startDate = $monthDate->copy()->startOfMonth()->startOfDay();
-        $endDate = $monthDate->copy()->endOfMonth()->endOfDay();
-
-        // Generate list of available months (last 12 months + current)
-        $availableMonths = collect();
-        for ($i = 0; $i < 12; $i++) {
-            $date = now()->subMonths($i);
-            $availableMonths->put($date->format('Y-m'), $date->format('F Y'));
-        }
+        $monthDate = GlobalMonth::current();
+        $selectedMonth = GlobalMonth::key();
+        $availableMonths = GlobalMonth::available();
+        [$startDate, $endDate] = GlobalMonth::periodFor($monthDate);
 
         // Finished statuses: 'delivered' auto-sets delivered_at; 'completed' is set via bulk action.
         $finishedStatuses = ['delivered', 'completed'];
 
-        // Carry-forward logic: an order is visible in month M if:
-        // - It started on or before the last day of M
-        // - AND it was not finished before M began
-        $carryForwardFilter = function ($q) use ($startDate, $endDate, $finishedStatuses) {
-            $q->where('start_date', '<=', $endDate)
-                ->where(function ($inner) use ($startDate, $finishedStatuses) {
-                    // Active (not delivered/completed/cancelled)
-                    $inner->whereNotIn('status', array_merge($finishedStatuses, ['cancelled']))
-                        // OR finished in or after this month started
-                        ->orWhere(function ($done) use ($startDate, $finishedStatuses) {
-                            $done->whereIn('status', $finishedStatuses)
-                                ->where(function ($dt) use ($startDate) {
-                                    $dt->whereNull('delivered_at')
-                                        ->orWhere('delivered_at', '>=', $startDate);
-                                });
-                        });
-                });
-        };
+        // The month's carry-forward order set and the delivered set drive most
+        // of the page's numbers. They change only when orders change, so the
+        // two queries are cached per selected month and the PHP derivation
+        // below stays cheap.
+        $orders = $this->remember('dashboard.orders.'.$selectedMonth, fn () => Order::with(['team', 'techStack', 'creator'])
+            ->inMonth($startDate, $endDate, $finishedStatuses)
+            ->get());
 
-        $orders = Order::with(['team', 'techStack', 'creator'])
-            ->where($carryForwardFilter)
-            ->get();
-
-        // Delivered this month = delivered/completed AND delivered_at within selected month
-        $deliveredOrders = Order::whereIn('status', $finishedStatuses)
+        $deliveredOrders = $this->remember('dashboard.delivered.'.$selectedMonth, fn () => Order::whereIn('status', $finishedStatuses)
             ->whereNotNull('delivered_at')
             ->whereBetween('delivered_at', [$startDate, $endDate])
-            ->get();
+            ->get());
 
         // Workload = active (pending/in-progress/on-hold) orders in this month
         $workloadOrders = $orders->whereIn('status', ['pending', 'in-progress', 'on-hold']);
@@ -157,7 +134,7 @@ class DashboardController extends Controller
 
         // Recent workload orders (active in this month, carry-forward)
         $recentWorkload = Order::with(['team', 'techStack', 'creator'])
-            ->where($carryForwardFilter)
+            ->inMonth($startDate, $endDate, $finishedStatuses)
             ->whereIn('status', ['pending', 'in-progress', 'on-hold'])
             ->orderBy('start_date', 'desc')
             ->take(6)
@@ -209,8 +186,7 @@ class DashboardController extends Controller
 
         // Previous month comparison
         $previousMonth = $monthDate->copy()->subMonth();
-        $prevStartDate = $previousMonth->copy()->startOfMonth()->startOfDay();
-        $prevEndDate = $previousMonth->copy()->endOfMonth()->endOfDay();
+        [$prevStartDate, $prevEndDate] = GlobalMonth::periodFor($previousMonth);
 
         $previousStats = [
             'revenue' => Order::whereIn('status', ['delivered', 'completed'])
@@ -236,61 +212,68 @@ class DashboardController extends Controller
         // ---- Sales ----
         // Half of this page is the sales side: what was sold this month, how it
         // tracks against the targets in force, and who is bringing it in.
-        $salesUserIds = User::withRoleName(['sales-leader', 'sales-member'])->pluck('id')->all();
+        [$sharesThisMonth, $previousShares, $salesTargets, $salesStats, $leaderboard] = $this->remember(
+            'dashboard.sales.'.$selectedMonth,
+            function () use ($startDate, $endDate, $prevStartDate, $prevEndDate, $monthDate) {
+                $salesUserIds = User::withRoleName(['sales-leader', 'sales-member'])->pluck('id')->all();
 
-        // Credit, not order value: an order split between two sellers counts
-        // once in total and once per person, at their own share.
-        $sharesThisMonth = OrderSalesShare::with('user')
-            ->whereHas('order', fn ($order) => $order->whereBetween('created_at', [$startDate, $endDate]))
-            ->get();
+                // Credit, not order value: an order split between two sellers counts
+                // once in total and once per person, at their own share.
+                $sharesThisMonth = OrderSalesShare::with('user')
+                    ->whereHas('order', fn ($order) => $order->whereBetween('created_at', [$startDate, $endDate]))
+                    ->get();
 
-        $previousShares = OrderSalesShare::whereHas('order', fn ($order) => $order->whereBetween('created_at', [$prevStartDate, $prevEndDate]))
-            ->get();
+                $previousShares = OrderSalesShare::whereHas('order', fn ($order) => $order->whereBetween('created_at', [$prevStartDate, $prevEndDate]))
+                    ->get();
 
-        $salesTargets = SalesTarget::amountsFor($salesUserIds, $monthDate);
-        $soldAmount = (float) $sharesThisMonth->sum('amount');
-        $previousSold = (float) $previousShares->sum('amount');
-        $targetTotal = (float) $salesTargets->sum();
-        $ordersSold = $sharesThisMonth->pluck('order_id')->unique()->count();
+                $salesTargets = SalesTarget::amountsFor($salesUserIds, $monthDate);
+                $soldAmount = (float) $sharesThisMonth->sum('amount');
+                $previousSold = (float) $previousShares->sum('amount');
+                $targetTotal = (float) $salesTargets->sum();
+                $ordersSold = $sharesThisMonth->pluck('order_id')->unique()->count();
 
-        $salesStats = [
-            'sold' => $soldAmount,
-            'count' => $ordersSold,
-            'averageDeal' => $ordersSold ? $soldAmount / $ordersSold : 0.0,
-            'target' => $targetTotal,
-            'achievement' => $targetTotal > 0 ? (int) round($soldAmount / $targetTotal * 100) : null,
-            'remaining' => max(0, $targetTotal - $soldAmount),
-            'change' => $previousSold > 0 ? round((($soldAmount - $previousSold) / $previousSold) * 100, 1) : null,
-            'previousSold' => $previousSold,
-            'sellers' => count($salesUserIds),
-            'inDelivery' => (float) OrderSalesShare::whereHas('order', fn ($order) => $order
-                ->whereNotIn('status', ['delivered', 'completed', 'cancelled']))
-                ->sum('amount'),
-        ];
-
-        $leaderboard = $sharesThisMonth
-            ->groupBy('user_id')
-            ->map(function ($shares) use ($salesTargets) {
-                $seller = $shares->first()->user;
-                $amount = (float) $shares->sum('amount');
-                $target = (float) ($salesTargets[$seller?->id] ?? 0);
-
-                return [
-                    'id' => $seller?->id,
-                    'name' => $seller?->name ?? 'Removed user',
-                    'is_leader' => (bool) $seller?->isSalesLeader(),
-                    'amount' => $amount,
-                    'count' => $shares->pluck('order_id')->unique()->count(),
-                    'target' => $target,
-                    'achievement' => $target > 0 ? (int) round($amount / $target * 100) : null,
+                $salesStats = [
+                    'sold' => $soldAmount,
+                    'count' => $ordersSold,
+                    'averageDeal' => $ordersSold ? $soldAmount / $ordersSold : 0.0,
+                    'target' => $targetTotal,
+                    'achievement' => $targetTotal > 0 ? (int) round($soldAmount / $targetTotal * 100) : null,
+                    'remaining' => max(0, $targetTotal - $soldAmount),
+                    'change' => $previousSold > 0 ? round((($soldAmount - $previousSold) / $previousSold) * 100, 1) : null,
+                    'previousSold' => $previousSold,
+                    'sellers' => count($salesUserIds),
+                    'inDelivery' => (float) OrderSalesShare::whereHas('order', fn ($order) => $order
+                        ->whereNotIn('status', ['delivered', 'completed', 'cancelled']))
+                        ->sum('amount'),
                 ];
-            })
-            // A leaderboard of people who sold nothing is just noise; the full
-            // roster lives on the sales dashboard.
-            ->filter(fn (array $seller) => $seller['amount'] > 0)
-            ->sortByDesc('amount')
-            ->values()
-            ->take(6);
+
+                $leaderboard = $sharesThisMonth
+                    ->groupBy('user_id')
+                    ->map(function ($shares) use ($salesTargets) {
+                        $seller = $shares->first()->user;
+                        $amount = (float) $shares->sum('amount');
+                        $target = (float) ($salesTargets[$seller?->id] ?? 0);
+
+                        return [
+                            'id' => $seller?->id,
+                            'name' => $seller?->name ?? 'Removed user',
+                            'is_leader' => (bool) $seller?->isSalesLeader(),
+                            'amount' => $amount,
+                            'count' => $shares->pluck('order_id')->unique()->count(),
+                            'target' => $target,
+                            'achievement' => $target > 0 ? (int) round($amount / $target * 100) : null,
+                        ];
+                    })
+                    // A leaderboard of people who sold nothing is just noise; the full
+                    // roster lives on the sales dashboard.
+                    ->filter(fn (array $seller) => $seller['amount'] > 0)
+                    ->sortByDesc('amount')
+                    ->values()
+                    ->take(6);
+
+                return [$sharesThisMonth, $previousShares, $salesTargets, $salesStats, $leaderboard];
+            }
+        );
 
         return view('dashboard', compact(
             'stats',

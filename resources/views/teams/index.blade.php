@@ -255,6 +255,10 @@
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+const ROUTES = {
+    destroy: @js(route('teams.destroy', ['id' => '__ID__'])),
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     const $ = window.jQuery;
 
@@ -266,6 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let teamsData = [];
     let filteredData = [];
     let allLeaders = [];
+    const canManage = @json($canManage);
 
     // Load initial data
     loadTeams();
@@ -496,6 +501,7 @@ document.addEventListener('DOMContentLoaded', function() {
                            title="View Team Details">
                             <i class="fas fa-eye text-sm group-hover:scale-110 transition-transform"></i>
                         </a>
+                        ${canManage ? `
                         <a href="/teams/${teamId}/edit"
                            class="group inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r from-emerald-100 to-emerald-200 dark:from-emerald-500/10 dark:to-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:from-emerald-200 hover:to-emerald-300 dark:hover:from-emerald-500/20 dark:hover:to-emerald-500/20 transition-all duration-200 hover:scale-110 shadow-sm"
                            title="Edit Team">
@@ -506,6 +512,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 title="Delete Team">
                             <i class="fas fa-trash text-sm group-hover:scale-110 transition-transform"></i>
                         </button>
+                        ` : ''}
                     </div>
                 </td>
             </tr>
@@ -640,7 +647,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showLoaderOnConfirm: true
         }).then((result) => {
             if (result.isConfirmed) {
-                axios.delete('/teams/' + teamId)
+                axios.delete(ROUTES.destroy.replace('__ID__', teamId))
                     .then(response => {
                         if (response.data.success) {
                             Swal.fire({

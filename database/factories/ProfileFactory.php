@@ -28,7 +28,7 @@ class ProfileFactory extends Factory
         return [
             'user_id' => null,
             'profile_name' => fake()->name(),
-            'username' => fake()->unique()->userName(),
+            'username' => fake()->unique()->regexify('[a-zA-Z0-9_]{5,15}'),
             'platform' => fake()->randomElement(['fiverr', 'upwork']),
             'avatar' => null,
             'bio' => fake()->paragraphs(2, true),
