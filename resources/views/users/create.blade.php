@@ -400,32 +400,33 @@
                                         </p>
                                     @enderror
                                 </div>
+                            </div>
 
-                                <div>
-                                    <label for="sales_target" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-                                        <i class="fas fa-bullseye mr-2 text-indigo-500 dark:text-indigo-400 text-sm"></i>
-                                        Monthly Sales Target
-                                    </label>
-                                    <div class="flex gap-2">
-                                        <div class="relative flex-1">
-                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
-                                            <input type="number" step="0.01" min="0" name="sales_target" id="sales_target"
-                                                   value="{{ old('sales_target') }}"
-                                                   class="w-full pl-7 pr-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
-                                                   placeholder="0.00">
-                                        </div>
-                                        <input type="month" name="sales_target_month"
-                                               value="{{ old('sales_target_month', now()->format('Y-m')) }}"
-                                               class="w-40 px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm">
+                            <div class="mt-6 max-w-md" data-target-field>
+                                <label for="sales_target" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                                    <i class="fas fa-bullseye mr-2 text-indigo-500 dark:text-indigo-400 text-sm"></i>
+                                    Monthly Minimum Target
+                                </label>
+                                <div class="flex gap-2">
+                                    <div class="relative flex-1">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                        <input type="number" step="0.01" min="0" name="sales_target" id="sales_target"
+                                               value="{{ old('sales_target') }}"
+                                               class="w-full pl-8 pr-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
+                                               placeholder="0.00">
                                     </div>
-                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">The minimum this person should sell from that month on — it carries forward until changed.</p>
-                                    @error('sales_target')
-                                        <p class="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center font-medium">
-                                            <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>{{ $message }}
-                                        </p>
-                                    @enderror
+                                    <input type="month" name="sales_target_month"
+                                           value="{{ old('sales_target_month', now()->format('Y-m')) }}"
+                                           class="w-40 px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm">
                                 </div>
-
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400" data-target-hint>
+                                    Optional. The minimum this person should sell or be credited from that month on — it carries forward until changed.
+                                </p>
+                                @error('sales_target')
+                                    <p class="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center font-medium">
+                                        <i class="fas fa-exclamation-circle mr-1.5 text-xs"></i>{{ $message }}
+                                    </p>
+                                @enderror
                             </div>
                         </div>
 
@@ -955,8 +956,16 @@
             return document.querySelector('input[name="track"]:checked')?.value ?? 'operation';
         }
 
+        const targetHint = document.querySelector('[data-target-hint]');
+
         function applyTrack() {
             const track = currentTrack();
+
+            if (targetHint) {
+                targetHint.textContent = track === 'sales'
+                    ? 'Optional. The minimum this person should sell from that month on — it carries forward until changed.'
+                    : 'Optional. The minimum net value this person should be credited from that month on — it carries forward until changed.';
+            }
 
             panels.forEach(panel => {
                 const isActive = panel.dataset.trackPanel === track;
@@ -1143,6 +1152,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize first step and active status
     goToStep(1);
     toggleActiveStatus();
+
+    // Enter inside any field only submits on the last step — otherwise it
+    // would fire the browser's default "submit nearest form" behavior even
+    // though the actual Submit button lives on a step the user hasn't seen.
+    const wizardForm = document.getElementById('createUserForm');
+    wizardForm?.addEventListener('keydown', function(event) {
+        if (event.key !== 'Enter' || event.target.tagName === 'TEXTAREA') {
+            return;
+        }
+
+        if (currentWizardStep < 4) {
+            event.preventDefault();
+        }
+    });
 });
 
 // Toggle active status visual feedback
@@ -1163,8 +1186,11 @@ function toggleActiveStatus() {
     }
 }
 
+let currentWizardStep = 1;
+
 function goToStep(stepNumber) {
     console.log('Going to step:', stepNumber);
+    currentWizardStep = stepNumber;
 
     // Hide all steps and reset step indicators
     for (let i = 1; i <= 4; i++) {
@@ -1568,7 +1594,7 @@ function submitUserForm() {
 
             // Redirect after showing success message
             setTimeout(() => {
-                window.location.href = data.redirect || '/users';
+                window.location.href = data.redirect || @js(route('users.index'));
             }, 2000);
         } else {
             showToast(data.message || 'Failed to create user', 'error');

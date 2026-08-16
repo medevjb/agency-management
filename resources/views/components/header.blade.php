@@ -16,6 +16,39 @@
 
             <!-- Right side items -->
             <div class="flex items-center space-x-4">
+                <!-- Global Month Picker -->
+                @isset($globalSelectedMonth)
+                    <div class="relative month-picker" x-data="{ open: false }">
+                        <button @click="open = !open" @click.away="open = false" type="button"
+                                class="month-picker-trigger" aria-haspopup="true" :aria-expanded="open">
+                            <i class="fas fa-calendar-days"></i>
+                            <span>{{ $globalAvailableMonths[$globalSelectedMonth] ?? $globalSelectedMonth }}</span>
+                            <i class="fas fa-chevron-down month-picker-chevron" :class="{ 'is-open': open }"></i>
+                        </button>
+
+                        <div x-show="open" x-transition x-cloak @click.away="open = false"
+                             class="month-picker-panel">
+                            <p class="month-picker-heading">Viewing data for</p>
+                            <div class="month-picker-list">
+                                @foreach($globalAvailableMonths as $value => $label)
+                                    <form method="POST" action="{{ route('selected-month.update') }}">
+                                        @csrf
+                                        <input type="hidden" name="month" value="{{ $value }}">
+                                        <button type="submit"
+                                                class="month-picker-option {{ $value === $globalSelectedMonth ? 'is-active' : '' }}">
+                                            {{ $label }}
+                                            @if($value === $globalSelectedMonth)
+                                                <i class="fas fa-check"></i>
+                                            @endif
+                                        </button>
+                                    </form>
+                                @endforeach
+                            </div>
+                            <p class="month-picker-footnote">Applies to every dashboard until you change it again.</p>
+                        </div>
+                    </div>
+                @endisset
+
                 <!-- Theme Toggle -->
                 <button id="themeToggle" type="button" title="Toggle dark mode" aria-label="Toggle dark mode"
                         class="inline-flex items-center justify-center w-9 h-9 rounded-full text-gray-500 dark:text-amber-300 hover:text-indigo-600 dark:hover:text-amber-200 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/40">

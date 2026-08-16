@@ -169,7 +169,7 @@ document.getElementById('bulkImportForm').addEventListener('submit', function(e)
     submitButton.disabled = true;
     submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i>Importing...';
 
-    axios.post('/users/bulk-import', formData, {
+    axios.post(@js(route('users.bulk-import.store')), formData, {
         headers: {
             'Content-Type': 'multipart/form-data'
         }
@@ -181,7 +181,7 @@ document.getElementById('bulkImportForm').addEventListener('submit', function(e)
             if (data.errors.length === 0 && data.duplicates.length === 0) {
                 // Redirect to users list after successful import
                 setTimeout(() => {
-                    window.location.href = '/users';
+                    window.location.href = @js(route('users.index'));
                 }, 3000);
             }
         } else {

@@ -185,6 +185,12 @@
 </div>
 
 <script>
+const ROUTES = {
+    assignUser: @js(route('admin.roles.assignUser', ['roleName' => $role->name, 'user' => '__UID__'])),
+    removeUser: @js(route('admin.roles.removeUser', ['roleName' => $role->name, 'user' => '__UID__'])),
+    delete: @js(route('admin.roles.delete', ['roleName' => '__NAME__'])),
+};
+
 // Set CSRF token for Axios
 axios.defaults.headers.common['X-CSRF-TOKEN'] = '{{ csrf_token() }}';
 
@@ -210,7 +216,7 @@ function addUserToRole() {
         return;
     }
 
-    axios.post(`/admin/roles/{{ $role->name }}/users/${userId}`)
+    axios.post(ROUTES.assignUser.replace('__UID__', userId))
         .then(response => {
             Swal.fire({
                 icon: 'success',
@@ -243,7 +249,7 @@ function removeUserFromRole(userId, userName) {
         cancelButtonText: 'Cancel'
     }).then((result) => {
         if (result.isConfirmed) {
-            axios.delete(`/admin/roles/{{ $role->name }}/users/${userId}`)
+            axios.delete(ROUTES.removeUser.replace('__UID__', userId))
                 .then(response => {
                     Swal.fire({
                         icon: 'success',
@@ -280,7 +286,7 @@ function deleteRole(roleName) {
         if (result.isConfirmed) {
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = `/admin/roles/${roleName}`;
+            form.action = ROUTES.delete.replace('__NAME__', roleName);
             form.style.display = 'none';
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');

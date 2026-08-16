@@ -324,6 +324,11 @@
 @endsection
 @push('scripts')
 <script>
+const ROUTES = {
+    destroy: @js(route('users.destroy', ['user' => '__ID__'])),
+    index: @js(route('users.index')),
+};
+
 function deleteUser(userId, userName) {
     Swal.fire({
         title: 'Delete User?',
@@ -336,7 +341,7 @@ function deleteUser(userId, userName) {
         cancelButtonText: 'Cancel'
     }).then((result) => {
         if (result.isConfirmed) {
-            axios.delete('/users/' + userId, {
+            axios.delete(ROUTES.destroy.replace('__ID__', userId), {
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 }
@@ -348,7 +353,7 @@ function deleteUser(userId, userName) {
                         response.data.message,
                         'success'
                     ).then(() => {
-                        window.location.href = '/users';
+                        window.location.href = ROUTES.index;
                     });
                 } else {
                     Swal.fire(

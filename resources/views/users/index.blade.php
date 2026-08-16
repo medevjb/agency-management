@@ -637,42 +637,19 @@
 
     @push('scripts')
         <script>
-            // Simple DataTables initialization with jQuery from CDN
+            const ROUTES = {
+                destroy: @js(route('users.destroy', ['user' => '__ID__'])),
+                toggleStatus: @js(route('users.toggle-status', ['user' => '__ID__'])),
+                bulkOperation: @js(route('users.bulk-operation')),
+                export: @js(route('users.export')),
+            };
+
+            // DataTables initialization (jQuery + DataTables are bundled via Vite)
             document.addEventListener('DOMContentLoaded', function() {
                 console.log('🚀 Initializing users DataTable...');
 
-                // Check if jQuery is loaded, if not load from CDN
-                if (typeof $ === 'undefined') {
-                    console.log('Loading jQuery from CDN...');
-                    const script = document.createElement('script');
-                    script.src = 'https://code.jquery.com/jquery-3.6.0.min.js';
-                    script.onload = initializeDataTable;
-                    document.head.appendChild(script);
-                } else {
-                    initializeDataTable();
-                }
+                createDataTable();
             });
-
-            function initializeDataTable() {
-                // Load DataTables CSS if not already loaded
-                if (!document.querySelector('link[href*="dataTables"]')) {
-                    const link = document.createElement('link');
-                    link.rel = 'stylesheet';
-                    link.href = 'https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css';
-                    document.head.appendChild(link);
-                }
-
-                // Load DataTables JS if not available
-                if (typeof $.fn.DataTable === 'undefined') {
-                    console.log('Loading DataTables from CDN...');
-                    const script = document.createElement('script');
-                    script.src = 'https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js';
-                    script.onload = createDataTable;
-                    document.head.appendChild(script);
-                } else {
-                    createDataTable();
-                }
-            }
 
             function createDataTable() {
                 console.log('Creating DataTable...');
@@ -868,7 +845,7 @@
                                 cancelButtonText: 'Cancel'
                             }).then((result) => {
                                 if (result.isConfirmed) {
-                                    axios.post(`/users/${userId}/toggle-status`)
+                                    axios.post(ROUTES.toggleStatus.replace('__ID__', userId))
                                         .then(response => {
                                             if (response.data.success) {
                                                 Swal.fire({
@@ -1005,7 +982,7 @@
                     cancelButtonText: 'Cancel'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        axios.delete('/users/' + userId, {
+                        axios.delete(ROUTES.destroy.replace('__ID__', userId), {
                             headers: {
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                             }
@@ -1057,7 +1034,7 @@
                     cancelButtonText: 'Cancel'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        axios.post('/users/' + userId + '/toggle-status', {}, {
+                        axios.post(ROUTES.toggleStatus.replace('__ID__', userId), {}, {
                             headers: {
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                             }
@@ -1139,7 +1116,7 @@
                         data.team_id = team;
                     }
 
-                    axios.post('/users/bulk-operation', data, {
+                    axios.post(ROUTES.bulkOperation, data, {
                         headers: {
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         }
@@ -1204,7 +1181,7 @@
                     cancelButtonText: 'Cancel'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        axios.post('/users/bulk-operation', {
+                        axios.post(ROUTES.bulkOperation, {
                             user_ids: selectedUsers,
                             operation: 'delete'
                         }, {
@@ -1254,8 +1231,8 @@
                 });
 
                 const url = selectedUsers.length > 0
-                    ? '/users/export?user_ids=' + selectedUsers.join(',')
-                    : '/users/export';
+                    ? ROUTES.export + '?user_ids=' + selectedUsers.join(',')
+                    : ROUTES.export;
 
                 window.open(url, '_blank');
             }

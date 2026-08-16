@@ -22,7 +22,9 @@ class TeamController extends Controller
     {
         $this->authorize('viewAny', Team::class);
 
-        return view('teams.index');
+        $canManage = auth()->user()->hasRole(['admin', 'operation-manager', 'project-manager']);
+
+        return view('teams.index', compact('canManage'));
     }
 
     /**
@@ -34,7 +36,7 @@ class TeamController extends Controller
 
         $user = auth()->user();
 
-        $query = Team::with(['teamLeader', 'members', 'projects'])
+        $query = Team::with(['teamLeader', 'members', 'orders'])
             ->when(! $user->hasRole(['admin', 'operation-manager', 'project-manager']), function ($q) use ($user) {
                 // Team leaders, stack leaders, and team members only see their own team
                 $q->where('id', $user->team_id);
@@ -57,8 +59,8 @@ class TeamController extends Controller
                 return $count.' '.$activeCount.' active';
             })
             ->addColumn('projects_count', function ($team) {
-                $count = $team->projects->count();
-                $activeCount = $team->projects->whereIn('status', ['planning', 'in-progress'])->count();
+                $count = $team->orders->count();
+                $activeCount = $team->orders->whereIn('status', ['planning', 'in-progress'])->count();
 
                 return $count.' '.$activeCount.' active';
             })
@@ -118,9 +120,7 @@ class TeamController extends Controller
 
         // Add team members
         if (! empty($validated['members'])) {
-            foreach ($validated['members'] as $memberId) {
-                User::where('id', $memberId)->update(['team_id' => $team->id]);
-            }
+            User::whereIn('id', $validated['members'])->update(['team_id' => $team->id]);
         }
 
         if ($request->ajax() || $request->wantsJson()) {
@@ -140,7 +140,7 @@ class TeamController extends Controller
      */
     public function show(string $id)
     {
-        $team = Team::with(['teamLeader', 'members', 'projects'])->findOrFail($id);
+        $team = Team::with(['teamLeader', 'members', 'orders'])->findOrFail($id);
 
         $this->authorize('view', $team);
 
@@ -217,9 +217,7 @@ class TeamController extends Controller
 
         // Add selected members
         if (! empty($validated['members'])) {
-            foreach ($validated['members'] as $memberId) {
-                User::where('id', $memberId)->update(['team_id' => $team->id]);
-            }
+            User::whereIn('id', $validated['members'])->update(['team_id' => $team->id]);
         }
 
         if ($request->ajax() || $request->wantsJson()) {
@@ -244,7 +242,7 @@ class TeamController extends Controller
         $this->authorize('delete', $team);
 
         // Check if team has active projects
-        $activeProjects = $team->projects()->whereIn('status', ['planning', 'in-progress'])->count();
+        $activeProjects = $team->orders()->whereIn('status', ['planning', 'in-progress'])->count();
         if ($activeProjects > 0) {
             return response()->json([
                 'success' => false,
@@ -277,9 +275,7 @@ class TeamController extends Controller
             'members.*' => 'exists:users,id',
         ]);
 
-        foreach ($validated['members'] as $memberId) {
-            User::where('id', $memberId)->update(['team_id' => $team->id]);
-        }
+        User::whereIn('id', $validated['members'])->update(['team_id' => $team->id]);
 
         return redirect()->route('teams.show', $team->id)
             ->with('success', 'Members added to team successfully.');

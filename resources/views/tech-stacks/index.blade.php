@@ -145,7 +145,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-500/10 text-orange-800 dark:text-orange-400 shadow-sm">
                                     <i class="fas fa-folder-open mr-1"></i>
-                                    {{ $techStack->projects->count() }}
+                                    {{ $techStack->orders->count() }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
@@ -262,6 +262,10 @@
 
 @push('scripts')
     <script>
+        const ROUTES = {
+            destroy: @js(route('tech-stacks.destroy', ['id' => '__ID__'])),
+        };
+
         function deleteTechStack(techStackId) {
             Swal.fire({
                 title: 'Delete Tech Stack?',
@@ -275,7 +279,7 @@
                 reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {
-                    axios.delete('/tech-stacks/' + techStackId, {
+                    axios.delete(ROUTES.destroy.replace('__ID__', techStackId), {
                         headers: {
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         }

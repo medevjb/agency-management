@@ -10,12 +10,15 @@ use App\Http\Controllers\OrderDashboardController;
 use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SalesDashboardController;
+use App\Http\Controllers\SalesLeadershipController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\SelectedMonthController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TechStackController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ValueDistributionController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -29,6 +32,8 @@ Route::get('/', function () {
 Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth'])->group(function () {
+    Route::post('/selected-month', [SelectedMonthController::class, 'update'])->name('selected-month.update');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -43,6 +48,15 @@ Route::middleware(['auth'])->group(function () {
     // Orders routes
     // Sales
     Route::get('/sales/dashboard', [SalesDashboardController::class, 'index'])->name('sales.dashboard');
+    Route::get('/sales/dashboard/preview', [SalesDashboardController::class, 'memberPreview'])->name('sales.dashboard.preview');
+    Route::get('/sales/leadership', [SalesLeadershipController::class, 'index'])->name('sales.leadership');
+
+    // Value distribution — net order value, credited to whoever delivered it,
+    // once the order is completed. Restricted to operations roles only.
+    Route::middleware(['can:accessValueDistribution'])->group(function () {
+        Route::get('/value-distribution', [ValueDistributionController::class, 'index'])->name('value-distribution.index');
+        Route::post('/value-distribution/{order}', [ValueDistributionController::class, 'store'])->name('value-distribution.store');
+    });
 
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/dashboard', [OrderDashboardController::class, 'index'])->name('orders.dashboard');
@@ -51,6 +65,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/orders/bulk-action', [OrderController::class, 'bulkAction'])->name('orders.bulk-action');
     Route::get('/orders/search-members', [OrderController::class, 'searchMembers'])->name('orders.search-members');
     Route::get('/orders/search-users', [OrderController::class, 'searchUsers'])->name('orders.search-users');
+    Route::get('/orders/search-clients', [OrderController::class, 'searchClients'])->name('orders.search-clients');
     Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
@@ -58,6 +73,7 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/orders/{order}', [OrderController::class, 'update'])->name('orders.update');
     Route::post('/orders/{order}/quick-update', [OrderController::class, 'quickUpdate'])->name('orders.quick-update');
     Route::get('/orders/{order}/audits', [OrderController::class, 'audits'])->name('orders.audits');
+    Route::post('/orders/{order}/documents', [OrderController::class, 'storeDocument'])->name('orders.documents.store');
     Route::get('/orders/{order}/documents/{document}', [OrderController::class, 'downloadDocument'])->name('orders.documents.download');
     Route::delete('/orders/{order}/documents/{document}', [OrderController::class, 'destroyDocument'])->name('orders.documents.destroy');
     Route::get('/orders/{order}/users', [OrderController::class, 'getUsers'])->name('orders.users');
@@ -77,15 +93,16 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/tasks/{task}/edit', [TaskController::class, 'edit'])->name('tasks.edit');
     Route::patch('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
     Route::patch('/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.update-status');
+    // Task user assignment routes (must come before /tasks/{task} routes)
+    Route::get('/tasks/search-users', [TaskController::class, 'searchUsers'])->name('tasks.search-users');
+    Route::post('/tasks/{task}/assign-users', [TaskController::class, 'assignUsers'])->name('tasks.assign-users');
+    Route::get('/tasks/{task}/users', [TaskController::class, 'getUsers'])->name('tasks.get-users');
+
     Route::post('/tasks/{task}/archive', [TaskController::class, 'archive'])->name('tasks.archive');
     Route::post('/tasks/{task}/unarchive', [TaskController::class, 'unarchive'])->name('tasks.unarchive');
     Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
 
     // Bug Reports routes
-    Route::get('/team-members', [UserController::class, 'teamMembers'])->name('users.team-members');
-    Route::get('/team-members/create', [UserController::class, 'createTeamMember'])->name('users.create-team-member');
-    Route::post('/team-members', [UserController::class, 'storeTeamMember'])->name('users.store-team-member');
-    Route::patch('/team-members/{teamMember}', [UserController::class, 'updateTeamMember'])->name('users.update-team-member');
 
     Route::prefix('bug-reports')->name('bug-reports.')->group(function () {
         Route::get('/', [BugReportController::class, 'index'])->name('index');

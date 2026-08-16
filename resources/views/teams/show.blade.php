@@ -314,7 +314,7 @@
                                                 Due: {{ $order->end_date->format('M d, Y') }}
                                             </span>
                                             @endif
-                                            @if($order->techStack)
+                                            @if(! auth()->user()->isSales() && $order->techStack)
                                             <span class="flex items-center">
                                                 <i class="fas fa-layer-group mr-1.5 text-gray-400 dark:text-gray-500"></i>
                                                 {{ $order->techStack->name }}
@@ -416,7 +416,7 @@
                     </div>
 
                     <!-- Tech Stack (if any) -->
-                    @if($team->orders->whereNotNull('tech_stack_id')->count() > 0)
+                    @if(! auth()->user()->isSales() && $team->orders->whereNotNull('tech_stack_id')->count() > 0)
                     <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
                         <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Tech Stacks Used</p>
                         <div class="flex flex-wrap gap-2">

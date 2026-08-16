@@ -210,10 +210,15 @@
 </div>
 
 <script>
+const ROUTES = {
+    edit: @js(route('admin.roles.edit', ['roleName' => '__NAME__'])),
+    delete: @js(route('admin.roles.delete', ['roleName' => '__NAME__'])),
+};
+
 function deleteRole(roleName) {
     if (typeof Swal === 'undefined') {
         if (confirm('Are you sure you want to delete this role?')) {
-            window.location.href = `/admin/roles/${roleName}/edit`;
+            window.location.href = ROUTES.edit.replace('__NAME__', roleName);
         }
         return;
     }
@@ -232,7 +237,7 @@ function deleteRole(roleName) {
             // Create form for DELETE request
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = `/admin/roles/${roleName}`;
+            form.action = ROUTES.delete.replace('__NAME__', roleName);
             form.style.display = 'none';
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
