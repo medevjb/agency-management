@@ -1,5 +1,7 @@
 import './bootstrap';
 
+import Alpine from 'alpinejs';
+import collapse from '@alpinejs/collapse';
 import $ from 'jquery';
 import jszip from 'jszip';
 import pdfMake from 'pdfmake/build/pdfmake';
@@ -16,6 +18,10 @@ import 'sweetalert2/dist/sweetalert2.min.css';
 window.$ = window.jQuery = $;
 window.JSZip = jszip;
 window.Swal = Swal;
+
+Alpine.plugin(collapse);
+window.Alpine = Alpine;
+Alpine.start();
 
 // Safely initialize pdfMake with fonts
 if (pdfMake && pdfFonts && pdfFonts.pdfMake && pdfFonts.pdfMake.vfs) {

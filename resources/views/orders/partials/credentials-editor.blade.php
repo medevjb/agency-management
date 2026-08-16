@@ -74,6 +74,15 @@
         background-color: #1f2937;
         border-color: #374151;
     }
+
+    .dark .credentials-editor-shell .ql-container.ql-snow {
+        background-color: #1f2937;
+    }
+
+    .dark .credentials-editor-shell .ql-editor {
+        background-color: #1f2937;
+        color: #f3f4f6;
+    }
 </style>
 @endpush
 
@@ -103,7 +112,8 @@
         });
 
         if (hiddenInput.value) {
-            editor.clipboard.dangerouslyPasteHTML(hiddenInput.value);
+            // Set the editor content properly from HTML
+            editor.root.innerHTML = hiddenInput.value;
         }
 
         editorElement.closest('form').addEventListener('submit', function() {

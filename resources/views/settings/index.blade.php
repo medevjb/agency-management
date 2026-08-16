@@ -275,9 +275,12 @@
                                                        name="{{ $key }}"
                                                        id="{{ $key }}"
                                                        value="{{ old($key, $setting->value) }}"
-                                                       min="0"
+                                                       min="{{ $key === 'month_cycle_start_day' ? 1 : 0 }}"
+                                                       @if($key === 'month_cycle_start_day') max="28" @endif
                                                        class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-                                                @if($key === 'password_expiry_days' || $key === 'api_key_expiry_days' || $key === 'auto_delete_trash_days')
+                                                @if($key === 'month_cycle_start_day')
+                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-20">day of month</span>
+                                                @elseif($key === 'password_expiry_days' || $key === 'api_key_expiry_days' || $key === 'auto_delete_trash_days')
                                                     <span class="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-16">days</span>
                                                 @elseif($key === 'session_timeout' || $key === 'login_lockout_duration' || $key === 'task_reminder_hours')
                                                     <span class="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-20">minutes</span>
@@ -487,6 +490,10 @@
 </div>
 
 <script>
+const ROUTES = {
+    updateStatus: @js(route('settings.project-statuses.update', ['key' => '__KEY__'])),
+};
+
 function removeSettingImage(url) {
     if (!confirm('Are you sure you want to remove this image?')) {
         return;
@@ -513,7 +520,7 @@ function editStatus(key, label, icon, color) {
     document.getElementById('edit_color').value = color;
 
     const form = document.getElementById('editStatusForm');
-    form.action = `/settings/project-statuses/${key}`;
+    form.action = ROUTES.updateStatus.replace('__KEY__', key);
 
     document.getElementById('editStatusModal').classList.remove('hidden');
 }

@@ -25,7 +25,7 @@ class TechStackController extends Controller
 
         $user = auth()->user();
 
-        $techStacks = TechStack::with(['stackLeader', 'users', 'team', 'projects'])
+        $techStacks = TechStack::with(['stackLeader', 'users', 'team', 'orders'])
             ->when($request->filled('search'), function ($q) use ($request) {
                 $q->where('name', 'like', '%'.$request->search.'%')
                     ->orWhere('description', 'like', '%'.$request->search.'%');
@@ -69,7 +69,7 @@ class TechStackController extends Controller
 
         $user = auth()->user();
 
-        $query = TechStack::with(['stackLeader', 'users', 'projects'])
+        $query = TechStack::with(['stackLeader', 'users', 'orders'])
             ->when(! $user->hasRole(['admin', 'operation-manager', 'project-manager']), function ($q) use ($user) {
                 if ($user->hasRole('team-leader')) {
                     $q->where('team_id', $user->team_id);
@@ -109,8 +109,8 @@ class TechStackController extends Controller
                 return $count.' '.$activeCount.' active';
             })
             ->addColumn('projects_count', function ($techStack) {
-                $count = $techStack->projects->count();
-                $activeCount = $techStack->projects->whereIn('status', ['planning', 'in-progress'])->count();
+                $count = $techStack->orders->count();
+                $activeCount = $techStack->orders->whereIn('status', ['planning', 'in-progress'])->count();
 
                 return $count.' '.$activeCount.' active';
             })
@@ -118,7 +118,7 @@ class TechStackController extends Controller
                 $query->withCount('users')->orderBy('users_count', $order);
             })
             ->orderColumn('projects_count', function ($query, $order) {
-                $query->withCount('projects')->orderBy('projects_count', $order);
+                $query->withCount('orders')->orderBy('orders_count', $order);
             })
             ->setRowId('id')
             ->make(true);
@@ -227,7 +227,7 @@ class TechStackController extends Controller
      */
     public function show(string $id)
     {
-        $techStack = TechStack::with(['stackLeader', 'users', 'projects'])->findOrFail($id);
+        $techStack = TechStack::with(['stackLeader', 'users', 'orders'])->findOrFail($id);
 
         $this->authorize('view', $techStack);
 
@@ -304,7 +304,7 @@ class TechStackController extends Controller
         $this->authorize('delete', $techStack);
 
         // Check if tech stack has active projects
-        $activeProjects = $techStack->projects()->whereIn('status', ['planning', 'in-progress'])->count();
+        $activeProjects = $techStack->orders()->whereIn('status', ['planning', 'in-progress'])->count();
         if ($activeProjects > 0) {
             return response()->json([
                 'success' => false,

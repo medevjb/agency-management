@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Profile extends Model
@@ -36,17 +37,14 @@ class Profile extends Model
         ];
     }
 
-    public function getPlatformFeeRateAttribute(): float
-    {
-        return match ($this->platform) {
-            'upwork' => 0.10,
-            default => 0.20,
-        };
-    }
-
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class, 'freelance_profile_id');
     }
 
     public function scopeActive($query)

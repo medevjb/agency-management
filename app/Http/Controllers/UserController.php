@@ -9,14 +9,12 @@ use App\Models\Team;
 use App\Models\TechStack;
 use App\Models\User;
 use App\Services\EmailService;
-use App\Services\TeamMemberService;
+use App\Services\SalesTeamSync;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\View\View;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -26,11 +24,7 @@ class UserController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['auth'])
-            ->only(['teamMembers', 'updateTeamMember', 'createTeamMember', 'storeTeamMember']);
-
-        $this->middleware(['auth', 'role:admin|operation-manager|project-manager'])
-            ->except(['teamMembers', 'updateTeamMember', 'createTeamMember', 'storeTeamMember']);
+        $this->middleware(['auth', 'role:admin|operation-manager|project-manager']);
     }
 
     /**
@@ -341,6 +335,10 @@ class UserController extends Controller
                     $user->managedTeams()->sync($validated['managed_teams']);
                 }
 
+                if ($user->isSales()) {
+                    SalesTeamSync::sync($user);
+                }
+
                 return $user;
             });
 
@@ -502,6 +500,28 @@ class UserController extends Controller
             'managed_teams.*' => 'exists:teams,id',
         ]);
 
+        // Sales roles cannot access tech stack functionality
+        $currentUser = auth()->user();
+        if ($currentUser && $currentUser->isSales()) {
+            $validated['tech_stack_id'] = null;
+        }
+
+        // Sales leaders cannot create team members
+        if ($currentUser && $currentUser->hasRole('sales-leader') && $user->exists) {
+            // Remove team creation permissions
+            if (isset($validated['permissions'])) {
+                $validated['permissions'] = array_filter($validated['permissions'], function ($perm) {
+                    return ! in_array($perm, ['manage team members', 'create users']);
+                });
+            }
+        }
+
+        // Team leaders and members can only view teams, not edit
+        if ($currentUser && $currentUser->hasRole(['team-leader', 'team-member']) && $user->exists) {
+            // Prevent changing team_id for team leaders/members
+            unset($validated['team_id']);
+        }
+
         $validated = $this->applyTrack($validated, $user);
 
         // Ensure permissions array exists (empty array if not provided)
@@ -548,6 +568,10 @@ class UserController extends Controller
                     $user->syncRoles([$validated['role']]);
                 }
 
+                if ($user->isSales()) {
+                    SalesTeamSync::sync($user);
+                }
+
                 // Update permissions - always sync, even if empty
                 if (! empty($validated['permissions'])) {
                     $permissions = Permission::whereIn('id', $validated['permissions'])->get();
@@ -582,9 +606,10 @@ class UserController extends Controller
     }
 
     /**
-     * Drop whatever does not belong to the chosen track, so a sales person
-     * never ends up with a team_id and an operational hire never gets a sales
-     * leader or target — no matter what the client sent.
+     * Drop whatever does not belong to the chosen track — the sales
+     * team_id is derived from the sales leader by SalesTeamSync instead
+     * of being taken from the client, and an operational hire never gets a
+     * sales leader or target — no matter what the client sent.
      *
      * @param  array<string, mixed>  $validated
      * @return array<string, mixed>
@@ -599,7 +624,9 @@ class UserController extends Controller
         if ($track === 'sales') {
             unset($validated['team_id'], $validated['tech_stack_id']);
         } else {
-            unset($validated['sales_leader_id'], $validated['sales_target'], $validated['sales_target_month']);
+            // The monthly target is shared by both tracks now — only the
+            // sales-leader relationship is exclusive to the sales side.
+            unset($validated['sales_leader_id']);
         }
 
         return $validated;
@@ -705,12 +732,24 @@ class UserController extends Controller
      */
     public function getStats(): JsonResponse
     {
+        // One grouped pass instead of five full COUNT scans.
+        $rows = User::query()
+            ->where('id', '!=', auth()->id())
+            ->selectRaw('
+                COUNT(*) as total,
+                COALESCE(SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END), 0) as active,
+                COALESCE(SUM(CASE WHEN is_active = 0 THEN 1 ELSE 0 END), 0) as inactive,
+                COALESCE(SUM(CASE WHEN team_id IS NOT NULL THEN 1 ELSE 0 END), 0) as with_team,
+                COALESCE(SUM(CASE WHEN team_id IS NULL THEN 1 ELSE 0 END), 0) as without_team
+            ')
+            ->first();
+
         $stats = [
-            'total_users' => User::where('id', '!=', auth()->id())->count(),
-            'active_users' => User::where('is_active', true)->where('id', '!=', auth()->id())->count(),
-            'inactive_users' => User::where('is_active', false)->where('id', '!=', auth()->id())->count(),
-            'users_with_team' => User::whereNotNull('team_id')->where('id', '!=', auth()->id())->count(),
-            'users_without_team' => User::whereNull('team_id')->where('id', '!=', auth()->id())->count(),
+            'total_users' => (int) $rows->total,
+            'active_users' => (int) $rows->active,
+            'inactive_users' => (int) $rows->inactive,
+            'users_with_team' => (int) $rows->with_team,
+            'users_without_team' => (int) $rows->without_team,
         ];
 
         $roleStats = Role::withCount('users')->get()->mapWithKeys(function ($role) {
@@ -1051,145 +1090,5 @@ class UserController extends Controller
         } while (User::where('employee_id', $employeeId)->exists());
 
         return $employeeId;
-    }
-
-    /**
-     * Display team members for team leaders and stack leaders.
-     */
-    public function teamMembers(Request $request): View
-    {
-        $user = auth()->user();
-
-        // Get team members based on user role
-        $members = TeamMemberService::getTeamMembersForView($user);
-
-        $membersJson = $members->mapWithKeys(function ($m) {
-            return [$m->id => [
-                'id' => $m->id,
-                'name' => $m->name,
-                'email' => $m->email,
-                'phone' => $m->phone,
-                'position' => $m->position,
-                'department' => $m->department,
-                'address' => $m->address,
-            ]];
-        });
-
-        return view('users.team-members', compact('members', 'membersJson'));
-    }
-
-    /**
-     * Update team member information (for team leaders and stack leaders).
-     */
-    public function updateTeamMember(Request $request, User $teamMember): RedirectResponse
-    {
-        $user = auth()->user();
-
-        // Check if user can manage this team member
-        if (! TeamMemberService::canManageUser($user, $teamMember)) {
-            return back()->with('error', 'You are not authorized to manage this user.');
-        }
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,'.$teamMember->id,
-            'phone' => 'nullable|string|max:20',
-            'position' => 'nullable|string|max:255',
-            'department' => 'nullable|string|max:255',
-            'address' => 'nullable|string|max:1000',
-        ]);
-
-        $teamMember->update($request->only([
-            'name',
-            'email',
-            'phone',
-            'position',
-            'department',
-            'address',
-        ]));
-
-        return back()->with('success', 'Team member updated successfully.');
-    }
-
-    /**
-     * Show the form for creating a new team member.
-     */
-    public function createTeamMember(Request $request): View
-    {
-        $user = auth()->user();
-
-        $assignableRoles = collect();
-        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
-            $assignableRoles = Role::all();
-        } elseif ($user->hasRole('team-leader')) {
-            $assignableRoles = Role::whereIn('name', ['team-member', 'stack-leader'])->get();
-        } elseif ($user->hasRole('stack-leader')) {
-            $assignableRoles = Role::whereIn('name', ['team-member'])->get();
-        }
-
-        // Get teams if user is team leader
-        $teams = collect();
-        $defaultTeam = null;
-        if ($user->hasRole('team-leader') && $user->team_id) {
-            $teams = Team::where('id', $user->team_id)->get();
-            $defaultTeam = $user->team_id;
-        } elseif ($user->hasRole(['admin', 'operation-manager'])) {
-            $teams = Team::all();
-        }
-
-        return view('users.create-team-member', compact('assignableRoles', 'teams', 'defaultTeam'));
-    }
-
-    /**
-     * Store a newly created team member.
-     */
-    public function storeTeamMember(Request $request): RedirectResponse
-    {
-        $user = auth()->user();
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-            'phone' => 'nullable|string|max:20',
-            'position' => 'nullable|string|max:255',
-            'department' => 'nullable|string|max:255',
-            'address' => 'nullable|string|max:1000',
-            'role' => 'required|string|exists:roles,name',
-        ]);
-
-        // Generate unique employee ID
-        $employeeId = $this->generateUniqueEmployeeId();
-
-        // Create user
-        $newUser = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'employee_id' => $employeeId,
-            'phone' => $request->phone,
-            'position' => $request->position,
-            'department' => $request->department,
-            'address' => $request->address,
-            'is_active' => true,
-            'email_verified_at' => now(),
-        ]);
-
-        // Assign role
-        $newUser->assignRole($request->role);
-
-        // Assign to team (auto-assign to creator's team if team leader)
-        if ($user->hasRole('team-leader') && $user->team_id) {
-            $newUser->update(['team_id' => $user->team_id]);
-        } elseif ($request->filled('team_id') && $user->hasRole(['admin', 'operation-manager'])) {
-            $newUser->update(['team_id' => $request->team_id]);
-        }
-
-        // Send welcome email with credentials
-        EmailService::sendTo($newUser->email, new WelcomeEmail($newUser, $request->password));
-
-        return redirect()
-            ->route('users.team-members')
-            ->with('success', 'Team member created successfully.');
     }
 }

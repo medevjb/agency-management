@@ -150,12 +150,12 @@
                         </div>
                         Associated Projects
                         <span class="ml-3 px-2.5 py-0.5 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-500/10 text-green-800 dark:text-green-400">
-                            {{ $techStack->projects->count() }}
+                            {{ $techStack->orders->count() }}
                         </span>
                     </h2>
-                    @if($techStack->projects->count() > 0)
+                    @if($techStack->orders->count() > 0)
                         <div class="space-y-3">
-                            @foreach($techStack->projects as $project)
+                            @foreach($techStack->orders as $project)
                                 <a href="{{ route('orders.show', $project->id) }}"
                                    class="block flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-500/10 dark:to-emerald-500/10 border border-green-200 dark:border-green-900 rounded-xl hover:shadow-md transition-all">
                                     <div class="flex items-center">
@@ -222,7 +222,7 @@
                             </div>
                             <span class="font-medium text-gray-700 dark:text-gray-300">Active Projects</span>
                         </div>
-                        <span class="text-2xl font-bold text-green-700 dark:text-green-400">{{ $techStack->projects->whereIn('status', ['planning', 'in-progress'])->count() }}</span>
+                        <span class="text-2xl font-bold text-green-700 dark:text-green-400">{{ $techStack->orders->whereIn('status', ['planning', 'in-progress'])->count() }}</span>
                     </div>
 
                     <!-- Completed Projects -->
@@ -233,7 +233,7 @@
                             </div>
                             <span class="font-medium text-gray-700 dark:text-gray-300">Completed</span>
                         </div>
-                        <span class="text-2xl font-bold text-purple-700 dark:text-purple-400">{{ $techStack->projects->where('status', 'completed')->count() }}</span>
+                        <span class="text-2xl font-bold text-purple-700 dark:text-purple-400">{{ $techStack->orders->where('status', 'completed')->count() }}</span>
                     </div>
 
                     <!-- Stack Leader -->
@@ -359,6 +359,11 @@
 
 @push('scripts')
 <script>
+const ROUTES = {
+    destroy: @js(route('tech-stacks.destroy', ['id' => '__ID__'])),
+    removeMember: @js(route('tech-stacks.remove-member', ['id' => '__ID__', 'user_id' => '__UID__'])),
+};
+
 // Member Search in Modal
 const memberSearchInput = document.getElementById('memberSearchInput');
 const memberList = document.getElementById('memberList');
@@ -417,7 +422,7 @@ function deleteTechStack(techStackId) {
         showLoaderOnConfirm: true
     }).then((result) => {
         if (result.isConfirmed) {
-            axios.delete(`/tech-stacks/${techStackId}`)
+            axios.delete(ROUTES.destroy.replace('__ID__', techStackId))
             .then(response => {
                 if (response.data.success) {
                     Swal.fire({
@@ -469,7 +474,7 @@ function removeMember(techStackId, memberId, memberName) {
         reverseButtons: true
     }).then((result) => {
         if (result.isConfirmed) {
-            axios.delete(`/tech-stacks/${techStackId}/members/${memberId}`, {
+            axios.delete(ROUTES.removeMember.replace('__ID__', techStackId).replace('__UID__', memberId), {
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 }

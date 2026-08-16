@@ -15,7 +15,7 @@ class UpdateProfileRequest extends FormRequest
     {
         return [
             'profile_name' => 'required|string|max:255',
-            'username' => 'required|string|max:100|unique:profiles,username,{$this->profile}|regex:/^[a-zA-Z0-9_]+$/',
+            'username' => 'required|string|max:100|regex:/^[a-zA-Z0-9_]+$/|unique:profiles,username,'.$this->profile->id,
             'platform' => 'required|in:fiverr,upwork',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ];

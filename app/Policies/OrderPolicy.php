@@ -17,10 +17,9 @@ class OrderPolicy
     }
 
     /**
-     * Admin, OM, PM, and team members can view any order.
+     * Admin, OM, PM, team members, and sales users can view any order.
      * Team leaders and stack leaders can only view their own team's orders.
-     * Sales members see the orders they sold; sales leaders also see everything
-     * sold by their group.
+     * Sales leaders and members can see all orders like admin/OM/PM.
      */
     public function view(User $user, Order $order): bool
     {
@@ -28,11 +27,9 @@ class OrderPolicy
             return true;
         }
 
+        // Sales users can see all orders
         if ($user->isSales()) {
-            $visibleIds = $user->salesVisibleUserIds();
-
-            return in_array($order->sales_user_id, $visibleIds, true)
-                || $order->salesShares()->whereIn('user_id', $visibleIds)->exists();
+            return true;
         }
 
         if ($user->hasRole(['operation-manager', 'project-manager', 'team-member'])) {
@@ -74,9 +71,9 @@ class OrderPolicy
 
     /**
      * Admin, OM, PM can update any order.
-     * Team leader can update their team's orders.
-     * Sales people can update the orders they can see — but only the sales
-     * fields, which `manageOperations` gates.
+     * Team leader and stack leader can update their team's orders.
+     * Sales people can update the orders they can see — the deal facts on
+     * the edit page, and the operational fields inline on the details page.
      */
     public function update(User $user, Order $order): bool
     {
@@ -84,7 +81,7 @@ class OrderPolicy
             return true;
         }
 
-        if ($user->hasRole('team-leader') && $user->team_id === $order->team_id) {
+        if ($user->hasRole(['team-leader', 'stack-leader']) && $user->team_id === $order->team_id) {
             return true;
         }
 
@@ -96,13 +93,74 @@ class OrderPolicy
     }
 
     /**
-     * Who may touch the delivery side of an order: status, progress, team,
-     * tech stack, assignees and dates. Never sales.
+     * Who may touch the operational side of an order: status, priority,
+     * dates, team, tech stack and special status. Sales people can too —
+     * they just never get to change who is assigned (see manageAssignment).
      */
     public function manageOperations(User $user, Order $order): bool
     {
         if ($user->isSales()) {
+            return true;
+        }
+
+        return $this->update($user, $order);
+    }
+
+    /**
+     * Who may assign (or unassign) people to work on an order. Everyone with
+     * operational rights except sales — sales opens the deal, operations
+     * picks the team.
+     */
+    public function manageAssignment(User $user, Order $order): bool
+    {
+        if ($user->isSales()) {
             return false;
+        }
+
+        return $this->update($user, $order);
+    }
+
+    /**
+     * Progress specifically is also open to whoever the order is actually
+     * assigned to — a plain team-member has no other management rights on
+     * an order, but they're the one doing the work, so they can report how
+     * far along it is.
+     */
+    public function updateProgress(User $user, Order $order): bool
+    {
+        if ($this->manageOperations($user, $order)) {
+            return true;
+        }
+
+        return $order->users->contains('id', $user->id);
+    }
+
+    /**
+     * Who may edit the content fields — notes, description, credentials —
+     * and add documents. Open to everyone who can manage the order plus the
+     * people assigned to do the work.
+     */
+    public function editContent(User $user, Order $order): bool
+    {
+        if ($user->isSales()) {
+            return true;
+        }
+
+        if ($this->update($user, $order)) {
+            return true;
+        }
+
+        return $order->users->contains('id', $user->id);
+    }
+
+    /**
+     * Who may remove a stored document. A plain team member can add files
+     * but never delete them.
+     */
+    public function deleteDocuments(User $user, Order $order): bool
+    {
+        if ($user->isSales()) {
+            return true;
         }
 
         return $this->update($user, $order);

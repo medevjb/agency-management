@@ -2,6 +2,72 @@
 
 @section('title', 'Freelance Profiles')
 
+@push('styles')
+<style>
+    .s-panel {
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 1rem;
+        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+    }
+
+    .dark .s-panel { background-color: #111827; border-color: #1f2937; box-shadow: none; }
+
+    .s-eyebrow {
+        font-size: 0.6875rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #6b7280;
+    }
+
+    .dark .s-eyebrow { color: #9ca3af; }
+
+    .s-num { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
+
+    .s-stat-value {
+        margin-top: 0.25rem;
+        font-size: 1.5rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: #111827;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .dark .s-stat-value { color: #f3f4f6; }
+
+    .s-stat-foot { margin-top: 0.125rem; font-size: 0.75rem; color: #9ca3af; }
+
+    .s-grid-4 {
+        display: grid;
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    @media (min-width: 640px) { .s-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (min-width: 1024px) { .s-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+    .s-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.125rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.625rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        background-color: #eef2ff;
+        color: #4338ca;
+    }
+
+    .dark .s-chip { background-color: rgba(99, 102, 241, 0.15); color: #a5b4fc; }
+
+    .s-chip.is-new { background-color: #f3f4f6; color: #4b5563; }
+    .dark .s-chip.is-new { background-color: #1f2937; color: #9ca3af; }
+</style>
+@endpush
+
 @section('content')
 <div class="px-4 sm:px-6 lg:px-8 py-8">
     <!-- Page Header -->
@@ -21,80 +87,81 @@
         </div>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <!-- Total Profiles -->
-        <div class="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-300">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-purple-100 text-sm font-medium mb-1">Total Profiles</p>
-                    <p class="text-3xl font-bold">{{ $profiles->total() }}</p>
-                </div>
-                <div class="bg-white/20 p-4 rounded-xl">
-                    <i class="fas fa-address-card text-3xl"></i>
-                </div>
-            </div>
+    <!-- Summary Stats -->
+    <div class="s-grid-4 mb-8">
+        <div class="s-panel p-5">
+            <p class="s-eyebrow">Total Profiles</p>
+            <p class="s-stat-value">{{ $summary['total_profiles'] }}</p>
+            <p class="s-stat-foot">{{ $summary['active_profiles'] }} active</p>
         </div>
 
-        <!-- Active Profiles -->
-        <div class="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-300">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-green-100 text-sm font-medium mb-1">Active</p>
-                    <p class="text-3xl font-bold">{{ App\Models\Profile::active()->count() }}</p>
-                </div>
-                <div class="bg-white/20 p-4 rounded-xl">
-                    <i class="fas fa-check-circle text-3xl"></i>
-                </div>
-            </div>
+        <div class="s-panel p-5">
+            <p class="s-eyebrow">{{ \App\Support\GlobalMonth::label() }} Revenue</p>
+            <p class="s-stat-value">${{ number_format($summary['month_revenue'], 2) }}</p>
+            <p class="s-stat-foot">{{ $summary['month_orders'] }} orders this month</p>
         </div>
 
-        <!-- Inactive Profiles -->
-        <div class="bg-gradient-to-br from-red-500 to-pink-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-300">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-red-100 text-sm font-medium mb-1">Inactive</p>
-                    <p class="text-3xl font-bold">{{ App\Models\Profile::where('status', 'inactive')->count() }}</p>
-                </div>
-                <div class="bg-white/20 p-4 rounded-xl">
-                    <i class="fas fa-times-circle text-3xl"></i>
-                </div>
-            </div>
+        <div class="s-panel p-5">
+            <p class="s-eyebrow">Repeat Order Rate</p>
+            <p class="s-stat-value">{{ $summary['month_repeat_rate'] }}%</p>
+            <p class="s-stat-foot">{{ $summary['month_repeat_orders'] }} of {{ $summary['month_orders'] }} this month were repeat business</p>
         </div>
 
-        <!-- With Avatar -->
-        <div class="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-300">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-blue-100 text-sm font-medium mb-1">With Avatar</p>
-                    <p class="text-3xl font-bold">{{ App\Models\Profile::whereNotNull('avatar')->count() }}</p>
-                </div>
-                <div class="bg-white/20 p-4 rounded-xl">
-                    <i class="fas fa-image text-3xl"></i>
-                </div>
-            </div>
+        <div class="s-panel p-5">
+            <p class="s-eyebrow">Top Profile This Month</p>
+            @if($summary['top_profile'])
+                <p class="text-lg font-extrabold text-gray-900 dark:text-gray-100 mt-2 truncate">{{ $summary['top_profile']->profile_name }}</p>
+                <p class="s-stat-foot">{{ '@'.$summary['top_profile']->username }}</p>
+            @else
+                <p class="text-lg font-extrabold text-gray-400 dark:text-gray-600 mt-2">—</p>
+                <p class="s-stat-foot">No orders yet this month</p>
+            @endif
         </div>
     </div>
 
-    <!-- Search Section -->
-    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-md p-4 mb-6">
-        <form action="{{ route('freelance-profiles.index') }}" method="GET" class="flex items-center gap-3">
-            <div class="flex-1 relative">
-                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"></i>
+    <!-- Search & Sort -->
+    <div class="s-panel p-4 mb-6">
+        <form action="{{ route('freelance-profiles.index') }}" method="GET" class="flex flex-wrap items-center gap-3">
+            <div class="flex-1 min-w-[200px] relative">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-sm"></i>
                 <input type="text" name="search" value="{{ request('search') }}"
-                       class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-all text-sm"
+                       class="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-all text-sm"
                        placeholder="Search by name or username...">
             </div>
+
+            <select name="platform" onchange="this.form.submit()"
+                    class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm w-[130px]">
+                <option value="">All platforms</option>
+                <option value="fiverr" @selected(request('platform') === 'fiverr')>Fiverr</option>
+                <option value="upwork" @selected(request('platform') === 'upwork')>Upwork</option>
+            </select>
+
+            <select name="status" onchange="this.form.submit()"
+                    class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm w-[130px]">
+                <option value="">All statuses</option>
+                <option value="active" @selected(request('status') === 'active')>Active</option>
+                <option value="inactive" @selected(request('status') === 'inactive')>Inactive</option>
+            </select>
+
+            <select name="sort" onchange="this.form.submit()"
+                    class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm">
+                <option value="revenue" @selected($sort === 'revenue')>Sort: Revenue</option>
+                <option value="repeat_rate" @selected($sort === 'repeat_rate')>Sort: Repeat Rate</option>
+                <option value="orders" @selected($sort === 'orders')>Sort: Total Orders</option>
+            </select>
+
             <span class="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
                 <span class="font-bold">{{ $profiles->total() }}</span> found
             </span>
-            @if(request('search'))
+
+            @if(request()->hasAny(['search', 'platform', 'status']))
                 <a href="{{ route('freelance-profiles.index') }}"
-                   class="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 font-medium text-sm transition-all">
+                   class="px-3 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 font-medium text-sm transition-all">
                     <i class="fas fa-times mr-1"></i>
                     Clear
                 </a>
             @endif
+
             <button type="submit"
                     class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 font-medium text-sm transition-all shadow-md">
                 <i class="fas fa-search mr-1"></i>
@@ -104,8 +171,18 @@
     </div>
 
     <!-- Profiles Grid - Compact Cards -->
+    @if($profiles->isEmpty())
+        <div class="s-panel p-12 text-center">
+            <i class="fas fa-address-card text-4xl text-gray-300 dark:text-gray-700 mb-3"></i>
+            <p class="text-gray-600 dark:text-gray-400 font-medium">No profiles match these filters.</p>
+            @if(request()->hasAny(['search', 'platform', 'status']))
+                <a href="{{ route('freelance-profiles.index') }}" class="text-purple-600 dark:text-purple-400 text-sm font-semibold mt-2 inline-block">Clear filters</a>
+            @endif
+        </div>
+    @endif
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
         @foreach($profiles as $profile)
+            @php($stat = $profileStats[$profile->id])
             <div class="bg-white dark:bg-gray-900 rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
                 <!-- Profile Header - Compact -->
                 <div class="relative h-24">
@@ -149,7 +226,9 @@
                 <div class="p-4">
                     <div class="flex items-center justify-between mb-3">
                         <div class="flex-1 min-w-0">
-                            <h3 class="text-base font-bold text-gray-900 dark:text-gray-100 truncate">{{ $profile->profile_name }}</h3>
+                            <h3 class="text-base font-bold text-gray-900 dark:text-gray-100 truncate">
+                                <a href="{{ route('freelance-profiles.show', $profile) }}" class="hover:text-purple-600 dark:hover:text-purple-400">{{ $profile->profile_name }}</a>
+                            </h3>
                             <p class="text-purple-600 dark:text-purple-400 font-medium text-sm truncate"><span>@</span>{{$profile->username}}</p>
                         </div>
                     </div>
@@ -170,12 +249,28 @@
                         </div>
                     @endif
 
+                    <!-- Order Analytics -->
+                    <div class="grid grid-cols-2 gap-2 mb-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+                        <div>
+                            <p class="s-eyebrow">This Month</p>
+                            <p class="s-num text-sm font-bold text-gray-900 dark:text-gray-100">${{ number_format($stat['month_revenue'], 0) }}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="s-eyebrow">Repeat Rate</p>
+                            <p class="s-num text-sm font-bold text-indigo-600 dark:text-indigo-400">{{ $stat['repeat_rate'] }}%</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between mb-3 text-xs text-gray-500 dark:text-gray-400">
+                        <span><i class="fas fa-box mr-1"></i>{{ $stat['total_orders'] }} orders</span>
+                        <span><i class="fas fa-users mr-1"></i>{{ $stat['repeat_clients'] }}/{{ $stat['unique_clients'] }} repeat clients</span>
+                    </div>
+
                     <!-- Compact Actions -->
                     <div class="flex items-center gap-2">
-                        <button onclick="viewProfile({{ $profile->id }})"
-                                class="flex-1 flex items-center justify-center px-3 py-2 bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-500/20 font-medium text-xs transition-all group-hover:bg-purple-100 dark:group-hover:bg-purple-500/20">
-                            <i class="fas fa-eye mr-1 text-xs"></i>View
-                        </button>
+                        <a href="{{ route('freelance-profiles.show', $profile) }}"
+                           class="flex-1 flex items-center justify-center px-3 py-2 bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-500/20 font-medium text-xs transition-all group-hover:bg-purple-100 dark:group-hover:bg-purple-500/20">
+                            <i class="fas fa-chart-line mr-1 text-xs"></i>Analytics
+                        </a>
                         @can('edit profile')
                             <button onclick="editProfile({{ $profile->id }})"
                                     class="flex-1 flex items-center justify-center px-3 py-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-500/20 font-medium text-xs transition-all">
@@ -345,75 +440,21 @@
     </div>
 </div>
 
-<!-- View Modal -->
-<div id="viewModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div id="viewModalBackdrop"
-             class="fixed inset-0 bg-gray-900 bg-opacity-50 transition-opacity"
-             aria-hidden="true"></div>
-
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-        <div class="inline-block align-bottom bg-white dark:bg-gray-900 dark:ring-1 dark:ring-gray-700 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-            <!-- Modal Header -->
-            <div class="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <div class="bg-white/20 p-3 rounded-lg mr-4">
-                            <i class="fas fa-user text-white text-2xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-bold text-white">Profile Details</h3>
-                        </div>
-                    </div>
-                    <button onclick="closeViewModal()" class="text-white hover:text-gray-200">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Modal Body -->
-            <div class="p-6">
-                <div class="text-center mb-6">
-                    <div id="viewAvatarContainer" class="mb-4"></div>
-                    <h3 id="viewProfileName" class="text-2xl font-bold text-gray-900 dark:text-gray-100"></h3>
-                    <p id="viewUsername" class="text-purple-600 dark:text-purple-400 font-semibold">@</p>
-
-                    <!-- Status Badge -->
-                    <div id="viewStatusBadge" class="mt-3 inline-flex items-center px-4 py-2 rounded-full text-sm font-bold">
-                    </div>
-                </div>
-
-                <div class="space-y-4">
-                    <div id="viewOwnerContainer" class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 hidden">
-                        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">OWNER</p>
-                        <p id="viewOwnerName" class="text-gray-900 dark:text-gray-100 font-semibold"></p>
-                        <p id="viewOwnerEmail" class="text-sm text-gray-600 dark:text-gray-400"></p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="bg-gray-50 dark:bg-gray-800 px-6 py-4">
-                <button onclick="closeViewModal()"
-                        class="w-full px-6 py-3 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 font-semibold transition-all">
-                    <i class="fas fa-times mr-2"></i>
-                    Close
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script>
+const ROUTES = {
+    store: @js(route('freelance-profiles.store')),
+    update: @js(route('freelance-profiles.update', ['profile' => '__ID__'])),
+    edit: @js(route('freelance-profiles.edit', ['profile' => '__ID__'])),
+    destroy: @js(route('freelance-profiles.destroy', ['profile' => '__ID__'])),
+    toggleStatus: @js(route('freelance-profiles.toggle-status', ['profile' => '__ID__'])),
+};
+
 let isEditing = false;
 let existingAvatar = null;
 
 // Modal Elements
 const profileModal = document.getElementById('profileModal');
 const modalBackdrop = document.getElementById('modalBackdrop');
-const viewModal = document.getElementById('viewModal');
-const viewModalBackdrop = document.getElementById('viewModalBackdrop');
 
 // Form Elements
 const profileForm = document.getElementById('profileForm');
@@ -427,7 +468,6 @@ const avatarPreview = document.getElementById('avatarPreview');
 // Event Listeners
 document.getElementById('openCreateModal').addEventListener('click', openCreateModal);
 modalBackdrop.addEventListener('click', closeModal);
-viewModalBackdrop.addEventListener('click', closeViewModal);
 avatarInput.addEventListener('change', handleFileUpload);
 profileForm.addEventListener('submit', submitForm);
 
@@ -448,7 +488,7 @@ function closeModal() {
 
 async function editProfile(id) {
     try {
-        const response = await axios.get(`/freelance-profiles/${id}/edit`);
+        const response = await axios.get(ROUTES.edit.replace('__ID__', id));
         const profile = response.data.profile;
 
         isEditing = true;
@@ -482,59 +522,6 @@ async function editProfile(id) {
             confirmButtonColor: '#9333ea'
         });
     }
-}
-
-async function viewProfile(id) {
-    try {
-        const response = await axios.get(`/freelance-profiles/${id}`);
-        const profile = response.data.profile;
-
-        // Avatar
-        const avatarContainer = document.getElementById('viewAvatarContainer');
-        if (profile.avatar) {
-            avatarContainer.innerHTML = `<img src="/storage/${profile.avatar}" alt="${profile.profile_name}" class="w-32 h-32 rounded-2xl border-4 border-white shadow-xl object-cover mx-auto">`;
-        } else {
-            avatarContainer.innerHTML = `<div class="w-32 h-32 rounded-2xl border-4 border-gray-200 dark:border-gray-700 shadow-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center mx-auto"><i class="fas fa-user text-white text-4xl"></i></div>`;
-        }
-
-        document.getElementById('viewProfileName').textContent = profile.profile_name;
-        document.getElementById('viewUsername').textContent = '@' + profile.username;
-
-        // Status Badge
-        const statusBadge = document.getElementById('viewStatusBadge');
-        if (profile.status === 'active') {
-            statusBadge.className = 'mt-3 inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-green-500 text-white';
-            statusBadge.innerHTML = '<i class="fas fa-check-circle mr-1"></i>Active';
-        } else {
-            statusBadge.className = 'mt-3 inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-red-500 text-white';
-            statusBadge.innerHTML = '<i class="fas fa-times-circle mr-1"></i>Inactive';
-        }
-
-        // Owner
-        const ownerContainer = document.getElementById('viewOwnerContainer');
-        if (profile.user) {
-            ownerContainer.classList.remove('hidden');
-            document.getElementById('viewOwnerName').textContent = profile.user.name;
-            document.getElementById('viewOwnerEmail').textContent = profile.user.email;
-        } else {
-            ownerContainer.classList.add('hidden');
-        }
-
-        viewModal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    } catch (error) {
-        Swal.fire({
-            title: 'Error!',
-            text: error.response?.data?.message || 'Failed to load profile',
-            icon: 'error',
-            confirmButtonColor: '#9333ea'
-        });
-    }
-}
-
-function closeViewModal() {
-    viewModal.classList.add('hidden');
-    document.body.style.overflow = '';
 }
 
 function handleFileUpload(event) {
@@ -574,11 +561,11 @@ async function submitForm(event) {
     try {
         if (isEditing) {
             formData.append('_method', 'PATCH');
-            await axios.post(`/freelance-profiles/${profileIdInput.value}`, formData, {
+            await axios.post(ROUTES.update.replace('__ID__', profileIdInput.value), formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
         } else {
-            await axios.post('/freelance-profiles', formData, {
+            await axios.post(ROUTES.store, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
         }
@@ -617,7 +604,7 @@ async function toggleStatus(id, currentStatus) {
     }).then(async (result) => {
         if (result.isConfirmed) {
             try {
-                await axios.patch(`/freelance-profiles/${id}/toggle-status`, {
+                await axios.patch(ROUTES.toggleStatus.replace('__ID__', id), {
                     status: newStatus
                 });
 
@@ -654,7 +641,7 @@ function deleteProfile(id) {
         cancelButtonText: 'Cancel'
     }).then((result) => {
         if (result.isConfirmed) {
-            axios.delete(`/freelance-profiles/${id}`)
+            axios.delete(ROUTES.destroy.replace('__ID__', id))
                 .then(response => {
                     Swal.fire({
                         title: 'Deleted!',

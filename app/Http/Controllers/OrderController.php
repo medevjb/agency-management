@@ -16,6 +16,7 @@ use App\Models\User;
 use App\Notifications\OrderStatusNotification;
 use App\Services\EmailService;
 use App\Services\OrderDocumentService;
+use App\Services\PlatformFeeCalculator;
 use App\Services\RichTextSanitizer;
 use App\Services\SalesCreditService;
 use Carbon\Carbon;
@@ -86,17 +87,16 @@ class OrderController extends Controller
     {
         $this->authorize('viewAny', Order::class);
 
-        $query = Order::query()->with(['team', 'techStack', 'freelanceProfile', 'creator', 'users']);
+        $query = Order::query()->with(['team', 'techStack', 'freelanceProfile', 'creator', 'users', 'valueDistributions']);
 
         $user = auth()->user();
 
-        // Sales people only ever see what they (or their group) sold.
-        if ($user->isSales()) {
-            $query->visibleToSalesUser($user);
-        }
-
-        // Team leaders and stack leaders only see their own team's orders
-        if ($user->hasRole(['team-leader', 'stack-leader'])) {
+        // Sales leaders and sales members can see all running orders
+        // (like admin, OM, PM) but with their own orders highlighted — even
+        // if they also hold an operational role like team-leader, since a
+        // sales-side account's team_id points at its auto-created sales
+        // team (see SalesTeamSync), not an engineering delivery team.
+        if (! $user->isSales() && $user->hasRole(['team-leader', 'stack-leader'])) {
             $query->where('team_id', $user->team_id);
         }
         // Team members see all orders (with badge for assigned ones)
@@ -116,21 +116,7 @@ class OrderController extends Controller
             $monthEnd = now()->copy()->endOfMonth();
         }
 
-        $query->where(function ($q) use ($monthStart, $monthEnd, $finishedStatuses) {
-            $q->where('start_date', '<=', $monthEnd)
-                ->where(function ($inner) use ($monthStart, $finishedStatuses) {
-                    // Active orders (not finished or cancelled)
-                    $inner->whereNotIn('status', array_merge($finishedStatuses, ['cancelled']))
-                        // OR finished during or after this month
-                        ->orWhere(function ($done) use ($monthStart, $finishedStatuses) {
-                            $done->whereIn('status', $finishedStatuses)
-                                ->where(function ($dt) use ($monthStart) {
-                                    $dt->whereNull('delivered_at')
-                                        ->orWhere('delivered_at', '>=', $monthStart);
-                                });
-                        });
-                });
-        });
+        $query->inMonth($monthStart, $monthEnd);
 
         // Custom search field or DataTables search
         $searchTerm = $request->input('search') ?? $request->input('search.value');
@@ -175,7 +161,7 @@ class OrderController extends Controller
 
             // Note: Column 0 is checkbox (null data), so subtract 1 from client-side column index
             $adjustedColumn = $orderColumn - 1;
-            $columns = ['order_id', 'name', 'status', 'priority', 'actual_revenue', 'team_id', 'tech_stack_id', 'freelance_profile_id', 'end_date', 'created_at', 'delivered_at'];
+            $columns = ['order_id', 'name', 'status', 'priority', 'actual_revenue', 'team_id', 'tech_stack_id', 'freelance_profile_id', 'end_date', 'created_at', 'completed_at'];
 
             // Sales people do not get the team and assignee columns, so the
             // client side indexes shift by two from that point on.
@@ -192,6 +178,11 @@ class OrderController extends Controller
             $finishedOrCancelled = array_merge($finishedStatuses, ['cancelled']);
             $now = now();
             $dueSoonThreshold = now()->addDays(4);
+
+            // Sales users see every order, but theirs come first within that.
+            if ($user->isSales()) {
+                $query->orderByRaw('CASE WHEN sales_user_id = ? THEN 0 ELSE 1 END', [$user->id]);
+            }
 
             $query->orderByRaw(
                 'CASE
@@ -231,6 +222,7 @@ class OrderController extends Controller
                 'created_at' => $order->created_at ? $order->created_at->format('Y-m-d H:i:s') : null,
                 'updated_at' => $order->updated_at ? $order->updated_at->format('Y-m-d H:i:s') : null,
                 'delivered_at' => $order->delivered_at ? $order->delivered_at->format('Y-m-d H:i:s') : null,
+                'completed_at' => $order->completed_at ? $order->completed_at->format('Y-m-d H:i:s') : null,
                 'team' => $order->team ? $order->team->name : 'N/A',
                 'tech_stack' => $order->techStack ? $order->techStack->name : 'N/A',
                 'freelance_profile' => $order->freelanceProfile ? $order->freelanceProfile->username : 'N/A',
@@ -241,6 +233,8 @@ class OrderController extends Controller
                 'last_update_date' => $order->last_update_date ? $order->last_update_date->format('Y-m-d H:i:s') : null,
                 'is_assigned' => $order->users->contains('id', $currentUserId),
                 'is_my_team' => $order->team_id === auth()->user()->team_id,
+                'is_my_sale' => $user->isSales() && $order->sales_user_id === $currentUserId,
+                'needs_value_distribution' => $order->status === 'completed' && ! $order->isValueFullyDistributed(),
                 'users' => $order->users->map(function ($user) {
                     return [
                         'id' => $user->id,
@@ -269,6 +263,7 @@ class OrderController extends Controller
     protected function storeSalesOrder(array $validated, StoreOrderRequest $request, OrderDocumentService $documentService)
     {
         $orderValue = $validated['value'] ?? null;
+        $freelanceProfileId = $validated['freelance_profile_id'] ?? null;
 
         $order = Order::create([
             'order_id' => $validated['order_id'] ?? null,
@@ -277,9 +272,11 @@ class OrderController extends Controller
             'notes' => $validated['notes'] ?? null,
             'credentials' => RichTextSanitizer::clean($validated['credentials'] ?? null),
             'value' => $orderValue,
-            'actual_revenue' => $orderValue ? round($orderValue * 0.80, 2) : null,
-            'freelance_profile_id' => $validated['freelance_profile_id'] ?? null,
+            'actual_revenue' => $orderValue ? PlatformFeeCalculator::netFor($orderValue, $freelanceProfileId) : null,
+            'freelance_profile_id' => $freelanceProfileId,
             'status' => 'pending',
+            'is_repeat' => (bool) ($validated['is_repeat'] ?? false),
+            'repeat_client_key' => $validated['repeat_client_key'] ?? null,
             'progress' => 0,
             'priority' => 'medium',
             'start_date' => now()->toDateString(),
@@ -300,6 +297,7 @@ class OrderController extends Controller
     protected function updateSalesOrder(array $validated, UpdateOrderRequest $request, Order $order, OrderDocumentService $documentService)
     {
         $orderValue = $validated['value'] ?? null;
+        $freelanceProfileId = $validated['freelance_profile_id'] ?? null;
 
         $order->update([
             'order_id' => $validated['order_id'] ?? null,
@@ -308,8 +306,10 @@ class OrderController extends Controller
             'notes' => $validated['notes'] ?? null,
             'credentials' => RichTextSanitizer::clean($validated['credentials'] ?? null),
             'value' => $orderValue,
-            'actual_revenue' => $orderValue ? round($orderValue * 0.80, 2) : $order->actual_revenue,
-            'freelance_profile_id' => $validated['freelance_profile_id'] ?? null,
+            'actual_revenue' => $orderValue ? PlatformFeeCalculator::netFor($orderValue, $freelanceProfileId) : $order->actual_revenue,
+            'freelance_profile_id' => $freelanceProfileId,
+            'is_repeat' => (bool) ($validated['is_repeat'] ?? false),
+            'repeat_client_key' => $validated['repeat_client_key'] ?? null,
         ]);
 
         $documentService->store($order, $request->file('client_documents', []));
@@ -406,9 +406,11 @@ class OrderController extends Controller
             $validated['team_id'] = $user->team_id;
         }
 
-        // Auto-calculate net revenue (80% of order amount after Fiverr's 20% fee)
+        // Net revenue after the freelance profile's platform fee (Fiverr 20%, Upwork 10%).
         $orderValue = $validated['value'] ?? null;
-        $actualRevenue = $orderValue ? round($orderValue * 0.80, 2) : ($validated['actual_revenue'] ?? null);
+        $actualRevenue = $orderValue
+            ? PlatformFeeCalculator::netFor($orderValue, $validated['freelance_profile_id'] ?? null)
+            : ($validated['actual_revenue'] ?? null);
 
         $order = Order::create([
             'order_id' => $validated['order_id'] ?? null,
@@ -416,7 +418,9 @@ class OrderController extends Controller
             'description' => $validated['description'] ?? null,
             'notes' => $validated['notes'] ?? null,
             'credentials' => RichTextSanitizer::clean($validated['credentials'] ?? null),
-            'status' => $validated['status'],
+            'status' => $validated['status'] ?? 'nra',
+            'is_repeat' => (bool) ($validated['is_repeat'] ?? false),
+            'repeat_client_key' => $validated['repeat_client_key'] ?? null,
             'progress' => $validated['progress'] ?? 0,
             'priority' => $validated['priority'],
             'value' => $orderValue,
@@ -440,20 +444,20 @@ class OrderController extends Controller
         if (! empty($validated['users'])) {
             $order->users()->attach($validated['users']);
 
+            $assignedUsers = User::whereIn('id', $validated['users'])->get();
+
             OrderAudit::record($order, 'members_updated', [], [
-                'members' => User::whereIn('id', $validated['users'])->pluck('name')->all(),
+                'members' => $assignedUsers->pluck('name')->all(),
             ]);
 
             // Send notifications to assigned users
-            foreach ($validated['users'] as $userId) {
-                $assignedUser = User::find($userId);
-                if ($assignedUser) {
-                    EmailService::sendTo($assignedUser->email, new OrderAssignmentNotification($order, $assignedUser, false));
-                }
+            foreach ($assignedUsers as $assignedUser) {
+                EmailService::sendTo($assignedUser->email, new OrderAssignmentNotification($order, $assignedUser, false));
             }
         }
 
         // Send notification to team leader if team is assigned
+        $order->load('team.teamLeader');
         if ($order->team && $order->team->teamLeader) {
             EmailService::sendTo($order->team->teamLeader->email, new OrderAssignmentNotification($order, $order->team->teamLeader, true));
         }
@@ -520,10 +524,12 @@ class OrderController extends Controller
 
         return response()->json([
             'html' => view('orders.partials.audit-entries', compact('audits', 'order'))->render(),
-            'has_more' => $audits->hasMorePages(),
-            'next_page' => $audits->currentPage() + 1,
             'total' => $audits->total(),
-            'showing' => $audits->count() + ($audits->currentPage() - 1) * self::AUDITS_PER_PAGE,
+            'per_page' => $audits->perPage(),
+            'current_page' => $audits->currentPage(),
+            'last_page' => $audits->lastPage(),
+            'from' => $audits->firstItem(),
+            'to' => $audits->lastItem(),
         ]);
     }
 
@@ -564,9 +570,11 @@ class OrderController extends Controller
         $oldRevenue = $order->actual_revenue;
         $oldMembers = $order->users()->pluck('name', 'users.id');
 
-        // Auto-calculate net revenue (80% of order amount after Fiverr's 20% fee)
+        // Net revenue after the freelance profile's platform fee (Fiverr 20%, Upwork 10%).
         $orderValue = $validated['value'] ?? null;
-        $actualRevenue = $orderValue ? round($orderValue * 0.80, 2) : ($validated['actual_revenue'] ?? null);
+        $actualRevenue = $orderValue
+            ? PlatformFeeCalculator::netFor($orderValue, $validated['freelance_profile_id'] ?? null)
+            : ($validated['actual_revenue'] ?? null);
 
         $order->update([
             'order_id' => $validated['order_id'] ?? null,
@@ -575,6 +583,8 @@ class OrderController extends Controller
             'notes' => $validated['notes'] ?? null,
             'credentials' => RichTextSanitizer::clean($validated['credentials'] ?? null),
             'status' => $validated['status'],
+            'is_repeat' => (bool) ($validated['is_repeat'] ?? false),
+            'repeat_client_key' => $validated['repeat_client_key'] ?? null,
             'progress' => $validated['progress'] ?? $order->progress,
             'priority' => $validated['priority'],
             'value' => $orderValue,
@@ -703,25 +713,96 @@ class OrderController extends Controller
 
     public function quickUpdate(Request $request, Order $order)
     {
-        $this->authorize('manageOperations', $order);
+        // Each field group is guarded by its own ability, so a request can
+        // only change the fields its sender is allowed to touch.
+        $requested = array_keys($request->all());
+
+        if (in_array('users', $requested, true)) {
+            $this->authorize('manageAssignment', $order);
+        }
+
+        if (array_intersect($requested, ['status', 'priority', 'completed_at', 'start_date', 'end_date', 'special_status', 'last_update_date', 'team_id', 'tech_stack_id', 'freelance_profile_id', 'order_id'])) {
+            $this->authorize('manageOperations', $order);
+        }
+
+        if (in_array('progress', $requested, true)) {
+            $this->authorize('updateProgress', $order);
+        }
+
+        if (array_intersect($requested, ['notes', 'credentials', 'description'])) {
+            $this->authorize('editContent', $order);
+        }
 
         $validated = $request->validate([
             'status' => 'nullable|string',
             'priority' => 'nullable|in:low,medium,high',
             'progress' => 'nullable|integer|min:0|max:100',
-            'delivered_at' => 'nullable|date',
+            'completed_at' => 'nullable|date',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'special_status' => 'nullable|in:selected_for_delivery,continue_for_next,stuck_order',
             'last_update_date' => 'nullable|date',
+            // Additional inline editable fields
+            'notes' => 'nullable|string',
+            'credentials' => 'nullable|string',
+            'description' => 'nullable|string',
+            'team_id' => 'nullable|exists:teams,id',
+            'tech_stack_id' => 'nullable|exists:tech_stacks,id',
+            'freelance_profile_id' => 'nullable|exists:profiles,id',
+            'order_id' => 'nullable|string|max:255|unique:orders,order_id,'.$order->id,
+            'users' => 'nullable|array',
+            'users.*' => 'exists:users,id',
         ]);
 
-        $order->update($validated);
+        // Handle special fields
+        if (isset($validated['credentials'])) {
+            $validated['credentials'] = RichTextSanitizer::clean($validated['credentials']);
+        }
+
+        $order->update(array_diff_key($validated, ['users' => null]));
+
+        // Handle user assignments
+        if (isset($validated['users'])) {
+            $currentUsers = $order->users->pluck('id')->toArray();
+            $newUsers = $validated['users'];
+
+            $removedUsers = array_diff($currentUsers, $newUsers);
+            $addedUsers = array_diff($newUsers, $currentUsers);
+
+            if (! empty($removedUsers) || ! empty($addedUsers)) {
+                $order->users()->sync($newUsers);
+
+                OrderAudit::record($order, 'members_updated', [
+                    'members' => $order->users->pluck('name')->all(),
+                ], [
+                    'members' => User::whereIn('id', $currentUsers)->pluck('name')->all(),
+                ]);
+            }
+        }
 
         return response()->json([
             'message' => 'Order updated successfully.',
-            'order' => $order->fresh(),
+            'order' => $order->fresh()->load(['users', 'team', 'techStack', 'freelanceProfile']),
         ]);
+    }
+
+    /**
+     * Upload client documents straight from the details page. Open to anyone
+     * who can edit the order's content — including the people assigned to it.
+     */
+    public function storeDocument(Request $request, Order $order, OrderDocumentService $documentService)
+    {
+        $this->authorize('editContent', $order);
+
+        $validated = $request->validate([
+            'client_documents' => 'required|array|max:20',
+            'client_documents.*' => 'required|file|max:20480|mimes:pdf,doc,docx,xls,xlsx,csv,txt,md,json,zip,png,jpg,jpeg,gif,webp',
+        ]);
+
+        $stored = $documentService->store($order, $request->file('client_documents', []));
+
+        return redirect()->back()
+            ->with('success', count($stored).' document(s) uploaded successfully.');
     }
 
     /**
@@ -744,7 +825,7 @@ class OrderController extends Controller
 
     public function destroyDocument(Order $order, string $document, OrderDocumentService $documentService)
     {
-        $this->authorize('update', $order);
+        $this->authorize('deleteDocuments', $order);
 
         $removed = $documentService->delete($order, $document);
 
@@ -775,7 +856,7 @@ class OrderController extends Controller
 
     public function assignUsers(Request $request, Order $order)
     {
-        $this->authorize('manageOperations', $order);
+        $this->authorize('manageAssignment', $order);
 
         $validated = $request->validate([
             'users' => 'required|array',
@@ -794,11 +875,10 @@ class OrderController extends Controller
         }
 
         // Send notifications to newly assigned users
-        foreach ($validated['users'] as $userId) {
-            $assignedUser = User::find($userId);
-            if ($assignedUser) {
-                EmailService::sendTo($assignedUser->email, new OrderAssignmentNotification($order, $assignedUser, false));
-            }
+        $assignedUsers = User::whereIn('id', $validated['users'])->get();
+
+        foreach ($assignedUsers as $assignedUser) {
+            EmailService::sendTo($assignedUser->email, new OrderAssignmentNotification($order, $assignedUser, false));
         }
 
         return response()->json([
@@ -839,6 +919,15 @@ class OrderController extends Controller
             $query->whereNotIn('id', $excludeIds);
         }
 
+        // Callers that are crediting delivery work (value distribution) pass
+        // this to keep sales and admin accounts — who don't do delivery
+        // work — out of the results, without changing the plain "assign
+        // someone to work on this order" search other callers still use.
+        $excludeRoles = array_filter(explode(',', (string) $request->input('exclude_roles', '')));
+        if (! empty($excludeRoles)) {
+            $query->whereDoesntHave('roles', fn ($q) => $q->whereIn('name', $excludeRoles));
+        }
+
         // Apply search filter - search by name, email, employee_id, position
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -849,9 +938,9 @@ class OrderController extends Controller
             });
         }
 
-        // Limit results and include team relationship
-        $users = $query->with('team:id,name')
-            ->select('id', 'name', 'email', 'employee_id', 'position', 'team_id')
+        // Limit results and include team and tech stack relationships
+        $users = $query->with('team:id,name', 'techStack:id,name')
+            ->select('id', 'name', 'email', 'employee_id', 'position', 'team_id', 'tech_stack_id')
             ->orderBy('name')
             ->limit(20)
             ->get();
@@ -859,5 +948,67 @@ class OrderController extends Controller
         return response()->json([
             'users' => $users,
         ]);
+    }
+
+    /**
+     * Existing clients for the repeat-order picker: one entry per client
+     * identity (client_key), searching client names directly on the orders
+     * table — no profile selection required. Each entry carries the client_key
+     * (so the order is attributed to the same client even if the typed name
+     * differs) plus the profile of the client's latest order, which the form
+     * uses to fill in the freelance profile when it is left empty.
+     */
+    public function searchClients(Request $request)
+    {
+        $validated = $request->validate([
+            'q' => 'nullable|string|max:255',
+            'exclude' => 'nullable|integer|exists:orders,id',
+        ]);
+
+        $query = Order::query()
+            ->whereNotNull('client_key')
+            ->where('client_key', '!=', '');
+
+        if (filled($validated['exclude'] ?? null)) {
+            $query->where('id', '!=', $validated['exclude']);
+        }
+
+        if (filled($validated['q'] ?? null)) {
+            $query->where('name', 'like', '%'.$validated['q'].'%');
+        }
+
+        $clientKeys = $query
+            ->selectRaw('client_key, MAX(created_at) as latest_at')
+            ->groupBy('client_key')
+            ->orderByDesc('latest_at')
+            ->limit(5)
+            ->pluck('client_key');
+
+        if ($clientKeys->isEmpty()) {
+            return response()->json(['clients' => []]);
+        }
+
+        $clients = Order::query()
+            ->with('freelanceProfile')
+            ->whereIn('client_key', $clientKeys)
+            ->orderByDesc('created_at')
+            ->get()
+            ->groupBy('client_key')
+            ->map(fn ($orders) => $orders->first())
+            ->map(function (Order $order) {
+                $profile = $order->freelanceProfile;
+
+                return [
+                    'key' => $order->client_key,
+                    'name' => $order->name,
+                    'profile_id' => $order->freelance_profile_id,
+                    'profile_name' => $profile
+                        ? $profile->username.' ('.ucfirst($profile->platform).')'
+                        : '',
+                ];
+            })
+            ->values();
+
+        return response()->json(['clients' => $clients]);
     }
 }

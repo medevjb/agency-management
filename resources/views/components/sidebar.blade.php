@@ -16,7 +16,7 @@
             $currentSection = '';
             if (request()->routeIs('dashboard')) {
                 $currentSection = 'dashboard';
-            } elseif (request()->routeIs('orders.*')) {
+            } elseif (request()->routeIs('orders.*') || request()->routeIs('value-distribution.*')) {
                 $currentSection = 'orders';
             } elseif (request()->routeIs('tasks.*')) {
                 $currentSection = 'tasks';
@@ -59,8 +59,8 @@
             </div>
         @endrole
 
-        <!-- Sales Section - sales roles only -->
-        @role(['sales-leader', 'sales-member', 'admin'])
+        <!-- Sales Section -->
+        @role(['sales-leader', 'sales-member', 'admin', 'operation-manager', 'project-manager'])
             <div class="mb-2 sidebar-section" data-section="sales">
                 <button
                     class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
@@ -72,18 +72,33 @@
                         class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron {{ request()->routeIs('sales.*') ? 'rotate-180' : '' }}"></i>
                 </button>
                 <div class="sidebar-content mt-1 space-y-1 ml-4 {{ ! request()->routeIs('sales.*') ? 'hidden' : '' }}">
-                    <a href="{{ route('sales.dashboard') }}"
-                        class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('sales.dashboard') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
-                        <i class="fas fa-sack-dollar w-5 mr-2"></i>
-                        {{ auth()->user()->isSales() ? 'My Sales' : 'Sales Overview' }}
-                    </a>
                     @if(auth()->user()->isSales())
+                        <a href="{{ route('sales.dashboard') }}"
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('sales.dashboard') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            <i class="fas fa-sack-dollar w-5 mr-2"></i>
+                            My Sales
+                        </a>
                         <a href="{{ route('orders.create') }}"
                             class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('orders.create') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
                             <i class="fas fa-plus w-5 mr-2"></i>
                             Add Order
                         </a>
                     @endif
+                    @role(['admin', 'operation-manager', 'project-manager', 'sales-leader'])
+                        <a href="{{ route('sales.leadership') }}"
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('sales.leadership') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            <i class="fas fa-trophy w-5 mr-2"></i>
+                            Leadership Overview
+                        </a>
+                    @endrole
+                    @role(['admin', 'operation-manager', 'project-manager'])
+                        <a href="{{ route('sales.dashboard.preview') }}"
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('sales.dashboard.preview') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            <i class="fas fa-eye w-5 mr-2"></i>
+                            Member Dashboard Preview
+                            <span class="ml-auto text-[10px] font-bold uppercase tracking-wide text-indigo-300">Preview</span>
+                        </a>
+                    @endrole
                 </div>
             </div>
         @endrole
@@ -119,6 +134,13 @@
                         Add Order
                     </a>
                 @endcan
+                @role(['admin', 'operation-manager', 'project-manager', 'team-leader'])
+                    <a href="{{ route('value-distribution.index') }}"
+                        class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('value-distribution.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                        <i class="fas fa-sitemap w-5 mr-2"></i>
+                        Value Distribution
+                    </a>
+                @endrole
             </div>
         </div>
 
@@ -221,7 +243,7 @@
             @endcan
         @endrole
 
-        <!-- Portfolio Section -->
+        {{-- <!-- Portfolio Section -->
         @canany(['view any portfolio', 'view own portfolio'])
             <div class="mb-2 sidebar-section" data-section="portfolio">
                 <button
@@ -250,7 +272,7 @@
                     @endcan
                 </div>
             </div>
-        @endcanany
+        @endcanany --}}
 
         <!-- Team Management Section -->
         <div class="mb-2 sidebar-section" data-section="team">
@@ -269,11 +291,13 @@
                     <i class="fas fa-users w-5 mr-2"></i>
                     Teams
                 </a>
-                <a href="{{ route('tech-stacks.index') }}"
-                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tech-stacks.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
-                    <i class="fas fa-layer-group w-5 mr-2"></i>
-                    Tech Stacks
-                </a>
+                @unlessrole(['sales-leader', 'sales-member'])
+                    <a href="{{ route('tech-stacks.index') }}"
+                        class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tech-stacks.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                        <i class="fas fa-layer-group w-5 mr-2"></i>
+                        Tech Stacks
+                    </a>
+                @endunlessrole
             </div>
         </div>
 
@@ -337,11 +361,6 @@
                         <i class="fas fa-users-cog w-5 mr-2"></i>
                         Manage All Users
                     </a>
-                    <a href="{{ route('users.team-members') }}"
-                        class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('users.team-members') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
-                        <i class="fas fa-users w-5 mr-2"></i>
-                        My Team Members
-                    </a>
                     <a href="{{ route('admin.github.index') }}"
                         class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('admin.github.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
                         <i class="fas fa-code-branch w-5 mr-2"></i>
@@ -349,19 +368,6 @@
                     </a>
                 </div>
             </div>
-        @endrole
-
-        <!-- Team Members link for team-leader/stack-leader -->
-        @role(['team-leader', 'stack-leader'])
-            @unlessrole(['admin', 'operation-manager', 'project-manager'])
-                <div class="mb-2 sidebar-section" data-section="admin">
-                    <a href="{{ route('users.team-members') }}"
-                        class="flex items-center px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 {{ request()->routeIs('users.team-members') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
-                        <i class="fas fa-users w-5 mr-2 text-pink-400"></i>
-                        My Team Members
-                    </a>
-                </div>
-            @endunlessrole
         @endrole
     </nav>
 

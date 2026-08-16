@@ -137,13 +137,13 @@ class RoleAndPermissionSeeder extends Seeder
             'view dashboard', 'view team dashboard',
         ]);
 
-        // TEAM LEADER — Manage own team, create orders/tasks for team, see team revenue
+        // TEAM LEADER — Create orders/tasks for team, see team revenue. View-only
+        // on the team roster itself — only Admin/OM/PM can edit teams.
         $teamLeader = Role::firstOrCreate(['name' => 'team-leader']);
         $teamLeader->syncPermissions([
-            'manage team members', 'create users',
             'view orders', 'create orders', 'edit orders', 'delete orders', 'view order amounts',
             'view tasks', 'create tasks', 'edit tasks', 'delete tasks', 'edit task status', 'submit tasks',
-            'view teams', 'edit teams',
+            'view teams',
             'view tech stacks', 'create tech stacks', 'edit tech stacks', 'delete tech stacks', 'manage tech stack members',
             'view profiles', 'view freelance profiles',
             'view bug reports', 'create bug reports',
@@ -179,6 +179,7 @@ class RoleAndPermissionSeeder extends Seeder
 
         // SALES LEADER — Owns a group of sales members; sees every order sold by
         // that group. No access to operational team, member or delivery data.
+        // Can see all running orders like admin/OM/PM, with their orders highlighted.
         $salesLeader = Role::firstOrCreate(['name' => 'sales-leader']);
         $salesLeader->syncPermissions([
             'view orders', 'create orders', 'edit orders', 'view order amounts',
@@ -188,9 +189,11 @@ class RoleAndPermissionSeeder extends Seeder
             'view profiles', 'view freelance profiles',
             'view bug reports', 'create bug reports',
             'view own portfolio', 'create portfolio', 'edit own portfolio', 'delete own portfolio',
+            'view teams', // View-only access to teams
         ]);
 
-        // SALES MEMBER — Sells under one sales leader; sees only their own orders.
+        // SALES MEMBER — Sells under one sales leader; sees all running orders
+        // with their own orders highlighted at the top of the list.
         $salesMember = Role::firstOrCreate(['name' => 'sales-member']);
         $salesMember->syncPermissions([
             'view orders', 'create orders', 'edit orders', 'view order amounts',
@@ -200,6 +203,7 @@ class RoleAndPermissionSeeder extends Seeder
             'view profiles', 'view freelance profiles',
             'view bug reports', 'create bug reports',
             'view own portfolio', 'create portfolio', 'edit own portfolio', 'delete own portfolio',
+            'view teams', // View-only access to see their team
         ]);
 
         // 3. Migrate old roles to team-member
