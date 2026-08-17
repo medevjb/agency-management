@@ -43,8 +43,6 @@ class StoreUserRequest extends FormRequest
             'sales_target' => 'nullable|numeric|min:0|max:99999999.99',
             'sales_target_month' => 'nullable|date_format:Y-m',
             'tech_stack_id' => 'nullable|exists:tech_stacks,id',
-            'permissions' => 'nullable|array',
-            'permissions.*' => 'exists:permissions,id',
             'managed_teams' => 'nullable|array',
             'managed_teams.*' => 'exists:teams,id',
         ];
@@ -109,8 +107,6 @@ class StoreUserRequest extends FormRequest
             'team_id.exists' => 'Selected team does not exist.',
             'sales_leader_id.exists' => 'Selected sales leader does not exist.',
             'tech_stack_id.exists' => 'Selected tech stack does not exist.',
-            'permissions.array' => 'Permissions must be an array.',
-            'permissions.*.exists' => 'One or more selected permissions are invalid.',
         ];
     }
 }

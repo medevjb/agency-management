@@ -103,6 +103,26 @@ class OrderManagementTest extends TestCase
         $this->assertSame('Vue', $response->json('users.0.tech_stack.name'));
     }
 
+    public function test_team_user_search_also_returns_sales_leader_and_sales_member(): void
+    {
+        $team = Team::factory()->create();
+        $otherTeam = Team::factory()->create();
+
+        Role::create(['name' => 'sales-leader']);
+        Role::create(['name' => 'sales-member']);
+
+        $this->user->update(['team_id' => $team->id]);
+        User::factory()->create(['name' => 'Sales Leader Person', 'team_id' => $otherTeam->id])->assignRole('sales-leader');
+        User::factory()->create(['name' => 'Sales Member Person', 'team_id' => $otherTeam->id])->assignRole('sales-member');
+
+        $response = $this->actingAs($this->user)->getJson(route('orders.search-users', ['search' => 'Person']))
+            ->assertOk();
+
+        $names = array_column($response->json('users'), 'name');
+        $this->assertContains('Sales Leader Person', $names);
+        $this->assertContains('Sales Member Person', $names);
+    }
+
     public function test_credentials_are_encrypted_at_rest(): void
     {
         $order = Order::factory()->create([
@@ -459,6 +479,33 @@ class OrderManagementTest extends TestCase
             ->assertSee('id="progressEditToggle"', false);
     }
 
+    public function test_the_orders_index_includes_the_progress_update_modal(): void
+    {
+        $this->actingAs($this->user)
+            ->get(route('orders.index'))
+            ->assertOk()
+            ->assertSee('id="progressModal"', false)
+            ->assertSee('id="progressModalRange"', false)
+            ->assertSee('data-progress-preset="25"', false);
+    }
+
+    public function test_stored_credentials_are_revealable_and_editable_on_the_show_page(): void
+    {
+        $order = Order::factory()->create([
+            'created_by' => $this->user->id,
+            'credentials' => '<p>cPanel: admin / secret</p>',
+        ]);
+
+        $this->actingAs($this->user)
+            ->get(route('orders.show', $order))
+            ->assertOk()
+            ->assertSee('id="credentialsToggle"', false)
+            ->assertSee('id="credentialsBody"', false)
+            ->assertSee('is-masked', false)
+            ->assertSee('id="credentialsPlainEditor"', false)
+            ->assertSee('id="credentialsQuillEditor"', false);
+    }
+
     public function test_a_team_member_not_assigned_to_an_order_cannot_update_its_progress(): void
     {
         Role::create(['name' => 'team-member']);
@@ -584,6 +631,193 @@ class OrderManagementTest extends TestCase
         $this->assertSame('in-progress', $otherOrder->fresh()->status);
     }
 
+    public function test_a_team_leader_sees_every_order(): void
+    {
+        Role::create(['name' => 'team-leader']);
+        $team = Team::factory()->create();
+        $leader = User::factory()->create(['team_id' => $team->id]);
+        $leader->assignRole('team-leader');
+
+        $ownOrder = Order::factory()->create(['created_by' => $this->user->id, 'team_id' => $team->id]);
+        $otherTeam = Team::factory()->create();
+        $otherOrder = Order::factory()->create(['created_by' => $this->user->id, 'team_id' => $otherTeam->id]);
+
+        $data = $this->actingAs($leader)->getJson(route('orders.data'))->assertOk()->json('data');
+
+        $visibleIds = array_column($data, 'id');
+        $this->assertContains($ownOrder->id, $visibleIds);
+        $this->assertContains($otherOrder->id, $visibleIds);
+
+        $this->actingAs($leader)->get(route('orders.show', $otherOrder))->assertOk();
+    }
+
+    public function test_a_team_leader_can_only_edit_their_own_teams_orders(): void
+    {
+        Role::create(['name' => 'team-leader']);
+        $team = Team::factory()->create();
+        $leader = User::factory()->create(['team_id' => $team->id]);
+        $leader->assignRole('team-leader');
+
+        $ownOrder = Order::factory()->create(['created_by' => $this->user->id, 'team_id' => $team->id]);
+        $otherTeam = Team::factory()->create();
+        $otherOrder = Order::factory()->create(['created_by' => $this->user->id, 'team_id' => $otherTeam->id]);
+
+        $this->actingAs($leader)->postJson(route('orders.quick-update', $ownOrder), [
+            'status' => 'completed',
+        ])->assertOk();
+
+        $this->assertSame('completed', $ownOrder->fresh()->status);
+
+        $this->actingAs($leader)->postJson(route('orders.quick-update', $otherOrder), [
+            'status' => 'completed',
+        ])->assertForbidden();
+
+        $this->assertSame('in-progress', $otherOrder->fresh()->status);
+    }
+
+    public function test_a_team_leader_can_reassign_the_team_on_any_order(): void
+    {
+        Role::create(['name' => 'team-leader']);
+        $team = Team::factory()->create();
+        $leader = User::factory()->create(['team_id' => $team->id]);
+        $leader->assignRole('team-leader');
+
+        $otherTeam = Team::factory()->create();
+        $otherOrder = Order::factory()->create(['created_by' => $this->user->id, 'team_id' => $otherTeam->id]);
+
+        $this->actingAs($leader)->postJson(route('orders.quick-update', $otherOrder), [
+            'team_id' => $team->id,
+        ])->assertOk();
+
+        $this->assertSame($team->id, $otherOrder->fresh()->team_id);
+    }
+
+    public function test_a_team_leader_sees_read_only_fields_on_other_teams_orders_but_the_team_stays_editable(): void
+    {
+        Role::create(['name' => 'team-leader']);
+        $team = Team::factory()->create();
+        $leader = User::factory()->create(['team_id' => $team->id]);
+        $leader->assignRole('team-leader');
+
+        $ownOrder = Order::factory()->create(['created_by' => $this->user->id, 'team_id' => $team->id]);
+        $otherTeam = Team::factory()->create();
+        $otherOrder = Order::factory()->create(['created_by' => $this->user->id, 'team_id' => $otherTeam->id]);
+
+        // Own team's order: the usual edit controls are present.
+        $own = $this->actingAs($leader)->get(route('orders.show', $ownOrder))->assertOk();
+        $own->assertSee('data-field="status"', false);
+        $own->assertSee('id="assignmentToggle"', false);
+        $own->assertSee('Edit Order', false);
+
+        // Another team's order: everything read-only…
+        $other = $this->actingAs($leader)->get(route('orders.show', $otherOrder))->assertOk();
+        $other->assertDontSee('data-field="status"', false);
+        $other->assertDontSee('data-field="priority"', false);
+        $other->assertDontSee('data-field="start_date"', false);
+        $other->assertDontSee('data-field="tech_stack_id"', false);
+        $other->assertDontSee('id="assignmentToggle"', false);
+        $other->assertDontSee('Edit Order', false);
+        $other->assertDontSee('id="inlineDocForm"', false);
+
+        // …except the team assignment, which any team leader can change.
+        $other->assertSee('data-field="team_id"', false);
+    }
+
+    public function test_a_team_leader_lands_with_their_own_team_preselected_in_the_filter(): void
+    {
+        Role::create(['name' => 'team-leader']);
+        $team = Team::factory()->create();
+        $leader = User::factory()->create(['team_id' => $team->id]);
+        $leader->assignRole('team-leader');
+
+        $response = $this->actingAs($leader)->get(route('orders.index'))->assertOk();
+
+        $response->assertSee("<option value=\"{$team->id}\" selected>{$team->name}</option>", false);
+
+        // Admin lands with no team preselected.
+        $admin = $this->actingAs($this->user)->get(route('orders.index'))->assertOk();
+        $admin->assertSee('<option value="" selected>All Teams</option>', false);
+    }
+
+    public function test_the_overdue_and_due_soon_sections_are_team_scoped_for_team_leaders(): void
+    {
+        Role::create(['name' => 'team-leader']);
+        $team = Team::factory()->create();
+        $leader = User::factory()->create(['team_id' => $team->id]);
+        $leader->assignRole('team-leader');
+
+        $ownOverdue = Order::factory()->create([
+            'created_by' => $this->user->id,
+            'team_id' => $team->id,
+            'status' => 'in-progress',
+            'name' => 'Own Team Overdue Order',
+            'end_date' => now()->subDay(),
+        ]);
+        $ownDueSoon = Order::factory()->create([
+            'created_by' => $this->user->id,
+            'team_id' => $team->id,
+            'status' => 'in-progress',
+            'name' => 'Own Team Due Soon Order',
+            'end_date' => now()->addDay(),
+        ]);
+
+        $otherTeam = Team::factory()->create();
+        $otherOverdue = Order::factory()->create([
+            'created_by' => $this->user->id,
+            'team_id' => $otherTeam->id,
+            'status' => 'in-progress',
+            'name' => 'Other Team Overdue Order',
+            'end_date' => now()->subDay(),
+        ]);
+        $otherDueSoon = Order::factory()->create([
+            'created_by' => $this->user->id,
+            'team_id' => $otherTeam->id,
+            'status' => 'in-progress',
+            'name' => 'Other Team Due Soon Order',
+            'end_date' => now()->addDay(),
+        ]);
+
+        // Team leader only sees their own team's overdue / due-soon alerts.
+        $leaderResponse = $this->actingAs($leader)->get(route('orders.index'))->assertOk();
+        $leaderResponse->assertSee('id="overduePanel"', false);
+        $leaderResponse->assertSee('Own Team Overdue Order', false);
+        $leaderResponse->assertSee('Own Team Due Soon Order', false);
+        $leaderResponse->assertDontSee('Other Team Overdue Order', false);
+        $leaderResponse->assertDontSee('Other Team Due Soon Order', false);
+
+        // Admin still sees every team's alerts.
+        $adminResponse = $this->actingAs($this->user)->get(route('orders.index'))->assertOk();
+        $adminResponse->assertSee('Own Team Overdue Order', false);
+        $adminResponse->assertSee('Other Team Overdue Order', false);
+        $adminResponse->assertSee('Own Team Due Soon Order', false);
+        $adminResponse->assertSee('Other Team Due Soon Order', false);
+    }
+
+    public function test_a_team_leader_can_only_assign_members_to_their_own_teams_orders(): void
+    {
+        Role::create(['name' => 'team-leader']);
+        $team = Team::factory()->create();
+        $leader = User::factory()->create(['team_id' => $team->id]);
+        $leader->assignRole('team-leader');
+
+        $member = User::factory()->create(['team_id' => $team->id]);
+        $ownOrder = Order::factory()->create(['created_by' => $this->user->id, 'team_id' => $team->id]);
+        $otherTeam = Team::factory()->create();
+        $otherOrder = Order::factory()->create(['created_by' => $this->user->id, 'team_id' => $otherTeam->id]);
+
+        $this->actingAs($leader)->postJson(route('orders.assign-users', $ownOrder), [
+            'users' => [$member->id],
+        ])->assertOk();
+
+        $this->assertTrue($ownOrder->fresh()->users->contains('id', $member->id));
+
+        $this->actingAs($leader)->postJson(route('orders.assign-users', $otherOrder), [
+            'users' => [$member->id],
+        ])->assertForbidden();
+
+        $this->assertFalse($otherOrder->fresh()->users->contains('id', $member->id));
+    }
+
     public function test_the_orders_list_offers_completed_as_a_status_option(): void
     {
         $response = $this->actingAs($this->user)->get(route('orders.index'))->assertOk();
@@ -607,18 +841,19 @@ class OrderManagementTest extends TestCase
         $this->assertNotNull($row['completed_at']);
     }
 
-    public function test_delivered_at_cannot_be_set_by_hand_but_completed_at_can_through_quick_update(): void
+    public function test_delivered_at_and_completed_at_can_be_set_through_quick_update(): void
     {
         $order = Order::factory()->create(['created_by' => $this->user->id, 'status' => 'in-progress']);
+        $deliveredAt = now()->toDateTimeString();
         $completedAt = now()->toDateTimeString();
 
         $this->actingAs($this->user)->postJson(route('orders.quick-update', $order), [
-            'delivered_at' => now()->toDateTimeString(),
+            'delivered_at' => $deliveredAt,
             'completed_at' => $completedAt,
         ])->assertOk();
 
         $fresh = $order->fresh();
-        $this->assertNull($fresh->delivered_at);
+        $this->assertSame($deliveredAt, $fresh->delivered_at->toDateTimeString());
         $this->assertSame($completedAt, $fresh->completed_at->toDateTimeString());
     }
 

@@ -198,7 +198,7 @@
                         Edit Project
                     </a>
                     @if(auth()->id() === $portfolio->user_id || auth()->user()->can('delete any portfolio'))
-                    <button onclick="deletePortfolio({{ $portfolio->id }})"
+                    <button onclick="deletePortfolio('{{ $portfolio->getRouteKey() }}')"
                             class="flex items-center justify-center w-full px-4 py-3 bg-white hover:bg-red-50 text-red-600 font-semibold rounded-lg border-2 border-red-200 hover:border-red-300 transition-all">
                         <i class="fas fa-trash mr-2"></i>
                         Delete Project

@@ -334,6 +334,64 @@
     }
 
     .dark .s-empty { border-color: #1f2937; }
+
+    .s-icon-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 0.75rem;
+        font-size: 0.875rem;
+        background-color: #eef2ff;
+        color: #4f46e5;
+    }
+
+    .dark .s-icon-chip { background-color: rgba(99, 102, 241, 0.12); color: #a5b4fc; }
+
+    .s-icon-chip.is-emerald { background-color: #d1fae5; color: #059669; }
+    .s-icon-chip.is-amber { background-color: #fef3c7; color: #d97706; }
+    .s-icon-chip.is-rose { background-color: #fee2e2; color: #e11d48; }
+
+    .dark .s-icon-chip.is-emerald { background-color: rgba(16, 185, 129, 0.12); color: #6ee7b7; }
+    .dark .s-icon-chip.is-amber { background-color: rgba(245, 158, 11, 0.12); color: #fcd34d; }
+    .dark .s-icon-chip.is-rose { background-color: rgba(244, 63, 94, 0.12); color: #fda4af; }
+
+    /* Month-end projection strip in the hero */
+    .s-projection {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.875rem 1rem;
+        border-radius: 0.875rem;
+        background-color: #f9fafb;
+        border: 1px solid #f3f4f6;
+    }
+
+    .dark .s-projection {
+        background-color: rgba(31, 41, 55, 0.55);
+        border-color: #1f2937;
+    }
+
+    .s-overdue-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.125rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.625rem;
+        font-weight: 800;
+        white-space: nowrap;
+        background-color: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .dark .s-overdue-badge { background-color: rgba(239, 68, 68, 0.15); color: #fca5a5; }
+
+    .s-share span.is-rose { background-image: linear-gradient(90deg, #dc2626 0%, #f87171 100%); }
+    .s-share span.is-emerald { background-image: linear-gradient(90deg, #059669 0%, #10b981 100%); }
 </style>
 @endpush
 
@@ -397,6 +455,28 @@
         @endunless
     </div>
 
+    @if($bonus !== null)
+        <div class="s-panel p-6 border-emerald-200 dark:border-emerald-900">
+            <div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                    <p class="s-eyebrow">Q{{ $bonus['quarter'] }} Bonus</p>
+                    <p class="mt-2 text-4xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 s-num">৳{{ number_format((float) $bonus['bonus_payment_amount'], 2) }}</p>
+                    <p class="mt-1 text-sm font-semibold text-gray-600 dark:text-gray-300">{{ ucfirst(strtolower($bonus['status'])) }} bonus</p>
+                </div>
+                @if($bonus['configuration_available'])
+                    <div class="grid grid-cols-2 gap-x-8 gap-y-3 text-sm sm:text-right">
+                        <div><p class="s-eyebrow">Extra sales</p><p class="font-bold s-num">${{ number_format((float) $bonus['qualified_extra_sales'], 2) }}</p></div>
+                        <div><p class="s-eyebrow">Bonus rate</p><p class="font-bold s-num">{{ number_format((float) $bonus['bonus_percentage'] * 100, 2) }}%</p></div>
+                        <div><p class="s-eyebrow">Before conversion</p><p class="font-bold s-num">${{ number_format((float) $bonus['bonus_source_amount'], 2) }}</p></div>
+                        <div><p class="s-eyebrow">USD → BDT</p><p class="font-bold s-num">৳{{ number_format((float) $bonus['exchange_rate'], 4) }} / USD</p></div>
+                    </div>
+                @else
+                    <p class="max-w-md text-sm text-amber-700 dark:text-amber-300">Your admin has not yet configured a bonus percentage and USD-to-BDT rate for this period.</p>
+                @endif
+            </div>
+        </div>
+    @endif
+
     <!-- Sales amount: the headline -->
     <div class="s-panel p-6 sm:p-8">
         <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
@@ -420,11 +500,37 @@
             </div>
 
             <div class="text-left lg:text-right">
-                <p class="s-eyebrow">Best month in the last year</p>
+                <p class="s-eyebrow"><i class="fas fa-trophy text-amber-400 mr-1"></i>Best month in the last year</p>
                 <p class="mt-1 text-lg font-bold text-gray-900 dark:text-gray-100 s-num">
                     ${{ number_format((float) ($bestMonth['amount'] ?? 0), 2) }}
                     <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">in {{ $bestMonth['label'] ?? '—' }}</span>
                 </p>
+            </div>
+        </div>
+
+        @php
+            $pace = $projection['pace'];
+            $paceTone = $pace === 'ahead' ? 'is-met' : ($pace === 'close' ? 'is-close' : ($pace === 'behind' ? 'is-behind' : 'is-none'));
+            $paceLabel = $pace === 'ahead' ? 'On track' : ($pace === 'close' ? 'Almost there' : ($pace === 'behind' ? 'Behind pace' : 'No target set'));
+        @endphp
+        <div class="s-projection mt-6">
+            <div class="flex items-center gap-3">
+                <span class="w-9 h-9 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-sm">
+                    <i class="fas fa-bullseye"></i>
+                </span>
+                <div>
+                    <p class="s-eyebrow">Month-end projection</p>
+                    <p class="text-lg font-extrabold text-gray-900 dark:text-gray-100 s-num">${{ number_format($projection['projected'], 2) }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 s-num">day {{ $projection['daysElapsed'] }} of {{ $projection['daysInCycle'] }}</p>
+                </div>
+            </div>
+            <div class="text-left lg:text-right">
+                <span class="s-target-tag {{ $paceTone }}">{{ $paceLabel }}</span>
+                @if($projection['projectedPct'] !== null)
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 s-num">{{ $projection['projectedPct'] }}% of the ${{ number_format((float) $heroStats['target'], 2) }} target</p>
+                @else
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">no target set for {{ $monthDate->format('F') }}</p>
+                @endif
             </div>
         </div>
 
@@ -482,22 +588,34 @@
     <!-- Supporting numbers -->
     <div class="s-grid-4">
         <div class="s-panel p-5">
-            <p class="s-stat-label">Orders sold</p>
+            <div class="flex items-center justify-between gap-2">
+                <p class="s-stat-label">Orders sold</p>
+                <span class="s-icon-chip"><i class="fas fa-receipt"></i></span>
+            </div>
             <p class="s-stat-value">{{ $heroStats['count'] }}</p>
             <p class="s-stat-foot">in {{ $monthDate->format('F Y') }}</p>
         </div>
         <div class="s-panel p-5">
-            <p class="s-stat-label">Average deal</p>
+            <div class="flex items-center justify-between gap-2">
+                <p class="s-stat-label">Average deal</p>
+                <span class="s-icon-chip"><i class="fas fa-chart-line"></i></span>
+            </div>
             <p class="s-stat-value">${{ number_format($heroStats['averageDeal'], 2) }}</p>
             <p class="s-stat-foot">sold value ÷ orders</p>
         </div>
         <div class="s-panel p-5">
-            <p class="s-stat-label">Delivered this month</p>
+            <div class="flex items-center justify-between gap-2">
+                <p class="s-stat-label">Delivered this month</p>
+                <span class="s-icon-chip is-emerald"><i class="fas fa-box-open"></i></span>
+            </div>
             <p class="s-stat-value">${{ number_format($heroStats['deliveredAmount'], 2) }}</p>
             <p class="s-stat-foot s-num">{{ $heroStats['deliveredCount'] }} {{ \Illuminate\Support\Str::plural('order', $heroStats['deliveredCount']) }} handed over</p>
         </div>
         <div class="s-panel p-5">
-            <p class="s-stat-label">Still in delivery</p>
+            <div class="flex items-center justify-between gap-2">
+                <p class="s-stat-label">Still in delivery</p>
+                <span class="s-icon-chip is-amber"><i class="fas fa-hourglass-half"></i></span>
+            </div>
             <p class="s-stat-value">${{ number_format($heroStats['openAmount'], 2) }}</p>
             <div class="s-share mt-2">
                 <span style="width: {{ $heroStats['openProgress'] }}%"></span>
@@ -508,6 +626,71 @@
         </div>
     </div>
 
+    <!-- Delivery pipeline -->
+    <div class="s-panel p-5 sm:p-6">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div>
+                <p class="s-eyebrow">Delivery pipeline · {{ $monthDate->format('F Y') }}</p>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    {{ $showsBreakdown ? 'Open orders the team holds credit in' : 'Open orders you hold credit in' }} — progress-weighted expected revenue, and anything already past its deadline.
+                </p>
+            </div>
+            <a href="{{ route('orders.index') }}" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
+                All orders
+            </a>
+        </div>
+
+        <div class="grid sm:grid-cols-3 gap-4">
+            <div class="rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-800 p-4">
+                <p class="text-xs font-bold text-gray-500 dark:text-gray-400">In delivery</p>
+                <p class="mt-1 text-2xl font-extrabold text-gray-900 dark:text-gray-100 s-num">${{ number_format($pipeline['total'], 2) }}</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500 s-num">{{ $pipeline['count'] }} {{ \Illuminate\Support\Str::plural('order', $pipeline['count']) }} still running</p>
+            </div>
+            <div class="rounded-xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 p-4">
+                <p class="text-xs font-bold text-indigo-700 dark:text-indigo-400">Expected revenue</p>
+                <p class="mt-1 text-2xl font-extrabold text-indigo-700 dark:text-indigo-300 s-num">${{ number_format($pipeline['expected'], 2) }}</p>
+                <div class="s-share mt-2">
+                    <span style="width: {{ $pipeline['total'] > 0 ? min(100, round($pipeline['expected'] / $pipeline['total'] * 100)) : 0 }}%"></span>
+                </div>
+                <p class="mt-1 text-xs text-indigo-500 dark:text-indigo-400 s-num">{{ $pipeline['total'] > 0 ? round($pipeline['expected'] / $pipeline['total'] * 100) : 0 }}% of deal value done</p>
+            </div>
+            <div class="rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 p-4">
+                <p class="text-xs font-bold text-rose-700 dark:text-rose-400">At risk</p>
+                <p class="mt-1 text-2xl font-extrabold text-rose-700 dark:text-rose-300 s-num">${{ number_format($pipeline['atRiskValue'], 2) }}</p>
+                <p class="text-xs text-rose-500 dark:text-rose-400 s-num">{{ $pipeline['atRiskCount'] }} overdue {{ \Illuminate\Support\Str::plural('order', $pipeline['atRiskCount']) }}</p>
+            </div>
+        </div>
+
+        @if($pipeline['atRisk']->isNotEmpty())
+            <div class="mt-5">
+                <p class="s-eyebrow mb-1">Past deadline — needs attention</p>
+                <div>
+                    @foreach($pipeline['atRisk'] as $atRisk)
+                        <a href="{{ route('orders.show', $atRisk['id']) }}" class="flex flex-wrap items-center justify-between gap-3 py-2.5 px-2 -mx-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
+                            <div class="min-w-0">
+                                <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                                    {{ $atRisk['name'] }}
+                                    @if($atRisk['sales_user'])
+                                        <span class="text-xs font-normal text-gray-400 dark:text-gray-500">· {{ $atRisk['sales_user'] }}</span>
+                                    @endif
+                                </p>
+                                <p class="text-xs text-gray-400 dark:text-gray-500 s-num">due {{ $atRisk['end_date']->format('M d') }}</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="s-overdue-badge"><i class="fas fa-clock text-[9px]"></i>{{ $atRisk['days_overdue'] }}d overdue</span>
+                                <span class="text-sm font-bold text-gray-900 dark:text-gray-100 s-num">${{ number_format($atRisk['value'], 2) }}</span>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        @else
+            <div class="mt-5 flex items-center gap-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 px-4 py-3">
+                <i class="fas fa-check-circle text-emerald-500"></i>
+                <p class="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Nothing overdue — every open order is still within its deadline.</p>
+            </div>
+        @endif
+    </div>
     <!-- Fresh vs. Repeat -->
     <div class="s-panel p-5 sm:p-6">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
@@ -673,6 +856,30 @@
                     @endforeach
                 </div>
             </div>
+
+            @if($topClients->isNotEmpty())
+                @php $topClientMax = max(1, (float) $topClients->max('amount')); @endphp
+                <div class="s-panel p-5">
+                    <p class="s-eyebrow mb-3">Top clients · {{ $monthDate->format('F') }}</p>
+                    @foreach($topClients as $client)
+                        <div class="py-2.5 border-b border-gray-100 dark:border-gray-800 last:border-0">
+                            <div class="flex items-baseline justify-between gap-3">
+                                <span class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                                    {{ $client['name'] }}
+                                    @if($client['repeat_count'] > 0)
+                                        <span class="s-chip ml-1"><i class="fas fa-rotate-right text-[9px]"></i>×{{ $client['repeat_count'] }} repeat</span>
+                                    @endif
+                                </span>
+                                <span class="text-sm font-bold text-gray-900 dark:text-gray-100 s-num">${{ number_format($client['amount'], 2) }}</span>
+                            </div>
+                            <div class="s-share">
+                                <span style="width: {{ round($client['amount'] / $topClientMax * 100) }}%"></span>
+                            </div>
+                            <p class="mt-1 text-xs text-gray-400 dark:text-gray-500 s-num">{{ $client['count'] }} {{ \Illuminate\Support\Str::plural('order', $client['count']) }}</p>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
         </div>
     </div>
 </div>

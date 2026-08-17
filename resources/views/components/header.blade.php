@@ -26,7 +26,7 @@
                             <i class="fas fa-chevron-down month-picker-chevron" :class="{ 'is-open': open }"></i>
                         </button>
 
-                        <div x-show="open" x-transition x-cloak @click.away="open = false"
+                        <div x-show="open" x-transition x-cloak
                              class="month-picker-panel">
                             <p class="month-picker-heading">Viewing data for</p>
                             <div class="month-picker-list">

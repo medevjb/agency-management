@@ -388,6 +388,48 @@ div.dt-container div.dt-search {
     background: rgba(255, 255, 255, 0.3);
 }
 
+/* Global Custom Scrollbar */
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+    background-clip: content-box;
+}
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+/* Global Custom Scrollbar - Dark Mode */
+html.dark *::-webkit-scrollbar-thumb {
+    background: #334155;
+    background-clip: content-box;
+}
+
+html.dark *::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+    background-clip: content-box;
+}
+
+html.dark * {
+    scrollbar-color: #475569 transparent;
+}
+
 /* Orders Form Styles */
 .form-card {
     @apply bg-white rounded-2xl shadow-lg overflow-hidden;

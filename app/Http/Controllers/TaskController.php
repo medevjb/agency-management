@@ -50,7 +50,10 @@ class TaskController extends Controller
                 $query->where('order_id', $projectId);
             })
             ->latest()
-            ->get();
+            ->get()
+            ->each(function ($task) {
+                $task->key = $task->getRouteKey();
+            });
 
         $orders = Order::all();
         $users = User::all();
@@ -200,6 +203,7 @@ class TaskController extends Controller
         $this->authorize('view', $task);
 
         $task->load(['order', 'assignedTo', 'createdBy']);
+        $task->key = $task->getRouteKey();
 
         // Return JSON for AJAX requests
         if (request()->expectsJson()) {
@@ -223,6 +227,7 @@ class TaskController extends Controller
         }
 
         $task->load('order');
+        $task->key = $task->getRouteKey();
 
         return response()->json([
             'task' => $task,
@@ -432,7 +437,10 @@ class TaskController extends Controller
             ->where('status', 'archived')
             ->when(! $user->hasRole(['admin', 'operation-manager', 'project-manager']), $this->visibleTo($user, $teamMemberIds))
             ->orderBy('archived_at', 'desc')
-            ->get();
+            ->get()
+            ->each(function ($task) {
+                $task->key = $task->getRouteKey();
+            });
 
         $stats = [
             'total' => $tasks->count(),

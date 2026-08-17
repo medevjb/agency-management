@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\EncryptsRouteKeys;
 use Database\Factories\GithubAccountFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class GithubAccount extends Model
 {
     /** @use HasFactory<GithubAccountFactory> */
-    use HasFactory;
+    use EncryptsRouteKeys, HasFactory;
 
     protected $fillable = [
         'label',

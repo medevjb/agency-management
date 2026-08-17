@@ -56,7 +56,7 @@
             </div>
             <div class="flex gap-3">
                 @can('update', $team)
-                <a href="{{ route('teams.edit', $team->id) }}" class="inline-flex items-center px-4 py-2.5 border-2 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 font-semibold transition-all">
+                <a href="{{ route('teams.edit', $team) }}" class="inline-flex items-center px-4 py-2.5 border-2 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 font-semibold transition-all">
                     <i class="fas fa-edit mr-2"></i>Edit Team
                 </a>
                 @endcan
@@ -242,7 +242,7 @@
                                     </div>
                                     @can('removeMember', $team)
                                         @if($member->id !== $team->team_leader_id)
-                                        <form action="{{ route('teams.remove-member', [$team->id, $member->id]) }}"
+                                        <form action="{{ route('teams.remove-member', [$team, $member]) }}"
                                               method="POST" onsubmit="return confirm('Remove {{ $member->name }} from this team?')">
                                             @csrf
                                             @method('DELETE')
@@ -286,7 +286,7 @@
                                 <div class="order-card flex items-center justify-between p-4 border-2 border-gray-100 dark:border-gray-800 rounded-xl hover:border-purple-300 dark:hover:border-purple-700 bg-white dark:bg-gray-900">
                                     <div class="flex-1 min-w-0">
                                         <div class="flex items-center gap-3 mb-2">
-                                            <a href="{{ route('orders.show', $order->id) }}" class="text-lg font-semibold text-gray-900 dark:text-gray-100 hover:text-purple-600 dark:hover:text-purple-400 truncate">
+                                            <a href="{{ route('orders.show', $order) }}" class="text-lg font-semibold text-gray-900 dark:text-gray-100 hover:text-purple-600 dark:hover:text-purple-400 truncate">
                                                 {{ $order->name }}
                                             </a>
                                             @if($order->status === 'completed')
@@ -329,7 +329,7 @@
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <a href="{{ route('orders.show', $order->id) }}"
+                                        <a href="{{ route('orders.show', $order) }}"
                                            class="inline-flex items-center px-3 py-2 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-500/20 text-sm font-medium rounded-lg transition-all">
                                             <i class="fas fa-eye mr-1.5"></i>View
                                         </a>
@@ -443,12 +443,12 @@
                     </h2>
                 </div>
                 <div class="p-6 space-y-3">
-                    <a href="{{ route('teams.edit', $team->id) }}"
+                    <a href="{{ route('teams.edit', $team) }}"
                        class="flex items-center w-full px-4 py-3 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 rounded-xl font-medium transition-all">
                         <i class="fas fa-edit mr-3"></i>Edit Team
                     </a>
                     @can('delete', $team)
-                    <form action="{{ route('teams.destroy', $team->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this team? This action cannot be undone.')">
+                    <form action="{{ route('teams.destroy', $team) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this team? This action cannot be undone.')">
                         @csrf
                         @method('DELETE')
                         <button type="submit"
@@ -480,7 +480,7 @@
             </div>
         </div>
 
-        <form action="{{ route('teams.add-members', $team->id) }}" method="POST">
+        <form action="{{ route('teams.add-members', $team) }}" method="POST">
             @csrf
             <div class="p-6">
                 <div class="max-h-96 overflow-y-auto border-2 border-gray-200 dark:border-gray-700 rounded-xl p-4">

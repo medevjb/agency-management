@@ -10,10 +10,10 @@
         </div>
         <div class="flex gap-3">
             @if($task->created_by === auth()->id() || auth()->user()->role === 'admin')
-                <a href="{{ route('tasks.edit', $task->id) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
+                <a href="{{ route('tasks.edit', $task) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
                     <i class="fas fa-edit mr-2"></i>Edit Task
                 </a>
-                <form method="POST" action="{{ route('tasks.destroy', $task->id) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this task?');">
+                <form method="POST" action="{{ route('tasks.destroy', $task) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this task?');">
                     @csrf
                     @method('delete')
                     <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors">
@@ -148,7 +148,7 @@
             <div class="bg-white dark:bg-gray-900 rounded-lg shadow-md p-6">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Order</h2>
                 @if($task->order)
-                    <a href="{{ route('orders.show', $task->order->id) }}" class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    <a href="{{ route('orders.show', $task->order) }}" class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                         <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-500/10 rounded-lg flex items-center justify-center mr-3">
                             <i class="fas fa-folder text-indigo-600 dark:text-indigo-400"></i>
                         </div>
@@ -170,7 +170,7 @@
 axios.defaults.headers.common['X-CSRF-TOKEN'] = '{{ csrf_token() }}';
 
 function updateStatus(status) {
-    axios.patch(@js(route('tasks.update-status', ['task' => $task->id])), { status: status })
+    axios.patch(@js(route('tasks.update-status', ['task' => $task])), { status: status })
         .then(response => {
             const alert = document.createElement('div');
             alert.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';

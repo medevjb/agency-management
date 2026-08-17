@@ -1081,7 +1081,7 @@
                 <button class="filter-pill" data-filter="completed" onclick="filterByStatus('completed')">Completed</button>
             </div>
 
-            <select id="filterPriority" onchange="applyFilters()" class="px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:outline-none transition-colors font-semibold bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+            <select id="filterPriority" onchange="applyFilters()" class="px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:outline-none transition-colors font-semibold bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 w-[150px]">
                 <option value="">All Priorities</option>
                 <option value="urgent">Urgent</option>
                 <option value="high">High</option>
@@ -1245,12 +1245,21 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Assigned To</label>
-                                <select id="taskAssignedTo" class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
-                                    <option value="" selected>Assign to yourself</option>
-                                    @foreach($users as $user)
-                                        <option value="{{ $user->id }}">{{ $user->name }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="relative">
+                                    <input type="hidden" id="taskAssignedToId">
+                                    <input type="text"
+                                           id="taskAssignedToSearch"
+                                           placeholder="Search team members..."
+                                           autocomplete="off"
+                                           class="w-full px-4 py-3 pr-10 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+                                    <button type="button" id="clearTaskAssignedTo"
+                                            class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                                        <i class="fas fa-times text-xs"></i>
+                                    </button>
+                                    <div id="taskAssignedToDropdown"
+                                         class="hidden absolute z-[60] w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl shadow-lg max-h-52 overflow-y-auto">
+                                    </div>
+                                </div>
                                 <p class="text-red-500 text-xs mt-1 hidden" id="taskAssignedToError"></p>
                             </div>
                         </div>
@@ -1504,10 +1513,10 @@ function renderTaskCard(task) {
     return `
         <div class="task-card group relative cursor-pointer"
              draggable="true"
-             ondragstart="handleDragStart(event, ${task.id})"
+             ondragstart="handleDragStart(event, ${task.key})"
              ondragend="handleDragEnd(event)"
-             onclick="openViewModal(${task.id})"
-             data-task-id="${task.id}"
+             onclick="openViewModal('${task.key}')"
+             data-task-id="${task.key}"
              data-status="${task.status}">
 
             <!-- Priority Indicator Strip -->
@@ -1526,7 +1535,7 @@ function renderTaskCard(task) {
                            class="task-checkbox mt-1.5"
                            style="display: none;"
                            onchange="toggleTaskSelection(${task.id})"
-                           data-task-id="${task.id}">
+                           data-task-id="${task.key}">
 
                     <div class="flex-1 min-w-0">
                         <!-- Title Row -->
@@ -1625,19 +1634,19 @@ function renderTaskCard(task) {
 
                     <!-- Quick Actions (Right Side) -->
                     <div class="flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200">
-                        <button onclick="event.stopPropagation(); openEditModal(${task.id})"
+                        <button onclick="event.stopPropagation(); openEditModal('${task.key}')"
                                 class="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-sm hover:shadow"
                                 title="Edit task">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                         </button>
                         ${task.status === 'completed' ? `
-                            <button onclick="event.stopPropagation(); archiveTask(${task.id}, '${task.title.replace(/'/g, "\\'")}')" 
+                            <button onclick="event.stopPropagation(); archiveTask('${task.key}', '${task.title.replace(/'/g, "\\'")}')" 
                                     class="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-500/10 hover:bg-amber-100 dark:hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-sm hover:shadow"
                                     title="Archive task">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
                             </button>
                         ` : ''}
-                        <button onclick="event.stopPropagation(); deleteTask(${task.id}, '${task.title.replace(/'/g, "\\'")}')"
+                        <button onclick="event.stopPropagation(); deleteTask('${task.key}', '${task.title.replace(/'/g, "\\'")}')"
                                 class="w-7 h-7 rounded-lg bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-sm hover:shadow"
                                 title="Delete task">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
@@ -1704,7 +1713,7 @@ async function handleDrop(event, newStatus) {
     const taskId = parseInt(event.dataTransfer.getData('text/plain'));
     if (!taskId) return;
 
-    const task = tasksData.find(t => t.id === taskId);
+    const task = tasksData.find(t => t.key === taskId);
     if (!task || task.status === newStatus) return;
 
     // Optimistic update
@@ -1839,7 +1848,7 @@ function removeToast(toast) {
 
 // Update task status (for quick status change)
 async function quickUpdateStatus(taskId, status) {
-    const task = tasksData.find(t => t.id === taskId);
+    const task = tasksData.find(t => t.key === taskId);
     if (!task) return;
 
     const oldStatus = task.status;
@@ -1893,7 +1902,7 @@ async function confirmDeleteTask(taskId) {
     try {
         await axios.delete(ROUTES.destroy.replace('__ID__', taskId));
 
-        tasksData = tasksData.filter(t => t.id !== taskId);
+        tasksData = tasksData.filter(t => t.key !== taskId);
         renderTasks();
         updateStats();
 
@@ -1930,7 +1939,7 @@ async function confirmArchiveTask(taskId) {
     try {
         await axios.post(ROUTES.archive.replace('__ID__', taskId));
 
-        tasksData = tasksData.filter(t => t.id !== taskId);
+        tasksData = tasksData.filter(t => t.key !== taskId);
         renderTasks();
         updateStats();
 
@@ -1946,6 +1955,7 @@ function openCreateModal() {
     document.getElementById('taskForm').reset();
     document.getElementById('taskId').value = '';
     resetOrderPicker();
+    resetAssignedTo();
     document.getElementById('taskModal').classList.remove('hidden');
 }
 
@@ -1955,6 +1965,7 @@ function openCreateModalForStatus(status) {
     document.getElementById('taskId').value = '';
     document.getElementById('taskStatus').value = status;
     resetOrderPicker();
+    resetAssignedTo();
     document.getElementById('taskModal').classList.remove('hidden');
 }
 
@@ -1963,13 +1974,17 @@ function openEditModal(taskId) {
         .then(response => {
             const task = response.data.task;
             document.getElementById('modalTitle').textContent = 'Edit Task';
-            document.getElementById('taskId').value = task.id;
+            document.getElementById('taskId').value = task.key;
             document.getElementById('taskTitle').value = task.title;
             document.getElementById('taskDescription').value = task.description || '';
             document.getElementById('taskStatus').value = task.status;
             document.getElementById('taskPriority').value = task.priority;
             document.getElementById('taskDueDate').value = task.due_date || '';
-            document.getElementById('taskAssignedTo').value = task.assigned_to || '';
+            if (task.assigned_to && task.assignedTo) {
+                setAssignedTo(task.assigned_to, task.assignedTo.name);
+            } else {
+                resetAssignedTo();
+            }
             document.getElementById('taskEstimatedHours').value = task.estimated_hours || '';
             document.getElementById('taskActualHours').value = task.actual_hours || '';
 
@@ -2093,7 +2108,7 @@ async function archiveTaskFromModal() {
     try {
         await axios.post(ROUTES.archive.replace('__ID__', window.currentViewTaskId));
 
-        tasksData = tasksData.filter(t => t.id !== window.currentViewTaskId);
+        tasksData = tasksData.filter(t => t.key !== window.currentViewTaskId);
         renderTasks();
         updateStats();
         closeViewModal();
@@ -2112,7 +2127,7 @@ document.getElementById('taskForm').addEventListener('submit', async function(e)
     clearValidationErrors();
 
     const taskId = document.getElementById('taskId').value;
-    const assignedToValue = document.getElementById('taskAssignedTo').value;
+    const assignedToValue = document.getElementById('taskAssignedToId').value;
 
     const data = {
         title: document.getElementById('taskTitle').value,
@@ -2139,7 +2154,7 @@ document.getElementById('taskForm').addEventListener('submit', async function(e)
 
         if (taskId) {
             // Update existing task
-            const index = tasksData.findIndex(t => t.id === parseInt(taskId));
+            const index = tasksData.findIndex(t => t.key === taskId);
             if (index !== -1) {
                 tasksData[index] = response.data.task;
             }
@@ -2196,7 +2211,7 @@ function showValidationErrors(errors) {
         'estimated_hours': { input: 'taskEstimatedHours', error: 'taskEstimatedHoursError' },
         'actual_hours': { input: 'taskActualHours', error: 'taskActualHoursError' },
         'order_id': { input: 'taskOrderSearch', error: 'taskOrderError' },
-        'assigned_to': { input: 'taskAssignedTo', error: 'taskAssignedToError' }
+        'assigned_to': { input: 'taskAssignedToSearch', error: 'taskAssignedToError' }
     };
 
     for (const field in errors) {
@@ -2243,7 +2258,7 @@ function applyFilters() {
     const search = document.getElementById('searchTasks').value.toLowerCase();
 
     tasksData.forEach(task => {
-        const card = document.querySelector(`.task-card[data-task-id="${task.id}"]`);
+        const card = document.querySelector(`.task-card[data-task-id="${task.key}"]`);
         if (!card) return;
 
         let visible = true;
@@ -2384,6 +2399,92 @@ async function confirmBulkAction() {
     hideAlert();
     await executeBulkAction('delete');
 }
+
+// ── Modal Assignee AJAX Picker ───────────────────────────────────────────────
+(function () {
+    const searchInput  = document.getElementById('taskAssignedToSearch');
+    const dropdown     = document.getElementById('taskAssignedToDropdown');
+    const clearBtn     = document.getElementById('clearTaskAssignedTo');
+    const searchUrl    = '{{ route('tasks.search-users') }}';
+
+    let debounceTimer  = null;
+    let cachedLatest   = null;
+
+    function renderOptions(users) {
+        if (!users.length) {
+            dropdown.innerHTML = '<div class="px-4 py-3 text-sm text-gray-400 dark:text-gray-500">No members found</div>';
+        } else {
+            dropdown.innerHTML = users.map(user => `
+                <button type="button"
+                        data-id="${user.id}"
+                        data-name="${user.name.replace(/"/g, '&quot;')}"
+                        class="assignee-picker-option w-full text-left px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 text-gray-900 dark:text-gray-100 text-sm border-b border-gray-100 dark:border-gray-700 last:border-0 flex items-center gap-3 transition-colors">
+                    <span class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">${user.name.charAt(0).toUpperCase()}</span>
+                    <span class="min-w-0">
+                        <span class="block truncate font-medium">${user.name}</span>
+                        <span class="block text-xs text-gray-500 dark:text-gray-400 truncate">${user.email || (user.team ? user.team.name : '')}</span>
+                    </span>
+                </button>
+            `).join('');
+
+            dropdown.querySelectorAll('.assignee-picker-option').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    setAssignedTo(this.dataset.id, this.dataset.name);
+                });
+            });
+        }
+        dropdown.classList.remove('hidden');
+    }
+
+    function fetchAndRender(q) {
+        const url = q ? `${searchUrl}?search=${encodeURIComponent(q)}` : searchUrl;
+        fetch(url).then(r => r.json()).then(data => { renderOptions(data.users || []); });
+    }
+
+    searchInput.addEventListener('focus', function () {
+        if (cachedLatest) {
+            renderOptions(cachedLatest);
+        } else {
+            fetch(searchUrl)
+                .then(r => r.json())
+                .then(data => { cachedLatest = data.users || []; renderOptions(cachedLatest); });
+        }
+    });
+
+    searchInput.addEventListener('input', function () {
+        const q = this.value.trim();
+        clearTimeout(debounceTimer);
+        if (!q) {
+            renderOptions(cachedLatest || []);
+            return;
+        }
+        debounceTimer = setTimeout(() => fetchAndRender(q), 300);
+    });
+
+    clearBtn.addEventListener('click', () => resetAssignedTo());
+
+    document.addEventListener('click', function (e) {
+        if (!searchInput.contains(e.target) && !dropdown.contains(e.target) && !clearBtn.contains(e.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+})();
+
+window.setAssignedTo = function (id, name) {
+    document.getElementById('taskAssignedToId').value = id;
+    document.getElementById('taskAssignedToSearch').value = name;
+    document.getElementById('taskAssignedToSearch').classList.add('border-indigo-400', 'bg-indigo-50');
+    document.getElementById('clearTaskAssignedTo').classList.remove('hidden');
+    document.getElementById('taskAssignedToDropdown').classList.add('hidden');
+};
+
+window.resetAssignedTo = function () {
+    document.getElementById('taskAssignedToId').value = '';
+    document.getElementById('taskAssignedToSearch').value = '';
+    document.getElementById('taskAssignedToSearch').classList.remove('border-indigo-400', 'bg-indigo-50');
+    document.getElementById('clearTaskAssignedTo').classList.add('hidden');
+    document.getElementById('taskAssignedToDropdown').classList.add('hidden');
+};
 
 // ── Modal Order AJAX Picker ──────────────────────────────────────────────────
 (function () {

@@ -135,11 +135,13 @@
                     </a>
                 @endcan
                 @role(['admin', 'operation-manager', 'project-manager', 'team-leader'])
-                    <a href="{{ route('value-distribution.index') }}"
-                        class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('value-distribution.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
-                        <i class="fas fa-sitemap w-5 mr-2"></i>
-                        Value Distribution
-                    </a>
+                    @unless(auth()->user()->isSales())
+                        <a href="{{ route('value-distribution.index') }}"
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('value-distribution.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            <i class="fas fa-sitemap w-5 mr-2"></i>
+                            Value Distribution
+                        </a>
+                    @endunless
                 @endrole
             </div>
         </div>

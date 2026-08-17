@@ -452,12 +452,25 @@
             </a>
         </div>
 
+        <!-- Quarterly Sales Progress Chart (Full Width) -->
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-100 dark:border-gray-800 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-bold text-gray-900 dark:text-gray-100">
+                    <i class="fas fa-chart-bar text-indigo-500 mr-2"></i>Quarterly Sales Progress
+                </h3>
+                <span class="text-xs text-gray-400 dark:text-gray-500">Current Quarter</span>
+            </div>
+            <div class="h-64 relative">
+                <canvas id="quarterTrendChart"></canvas>
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
             <!-- Sold this month, against target -->
             <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-100 dark:border-gray-800">
                 <div class="flex items-start justify-between gap-4">
                     <div>
-                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Sold in {{ $availableMonths[$selectedMonth] ?? '' }}</p>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Company Sold in {{ $availableMonths[$selectedMonth] ?? '' }}</p>
                         <p class="sales-hero">${{ number_format($salesStats['sold'], 0) }}</p>
                         <div class="mt-2 flex flex-wrap items-center gap-2 text-xs">
                             @if($salesStats['change'] !== null)
@@ -519,7 +532,7 @@
             <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-100 dark:border-gray-800">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-base font-bold text-gray-900 dark:text-gray-100">
-                        <i class="fas fa-trophy text-amber-500 mr-2"></i>Top performers
+                        <i class="fas fa-trophy text-amber-500 mr-2"></i>Company Top performers
                     </h3>
                     <span class="text-xs text-gray-400 dark:text-gray-500">this month</span>
                 </div>
@@ -551,6 +564,17 @@
                                     · no target set
                                 @endif
                             </p>
+                            @php
+                                $qSeller = collect($quarterBreakdown)->firstWhere('id', $seller['id']);
+                            @endphp
+                            @if($qSeller)
+                                <p class="text-[10px] text-gray-400 dark:text-gray-500 mt-1 sales-num">
+                                    Quarter: <span class="font-bold text-indigo-600 dark:text-indigo-400">${{ number_format($qSeller['quarter_amount']) }}</span> 
+                                    ({{ $quarterNames['q1'] }}: ${{ number_format($qSeller['q1_amount']) }} · 
+                                    {{ $quarterNames['q2'] }}: ${{ number_format($qSeller['q2_amount']) }} · 
+                                    {{ $quarterNames['q3'] }}: ${{ number_format($qSeller['q3_amount']) }})
+                                </p>
+                            @endif
                         </div>
                         <p class="board-amount sales-num">${{ number_format($seller['amount'], 0) }}</p>
                     </div>
@@ -619,6 +643,24 @@
                 </div>
             </div>
 
+            <!-- Revenue by Team Chart -->
+            @if($revenueByTeam->isNotEmpty())
+            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-100 dark:border-gray-800">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Revenue by Team</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ $availableMonths[$selectedMonth] ?? 'Selected Month' }} - delivered revenue</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-500/10 flex items-center justify-center">
+                        <i class="fas fa-users text-indigo-600 dark:text-indigo-400"></i>
+                    </div>
+                </div>
+                <div class="chart-container" style="position: relative; height: 250px; width: 100%;">
+                    <canvas id="teamRevenueChart"></canvas>
+                </div>
+            </div>
+            @endif
+
             <!-- Recent Orders Table - Delivered & Workload -->
             <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-md border border-gray-100 dark:border-gray-800 ">
                 <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
@@ -632,7 +674,7 @@
                 </div>
                 <div class="divide-y divide-gray-100 dark:divide-gray-800">
                     @forelse($recentDelivered as $order)
-                        <a href="{{ route('orders.show', $order->id) }}" class="order-card block px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors">
+                        <a href="{{ route('orders.show', $order) }}" class="order-card block px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-4 flex-1">
                                     <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-green-100 dark:bg-green-500/10">
@@ -690,7 +732,7 @@
                 </div>
                 <div class="divide-y divide-gray-100 dark:divide-gray-800">
                     @forelse($recentWorkload as $order)
-                        <a href="{{ route('orders.show', $order->id) }}" class="order-card block px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors">
+                        <a href="{{ route('orders.show', $order) }}" class="order-card block px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-4 flex-1">
                                     <div class="w-12 h-12 rounded-xl flex items-center justify-center
@@ -762,7 +804,7 @@
                             ->get();
                     @endphp
                     @forelse($myTasks as $task)
-                        <a href="{{ route('tasks.show', $task->id) }}" class="block px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors">
+                        <a href="{{ route('tasks.show', $task) }}" class="block px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-4">
                                     <div class="w-10 h-10 rounded-xl flex items-center justify-center
@@ -828,12 +870,6 @@
                     </div>
                 </div>
                 @php
-                    $priorityStats = [
-                        'urgent' => \App\Models\Order::where('priority', 'urgent')->count(),
-                        'high' => \App\Models\Order::where('priority', 'high')->count(),
-                        'medium' => \App\Models\Order::where('priority', 'medium')->count(),
-                        'low' => \App\Models\Order::where('priority', 'low')->count(),
-                    ];
                     $totalOrders = max(array_sum($priorityStats), 1);
                 @endphp
                 <div class="space-y-4">
@@ -857,31 +893,64 @@
                 </div>
             </div>
 
+            <!-- Tasks Overview -->
+            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-100 dark:border-gray-800">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Tasks</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ $taskStats['completed'] }} of {{ $taskStats['total'] }} completed</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-500/10 flex items-center justify-center">
+                        <i class="fas fa-tasks text-purple-600 dark:text-purple-400"></i>
+                    </div>
+                </div>
+                <div class="chart-container" style="position: relative; height: 190px; width: 100%;">
+                    <canvas id="taskStatusChart"></canvas>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mt-5">
+                    @foreach(['urgent' => 'red', 'high' => 'orange', 'medium' => 'yellow', 'low' => 'green'] as $priority => $color)
+                        @if(($taskStats['priority'][$priority] ?? 0) > 0)
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="flex items-center gap-1.5 text-gray-600 dark:text-gray-400 capitalize">
+                                    <span class="w-2 h-2 rounded-full bg-{{ $color }}-500"></span>{{ $priority }}
+                                </span>
+                                <span class="font-bold text-gray-900 dark:text-gray-100">{{ $taskStats['priority'][$priority] }}</span>
+                            </div>
+                        @endif
+                    @endforeach
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-between text-xs">
+                    @if($taskStats['overdue'] > 0)
+                        <span class="text-red-600 dark:text-red-400 font-semibold"><i class="fas fa-exclamation-triangle mr-1"></i>{{ $taskStats['overdue'] }} overdue</span>
+                    @else
+                        <span class="text-green-600 dark:text-green-400 font-semibold"><i class="fas fa-check mr-1"></i>No overdue</span>
+                    @endif
+                    <a href="{{ route('tasks.index') }}" class="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">View all <i class="fas fa-arrow-right ml-1"></i></a>
+                </div>
+            </div>
+
             <!-- Team Performance -->
             @can('view teams')
             <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-100 dark:border-gray-800">
                 <div class="flex justify-between items-center mb-6">
                     <div>
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Teams</h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Active teams</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Deliveries this month</p>
                     </div>
                     <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center">
                         <i class="fas fa-users text-blue-600 dark:text-blue-400"></i>
                     </div>
                 </div>
-                @php
-                    $teams = \App\Models\Team::withCount('orders')->latest()->take(4)->get();
-                @endphp
                 <div class="space-y-3">
                     @forelse($teams as $team)
-                        <a href="{{ route('teams.show', $team->id) }}" class="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors border border-gray-100 dark:border-gray-800">
+                        <a href="{{ route('teams.show', $team) }}" class="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors border border-gray-100 dark:border-gray-800">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-500/10 flex items-center justify-center">
                                     <i class="fas fa-users text-indigo-600 dark:text-indigo-400"></i>
                                 </div>
                                 <div>
                                     <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $team->name }}</p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ $team->orders_count }} orders</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ $team->orders_count }} delivered</p>
                                 </div>
                             </div>
                             <i class="fas fa-chevron-right text-gray-400 dark:text-gray-500"></i>
@@ -928,19 +997,9 @@
                         <i class="fas fa-clock text-red-600 dark:text-red-400"></i>
                     </div>
                 </div>
-                @php
-                    $dueSoon = \App\Models\Order::with(['team'])
-                        ->whereNotIn('status', ['completed', 'cancelled'])
-                        ->whereNotNull('end_date')
-                        ->where('end_date', '>=', now())
-                        ->where('end_date', '<=', now()->addDays(14))
-                        ->orderBy('end_date')
-                        ->take(4)
-                        ->get();
-                @endphp
                 <div class="space-y-3">
                     @forelse($dueSoon as $order)
-                        <a href="{{ route('orders.show', $order->id) }}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors border border-gray-100 dark:border-gray-800">
+                        <a href="{{ route('orders.show', $order) }}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors border border-gray-100 dark:border-gray-800">
                             <div class="w-10 h-10 rounded-lg @if($order->end_date->isPast()) bg-red-100 dark:bg-red-500/10 @elseif($order->end_date->diffInDays(now()) <= 3) bg-orange-100 dark:bg-orange-500/10 @else bg-yellow-100 dark:bg-yellow-500/10 @endif flex items-center justify-center">
                                 <i class="fas fa-calendar @if($order->end_date->isPast()) text-red-600 dark:text-red-400 @elseif($order->end_date->diffInDays(now()) <= 3) text-orange-600 dark:text-orange-400 @else text-yellow-600 dark:text-yellow-400 @endif"></i>
                             </div>
@@ -968,6 +1027,9 @@
 let revenueChartInstance = null;
 let ordersChartInstance = null;
 let statusChartInstance = null;
+let teamRevenueChartInstance = null;
+let taskStatusChartInstance = null;
+let quarterTrendChartInstance = null;
 
 // Theme-aware chart colors (Chart.js bakes colors into the canvas, so this
 // is read once at render time; the theme toggle does a full page reload)
@@ -1004,6 +1066,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     if (statusChartInstance) {
         statusChartInstance.destroy();
+    }
+    if (teamRevenueChartInstance) {
+        teamRevenueChartInstance.destroy();
+    }
+    if (taskStatusChartInstance) {
+        taskStatusChartInstance.destroy();
+    }
+    if (quarterTrendChartInstance) {
+        quarterTrendChartInstance.destroy();
     }
 
     // Generate day labels for the selected month
@@ -1193,6 +1264,188 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     }
+
+    // Revenue by Team Chart (horizontal bar)
+    const teamRevenueCtx = document.getElementById('teamRevenueChart');
+    if (teamRevenueCtx) {
+        const revenueByTeam = @json($revenueByTeam->map(fn ($t) => ['label' => $t['team_name'], 'value' => (float) $t['revenue']]));
+        if (revenueByTeam.length) {
+            teamRevenueChartInstance = new Chart(teamRevenueCtx, {
+                type: 'bar',
+                data: {
+                    labels: revenueByTeam.map(r => r.label),
+                    datasets: [{
+                        label: 'Revenue',
+                        data: revenueByTeam.map(r => r.value),
+                        backgroundColor: 'rgba(99, 102, 241, 0.8)',
+                        borderColor: '#6366f1',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    animation: { duration: 750 },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1f2937',
+                            padding: 10,
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Revenue: $' + (context.parsed.x || 0).toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: { color: chartGridColor },
+                            ticks: {
+                                color: chartTickColor,
+                                callback: function(value) {
+                                    return '$' + (value >= 1000 ? (value / 1000).toFixed(0) + 'k' : value);
+                                },
+                                font: { size: 10 }
+                            }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { color: chartTickColor, font: { size: 11 } }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // Task Status Chart (doughnut)
+    const taskStatusCtx = document.getElementById('taskStatusChart');
+    if (taskStatusCtx) {
+        const taskStatusData = [
+            {{ $taskStats['status']['pending'] }},
+            {{ $taskStats['status']['in-progress'] }},
+            {{ $taskStats['status']['on-hold'] }},
+            {{ $taskStats['status']['completed'] }}
+        ];
+        const taskTotal = taskStatusData.reduce((a, b) => a + b, 0);
+        if (taskTotal > 0) {
+            taskStatusChartInstance = new Chart(taskStatusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pending', 'In Progress', 'On Hold', 'Completed'],
+                    datasets: [{
+                        data: taskStatusData,
+                        backgroundColor: ['#f59e0b', '#3b82f6', '#f97316', '#10b981'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 750 },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: chartTickColor,
+                                padding: 12,
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                font: { size: 11 }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#1f2937',
+                            padding: 10,
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.parsed || 0;
+                                    const percentage = ((value / taskTotal) * 100).toFixed(1);
+                                    return context.label + ': ' + value + ' (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+        }
+        }
+
+        const quarterCtx = document.getElementById('quarterTrendChart');
+        if (quarterCtx) {
+            const qBreakdown = @json($quarterBreakdown);
+            const qNames = @json($quarterNames);
+            
+            quarterTrendChartInstance = new Chart(quarterCtx, {
+                type: 'bar',
+                data: {
+                    labels: qBreakdown.map(s => s.name),
+                    datasets: [
+                        {
+                            label: '1st Month (' + qNames.q1 + ')',
+                            data: qBreakdown.map(s => s.q1_amount),
+                            backgroundColor: 'rgba(59, 130, 246, 0.85)',
+                            borderRadius: 4,
+                        },
+                        {
+                            label: '2nd Month (' + qNames.q2 + ')',
+                            data: qBreakdown.map(s => s.q2_amount),
+                            backgroundColor: 'rgba(245, 158, 11, 0.85)',
+                            borderRadius: 4,
+                        },
+                        {
+                            label: '3rd Month (' + qNames.q3 + ')',
+                            data: qBreakdown.map(s => s.q3_amount),
+                            backgroundColor: 'rgba(139, 92, 246, 0.85)',
+                            borderRadius: 4,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                color: chartTickColor,
+                                boxWidth: 10,
+                                boxHeight: 10,
+                                usePointStyle: true,
+                                font: { size: 10 }
+                            },
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: item => ` ${item.dataset.label}: $${item.parsed.y.toLocaleString()}`,
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: chartTickColor, font: { size: 10, weight: '600' } },
+                        },
+                        y: {
+                            beginAtZero: true,
+                            border: { display: false },
+                            grid: { color: chartGridColor },
+                            ticks: {
+                                color: chartTickColor,
+                                font: { size: 10 },
+                                callback: value => '$' + (value >= 1000 ? (value / 1000) + 'k' : value),
+                            },
+                        },
+                    },
+                }
+            });
+        }
 });
 
 // Cleanup on page unload
@@ -1200,6 +1453,9 @@ window.addEventListener('beforeunload', function() {
     if (revenueChartInstance) revenueChartInstance.destroy();
     if (ordersChartInstance) ordersChartInstance.destroy();
     if (statusChartInstance) statusChartInstance.destroy();
+    if (teamRevenueChartInstance) teamRevenueChartInstance.destroy();
+    if (taskStatusChartInstance) taskStatusChartInstance.destroy();
+    if (quarterTrendChartInstance) quarterTrendChartInstance.destroy();
 });
 </script>
 @endpush

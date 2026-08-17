@@ -424,6 +424,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const projectsParts = team.projects_count ? team.projects_count.split(' ') : ['0', 'active'];
 
             const teamId = team.DT_RowId || team.id;
+            const teamKey = team.key || teamId;
 
             // Limit description to 60 characters
             const description = team.description || 'No description available';
@@ -496,18 +497,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 </td>
                 <td class="px-6 py-5 text-center">
                     <div class="flex items-center justify-center space-x-1">
-                        <a href="/teams/${teamId}"
+                        <a href="/teams/${teamKey}"
                            class="group inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r from-indigo-100 to-indigo-200 dark:from-indigo-500/10 dark:to-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:from-indigo-200 hover:to-indigo-300 dark:hover:from-indigo-500/20 dark:hover:to-indigo-500/20 transition-all duration-200 hover:scale-110 shadow-sm"
                            title="View Team Details">
                             <i class="fas fa-eye text-sm group-hover:scale-110 transition-transform"></i>
                         </a>
                         ${canManage ? `
-                        <a href="/teams/${teamId}/edit"
+                        <a href="/teams/${teamKey}/edit"
                            class="group inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r from-emerald-100 to-emerald-200 dark:from-emerald-500/10 dark:to-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:from-emerald-200 hover:to-emerald-300 dark:hover:from-emerald-500/20 dark:hover:to-emerald-500/20 transition-all duration-200 hover:scale-110 shadow-sm"
                            title="Edit Team">
                             <i class="fas fa-edit text-sm group-hover:scale-110 transition-transform"></i>
                         </a>
-                        <button onclick="deleteTeam(${teamId})"
+                        <button onclick="deleteTeam('${teamKey}')"
                                 class="group inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r from-red-100 to-red-200 dark:from-red-500/10 dark:to-red-500/10 text-red-600 dark:text-red-400 hover:from-red-200 hover:to-red-300 dark:hover:from-red-500/20 dark:hover:to-red-500/20 transition-all duration-200 hover:scale-110 shadow-sm"
                                 title="Delete Team">
                             <i class="fas fa-trash text-sm group-hover:scale-110 transition-transform"></i>

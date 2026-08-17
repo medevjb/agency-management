@@ -32,7 +32,7 @@
                 <p class="text-emerald-100">Update user details and permissions</p>
             </div>
 
-            <form method="POST" action="{{ route('users.update', $user->id) }}" id="editUserForm" novalidate>
+            <form method="POST" action="{{ route('users.update', $user) }}" id="editUserForm" novalidate>
                 @csrf
                 @method('PATCH')
                 <div class="p-8">
@@ -363,59 +363,6 @@
                                         </div>
                                     </div>
                                 </div>
-
-                                <div class="border-t border-gray-200 dark:border-gray-800 pt-6">
-                                    <div class="flex items-center justify-between mb-4">
-                                        <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Additional Permissions</h4>
-                                        <button type="button" onclick="toggleAllAccordions()"
-                                                class="text-sm px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg transition-colors duration-200">
-                                            <i class="fas fa-expand-alt mr-1"></i>
-                                            <span id="toggleAllText">Expand All</span>
-                                        </button>
-                                    </div>
-
-                                    <div class="space-y-4" id="permissionsContainer">
-                                        @foreach($permissions as $group => $groupPermissions)
-                                            <div class="permissions-accordion-item border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                                                <button type="button" onclick="toggleAccordion(this)"
-                                                        class="w-full px-6 py-4 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between transition-colors duration-200">
-                                                    <div class="flex items-center">
-                                                        <i class="fas fa-folder text-indigo-500 dark:text-indigo-400 mr-3"></i>
-                                                        <span class="font-semibold text-gray-900 dark:text-gray-100">{{ ucfirst($group) }}</span>
-                                                    </div>
-                                                    <div class="flex items-center space-x-4">
-                                                        <span class="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full text-sm font-medium">
-                                                            {{ $user->permissions->whereIn('id', $groupPermissions->pluck('id'))->count() }}/{{ $groupPermissions->count() }}
-                                                        </span>
-                                                        <span class="text-gray-400 dark:text-gray-500 text-sm">{{ round($user->permissions->whereIn('id', $groupPermissions->pluck('id'))->count() / max($groupPermissions->count(), 1) * 100) }}% selected</span>
-                                                        <i class="fas fa-chevron-down accordion-icon transition-transform duration-200"></i>
-                                                    </div>
-                                                </button>
-
-                                                <div class="accordion-content hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
-                                                    <div class="flex items-center justify-between mb-4">
-                                                        <p class="text-sm text-gray-600 dark:text-gray-400">Select additional {{ $group }} permissions for this user</p>
-                                                        <button type="button" onclick="toggleAllPermissions(this, '{{ $group }}')"
-                                                                class="text-sm px-3 py-1.5 bg-indigo-100 dark:bg-indigo-500/10 hover:bg-indigo-200 dark:hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 rounded-lg transition-colors duration-200">
-                                                            <span class="toggle-all-text">Select All {{ ucfirst($group) }}</span>
-                                                        </button>
-                                                    </div>
-
-                                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                                        @foreach($groupPermissions as $permission)
-                                                            <label class="flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 cursor-pointer transition-all duration-200">
-                                                                <input type="checkbox" name="permissions[]" value="{{ $permission->id }}"
-                                                                       {{ $user->permissions->contains($permission->id) ? 'checked' : '' }}
-                                                                       class="w-4 h-4 text-indigo-600 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500">
-                                                                <span class="text-sm text-gray-700 dark:text-gray-300">{{ ucfirst(str_replace('-', ' ', str_replace($group . ' ', '', $permission->name))) }}</span>
-                                                            </label>
-                                                        @endforeach
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </div>
                             </div>
                         </div>
 
@@ -695,70 +642,6 @@ function togglePasswordVisibility(fieldId) {
     }
 }
 
-function toggleAccordion(button) {
-    const accordionItem = button.closest('.permissions-accordion-item');
-    const content = accordionItem.querySelector('.accordion-content');
-    const icon = button.querySelector('.accordion-icon');
-
-    if (content.classList.contains('hidden')) {
-        document.querySelectorAll('.accordion-content').forEach(item => item.classList.add('hidden'));
-        document.querySelectorAll('.accordion-icon').forEach(item => item.classList.remove('rotate-180'));
-
-        content.classList.remove('hidden');
-        icon.classList.add('rotate-180');
-    } else {
-        content.classList.add('hidden');
-        icon.classList.remove('rotate-180');
-    }
-}
-
-function toggleAllPermissions(button, groupName) {
-    const accordionItem = button.closest('.accordion-content');
-    const checkboxes = accordionItem.querySelectorAll('input[name="permissions[]"]');
-    const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
-
-    checkboxes.forEach(checkbox => checkbox.checked = !anyChecked);
-
-    const buttonText = button.querySelector('.toggle-all-text');
-    if (anyChecked) {
-        buttonText.textContent = 'Deselect All ' + ucfirst(groupName);
-    } else {
-        buttonText.textContent = 'Select All ' + ucfirst(groupName);
-    }
-
-    updatePermissionCounters();
-}
-
-function toggleAllAccordions() {
-    const accordions = document.querySelectorAll('.accordion-content');
-    const toggleAllText = document.getElementById('toggleAllText');
-    const allOpen = Array.from(accordions).every(acc => !acc.classList.contains('hidden'));
-
-    if (allOpen) {
-        accordions.forEach(accordion => accordion.classList.add('hidden'));
-        document.querySelectorAll('.accordion-icon').forEach(icon => icon.classList.remove('rotate-180'));
-        toggleAllText.textContent = 'Expand All';
-    } else {
-        accordions.forEach(accordion => accordion.classList.remove('hidden'));
-        document.querySelectorAll('.accordion-icon').forEach(icon => icon.classList.add('rotate-180'));
-        toggleAllText.textContent = 'Collapse All';
-    }
-}
-
-function updatePermissionCounters() {
-    document.querySelectorAll('.permissions-accordion-item').forEach(item => {
-        const checkboxes = item.querySelectorAll('input[name="permissions[]"]');
-        const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
-        const totalCount = checkboxes.length;
-
-        const counter = item.querySelector('.bg-gray-200');
-        if (counter) counter.textContent = `${checkedCount}/${totalCount}`;
-
-        const percentage = item.querySelector('.text-gray-400');
-        if (percentage) percentage.textContent = `${Math.round(checkedCount / totalCount * 100)}% selected`;
-    });
-}
-
 document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('input', function(e) {
         if (e.target.id && e.target.tagName === 'INPUT') {
@@ -770,16 +653,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target.id && e.target.tagName === 'SELECT') {
             clearFieldError(e.target.id);
         }
-
-        if (e.target.name === 'permissions[]') {
-            updatePermissionCounters();
-        }
     });
 });
 
 function showFieldError(fieldId, errorMessage) {
     let actualFieldId = fieldId;
-    const fieldMapping = { 'password_confirmation': 'password', 'permissions': 'permissions_0' };
+    const fieldMapping = { 'password_confirmation': 'password' };
     actualFieldId = fieldMapping[fieldId] || fieldId;
 
     const fieldElement = document.getElementById(actualFieldId);
@@ -815,7 +694,7 @@ function clearFieldErrors() {
 
 function clearFieldError(fieldId) {
     let actualFieldId = fieldId;
-    const fieldMapping = { 'password_confirmation': 'password', 'permissions': 'permissions_0' };
+    const fieldMapping = { 'password_confirmation': 'password' };
     actualFieldId = fieldMapping[fieldId] || fieldId;
 
     const fieldElement = document.getElementById(actualFieldId);

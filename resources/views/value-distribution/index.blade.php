@@ -3,12 +3,13 @@
 @section('title', 'Value Distribution')
 
 @push('styles')
-<link rel="preconnect" href="https://fonts.bunny.net">
-<link href="https://fonts.bunny.net/css?family=jetbrains-mono:500,600,700,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-    /* A monospace face reserved for money and counts only — everything else
-       on the page stays in the app's normal Figtree. Ledgers align digits
-       in columns for a reason; this is that reason, not a theme choice. */
+    /* Premium Value Distribution Layout */
+    .vd-container {
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
     .vd-mono {
         font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
         font-variant-numeric: tabular-nums;
@@ -17,93 +18,103 @@
 
     .vd-panel {
         background-color: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 1rem;
-        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+        border: 1px solid #f1f5f9;
+        border-radius: 1.25rem;
+        box-shadow: 0 4px 20px -2px rgba(16, 24, 40, 0.02), 0 2px 8px -1px rgba(16, 24, 40, 0.02);
+        transition: all 0.2s ease-in-out;
     }
 
-    .dark .vd-panel { background-color: #111827; border-color: #1f2937; box-shadow: none; }
+    .dark .vd-panel {
+        background-color: #1e293b;
+        border-color: #334155;
+        box-shadow: none;
+    }
 
     .vd-eyebrow {
         font-size: 0.6875rem;
         font-weight: 800;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: #6b7280;
+        color: #64748b;
     }
 
-    .dark .vd-eyebrow { color: #9ca3af; }
+    .dark .vd-eyebrow { color: #94a3b8; }
 
-    .vd-empty { border: 1px dashed #e5e7eb; border-radius: 0.875rem; padding: 2.5rem 1.5rem; text-align: center; }
-    .dark .vd-empty { border-color: #1f2937; }
+    .vd-empty {
+        border: 1px dashed #cbd5e1;
+        border-radius: 1rem;
+        padding: 3rem 1.5rem;
+        text-align: center;
+        background-color: #f8fafc;
+    }
+    .dark .vd-empty { border-color: #475569; background-color: #0f172a; }
 
     /* ==================================================================
-       Balance strip — the page's one signature moment. Everything this
-       page exists to do collapses into one number: how much is still
-       unpaid. Drive it to zero and the strip changes state to say so.
+       Balance strip — Reconciled visual hero
        ================================================================== */
     .vd-hero {
         position: relative;
         overflow: hidden;
         border-radius: 1.25rem;
-        padding: 2rem clamp(1.25rem, 4vw, 2.25rem) 1.875rem;
-        background: linear-gradient(160deg, #0b1120 0%, #172033 55%, #0b1120 100%);
-        box-shadow: 0 24px 48px -24px rgba(2, 6, 23, 0.55);
+        padding: 2.25rem clamp(1.25rem, 5vw, 2.5rem);
+        background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #1e1b4b 100%);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         color: #f8fafc;
+        border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    /* Faint horizontal rules, like ruled ledger paper — quiet, not a texture stunt. */
     .vd-hero::before {
         content: '';
         position: absolute;
         inset: 0;
         background-image: repeating-linear-gradient(
-            0deg, rgba(255, 255, 255, 0.035) 0px, rgba(255, 255, 255, 0.035) 1px,
-            transparent 1px, transparent 2.75rem
+            0deg, rgba(255, 255, 255, 0.02) 0px, rgba(255, 255, 255, 0.02) 1px,
+            transparent 1px, transparent 2.5rem
         );
         pointer-events: none;
     }
 
     .vd-hero-body { position: relative; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1.5rem; }
-    .vd-hero-eyebrow { font-size: 0.6875rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #93a3ba; }
+    .vd-hero-eyebrow { font-size: 0.6875rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #a5b4fc; }
 
     .vd-hero-figure {
-        margin-top: 0.375rem;
-        font-weight: 700;
-        font-size: clamp(2.25rem, 5.5vw, 3.5rem);
+        margin-top: 0.5rem;
+        font-weight: 800;
+        font-size: clamp(2.5rem, 6vw, 3.75rem);
         line-height: 1;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.03em;
     }
 
-    .vd-hero-figure.is-open { color: #fbbf24; }
-    .vd-hero-figure.is-settled { color: #34d399; }
+    .vd-hero-figure.is-open { color: #fbbf24; text-shadow: 0 0 20px rgba(251,191,36,0.25); }
+    .vd-hero-figure.is-settled { color: #10b981; text-shadow: 0 0 20px rgba(16,185,129,0.25); }
     .vd-hero-figure.is-neutral { color: #f1f5f9; }
 
-    .vd-hero-sub { margin-top: 0.5rem; font-size: 0.9375rem; color: #cbd5e1; max-width: 34rem; }
-    .vd-hero-sub strong { color: #f8fafc; font-weight: 700; }
+    .vd-hero-sub { margin-top: 0.625rem; font-size: 0.9375rem; color: #cbd5e1; max-width: 34rem; line-height: 1.5; }
+    .vd-hero-sub strong { color: #ffffff; font-weight: 700; }
 
-    .vd-hero-facts { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: flex-end; gap: 0.375rem; text-align: right; flex-shrink: 0; }
-    .vd-hero-fact-value { font-size: 1.375rem; font-weight: 700; color: #f8fafc; }
-    .vd-hero-fact-label { font-size: 0.75rem; color: #93a3ba; }
+    .vd-hero-facts { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem; text-align: right; flex-shrink: 0; }
+    .vd-hero-fact-value { font-size: 1.5rem; font-weight: 800; color: #ffffff; }
+    .vd-hero-fact-label { font-size: 0.75rem; color: #a5b4fc; font-weight: 500; }
 
-    .vd-hero-meter { position: relative; margin-top: 1.625rem; height: 0.625rem; border-radius: 9999px; background-color: rgba(255, 255, 255, 0.08); overflow: hidden; display: flex; }
-    .vd-hero-meter-settled { display: block; height: 100%; background-image: linear-gradient(90deg, #059669, #34d399); transition: width 0.5s ease; }
+    .vd-hero-meter { position: relative; margin-top: 1.75rem; height: 0.625rem; border-radius: 9999px; background-color: rgba(255, 255, 255, 0.08); overflow: hidden; display: flex; }
+    .vd-hero-meter-settled { display: block; height: 100%; background-image: linear-gradient(90deg, #059669, #10b981); transition: width 0.5s ease; }
     .vd-hero-meter-open { display: block; height: 100%; background-image: linear-gradient(90deg, #b45309, #fbbf24); transition: width 0.5s ease; }
 
-    .vd-hero-legend { position: relative; margin-top: 0.75rem; display: flex; flex-wrap: wrap; gap: 1.5rem; font-size: 0.75rem; color: #93a3ba; }
+    .vd-hero-legend { position: relative; margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 1.5rem; font-size: 0.75rem; color: #a5b4fc; }
     .vd-hero-legend .vd-dot { display: inline-block; width: 0.5rem; height: 0.5rem; border-radius: 9999px; margin-right: 0.4375rem; }
-    .vd-hero-legend .vd-dot.is-settled { background-color: #34d399; }
+    .vd-hero-legend .vd-dot.is-settled { background-color: #10b981; }
     .vd-hero-legend .vd-dot.is-open { background-color: #fbbf24; }
 
-    .vd-hero-done { position: relative; display: flex; align-items: center; gap: 1.125rem; }
+    .vd-hero-done { position: relative; display: flex; align-items: center; gap: 1.25rem; }
     .vd-hero-done-badge {
         flex-shrink: 0;
-        width: 3.5rem; height: 3.5rem;
+        width: 3.75rem; height: 3.75rem;
         border-radius: 9999px;
-        background-color: rgba(52, 211, 153, 0.14);
-        border: 2px solid #34d399;
+        background-color: rgba(16, 185, 129, 0.15);
+        border: 2px solid #10b981;
         display: flex; align-items: center; justify-content: center;
-        color: #34d399; font-size: 1.375rem;
+        color: #10b981; font-size: 1.5rem;
+        box-shadow: 0 0 20px rgba(16,185,129,0.2);
     }
 
     /* ---- Leaderboard rail ---- */
@@ -112,40 +123,41 @@
         grid-template-columns: 1.75rem minmax(0, 1fr) auto;
         align-items: center;
         gap: 0.875rem;
-        padding: 0.625rem 0;
-        border-bottom: 1px solid #f3f4f6;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f1f5f9;
     }
 
     .vd-board-row:last-child { border-bottom: 0; }
-    .dark .vd-board-row { border-bottom-color: #1f2937; }
+    .dark .vd-board-row { border-bottom-color: #334155; }
 
     .vd-board-rank {
         display: flex; align-items: center; justify-content: center;
         width: 1.75rem; height: 1.75rem;
         border-radius: 9999px;
         font-size: 0.75rem; font-weight: 800;
-        background-color: #f3f4f6; color: #6b7280;
+        background-color: #f1f5f9; color: #64748b;
     }
 
-    .dark .vd-board-rank { background-color: #1f2937; color: #9ca3af; }
+    .dark .vd-board-rank { background-color: #334155; color: #cbd5e1; }
     .vd-board-rank.rank-1 { background-image: linear-gradient(135deg, #f59e0b, #fbbf24); color: #fff; }
     .vd-board-rank.rank-2 { background-image: linear-gradient(135deg, #94a3b8, #cbd5e1); color: #fff; }
     .vd-board-rank.rank-3 { background-image: linear-gradient(135deg, #b45309, #d97706); color: #fff; }
 
-    .vd-board-name { font-size: 0.875rem; font-weight: 700; color: #111827; }
-    .dark .vd-board-name { color: #f3f4f6; }
+    .vd-board-name { font-size: 0.875rem; font-weight: 700; color: #0f172a; }
+    .dark .vd-board-name { color: #f8fafc; }
 
-    .vd-progress { height: 0.3125rem; margin-top: 0.375rem; border-radius: 9999px; background-color: #eef2f7; overflow: hidden; }
-    .dark .vd-progress { background-color: #1f2937; }
+    .vd-progress { height: 0.375rem; margin-top: 0.375rem; border-radius: 9999px; background-color: #f1f5f9; overflow: hidden; }
+    .dark .vd-progress { background-color: #334155; }
     .vd-progress span { display: block; height: 100%; border-radius: 9999px; }
     .vd-progress span.is-met { background-image: linear-gradient(90deg, #059669, #10b981); }
     .vd-progress span.is-close { background-image: linear-gradient(90deg, #d97706, #f59e0b); }
     .vd-progress span.is-behind { background-image: linear-gradient(90deg, #dc2626, #f87171); }
     .vd-progress span.is-none { background-color: #cbd5e1; }
 
-    .vd-board-meta { margin-top: 0.25rem; font-size: 0.6875rem; color: #9ca3af; }
-    .vd-board-amount { font-size: 0.9375rem; font-weight: 800; color: #111827; }
-    .dark .vd-board-amount { color: #f3f4f6; }
+    .vd-board-meta { margin-top: 0.375rem; font-size: 0.6875rem; color: #64748b; }
+    .dark .vd-board-meta { color: #94a3b8; }
+    .vd-board-amount { font-size: 0.9375rem; font-weight: 800; color: #0f172a; }
+    .dark .vd-board-amount { color: #f8fafc; }
 
     .vd-workspace {
         display: grid;
@@ -157,10 +169,10 @@
 
     @media (min-width: 1024px) {
         .vd-workspace {
-            grid-template-columns: minmax(0, 1fr) 21rem;
+            grid-template-columns: minmax(0, 1fr) 22rem;
             grid-template-areas: "pending board";
         }
-        .vd-workspace-board { position: sticky; top: 1.25rem; }
+        .vd-workspace-board { position: sticky; top: 1.5rem; }
     }
 
     .vd-workspace-pending { grid-area: pending; min-width: 0; }
@@ -171,17 +183,47 @@
     .vd-search-input {
         width: 100%;
         padding: 0.625rem 0.875rem 0.625rem 2.25rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.625rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 0.75rem;
         font-size: 0.8125rem;
         background-color: #ffffff;
-        color: #111827;
+        color: #0f172a;
+        transition: all 0.15s ease;
     }
 
-    .dark .vd-search-input { background-color: #1f2937; border-color: #374151; color: #f3f4f6; }
-    .vd-search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 0.75rem; }
-    .vd-search-clear { position: absolute; right: 0.625rem; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 0.75rem; }
-    .vd-search-clear:hover { color: #6b7280; }
+    .dark .vd-search-input { background-color: #1e293b; border-color: #475569; color: #f8fafc; }
+    .vd-search-input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
+    
+    .vd-filter-select {
+        width: 100%;
+        padding: 0.625rem 2rem 0.625rem 0.875rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 0.75rem;
+        font-size: 0.8125rem;
+        background-color: #ffffff;
+        color: #0f172a;
+        transition: all 0.15s ease;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.625rem center;
+        background-repeat: no-repeat;
+        background-size: 1.25em 1.25em;
+    }
+    .dark .vd-filter-select {
+        background-color: #1e293b;
+        border-color: #475569;
+        color: #f8fafc;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    }
+    .vd-filter-select:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+    
+    .vd-search-icon { position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 0.75rem; }
+    .vd-search-clear { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 0.75rem; }
+    .vd-search-clear:hover { color: #334155; }
 
     /* ---- Settled disclosure ---- */
     .vd-settled-toggle {
@@ -189,125 +231,172 @@
         align-items: center;
         justify-content: space-between;
         width: 100%;
-        padding: 0.875rem 1.125rem;
+        padding: 1rem 1.25rem;
         text-align: left;
     }
 
-    .vd-settled-toggle-label { font-size: 0.6875rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #6b7280; }
-    .dark .vd-settled-toggle-label { color: #9ca3af; }
+    .vd-settled-toggle-label { font-size: 0.6875rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #64748b; }
+    .dark .vd-settled-toggle-label { color: #94a3b8; }
     .vd-settled-toggle-action { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; font-weight: 700; color: #4f46e5; }
-    .dark .vd-settled-toggle-action { color: #a5b4fc; }
+    .dark .vd-settled-toggle-action { color: #818cf8; }
     .vd-settled-toggle-action i { transition: transform 0.2s ease; font-size: 0.75rem; }
     .vd-settled-toggle[aria-expanded='true'] .vd-settled-toggle-action i { transform: rotate(180deg); }
     .vd-settled-body[hidden] { display: none; }
-    .vd-settled-body { padding: 0 1.125rem 1.125rem; }
+    .vd-settled-body { padding: 0 1.25rem 1.25rem; }
 
     /* ---- Pager ---- */
     .vd-pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: 1rem; }
-    .vd-pager-range { font-size: 0.75rem; color: #6b7280; }
-    .dark .vd-pager-range { color: #9ca3af; }
+    .vd-pager-range { font-size: 0.75rem; color: #64748b; font-weight: 500; }
+    .dark .vd-pager-range { color: #94a3b8; }
     .vd-pager-of { font-family: inherit; font-variant-numeric: normal; }
     .vd-pager-nav { display: flex; align-items: center; gap: 0.5rem; }
     .vd-pager-btn {
         display: inline-flex; align-items: center; justify-content: center;
         width: 2rem; height: 2rem;
         border-radius: 0.5rem;
-        border: 1px solid #d1d5db;
-        color: #374151;
+        border: 1px solid #cbd5e1;
+        color: #334155;
         font-size: 0.75rem;
+        background-color: #ffffff;
+        transition: all 0.15s ease;
     }
 
-    .vd-pager-btn:hover { background-color: #f3f4f6; }
+    .vd-pager-btn:hover { background-color: #f1f5f9; border-color: #94a3b8; }
     .vd-pager-btn.is-disabled { opacity: 0.35; pointer-events: none; }
-    .dark .vd-pager-btn { border-color: #374151; color: #d1d5db; }
-    .dark .vd-pager-btn:hover { background-color: #1f2937; }
-    .vd-pager-page { font-size: 0.75rem; font-weight: 700; color: #6b7280; }
-    .dark .vd-pager-page { color: #9ca3af; }
+    .dark .vd-pager-btn { border-color: #475569; color: #cbd5e1; background-color: #1e293b; }
+    .dark .vd-pager-btn:hover { background-color: #334155; border-color: #64748b; }
+    .vd-pager-page { font-size: 0.75rem; font-weight: 700; color: #64748b; }
+    .dark .vd-pager-page { color: #94a3b8; }
 
     /* ==================================================================
-       Order cards — same interaction contract as before (accordion, live
-       remaining total, add-person search, balance button, AJAX save);
-       only the surface treatment changes.
+       Order cards — accordion split design
        ================================================================== */
-    .dist-card { border: 1px solid #e5e7eb; border-radius: 0.875rem; overflow: hidden; background-color: #ffffff; }
-    .dark .dist-card { border-color: #1f2937; background-color: #111827; }
-    .dist-card.is-pending { border-left: 3px solid #f59e0b; }
-    .dist-card.is-complete { border-left: 3px solid #10b981; }
+    .dist-card {
+        border: 1px solid #f1f5f9;
+        border-radius: 1.25rem;
+        overflow: hidden;
+        background-color: #ffffff;
+        box-shadow: 0 4px 20px -2px rgba(16, 24, 40, 0.01), 0 2px 8px -1px rgba(16, 24, 40, 0.01);
+        transition: all 0.2s ease;
+    }
+    .dark .dist-card { border-color: #334155; background-color: #1e293b; box-shadow: none; }
+    .dist-card.is-pending { border-left: 4px solid #f59e0b; }
+    .dist-card.is-complete { border-left: 4px solid #10b981; }
+    
+    .dist-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 25px -5px rgba(16, 24, 40, 0.03);
+    }
 
-    .dist-summary { display: grid; grid-template-columns: 0.75rem minmax(0, 1fr) auto 1rem; align-items: center; gap: 0.875rem; width: 100%; padding: 0.875rem 1rem; text-align: left; }
-    .dist-summary:hover { background-color: #f9fafb; }
-    .dark .dist-summary:hover { background-color: rgba(31, 41, 55, 0.5); }
+    .dist-summary { display: grid; grid-template-columns: 0.75rem minmax(0, 1fr) auto 1rem; align-items: center; gap: 1rem; width: 100%; padding: 1.125rem 1.25rem; text-align: left; transition: background 0.15s ease; }
+    .dist-summary:hover { background-color: #f8fafc; }
+    .dark .dist-summary:hover { background-color: rgba(51, 65, 85, 0.3); }
 
     .dist-status-dot { width: 0.5rem; height: 0.5rem; border-radius: 9999px; }
-    .dist-status-dot.is-pending { background-color: #f59e0b; }
-    .dist-status-dot.is-complete { background-color: #10b981; }
+    .dist-status-dot.is-pending { background-color: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
+    .dist-status-dot.is-complete { background-color: #10b981; box-shadow: 0 0 8px #10b981; }
 
     .dist-summary-main { min-width: 0; }
-    .dist-order-name { display: block; font-size: 0.875rem; font-weight: 700; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .dark .dist-order-name { color: #f3f4f6; }
-    .dist-order-meta { display: block; margin-top: 0.125rem; font-size: 0.75rem; color: #9ca3af; }
+    .dist-order-name { display: block; font-size: 0.9375rem; font-weight: 700; color: #0f172a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .dark .dist-order-name { color: #f8fafc; }
+    .dist-order-meta { display: block; margin-top: 0.25rem; font-size: 0.75rem; color: #64748b; }
+    .dark .dist-order-meta { color: #94a3b8; }
 
     .dist-summary-figures { display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem; }
-    .dist-net-amount { font-size: 0.9375rem; font-weight: 800; color: #111827; }
-    .dark .dist-net-amount { color: #f3f4f6; }
+    .dist-net-amount { font-size: 0.9375rem; font-weight: 800; color: #0f172a; }
+    .dark .dist-net-amount { color: #f8fafc; }
 
-    .dist-badge { padding: 0.0625rem 0.5rem; border-radius: 9999px; font-size: 0.6875rem; font-weight: 700; white-space: nowrap; }
+    .dist-badge { padding: 0.125rem 0.625rem; border-radius: 9999px; font-size: 0.6875rem; font-weight: 700; white-space: nowrap; }
     .dist-badge.is-pending { background-color: #fef3c7; color: #b45309; }
     .dist-badge.is-complete { background-color: #d1fae5; color: #047857; }
     .dark .dist-badge.is-pending { background-color: rgba(245, 158, 11, 0.15); color: #fcd34d; }
     .dark .dist-badge.is-complete { background-color: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
 
-    .dist-chevron { color: #9ca3af; transition: transform 0.2s ease; }
+    .dist-chevron { color: #94a3b8; transition: transform 0.2s ease; }
     .dist-summary[aria-expanded='true'] .dist-chevron { transform: rotate(180deg); }
 
-    .dist-body { padding: 0 1rem 1.125rem; border-top: 1px solid #f3f4f6; }
-    .dark .dist-body { border-top-color: #1f2937; }
+    .dist-body { padding: 0 1.25rem 1.25rem; border-top: 1px solid #f1f5f9; }
+    .dark .dist-body { border-top-color: #334155; }
 
-    .dist-fee-line { margin: 0.875rem 0; font-size: 0.75rem; color: #6b7280; }
-    .dark .dist-fee-line { color: #9ca3af; }
+    .dist-fee-line {
+        margin: 1rem 0;
+        font-size: 0.75rem;
+        color: #475569;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background-color: #f8fafc;
+        padding: 0.625rem 0.875rem;
+        border-radius: 0.5rem;
+        border: 1px solid #f1f5f9;
+    }
+    .dark .dist-fee-line {
+        background-color: rgba(51, 65, 85, 0.2);
+        border-color: rgba(255, 255, 255, 0.05);
+        color: #cbd5e1;
+    }
 
-    .dist-rows { display: flex; flex-direction: column; gap: 0.5rem; }
-    .dist-row { display: grid; grid-template-columns: minmax(0, 1fr) 9rem 2.25rem; align-items: center; gap: 0.5rem; }
+    .dist-rows { display: flex; flex-direction: column; gap: 0.625rem; }
+    .dist-row { display: grid; grid-template-columns: minmax(0, 1fr) 9rem 2.25rem; align-items: center; gap: 0.75rem; }
 
-    .dist-person { font-size: 0.875rem; font-weight: 600; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .dark .dist-person { color: #f3f4f6; }
+    .dist-person { font-size: 0.875rem; font-weight: 600; color: #0f172a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .dark .dist-person { color: #f8fafc; }
 
-    .dist-tag { margin-left: 0.375rem; padding: 0.0625rem 0.375rem; border-radius: 9999px; font-size: 0.5625rem; font-weight: 800; text-transform: uppercase; background-color: #eef2ff; color: #4338ca; }
+    .dist-tag { margin-left: 0.375rem; padding: 0.0625rem 0.5rem; border-radius: 9999px; font-size: 0.5625rem; font-weight: 800; text-transform: uppercase; background-color: #eef2ff; color: #4338ca; }
     .dark .dist-tag { background-color: rgba(99, 102, 241, 0.15); color: #a5b4fc; }
 
     .dist-amount-wrap { position: relative; }
-    .dist-amount { width: 100%; padding: 0.5rem 0.75rem 0.5rem 1.5rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 0.8125rem; background-color: #ffffff; color: #111827; }
-    .dark .dist-amount { background-color: #1f2937; border-color: #374151; color: #f3f4f6; }
-    /* Same font as the amount input next to it — a proportional "$" beside
-       monospace digits reads as misaligned even when the boxes are exact. */
-    .dist-currency { position: absolute; left: 0.625rem; top: 50%; transform: translateY(-50%); font-size: 0.8125rem; color: #9ca3af; font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; }
+    .dist-amount {
+        width: 100%;
+        padding: 0.5rem 0.75rem 0.5rem 1.5rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 0.5rem;
+        font-size: 0.8125rem;
+        background-color: #ffffff;
+        color: #0f172a;
+        transition: border-color 0.15s ease;
+    }
+    .dark .dist-amount { background-color: #1e293b; border-color: #475569; color: #f8fafc; }
+    .dist-amount:focus { outline: none; border-color: #6366f1; }
+    .dist-currency { position: absolute; left: 0.625rem; top: 50%; transform: translateY(-50%); font-size: 0.8125rem; color: #94a3b8; font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; }
 
-    .dist-remove { display: flex; align-items: center; justify-content: center; height: 2.125rem; border-radius: 0.5rem; color: #9ca3af; }
+    .dist-remove { display: flex; align-items: center; justify-content: center; height: 2.125rem; border-radius: 0.5rem; color: #94a3b8; transition: all 0.15s ease; }
     .dist-remove:hover { background-color: #fee2e2; color: #b91c1c; }
     .dark .dist-remove:hover { background-color: rgba(239, 68, 68, 0.15); color: #fca5a5; }
 
-    .dist-empty-hint { font-size: 0.8125rem; color: #9ca3af; }
+    .dist-empty-hint { font-size: 0.8125rem; color: #94a3b8; padding: 0.5rem 0; }
 
-    .dist-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-top: 0.75rem; }
+    .dist-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-top: 1rem; }
     .dist-search-wrap { position: relative; flex: 1; min-width: 12rem; }
-    .dist-search { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 0.8125rem; background-color: #ffffff; color: #111827; }
-    .dark .dist-search { background-color: #1f2937; border-color: #374151; color: #f3f4f6; }
+    .dist-search {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 0.5rem;
+        font-size: 0.8125rem;
+        background-color: #ffffff;
+        color: #0f172a;
+        transition: border-color 0.15s ease;
+    }
+    .dark .dist-search { background-color: #1e293b; border-color: #475569; color: #f8fafc; }
+    .dist-search:focus { outline: none; border-color: #6366f1; }
 
-    .dist-search-results { position: absolute; z-index: 20; top: calc(100% + 0.25rem); left: 0; right: 0; max-height: 12rem; overflow-y: auto; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 0.5rem; box-shadow: 0 8px 20px rgba(16, 24, 40, 0.12); }
-    .dark .dist-search-results { background-color: #1f2937; border-color: #374151; }
-    .dist-search-result { display: block; width: 100%; padding: 0.5rem 0.75rem; text-align: left; font-size: 0.8125rem; color: #111827; }
-    .dark .dist-search-result { color: #f3f4f6; }
-    .dist-search-result:hover { background-color: #f3f4f6; }
-    .dark .dist-search-result:hover { background-color: #111827; }
+    .dist-search-results { position: absolute; z-index: 20; top: calc(100% + 0.25rem); left: 0; right: 0; max-height: 12rem; overflow-y: auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.5rem; box-shadow: 0 10px 25px -5px rgba(16, 24, 40, 0.08); }
+    .dark .dist-search-results { background-color: #1e293b; border-color: #475569; }
+    .dist-search-result { display: block; width: 100%; padding: 0.5rem 0.75rem; text-align: left; font-size: 0.8125rem; color: #0f172a; transition: background 0.15s ease; }
+    .dark .dist-search-result { color: #f8fafc; }
+    .dist-search-result:hover { background-color: #f1f5f9; }
+    .dark .dist-search-result:hover { background-color: #0f172a; }
 
-    .dist-balance-btn { font-size: 0.75rem; font-weight: 700; color: #4f46e5; white-space: nowrap; }
-    .dist-balance-btn:hover { text-decoration: underline; }
-    .dark .dist-balance-btn { color: #a5b4fc; }
+    .dist-balance-btn { font-size: 0.75rem; font-weight: 700; color: #4f46e5; white-space: nowrap; transition: color 0.15s ease; }
+    .dist-balance-btn:hover { text-decoration: underline; color: #4338ca; }
+    .dark .dist-balance-btn { color: #818cf8; }
+    .dark .dist-balance-btn:hover { color: #a5b4fc; }
 
-    .dist-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: 1rem; padding-top: 0.875rem; border-top: 1px dashed #e5e7eb; }
-    .dark .dist-footer { border-top-color: #1f2937; }
+    .dist-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px dashed #e2e8f0; }
+    .dark .dist-footer { border-top-color: #334155; }
 
-    .dist-remaining { font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: 0.75rem; font-weight: 700; padding: 0.1875rem 0.625rem; border-radius: 9999px; }
+    .dist-remaining { font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.75rem; border-radius: 9999px; }
     .dist-remaining.is-balanced { background-color: #d1fae5; color: #047857; }
     .dist-remaining.is-left { background-color: #fef3c7; color: #b45309; }
     .dist-remaining.is-over { background-color: #fee2e2; color: #b91c1c; }
@@ -315,25 +404,32 @@
     .dark .dist-remaining.is-left { background-color: rgba(245, 158, 11, 0.15); color: #fcd34d; }
     .dark .dist-remaining.is-over { background-color: rgba(239, 68, 68, 0.15); color: #fca5a5; }
 
-    .dist-footer-actions { display: flex; align-items: center; gap: 0.75rem; }
-    .dist-view-link { font-size: 0.75rem; font-weight: 600; color: #6b7280; }
-    .dist-view-link:hover { text-decoration: underline; }
-    .dark .dist-view-link { color: #9ca3af; }
+    .dist-footer-actions { display: flex; align-items: center; gap: 1rem; }
+    .dist-view-link { font-size: 0.75rem; font-weight: 600; color: #64748b; transition: color 0.15s ease; }
+    .dist-view-link:hover { text-decoration: underline; color: #334155; }
+    .dark .dist-view-link { color: #94a3b8; }
+    .dark .dist-view-link:hover { color: #cbd5e1; }
 
-    .dist-save-btn { padding: 0.4375rem 1rem; border-radius: 0.5rem; font-size: 0.8125rem; font-weight: 700; color: #ffffff; background-image: linear-gradient(90deg, #4f46e5, #7c3aed); }
-    .dist-save-btn:hover { filter: brightness(1.08); }
+    .dist-save-btn {
+        padding: 0.5rem 1.125rem;
+        border-radius: 0.5rem;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: #ffffff;
+        background-image: linear-gradient(135deg, #4f46e5, #7c3aed);
+        box-shadow: 0 2px 4px rgba(99, 102, 241, 0.1);
+        transition: all 0.15s ease;
+    }
+    .dist-save-btn:hover { filter: brightness(1.08); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
     .dist-save-btn[disabled] { opacity: 0.6; cursor: progress; }
 </style>
 @endpush
 
 @section('content')
 @php
-    $totalLedger = $distributedTotal + $openTotal;
-    $reconciledPercent = $totalLedger > 0 ? round(($distributedTotal / $totalLedger) * 100) : null;
-    $hasAnyOrders = ($pendingCount + $distributedCount) > 0;
-    $isFullyReconciled = $hasAnyOrders && $openTotal < 0.01;
+    $isGlobalOps = auth()->user()->hasRole(['admin', 'operation-manager', 'project-manager']);
 @endphp
-<div class="px-4 sm:px-6 lg:px-8 py-6 max-w-6xl mx-auto space-y-6">
+<div class="vd-container px-4 sm:px-6 lg:px-8 py-6 max-w-6xl mx-auto space-y-6">
 
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -353,165 +449,68 @@
     </div>
 
     <!-- Balance strip -->
-    <div class="vd-hero">
-        @if(! $hasAnyOrders)
-            <div class="vd-hero-body">
-                <div>
-                    <p class="vd-hero-eyebrow">{{ $monthDate->format('F') }}</p>
-                    <p class="vd-hero-figure is-neutral vd-mono">—</p>
-                    <p class="vd-hero-sub">No completed orders yet this month. Once operations marks one complete, it'll show up here waiting to be credited.</p>
-                </div>
-            </div>
-        @elseif($isFullyReconciled)
-            <div class="vd-hero-done">
-                <span class="vd-hero-done-badge"><i class="fas fa-check"></i></span>
-                <div>
-                    <p class="vd-hero-eyebrow">{{ $monthDate->format('F') }} — fully reconciled</p>
-                    <p class="mt-1 text-xl font-bold text-white">You're all caught up</p>
-                    <p class="vd-hero-sub mt-1">
-                        <strong class="vd-mono">${{ number_format($distributedTotal, 2) }}</strong> distributed across
-                        {{ $distributedCount }} {{ \Illuminate\Support\Str::plural('order', $distributedCount) }}. Nothing owed.
-                    </p>
-                </div>
-            </div>
-        @else
-            <div class="vd-hero-body">
-                <div>
-                    <p class="vd-hero-eyebrow">{{ $monthDate->format('F') }} balance</p>
-                    <p class="vd-hero-figure is-open vd-mono">${{ number_format($openTotal, 2) }}</p>
-                    <p class="vd-hero-sub">
-                        still open across <strong>{{ $pendingCount }} {{ \Illuminate\Support\Str::plural('order', $pendingCount) }}</strong>
-                        — credit them below to close out the month.
-                    </p>
-                </div>
-                <div class="vd-hero-facts">
-                    <p class="vd-hero-fact-value vd-mono">{{ $distributedCount }} / {{ $pendingCount + $distributedCount }}</p>
-                    <p class="vd-hero-fact-label">orders settled</p>
-                </div>
-            </div>
-
-            <div class="vd-hero-meter" role="img" aria-label="{{ $reconciledPercent }}% of this month's value has been distributed">
-                <span class="vd-hero-meter-settled" style="width: {{ $totalLedger > 0 ? ($distributedTotal / $totalLedger * 100) : 0 }}%"></span>
-                <span class="vd-hero-meter-open" style="width: {{ $totalLedger > 0 ? ($openTotal / $totalLedger * 100) : 0 }}%"></span>
-            </div>
-            <div class="vd-hero-legend">
-                <span><span class="vd-dot is-settled"></span>Settled <span class="vd-mono">${{ number_format($distributedTotal, 2) }}</span></span>
-                <span><span class="vd-dot is-open"></span>Open <span class="vd-mono">${{ number_format($openTotal, 2) }}</span></span>
-                @if($reconciledPercent !== null)
-                    <span>{{ $reconciledPercent }}% reconciled</span>
-                @endif
-            </div>
-        @endif
-    </div>
+    @include('value-distribution.partials.hero', [
+        'openTotal' => $snapshot['open_total'],
+        'distributedTotal' => $snapshot['distributed_total'],
+        'pendingCount' => $snapshot['pending_count'],
+        'distributedCount' => $snapshot['distributed_count'],
+        'monthDate' => $monthDate,
+    ])
 
     <div class="vd-workspace">
         <!-- Pending + settled -->
         <div class="vd-workspace-pending space-y-6">
             <div>
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
-                    <p class="vd-eyebrow">Pending distribution ({{ $pendingCount }})</p>
-                    <form method="GET" class="vd-search-form sm:w-64">
-                        <i class="fas fa-search vd-search-icon"></i>
-                        <input type="text" name="search" value="{{ request()->get('search') }}"
-                               placeholder="Search by order name…" class="vd-search-input">
-                        @if(request()->filled('search'))
-                            <a href="{{ route('value-distribution.index') }}" class="vd-search-clear" aria-label="Clear search">
+                    <p class="vd-eyebrow">Pending distribution (<span id="vdPendingCount">{{ $pendingOrders->total() }}</span>)</p>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <div class="vd-search-form flex-1 sm:w-56">
+                            <i class="fas fa-search vd-search-icon"></i>
+                            <input type="text" id="vdSearch" value="{{ $filters['search'] }}"
+                                   placeholder="Search by order name…" class="vd-search-input" autocomplete="off">
+                            <button type="button" id="vdSearchClear" class="vd-search-clear {{ $filters['search'] !== '' ? '' : 'hidden' }}" aria-label="Clear search">
                                 <i class="fas fa-xmark"></i>
-                            </a>
+                            </button>
+                        </div>
+                        @if($isGlobalOps)
+                            <select id="vdTeamFilter" class="vd-filter-select flex-1 sm:w-48" aria-label="Filter by team">
+                                <option value="">All teams</option>
+                                @foreach($teams as $team)
+                                    <option value="{{ $team->id }}" {{ $filters['team_id'] == $team->id ? 'selected' : '' }}>{{ $team->name }}</option>
+                                @endforeach
+                            </select>
                         @endif
-                    </form>
+                    </div>
                 </div>
 
-                <div class="space-y-3">
-                    @forelse($pendingOrders as $order)
-                        @include('value-distribution.partials.order-card', ['order' => $order, 'defaultOpen' => $pendingOrders->total() <= 3])
-                    @empty
-                        @if(request()->filled('search'))
-                            <div class="vd-empty">
-                                <i class="fas fa-magnifying-glass text-2xl text-gray-300 dark:text-gray-700"></i>
-                                <p class="mt-2 text-sm font-medium text-gray-600 dark:text-gray-300">No pending orders match "{{ request()->get('search') }}"</p>
-                                <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400"><a href="{{ route('value-distribution.index') }}" class="text-indigo-600 dark:text-indigo-400 hover:underline">Clear the search</a> to see everything pending.</p>
-                            </div>
-                        @elseif($hasAnyOrders)
-                            <div class="vd-empty">
-                                <i class="fas fa-circle-check text-2xl text-emerald-300 dark:text-emerald-700"></i>
-                                <p class="mt-2 text-sm font-medium text-gray-600 dark:text-gray-300">Nothing waiting on you.</p>
-                                <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Every order completed in {{ $monthDate->format('F') }} has been fully distributed.</p>
-                            </div>
-                        @else
-                            <div class="vd-empty">
-                                <i class="fas fa-inbox text-2xl text-gray-300 dark:text-gray-700"></i>
-                                <p class="mt-2 text-sm font-medium text-gray-600 dark:text-gray-300">No completed orders yet.</p>
-                                <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Nothing's been marked complete in {{ $monthDate->format('F') }} so far.</p>
-                            </div>
-                        @endif
-                    @endforelse
+                <div id="vdPendingList">
+                    @include('value-distribution.partials.pending-list', [
+                        'orders' => $pendingOrders,
+                        'filters' => $filters,
+                        'hasAnyOrders' => $snapshot['has_any_orders'],
+                        'monthDate' => $monthDate,
+                    ])
                 </div>
 
-                @include('value-distribution.partials.pager', ['paginator' => $pendingOrders, 'itemLabel' => 'pending order'])
+                <div id="vdPendingPager">
+                    @include('value-distribution.partials.pager', ['paginator' => $pendingOrders, 'itemLabel' => 'pending order', 'section' => 'pending'])
+                </div>
             </div>
 
             <!-- Settled — collapsed and paginated, so a month with hundreds of
                  closed-out orders never has to render them all at once. -->
-            @if($distributedCount > 0)
-                <div class="vd-panel">
-                    <button type="button" class="vd-settled-toggle" id="vdSettledToggle"
-                            aria-expanded="{{ request()->filled('distributed_page') ? 'true' : 'false' }}"
-                            aria-controls="vdSettledBody">
-                        <span class="vd-settled-toggle-label">Already distributed ({{ $distributedCount }})</span>
-                        <span class="vd-settled-toggle-action">
-                            <span data-label>{{ request()->filled('distributed_page') ? 'Hide' : 'Show' }}</span>
-                            <i class="fas fa-chevron-{{ request()->filled('distributed_page') ? 'up' : 'down' }}"></i>
-                        </span>
-                    </button>
-                    <div id="vdSettledBody" class="vd-settled-body" {{ request()->filled('distributed_page') ? '' : 'hidden' }}>
-                        <div class="space-y-3">
-                            @foreach($distributedOrders as $order)
-                                @include('value-distribution.partials.order-card', ['order' => $order, 'defaultOpen' => false])
-                            @endforeach
-                        </div>
-                        @include('value-distribution.partials.pager', ['paginator' => $distributedOrders, 'itemLabel' => 'settled order'])
-                    </div>
-                </div>
-            @endif
+            <div id="vdSettledPanelWrap">
+                @include('value-distribution.partials.settled-panel', [
+                    'distributedOrders' => $distributedOrders,
+                    'distributedCount' => $distributedOrders->total(),
+                    'openOnLoad' => request()->filled('distributed_page'),
+                ])
+            </div>
         </div>
 
         <!-- Achievement board -->
         <div class="vd-workspace-board">
-            @if($leaderboard->isNotEmpty())
-                <div class="vd-panel p-5">
-                    <p class="vd-eyebrow mb-3"><i class="fas fa-trophy text-amber-500 mr-1"></i> Distribution achievement · {{ $monthDate->format('F') }}</p>
-                    @foreach($leaderboard as $index => $person)
-                        @php
-                            $tone = $person['achievement'] === null ? 'is-none' : ($person['achievement'] >= 100 ? 'is-met' : ($person['achievement'] >= 60 ? 'is-close' : 'is-behind'));
-                        @endphp
-                        <div class="vd-board-row">
-                            <span class="vd-board-rank {{ $index < 3 ? 'rank-'.($index + 1) : '' }}">{{ $index + 1 }}</span>
-                            <div class="min-w-0">
-                                <p class="vd-board-name">{{ $person['name'] }}</p>
-                                <div class="vd-progress">
-                                    <span class="{{ $tone }}" style="width: {{ $person['achievement'] === null ? 0 : min(100, $person['achievement']) }}%"></span>
-                                </div>
-                                <p class="vd-board-meta vd-mono">
-                                    {{ $person['orders'] }} {{ \Illuminate\Support\Str::plural('order', $person['orders']) }}
-                                    @if($person['achievement'] !== null)
-                                        · {{ $person['achievement'] }}% of ${{ number_format($person['target'], 2) }} target
-                                    @else
-                                        · no target set
-                                    @endif
-                                </p>
-                            </div>
-                            <p class="vd-board-amount vd-mono">${{ number_format($person['amount'], 2) }}</p>
-                        </div>
-                    @endforeach
-                </div>
-            @else
-                <div class="vd-panel p-5 vd-empty">
-                    <i class="fas fa-trophy text-2xl text-gray-300 dark:text-gray-700"></i>
-                    <p class="mt-2 text-sm font-medium text-gray-600 dark:text-gray-300">No one credited yet</p>
-                    <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Distribute an order and this board fills in.</p>
-                </div>
-            @endif
+            @include('value-distribution.partials.leaderboard', ['leaderboard' => $snapshot['leaderboard'], 'monthDate' => $monthDate])
         </div>
     </div>
 </div>
@@ -519,35 +518,90 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // ---- Settled section disclosure ----
-        const settledToggle = document.getElementById('vdSettledToggle');
-        const settledBody = document.getElementById('vdSettledBody');
+        const LISTS_URL = @json(route('value-distribution.lists'));
 
-        if (settledToggle && settledBody) {
-            settledToggle.addEventListener('click', function() {
-                const willOpen = settledBody.hidden;
-                settledBody.hidden = !willOpen;
+        const state = {
+            search: @json($filters['search']),
+            team: @json($filters['team_id']),
+            pendingPage: 1,
+            distributedPage: 1,
+            settledOpen: document.getElementById('vdSettledBody')
+                ? ! document.getElementById('vdSettledBody').hidden
+                : false,
+        };
+
+        let searchTimeout = null;
+
+        // ---- Fragment refresh: search, team filter, pagination and saves all
+        //      round-trip through here and swap the lists in place. ----
+        async function refreshLists() {
+            const params = {
+                search: state.search,
+                team: state.team || '',
+                pending_page: state.pendingPage,
+                distributed_page: state.distributedPage,
+                settled_open: state.settledOpen ? 1 : 0,
+            };
+
+            try {
+                const { data } = await axios.get(LISTS_URL, { params });
+
+                document.getElementById('vdPendingList').innerHTML = data.pending_html;
+                document.getElementById('vdPendingPager').innerHTML = data.pending_pager_html;
+                document.getElementById('vdPendingCount').textContent = data.pending_count;
+
+                const settledPanel = document.getElementById('vdSettledPanel');
+                const newlyAppeared = ! settledPanel && data.distributed_count > 0;
+                document.getElementById('vdSettledPanelWrap').outerHTML = data.settled_panel_html;
+                if (newlyAppeared) {
+                    state.settledOpen = true;
+                }
+
+                const hero = document.getElementById('vdHero');
+                if (hero) {
+                    hero.outerHTML = data.hero_html;
+                }
+
+                const board = document.getElementById('vdLeaderboard');
+                if (board) {
+                    board.outerHTML = data.leaderboard_html;
+                }
+
+                bindAll();
+            } catch (error) {
+                console.error('Could not refresh distribution lists.', error);
+            }
+        }
+
+        function resetPages() {
+            state.pendingPage = 1;
+            state.distributedPage = 1;
+        }
+
+        function applyFilters() {
+            resetPages();
+            refreshLists();
+        }
+
+        // ---- Settled disclosure ----
+        function bindSettledToggle() {
+            const toggle = document.querySelector('[data-settled-toggle]');
+            const body = document.getElementById('vdSettledBody');
+            if (! toggle || ! body) {
+                return;
+            }
+
+            toggle.addEventListener('click', function() {
+                const willOpen = body.hidden;
+                body.hidden = ! willOpen;
+                state.settledOpen = willOpen;
                 this.setAttribute('aria-expanded', String(willOpen));
                 this.querySelector('[data-label]').textContent = willOpen ? 'Hide' : 'Show';
                 this.querySelector('i').className = willOpen ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
             });
         }
 
-        // ---- Accordion toggles (per order card) ----
-        document.querySelectorAll('[data-dist-toggle]').forEach(button => {
-            button.addEventListener('click', function() {
-                const card = this.closest('[data-distribution-card]');
-                const body = card.querySelector('[data-dist-body]');
-                const willOpen = body.hidden;
-
-                body.hidden = !willOpen;
-                this.setAttribute('aria-expanded', String(willOpen));
-            });
-        });
-
         // ---- Per-card distribution logic, scoped so many cards coexist ----
-        document.querySelectorAll('[data-distribution-card]').forEach(initCard);
-
         function initCard(card) {
             const netValue = parseFloat(card.dataset.netValue) || 0;
             const rows = card.querySelector('[data-dist-rows]');
@@ -556,6 +610,13 @@
             const results = card.querySelector('[data-dist-results]');
             const saveBtn = card.querySelector('[data-dist-save]');
             let searchTimeout = null;
+
+            card.querySelector('[data-dist-toggle]')?.addEventListener('click', function() {
+                const body = card.querySelector('[data-dist-body]');
+                const willOpen = body.hidden;
+                body.hidden = ! willOpen;
+                this.setAttribute('aria-expanded', String(willOpen));
+            });
 
             function creditedTotal() {
                 return Array.from(rows.querySelectorAll('[data-dist-amount]'))
@@ -618,7 +679,7 @@
 
             card.querySelector('[data-dist-balance]')?.addEventListener('click', function() {
                 const first = rows.querySelector('[data-dist-amount]');
-                if (!first) {
+                if (! first) {
                     return;
                 }
 
@@ -661,7 +722,7 @@
 
                 results.addEventListener('click', function(event) {
                     const button = event.target.closest('[data-user-id]');
-                    if (!button) {
+                    if (! button) {
                         return;
                     }
 
@@ -671,7 +732,7 @@
                 });
 
                 document.addEventListener('click', function(event) {
-                    if (!card.contains(event.target)) {
+                    if (! card.contains(event.target)) {
                         results.hidden = true;
                     }
                 });
@@ -701,7 +762,9 @@
                             icon: data.is_complete ? 'success' : 'info',
                             timer: 1400,
                             showConfirmButton: false,
-                        }).then(() => window.location.reload());
+                        });
+                        resetPages();
+                        refreshLists();
                     })
                     .catch(error => {
                         Swal.fire({
@@ -719,6 +782,68 @@
 
             refresh();
         }
+
+        function bindAll() {
+            bindSettledToggle();
+            document.querySelectorAll('[data-distribution-card]').forEach(initCard);
+        }
+
+        // ---- Filter controls (live, debounced) ----
+        const searchInput = document.getElementById('vdSearch');
+        const searchClear = document.getElementById('vdSearchClear');
+        const teamFilter = document.getElementById('vdTeamFilter');
+
+        searchInput?.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                state.search = searchInput.value.trim();
+                searchClear.classList.toggle('hidden', state.search === '');
+                applyFilters();
+            }, 300);
+        });
+
+        searchClear?.addEventListener('click', function() {
+            searchInput.value = '';
+            state.search = '';
+            this.classList.add('hidden');
+            applyFilters();
+        });
+
+        teamFilter?.addEventListener('change', function() {
+            state.team = this.value ? parseInt(this.value, 10) : null;
+            applyFilters();
+        });
+
+        // ---- Pager clicks + clear-filters buttons (delegated, since the
+        //      lists swap in fresh markup) ----
+        document.addEventListener('click', function(event) {
+            const pagerLink = event.target.closest('[data-pager-page]');
+            if (pagerLink) {
+                event.preventDefault();
+                const page = parseInt(pagerLink.dataset.pagerPage, 10);
+                if (pagerLink.dataset.pagerSection === 'distributed') {
+                    state.distributedPage = page;
+                } else {
+                    state.pendingPage = page;
+                }
+                refreshLists();
+                return;
+            }
+
+            const clearBtn = event.target.closest('[data-clear-filters]');
+            if (clearBtn) {
+                searchInput.value = '';
+                state.search = '';
+                searchClear.classList.add('hidden');
+                if (teamFilter) {
+                    teamFilter.value = '';
+                    state.team = null;
+                }
+                applyFilters();
+            }
+        });
+
+        bindAll();
     });
 </script>
 @endpush

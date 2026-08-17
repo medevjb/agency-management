@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\EncryptsRouteKeys;
 use App\Observers\OrderObserver;
 use App\Services\PlatformFeeCalculator;
 use App\SpecialStatus;
@@ -19,7 +20,7 @@ use Illuminate\Support\Str;
 #[ObservedBy(OrderObserver::class)]
 class Order extends Model
 {
-    use HasFactory, SoftDeletes;
+    use EncryptsRouteKeys, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'order_id',

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Task;
+use App\Models\Team;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -96,5 +97,52 @@ class TaskAssignmentTest extends TestCase
         ]);
 
         $response->assertStatus(403);
+    }
+
+    public function test_assignee_search_filters_users_by_name_for_admin()
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+        User::factory()->create(['name' => 'Alice Smith']);
+        User::factory()->create(['name' => 'Bob Jones']);
+
+        $response = $this->actingAs($admin)->getJson(route('tasks.search-users').'?search=Ali');
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'users')
+            ->assertJsonPath('users.0.name', 'Alice Smith');
+    }
+
+    public function test_assignee_search_lists_all_users_for_admin_when_no_term()
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+        $userA = User::factory()->create(['name' => 'Alice Smith']);
+        $userB = User::factory()->create(['name' => 'Bob Jones']);
+
+        $response = $this->actingAs($admin)->getJson(route('tasks.search-users'));
+
+        $response->assertOk();
+        $ids = collect($response->json('users'))->pluck('id');
+        $this->assertTrue($ids->contains($userA->id));
+        $this->assertTrue($ids->contains($userB->id));
+    }
+
+    public function test_assignee_search_is_scoped_to_team_for_team_leader()
+    {
+        $leader = User::factory()->create();
+        $leader->assignRole('team-leader');
+        $team = Team::factory()->create(['team_leader_id' => $leader->id]);
+        $leader->update(['team_id' => $team->id]);
+
+        $teammate = User::factory()->create(['name' => 'Alice Smith', 'team_id' => $team->id]);
+        $outsider = User::factory()->create(['name' => 'Bob Jones', 'team_id' => Team::factory()->create()->id]);
+
+        $response = $this->actingAs($leader)->getJson(route('tasks.search-users').'?search=Alice');
+
+        $response->assertOk();
+        $ids = collect($response->json('users'))->pluck('id');
+        $this->assertTrue($ids->contains($teammate->id));
+        $this->assertFalse($ids->contains($outsider->id));
     }
 }

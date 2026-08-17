@@ -390,6 +390,12 @@
             border-top-color: #1f2937;
         }
 
+        /* DataTables' Bootstrap integration right-aligns numeric cells via
+           td.dt-type-numeric, which beats Tailwind's .text-left utility.
+           Keep the Value column left-aligned with an explicit override. */
+        #ordersTable td.dt-type-numeric.text-left {
+            text-align: left;
+        }
         .dark .inline-select {
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
         }
@@ -444,6 +450,46 @@
 
         .progress-ring-label.is-empty {
             color: #9ca3af;
+        }
+
+        /* Progress update modal: the slider is the star, so it gets a track
+           and thumb styled for both themes. */
+        .progress-modal-range {
+            height: 0.5rem;
+            border-radius: 9999px;
+            appearance: none;
+            cursor: pointer;
+            background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+            outline: none;
+        }
+
+        .progress-modal-range::-webkit-slider-thumb {
+            appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 9999px;
+            background: #ffffff;
+            border: 3px solid #6366f1;
+            box-shadow: 0 2px 6px rgba(16, 24, 40, 0.25);
+            cursor: grab;
+        }
+
+        .progress-modal-range::-moz-range-thumb {
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 9999px;
+            background: #ffffff;
+            border: 3px solid #6366f1;
+            box-shadow: 0 2px 6px rgba(16, 24, 40, 0.25);
+            cursor: grab;
+        }
+
+        .progress-modal-range::-webkit-slider-runnable-track {
+            border-radius: 9999px;
+        }
+
+        .progress-modal-value {
+            font-variant-numeric: tabular-nums;
         }
 
         /* ---- Overdue accordion ----
@@ -897,10 +943,18 @@
 @endpush
 
 @section('content')
-    @php $isSalesUser = auth()->user()->isSales(); @endphp
     <div class="px-4 sm:px-6 lg:px-8 py-8">
         @php
+            $currentUser = auth()->user();
+            // Overdue / due-soon alerts are team-scoped: team leaders, team
+            // members and stack leaders only see their own team's orders.
+            // Admin, OM, PM and sales users see every team's alerts.
+            $teamScoped = ! $currentUser->isSales()
+                && $currentUser->hasRole(['team-leader', 'team-member', 'stack-leader'])
+                && $currentUser->team_id;
+
             $dueSoonOrders = \App\Models\Order::with(['team', 'users'])
+                ->when($teamScoped, fn ($q) => $q->where('team_id', $currentUser->team_id))
                 ->whereNotIn('status', ['delivered', 'completed', 'cancelled'])
                 ->whereNotNull('end_date')
                 ->where('end_date', '>=', now())
@@ -909,13 +963,15 @@
                 ->take(6)
                 ->get();
 
-            $urgentCount = \App\Models\Order::whereNotIn('status', ['delivered', 'completed', 'cancelled'])
+            $urgentCount = \App\Models\Order::when($teamScoped, fn ($q) => $q->where('team_id', $currentUser->team_id))
+                ->whereNotIn('status', ['delivered', 'completed', 'cancelled'])
                 ->whereNotNull('end_date')
                 ->where('end_date', '<=', now()->addDays(4))
                 ->where('end_date', '>=', now())
                 ->count();
 
             $overdueOrders = \App\Models\Order::with(['team', 'users'])
+                ->when($teamScoped, fn ($q) => $q->where('team_id', $currentUser->team_id))
                 ->whereNotIn('status', ['delivered', 'completed', 'cancelled'])
                 ->whereNotNull('end_date')
                 ->where('end_date', '<', now())
@@ -923,7 +979,8 @@
                 ->take(8)
                 ->get();
 
-            $overdueCount = \App\Models\Order::whereNotIn('status', ['delivered', 'completed', 'cancelled'])
+            $overdueCount = \App\Models\Order::when($teamScoped, fn ($q) => $q->where('team_id', $currentUser->team_id))
+                ->whereNotIn('status', ['delivered', 'completed', 'cancelled'])
                 ->whereNotNull('end_date')
                 ->where('end_date', '<', now())
                 ->count();
@@ -1043,7 +1100,7 @@
                                     </dl>
 
                                     <div class="overdue-actions">
-                                        <a href="{{ route('orders.show', $overdue->id) }}" class="overdue-btn is-primary">
+                                        <a href="{{ route('orders.show', $overdue) }}" class="overdue-btn is-primary">
                                             Open order
                                         </a>
                                         <div class="relative inline-block">
@@ -1054,21 +1111,22 @@
                                             <div id="overdue-menu-{{ $overdue->id }}"
                                                  class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10">
                                                 <div class="py-1">
-                                                    <a href="{{ route('orders.show', $overdue->id) }}"
+                                                    <a href="{{ route('orders.show', $overdue) }}"
                                                        class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                                         <i class="fas fa-eye text-purple-500"></i>
                                                         View Details
                                                     </a>
                                                     @can('update', $overdue)
-                                                        <a href="{{ route('orders.edit', $overdue->id) }}"
+                                                        <a href="{{ route('orders.edit', $overdue) }}"
                                                            class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                                             <i class="fas fa-edit text-indigo-500"></i>
                                                             Edit Order
                                                         </a>
                                                     @endcan
-                                                </div>
-                                            </div>
-                                        </div>
+            </div>
+        </div>
+    </div>
+
                                     </div>
                                 </div>
                             </li>
@@ -1151,7 +1209,7 @@
                                 }
                             @endphp
 
-                            <a href="{{ route('orders.show', $order->id) }}"
+                            <a href="{{ route('orders.show', $order) }}"
                                 class="group relative overflow-hidden rounded-xl bg-white dark:bg-gray-900 shadow-md hover:shadow-xl transition-all duration-300 border-2 {{ $isUrgent ? 'border-red-300 dark:border-red-800 hover:border-red-500 dark:hover:border-red-600' : 'border-orange-200 dark:border-orange-900 hover:border-orange-400 dark:hover:border-orange-700' }}">
                                 <!-- Progress Bar Background -->
                                 <div
@@ -1313,9 +1371,9 @@
                 <div class="relative flex-shrink-0">
                     <select id="filterTeam"
                         class="px-3 py-1.5 pr-8 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 appearance-none transition-all duration-200 text-sm">
-                        <option value="">All Teams</option>
+                        <option value="" {{ $selectedTeamId ? '' : 'selected' }}>All Teams</option>
                         @foreach ($teams as $team)
-                            <option value="{{ $team->id }}">{{ $team->name }}</option>
+                            <option value="{{ $team->id }}" {{ $selectedTeamId == $team->id ? 'selected' : '' }}>{{ $team->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -1352,6 +1410,17 @@
                         <option value="high">High</option>
                     </select>
                 </div>
+
+                @if (auth()->user()->isSales())
+                    <!-- My Sales Only Filter -->
+                    <label for="filterMySales"
+                        class="relative flex items-center gap-2 px-3 py-1.5 border border-indigo-300 dark:border-indigo-800 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 cursor-pointer select-none text-sm font-medium text-gray-900 dark:text-gray-100 transition-all duration-200">
+                        <input type="checkbox" id="filterMySales" name="filterMySales"
+                            class="w-4 h-4 rounded border-indigo-400 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                        <i class="fas fa-user-tie text-indigo-500 dark:text-indigo-400"></i>
+                        <span>My sales only</span>
+                    </label>
+                @endif
 
                 <!-- Spacer -->
                 <div class="flex-1"></div>
@@ -1422,10 +1491,8 @@
                             <th>Status</th>
                             <th>Priority</th>
                             <th>Value</th>
-                            @unless ($isSalesUser)
-                                <th>Team</th>
-                                <th>Users</th>
-                            @endunless
+                            <th>Team</th>
+                            <th>Users</th>
                             {{-- <th>Started</th> --}}
                             <th>Completed</th>
                             <th>Deadline</th>
@@ -1522,8 +1589,74 @@
         </div>
     </div>
 
+    <!-- Progress Update Modal -->
+    <div id="progressModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="progressModalTitle">
+        <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" onclick="closeProgressModal()"></div>
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-end sm:items-center justify-center p-4 sm:p-0">
+                <div class="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 text-left shadow-xl transition-all border border-gray-100 dark:border-gray-700">
+                    <!-- Modal Header -->
+                    <div class="flex items-start justify-between px-6 pt-5 pb-4 border-b border-gray-100 dark:border-gray-800">
+                        <div>
+                            <h3 id="progressModalTitle" class="text-lg font-bold text-gray-900 dark:text-gray-100">Update progress</h3>
+                            <p id="progressModalOrderName" class="mt-0.5 text-sm text-gray-500 dark:text-gray-400"></p>
+                        </div>
+                        <button type="button" onclick="closeProgressModal()"
+                                class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                            <i class="fas fa-times text-lg"></i>
+                        </button>
+                    </div>
+
+                    <!-- Modal Body -->
+                    <div class="px-6 py-6">
+                        <div class="text-center">
+                            <span id="progressModalValue" class="text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white progress-modal-value">0%</span>
+                            <p id="progressModalHint" class="mt-1 text-xs text-gray-500 dark:text-gray-400"></p>
+                        </div>
+
+                        <input type="range" id="progressModalRange" min="0" max="100" step="5" value="0"
+                               class="progress-modal-range w-full mt-5" aria-label="Completion progress">
+                        <div class="mt-1 flex justify-between text-[10px] font-bold text-gray-400 dark:text-gray-500">
+                            <span>0%</span>
+                            <span>25%</span>
+                            <span>50%</span>
+                            <span>75%</span>
+                            <span>100%</span>
+                        </div>
+
+                        <div class="mt-5 flex flex-wrap items-center justify-center gap-2">
+                            @foreach([0, 25, 50, 75, 100] as $preset)
+                                <button type="button" data-progress-preset="{{ $preset }}"
+                                        class="progress-preset-btn px-3 py-1.5 text-xs font-semibold rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                                    {{ $preset }}%
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <div class="flex items-center justify-end gap-2 px-6 py-4 bg-gray-50 dark:bg-gray-800/60 border-t border-gray-100 dark:border-gray-800">
+                        <button type="button" onclick="closeProgressModal()"
+                                class="inline-flex items-center rounded-lg bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-700 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all">
+                            Cancel
+                        </button>
+                        <button type="button" id="progressModalSaveBtn" onclick="saveProgressModal()"
+                                class="inline-flex items-center rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:from-indigo-700 hover:to-purple-700 transition-all">
+                            <i class="fas fa-check mr-2"></i>Save progress
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @push('scripts')
         <script>
+            @php($canManageAssignment = ! auth()->user()->isSales())
+            @php($canUpdateProgress = ! auth()->user()->isSales())
+            const canManageAssignment = @json($canManageAssignment);
+            const canUpdateProgress = @json($canUpdateProgress);
+
             // --- Overdue accordion ---
             document.addEventListener('DOMContentLoaded', function() {
                 const panel = document.getElementById('overduePanel');
@@ -1602,7 +1735,7 @@
                     show: @js(route('orders.show', ['order' => '__ID__'])).replace('__ID__', ''),
                     edit: @js(route('orders.edit', ['order' => '__ID__'])).replace('/__ID__/edit', ''),
                 };
-                @php($canDistributeValue = auth()->user()->hasRole(['admin', 'operation-manager', 'project-manager', 'team-leader']))
+                @php($canDistributeValue = ! auth()->user()->isSales() && auth()->user()->hasRole(['admin', 'operation-manager', 'project-manager', 'team-leader']))
                 const valueDistributionUrl = @json($canDistributeValue ? route('value-distribution.index') : null);
 
                 // Initialize DataTable
@@ -1621,6 +1754,7 @@
                             d.freelance_profile_id = $('#filterProfile').val();
                             d.priority = $('#filterPriority').val();
                             d.month = $('#filterMonth').val();
+                            d.my_sales = $('#filterMySales').is(':checked') ? '1' : '';
                         }
                     },
                     columns: [{
@@ -1639,7 +1773,7 @@
                                 const mineBadge = row.is_my_sale
                                     ? '<span class="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-indigo-100 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400">Your sale</span>'
                                     : '';
-                                return `<a href="${urlTemplates.show}${row.id}" class="font-semibold text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">${data}</a>${mineBadge}`;
+                                return `<a href="${urlTemplates.show}${row.key}" class="font-semibold text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">${data}</a>${mineBadge}`;
                             }
                         },
                         {
@@ -1689,7 +1823,7 @@
 
                                 return `
                                     <select class="inline-select px-2 py-1 rounded text-xs font-semibold ${config.color} border-0 cursor-pointer focus:ring-1 focus:ring-offset-1 focus:ring-purple-500 min-w-[100px] max-w-[115px] statusDropdown"
-                                            data-order-id="${row.id}"
+                                            data-order-id="${row.id}" data-order-key="${row.key}"
                                             data-field="status"
                                             data-original-value="${data}"
                                             onchange="handleQuickUpdate(this)">
@@ -1726,7 +1860,7 @@
 
                                 return `
                                     <select class="inline-select px-2 py-1 rounded text-xs font-semibold ${p.color} border-0 cursor-pointer focus:ring-1 focus:ring-offset-1 focus:ring-purple-500 min-w-[90px] max-w-[105px] priorityDropdown"
-                                            data-order-id="${row.id}"
+                                            data-order-id="${row.id}" data-order-key="${row.key}"
                                             data-field="priority"
                                             data-original-value="${data}"
                                             onchange="handleQuickUpdate(this)">
@@ -1740,45 +1874,51 @@
                         {
                             data: 'actual_revenue',
                             name: 'actual_revenue',
+                            className: 'text-left',
                             render: function(data) {
                                 return data ?
-                                    '<span class="font-semibold text-green-600 dark:text-green-400">$' +
+                                    '<span class="font-semibold text-green-600 dark:text-green-400 text-start">$' +
                                     parseFloat(data)
                                     .toFixed(2) + '</span>' :
                                     '<span class="text-gray-400 dark:text-gray-500">N/A</span>';
                             }
                         },
-                        @unless ($isSalesUser)
-                            {
-                                data: 'team',
-                                name: 'team_id',
-                                render: function(data) {
-                                    if (!data || data === 'N/A')
-                                        return '<span class="text-gray-400 dark:text-gray-500 text-xs">No team</span>';
-                                    return `<span class="px-2 py-1 rounded-lg text-xs font-semibold bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 inline-block whitespace-nowrap">${data}</span>`;
-                                }
-                            },
+                        {
+                            data: 'team',
+                            name: 'team_id',
+                            render: function(data) {
+                                if (!data || data === 'N/A')
+                                    return '<span class="text-gray-400 dark:text-gray-500 text-xs">No team</span>';
+                                return `<span class="px-2 py-1 rounded-lg text-xs font-semibold bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 inline-block whitespace-nowrap">${data}</span>`;
+                            }
+                        },
 
-                            {
-                                data: 'users',
-                                name: 'users',
-                                render: function(data, type, row) {
+                        {
+                            data: 'users',
+                            name: 'users',
+                            render: function(data, type, row) {
+                                if (!canManageAssignment) {
                                     if (!data || data.length === 0) {
-                                        return `<button onclick="openUserAssignmentModal(${row.id}, '${row.name.replace(/'/g, "\\'")}')" class="w-9 h-8 flex items-center justify-center rounded-lg text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-all cursor-pointer" title="Assign Users">
-                                        <i class="fas fa-user-plus "></i>
-                                    </button>`;
+                                        return '<span class="text-gray-400 dark:text-gray-500 text-xs">No users</span>';
                                     }
-                                    if (data.length === 1) {
-                                        return `<button onclick="openUserAssignmentModal(${row.id}, '${row.name.replace(/'/g, "\\'")}')" class="px-2 py-1 rounded-lg text-xs font-semibold bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 truncate max-w-[100px] inline-block hover:bg-purple-100 dark:hover:bg-purple-500/20 cursor-pointer transition-all" title="${data[0].name}">${data[0].name}</button>`;
-                                    }
-                                    // Multiple users - show icon with count
-                                    return `<button onclick="openUserAssignmentModal(${row.id}, '${row.name.replace(/'/g, "\\'")}')" class="w-12 h-8 px-2 flex items-center justify-center rounded-lg text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-100 dark:hover:bg-purple-500/20 transition-all cursor-pointer" title="${data.length} users: ${row.users_names}">
-                                    <i class="fas fa-users "></i>
-                                    <span class="ml-0.5  font-bold">${data.length}</span>
+                                    const assignedNames = data.map(u => u.name).join(', ');
+                                    return `<span class="px-2 py-1 rounded-lg text-xs font-semibold bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 truncate max-w-[140px] inline-block" title="${assignedNames}">${assignedNames}</span>`;
+                                }
+                                if (!data || data.length === 0) {
+                                    return `<button onclick="openUserAssignmentModal('${row.key}', '${row.name.replace(/'/g, "\\'")}')" class="w-9 h-8 flex items-center justify-center rounded-lg text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-all cursor-pointer" title="Assign Users">
+                                    <i class="fas fa-user-plus "></i>
                                 </button>`;
                                 }
-                            },
-                        @endunless
+                                if (data.length === 1) {
+                                    return `<button onclick="openUserAssignmentModal('${row.key}', '${row.name.replace(/'/g, "\\'")}')" class="px-2 py-1 rounded-lg text-xs font-semibold bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 truncate max-w-[100px] inline-block hover:bg-purple-100 dark:hover:bg-purple-500/20 cursor-pointer transition-all" title="${data[0].name}">${data[0].name}</button>`;
+                                }
+                                // Multiple users - show icon with count
+                                return `<button onclick="openUserAssignmentModal('${row.key}', '${row.name.replace(/'/g, "\\'")}')" class="w-12 h-8 px-2 flex items-center justify-center rounded-lg text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-100 dark:hover:bg-purple-500/20 transition-all cursor-pointer" title="${data.length} users: ${row.users_names}">
+                                <i class="fas fa-users "></i>
+                                <span class="ml-0.5  font-bold">${data.length}</span>
+                            </button>`;
+                            }
+                        },
 
                         /* {
                              data: 'start_date',
@@ -1788,7 +1928,7 @@
                                  if (!data) {
                                      return `<input type="text"
                                          class="start-date-input px-2 py-1 rounded-lg text-xs font-medium border border-gray-300 bg-gray-50 text-gray-400 whitespace-nowrap w-28 cursor-pointer"
-                                         data-order-id="${row.id}"
+                                         data-order-id="${row.id}" data-order-key="${row.key}"
                                          data-original-value=""
                                          placeholder="Set date"
                                          readonly onclick="handleStartDateClick(this)">`;
@@ -1805,7 +1945,7 @@
                                  return `<input type="text"
                                      class="start-date-input px-2 py-1 rounded-lg text-xs font-medium border border-indigo-300 bg-indigo-50 text-indigo-700 whitespace-nowrap w-28 cursor-pointer"
                                      value="${formattedDate}"
-                                     data-order-id="${row.id}"
+                                     data-order-id="${row.id}" data-order-key="${row.key}"
                                      data-original-value="${dbDate}"
                                      data-current-value="${dbDate}"
                                      title="${dbDate}"
@@ -1826,7 +1966,7 @@
                                     return `<input type="text"
                                                 class="completed-date-input px-2 py-1 rounded-lg text-xs font-medium border border-green-300 dark:border-green-800 bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 whitespace-nowrap w-28 cursor-pointer"
                                                 value="${formattedDate}"
-                                                data-order-id="${row.id}"
+                                                data-order-id="${row.id}" data-order-key="${row.key}"
                                                 data-original-value="${data}"
                                                 title="${data}"
                                                 readonly onclick="handleCompletedDateClick(this)">`;
@@ -1834,7 +1974,7 @@
 
                                 return `<input type="text"
                                             class="completed-date-input px-2 py-1 rounded-lg text-xs font-medium border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500 whitespace-nowrap w-28 cursor-pointer"
-                                            data-order-id="${row.id}"
+                                            data-order-id="${row.id}" data-order-key="${row.key}"
                                             data-original-value=""
                                             placeholder="Set date"
                                             readonly onclick="handleCompletedDateClick(this)">`;
@@ -1865,7 +2005,7 @@
 
                                 if (!data) {
                                     return `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
-                                                data-order-id="${row.id}"
+                                                data-order-id="${row.id}" data-order-key="${row.key}"
                                                 data-deadline=""
                                                 onclick="handleEndDateClick(this)">
                                                 <i class="fas fa-calendar-plus text-xs"></i>
@@ -1875,7 +2015,7 @@
 
                                 return `<span class="countdown-timer inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold whitespace-nowrap cursor-pointer hover:ring-2 hover:ring-orange-300 transition-all"
                                             data-deadline="${data}"
-                                            data-order-id="${row.id}"
+                                            data-order-id="${row.id}" data-order-key="${row.key}"
                                             data-original-value="${data}"
                                             onclick="handleEndDateClick(this)"
                                             title="Click to edit deadline">
@@ -1896,15 +2036,16 @@
                                 const stroke = progress >= 100 ? '#10b981' : '#6366f1';
                                 const documents = parseInt(row.documents_count) || 0;
                                 const documentsBadge = documents > 0 ?
-                                    `<a href="${urlTemplates.show}/${row.id}" class="inline-flex items-center gap-0.5 text-[10px] font-semibold text-blue-500 dark:text-blue-400 hover:underline" title="${documents} document(s)">
+                                    `<a href="${urlTemplates.show}${row.key}" class="inline-flex items-center gap-0.5 text-[10px] font-semibold text-blue-500 dark:text-blue-400 hover:underline" title="${documents} document(s)">
                                         <i class="fas fa-paperclip text-[9px]"></i>${documents}
                                      </a>` : '';
+                                const ringClass = canUpdateProgress ? 'progress-ring cursor-pointer' : 'progress-ring';
+                                const ringTitle = canUpdateProgress ? `${progress}% complete — click to update` : `${progress}% complete`;
+                                const ringClick = canUpdateProgress ? ` data-order-id="${row.id}" data-order-key="${row.key}" data-progress="${progress}" data-order-name="${row.name}" onclick="handleProgressClick(this)"` : '';
 
                                 return `
                                     <div class="flex items-center justify-center gap-1.5">
-                                        <div class="progress-ring cursor-pointer" title="${progress}% complete — click to update"
-                                             data-order-id="${row.id}" data-progress="${progress}"
-                                             onclick="handleProgressClick(this)">
+                                        <div class="${ringClass}" title="${ringTitle}"${ringClick}>
                                             <svg viewBox="0 0 36 36">
                                                 <circle class="progress-ring-track" cx="18" cy="18" r="15.5"></circle>
                                                 <circle class="progress-ring-value" cx="18" cy="18" r="15.5"
@@ -1945,7 +2086,7 @@
 
                         //         return `
                 //             <select class="inline-select px-2 py-1 rounded text-xs font-semibold border-0 cursor-pointer focus:ring-1 focus:ring-offset-1 focus:ring-purple-500 min-w-[70px] max-w-[80px] specialStatusDropdown ${bgClass}"
-                //                     data-order-id="${row.id}"
+                //                     data-order-id="${row.id}" data-order-key="${row.key}"
                 //                     data-field="special_status"
                 //                     data-original-value="${currentStatus}"
                 //                     onchange="handleQuickUpdate(this)">
@@ -1974,7 +2115,7 @@
                         //             return `<input type="text"
                 //                         class="last-update-date-input px-2 py-1 rounded-lg text-xs font-medium border border-purple-300 bg-purple-50 text-purple-700 whitespace-nowrap w-28 cursor-pointer"
                 //                         value="${formattedDate}"
-                //                         data-order-id="${row.id}"
+                //                         data-order-id="${row.id}" data-order-key="${row.key}"
                 //                         data-original-value="${dbDate}"
                 //                         data-current-value="${dbDate}"
                 //                         title="${dbDate}"
@@ -1984,7 +2125,7 @@
                         //         // No date set yet
                         //         return `<input type="text"
                 //                     class="last-update-date-input px-2 py-1 rounded-lg text-xs font-medium border border-gray-300 bg-gray-50 text-gray-400 whitespace-nowrap w-28 cursor-pointer"
-                //                     data-order-id="${row.id}"
+                //                     data-order-id="${row.id}" data-order-key="${row.key}"
                 //                     data-original-value=""
                 //                     placeholder="Set date"
                 //                     readonly onclick="handleLastUpdateClick(this)">`;
@@ -2005,17 +2146,17 @@
                             <div id="action-menu-${row.id}"
                                  class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10">
                                 <div class="py-1">
-                                    <a href="${urlTemplates.show}/${row.id}"
+                                    <a href="${urlTemplates.show}${row.key}"
                                        class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                         <i class="fas fa-eye text-purple-500"></i>
                                         View
                                     </a>
-                                    <a href="${urlTemplates.edit}/${row.id}/edit"
+                                    <a href="${urlTemplates.edit}/${row.key}/edit"
                                        class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                         <i class="fas fa-edit text-indigo-500"></i>
                                         Edit
                                     </a>
-                                    <button onclick="deleteOrder(${row.id})"
+                                    <button onclick="deleteOrder('${row.key}')"
                                             class="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
                                         <i class="fas fa-trash"></i>
                                         Delete
@@ -2078,7 +2219,7 @@
                             table.ajax.reload();
                         });
 
-                        $('#filterStatus, #filterTeam, #filterTechStack, #filterPriority, #filterMonth').on(
+                        $('#filterStatus, #filterTeam, #filterTechStack, #filterPriority, #filterMonth, #filterMySales').on(
                             'change',
                             function() {
                                 console.log($('#filterMonth').val());
@@ -2162,6 +2303,7 @@
                         $('#filterTechStack').val('');
                         $('#filterPriority').val('');
                         $('#filterMonth').val('');
+                        $('#filterMySales').prop('checked', false);
                         $('#ordersTable').DataTable().ajax.reload();
                     });
 
@@ -2406,7 +2548,7 @@
 
             // Quick update function for status and priority
             function handleQuickUpdate(selectElement) {
-                const orderId = selectElement.dataset.orderId;
+                const orderId = selectElement.dataset.orderKey;
                 const field = selectElement.dataset.field;
                 const newValue = selectElement.value;
                 const originalValue = selectElement.dataset.originalValue;
@@ -2483,54 +2625,107 @@
             }
 
             function handleProgressClick(element) {
-                const orderId = element.dataset.orderId;
-                const currentProgress = parseInt(element.dataset.progress) || 0;
+                const modal = document.getElementById('progressModal');
+                const range = document.getElementById('progressModalRange');
+                const valueLabel = document.getElementById('progressModalValue');
+                const orderName = document.getElementById('progressModalOrderName');
+                const hint = document.getElementById('progressModalHint');
 
-                Swal.fire({
-                    title: 'Update progress',
-                    input: 'range',
-                    inputLabel: 'Progress (%)',
-                    inputAttributes: {
-                        min: 0,
-                        max: 100,
-                        step: 5
-                    },
-                    inputValue: currentProgress,
-                    showCancelButton: true,
-                    confirmButtonColor: '#9333ea',
-                    cancelButtonColor: '#6b7280',
-                    confirmButtonText: 'Yes, update!',
-                    cancelButtonText: 'Cancel'
-                }).then((result) => {
-                    if (!result.isConfirmed) {
-                        return;
-                    }
+                progressModalState = {
+                    orderId: element.dataset.orderId,
+                    key: element.dataset.orderKey,
+                    original: parseInt(element.dataset.progress) || 0,
+                };
 
-                    Swal.showLoading();
-
-                    axios.post(ROUTES.quickUpdate.replace('__ID__', orderId), { progress: result.value })
-                        .then(response => {
-                            Swal.fire({
-                                title: 'Updated!',
-                                text: response.data.message || 'Progress updated successfully.',
-                                icon: 'success',
-                                confirmButtonColor: '#9333ea',
-                                timer: 1500,
-                                showConfirmButton: false
-                            }).then(() => {
-                                $('#ordersTable').DataTable().ajax.reload();
-                            });
-                        })
-                        .catch(error => {
-                            Swal.fire({
-                                title: 'Error!',
-                                text: error.response?.data?.message || 'Something went wrong.',
-                                icon: 'error',
-                                confirmButtonColor: '#dc2626'
-                            });
-                        });
-                });
+                orderName.textContent = (element.dataset.orderName || 'Order') + ' · ' + progressModalState.orderId;
+                range.value = progressModalState.original;
+                syncProgressModal();
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                setTimeout(() => range.focus(), 50);
             }
+
+            let progressModalState = { orderId: null, original: 0 };
+
+            function closeProgressModal() {
+                const modal = document.getElementById('progressModal');
+                if (modal) {
+                    modal.classList.add('hidden');
+                }
+                document.body.style.overflow = '';
+            }
+
+            function syncProgressModal() {
+                const range = document.getElementById('progressModalRange');
+                const valueLabel = document.getElementById('progressModalValue');
+                const hint = document.getElementById('progressModalHint');
+                if (!range || !valueLabel) {
+                    return;
+                }
+
+                const value = parseInt(range.value) || 0;
+                const dark = document.documentElement.classList.contains('dark');
+                const trackColor = dark ? '#374151' : '#e5e7eb';
+                range.style.background = `linear-gradient(90deg, #6366f1 0%, #8b5cf6 ${value}%, ${trackColor} ${value}%, ${trackColor} 100%)`;
+                valueLabel.textContent = value + '%';
+
+                if (value === progressModalState.original) {
+                    hint.textContent = 'Keep the current progress';
+                } else if (value > progressModalState.original) {
+                    hint.textContent = value - progressModalState.original + '% further along than before';
+                } else {
+                    hint.textContent = 'Lowered by ' + (progressModalState.original - value) + '%';
+                }
+            }
+
+            function saveProgressModal() {
+                const saveBtn = document.getElementById('progressModalSaveBtn');
+                const value = document.getElementById('progressModalRange').value;
+
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving…';
+
+                axios.post(ROUTES.quickUpdate.replace('__ID__', progressModalState.key), { progress: value })
+                    .then(() => {
+                        closeProgressModal();
+                        $('#ordersTable').DataTable().ajax.reload();
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: error.response?.data?.message || 'Something went wrong.',
+                            icon: 'error',
+                            confirmButtonColor: '#dc2626'
+                        });
+                    })
+                    .finally(() => {
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Save progress';
+                    });
+            }
+
+            (function initProgressModal() {
+                const range = document.getElementById('progressModalRange');
+                const modal = document.getElementById('progressModal');
+                if (!range || !modal) {
+                    return;
+                }
+
+                range.addEventListener('input', syncProgressModal);
+
+                modal.querySelectorAll('[data-progress-preset]').forEach(button => {
+                    button.addEventListener('click', () => {
+                        range.value = button.dataset.progressPreset;
+                        syncProgressModal();
+                    });
+                });
+
+                document.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
+                        closeProgressModal();
+                    }
+                });
+            })();
 
             function handleCompletedDateClick(inputElement) {
                 const orderId = inputElement.dataset.orderId;
@@ -2830,6 +3025,17 @@
             let modalCurrentUsers = [];
 
             function openUserAssignmentModal(orderId, orderName) {
+                if (!canManageAssignment) {
+                    Swal.fire({
+                        title: 'Access denied',
+                        text: 'You do not have permission to manage order assignments.',
+                        icon: 'error',
+                        confirmButtonColor: '#dc2626'
+                    });
+
+                    return;
+                }
+
                 currentOrderId = orderId;
                 const modal = document.getElementById('userAssignmentModal');
                 const orderNameEl = document.getElementById('modal-order-name');
@@ -3139,6 +3345,7 @@
                         tech_stack_id: $('#filterTechStack').val(),
                         freelance_profile_id: $('#filterProfile').val(),
                         month: $('#filterMonth').val(),
+                        my_sales: $('#filterMySales').is(':checked') ? '1' : '',
                     };
 
                     Object.keys(filters).forEach(key => {

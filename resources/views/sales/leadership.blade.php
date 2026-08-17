@@ -1,479 +1,733 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Sales Leadership')
+@section('title', 'Sales Leadership Overview')
 
 @push('styles')
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-    .s-panel {
+    /* Premium Dashboard Styles */
+    .sb-dashboard {
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background-color: #f8fafc;
+    }
+    
+    .dark .sb-dashboard {
+        background-color: #0f172a;
+    }
+
+    .sb-card {
         background-color: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 1rem;
-        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+        border: 1px solid #f1f5f9;
+        border-radius: 1.25rem;
+        box-shadow: 0 4px 20px -2px rgba(16, 24, 40, 0.02), 0 2px 8px -1px rgba(16, 24, 40, 0.02);
+        transition: all 0.2s ease-in-out;
     }
 
-    .dark .s-panel { background-color: #111827; border-color: #1f2937; box-shadow: none; }
-
-    .s-eyebrow {
-        font-size: 0.6875rem;
-        font-weight: 800;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: #6b7280;
+    .dark .sb-card {
+        background-color: #1e293b;
+        border-color: #334155;
+        box-shadow: none;
     }
 
-    .dark .s-eyebrow { color: #9ca3af; }
-
-    .s-num { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
-
-    .s-hero-amount {
-        font-size: clamp(2.5rem, 6vw, 3.75rem);
-        line-height: 1;
-        font-weight: 800;
-        letter-spacing: -0.04em;
-        color: #111827;
+    .sb-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px -4px rgba(16, 24, 40, 0.04), 0 4px 12px -2px rgba(16, 24, 40, 0.04);
     }
 
-    .dark .s-hero-amount { color: #ffffff; }
-
-    .s-delta {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.375rem;
-        padding: 0.25rem 0.625rem;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 800;
-    }
-
-    .s-delta.is-up { background-color: #d1fae5; color: #047857; }
-    .s-delta.is-down { background-color: #fee2e2; color: #b91c1c; }
-    .s-delta.is-flat { background-color: #f3f4f6; color: #6b7280; }
-    .dark .s-delta.is-up { background-color: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
-    .dark .s-delta.is-down { background-color: rgba(239, 68, 68, 0.15); color: #fca5a5; }
-    .dark .s-delta.is-flat { background-color: #1f2937; color: #9ca3af; }
-
-    .s-grid-4 { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 1rem; }
-    @media (min-width: 640px) { .s-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (min-width: 1024px) { .s-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-
-    .s-stat-label { font-size: 0.75rem; font-weight: 700; color: #6b7280; }
-    .dark .s-stat-label { color: #9ca3af; }
-    .s-stat-value { margin-top: 0.25rem; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; color: #111827; }
-    .dark .s-stat-value { color: #f3f4f6; }
-    .s-stat-foot { margin-top: 0.125rem; font-size: 0.75rem; color: #9ca3af; }
-
-    .s-target-bar {
-        position: relative;
-        height: 0.5rem;
-        border-radius: 9999px;
-        background-color: #eef2f7;
-        overflow: hidden;
-    }
-
-    .s-target-bar.is-slim { height: 0.3125rem; margin-top: 0.375rem; }
-    .dark .s-target-bar { background-color: #1f2937; }
-
-    .s-target-bar span {
-        display: block;
-        height: 100%;
-        border-radius: 9999px;
-        transition: width 400ms ease;
-    }
-
-    .s-target-bar span.is-met { background-image: linear-gradient(90deg, #059669, #10b981); }
-    .s-target-bar span.is-close { background-image: linear-gradient(90deg, #d97706, #f59e0b); }
-    .s-target-bar span.is-behind { background-image: linear-gradient(90deg, #dc2626, #f87171); }
-    .s-target-bar span.is-none { background-color: #cbd5e1; }
-
-    .s-target-tag {
-        padding: 0.0625rem 0.4375rem;
-        border-radius: 9999px;
-        font-weight: 700;
-        font-size: 0.6875rem;
-    }
-
-    .s-target-tag.is-met { background-color: #d1fae5; color: #047857; }
-    .s-target-tag.is-close { background-color: #fef3c7; color: #b45309; }
-    .s-target-tag.is-behind { background-color: #fee2e2; color: #b91c1c; }
-    .s-target-tag.is-none { background-color: #f3f4f6; color: #9ca3af; }
-    .dark .s-target-tag.is-met { background-color: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
-    .dark .s-target-tag.is-close { background-color: rgba(245, 158, 11, 0.15); color: #fcd34d; }
-    .dark .s-target-tag.is-behind { background-color: rgba(239, 68, 68, 0.15); color: #fca5a5; }
-    .dark .s-target-tag.is-none { background-color: #1f2937; color: #6b7280; }
-
-    /* Rank rows shared by leader comparison + top performers */
-    .rank-row {
-        display: grid;
-        grid-template-columns: 1.75rem minmax(0, 1fr) auto;
-        align-items: center;
-        gap: 0.875rem;
-        padding: 0.75rem 0;
-        border-bottom: 1px solid #f3f4f6;
-    }
-
-    .rank-row:last-child { border-bottom: 0; }
-    .dark .rank-row { border-bottom-color: #1f2937; }
-
-    .rank-badge {
+    .sb-icon-box {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 1.75rem;
-        height: 1.75rem;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 800;
-        background-color: #f3f4f6;
-        color: #6b7280;
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 0.75rem;
+        background-color: #f1f5f9;
+        color: #475569;
+        font-size: 1.125rem;
     }
 
-    .dark .rank-badge { background-color: #1f2937; color: #9ca3af; }
-    .rank-badge.rank-1 { background-image: linear-gradient(135deg, #f59e0b, #fbbf24); color: #fff; }
-    .rank-badge.rank-2 { background-image: linear-gradient(135deg, #94a3b8, #cbd5e1); color: #fff; }
-    .rank-badge.rank-3 { background-image: linear-gradient(135deg, #b45309, #d97706); color: #fff; }
-
-    .rank-name { font-size: 0.875rem; font-weight: 700; color: #111827; }
-    .dark .rank-name { color: #f3f4f6; }
-
-    .rank-chip {
-        margin-left: 0.375rem;
-        padding: 0.0625rem 0.375rem;
-        border-radius: 9999px;
-        font-size: 0.5625rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        background-color: #eef2ff;
-        color: #4338ca;
+    .dark .sb-icon-box {
+        background-color: #334155;
+        color: #cbd5e1;
     }
 
-    .dark .rank-chip { background-color: rgba(99, 102, 241, 0.15); color: #a5b4fc; }
+    /* Gradients */
+    .bg-gradient-purple {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    }
 
-    .rank-meta { margin-top: 0.25rem; font-size: 0.6875rem; color: #9ca3af; }
-    .rank-amount { font-size: 0.9375rem; font-weight: 800; color: #111827; }
-    .dark .rank-amount { color: #f3f4f6; }
+    .text-num {
+        font-variant-numeric: tabular-nums;
+        font-feature-settings: 'tnum';
+    }
 
-    .s-empty { border: 1px dashed #e5e7eb; border-radius: 0.875rem; padding: 2rem 1.5rem; text-align: center; }
-    .dark .s-empty { border-color: #1f2937; }
-
-    /* Sold vs distributed bridge */
-    .bridge-flow {
+    /* Mini bar graph container */
+    .mini-bar-chart {
         display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 1rem;
+        align-items: flex-end;
+        gap: 2px;
+        height: 20px;
     }
 
-    .bridge-node {
-        flex: 1;
-        min-width: 10rem;
-        padding: 1rem;
-        border-radius: 0.875rem;
-        background-color: #f9fafb;
-        border: 1px solid #f1f5f9;
+    .mini-bar {
+        width: 3px;
+        background-color: #cbd5e1;
+        border-radius: 9999px;
     }
 
-    .dark .bridge-node { background-color: rgba(31, 41, 55, 0.5); border-color: #1f2937; }
+    .mini-bar.active-green { background-color: #10b981; }
+    .mini-bar.active-blue { background-color: #3b82f6; }
+    .mini-bar.active-red { background-color: #ef4444; }
 
-    .bridge-arrow { color: #cbd5e1; font-size: 1.25rem; flex-shrink: 0; }
-    .dark .bridge-arrow { color: #4b5563; }
-
-    .bridge-value { font-size: 1.375rem; font-weight: 800; color: #111827; }
-    .dark .bridge-value { color: #f3f4f6; }
-
-    .bridge-label { font-size: 0.75rem; font-weight: 700; color: #6b7280; }
-    .dark .bridge-label { color: #9ca3af; }
+    /* Custom custom scrolls */
+    .custom-scroll::-webkit-scrollbar {
+        width: 5px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+    .dark .custom-scroll::-webkit-scrollbar-thumb {
+        background: #475569;
+    }
 </style>
 @endpush
 
 @section('content')
 @php
+    $user = auth()->user();
     $attainmentTone = $company['attainment'] === null
-        ? 'is-none'
-        : ($company['attainment'] >= 100 ? 'is-met' : ($company['attainment'] >= 60 ? 'is-close' : 'is-behind'));
-    $deltaClass = $company['change'] === null ? 'is-flat' : ($company['change'] >= 0 ? 'is-up' : 'is-down');
-    $topLeaderAmount = max(1, (float) $leaderComparison->max('amount'));
-    $topPerformerAmount = max(1, (float) $topPerformers->max('amount'));
+        ? 'none'
+        : ($company['attainment'] >= 100 ? 'met' : ($company['attainment'] >= 60 ? 'close' : 'behind'));
+        
     $companyFreshPct = $company['sold'] > 0 ? round($company['freshAmount'] / $company['sold'] * 100) : 0;
     $companyRepeatPct = 100 - $companyFreshPct;
+
+    // Helper to generate dynamic smooth SVG sparkline paths based on actual trend data
+    $generateSparkline = function($trendData, $key = 'amount') {
+        $values = collect($trendData)->take(-6)->pluck($key)->values();
+        if ($values->isEmpty()) {
+            return 'M 0 25 L 120 25';
+        }
+        $max = $values->max();
+        $min = $values->min();
+        $range = max(1, $max - $min);
+        
+        $points = [];
+        $width = 120;
+        $height = 40;
+        $padding = 4;
+        
+        foreach ($values as $i => $val) {
+            $x = ($i / 5) * $width;
+            $y = $height - (($val - $min) / $range * ($height - 2 * $padding) + $padding);
+            $points[] = "{$x},{$y}";
+        }
+        
+        return 'M ' . implode(' L ', $points);
+    };
+
+    $soldSparkline = $generateSparkline($trend, 'amount');
+    $freshSparkline = $generateSparkline($trend, 'fresh');
+    $repeatSparkline = $generateSparkline($trend, 'repeat');
 @endphp
 
-<div class="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto space-y-5">
+<div class="sb-dashboard min-h-screen px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-            <p class="s-eyebrow">Company-wide</p>
-            <h1 class="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100">Sales Leadership</h1>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Every sales leader and their team, side by side — {{ $monthDate->format('F Y') }}.
+            <h1 class="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                Hi, {{ explode(' ', $user->name)[0] }}
+            </h1>
+            <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">
+                Welcome back to your Sales Leadership overview.
             </p>
         </div>
-        <span class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 text-sm font-semibold">
-            <i class="fas fa-calendar-alt text-xs"></i>{{ $availableMonths[$selectedMonth] ?? $selectedMonth }}
-        </span>
+
+        <div class="flex items-center gap-3">
+            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 text-xs font-bold shadow-sm">
+                <i class="fas fa-calendar-alt"></i>
+                {{ $availableMonths[$selectedMonth] ?? $selectedMonth }}
+            </span>
+        </div>
     </div>
 
-    <!-- Company summary -->
-    <div class="s-panel p-6 sm:p-8">
-        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
-            <div>
-                <p class="s-eyebrow">Company sold in {{ $monthDate->format('F') }}</p>
-                <p class="s-hero-amount s-num mt-2">${{ number_format($company['sold'], 2) }}</p>
-                <div class="mt-3 flex flex-wrap items-center gap-3">
-                    <span class="s-delta {{ $deltaClass }}">
-                        @if($company['change'] === null)
-                            No sales last month
-                        @else
-                            <i class="fas fa-arrow-{{ $company['change'] >= 0 ? 'up' : 'down' }} text-[10px]"></i>
-                            {{ abs($company['change']) }}% vs {{ $monthDate->copy()->subMonth()->format('F') }}
-                        @endif
+    <!-- Main Grid Layout (Reference styled columns) -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+        <!-- Column 1: Stacked Trend Cards (Left side of reference) -->
+        <div class="lg:col-span-1 flex flex-col gap-6">
+            
+            <!-- Card 1: Total Gross Sales -->
+            <div class="sb-card p-5 relative overflow-hidden">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Total Gross Sold</p>
+                        <p class="text-2xl font-bold text-slate-900 dark:text-white mt-1.5 text-num">
+                            ${{ number_format($company['sold'], 2) }}
+                        </p>
+                    </div>
+                    <span class="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                        <i class="fas fa-arrow-up"></i>
+                        {{ $company['change'] ?? 0 }}%
                     </span>
-                    <span class="text-sm text-gray-500 dark:text-gray-400 s-num">
-                        {{ $company['ordersSold'] }} {{ \Illuminate\Support\Str::plural('order', $company['ordersSold']) }} ·
-                        {{ $company['activeSellers'] }} active {{ \Illuminate\Support\Str::plural('seller', $company['activeSellers']) }}
-                    </span>
+                </div>
+                <div class="mt-4">
+                    <svg class="w-full h-12" viewBox="0 0 120 40" preserveAspectRatio="none">
+                        <defs>
+                            <linearGradient id="grad-gross" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#10b981" stop-opacity="0.25"/>
+                                <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
+                            </linearGradient>
+                        </defs>
+                        <path d="{{ $soldSparkline }}" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="{{ $soldSparkline }} L 120 40 L 0 40 Z" fill="url(#grad-gross)" />
+                    </svg>
                 </div>
             </div>
 
-            @if($company['target'] > 0)
-                <div class="text-left lg:text-right lg:min-w-[16rem]">
-                    <div class="flex items-center justify-between lg:justify-end gap-3 mb-2">
-                        <span class="s-eyebrow">Company target</span>
-                        <span class="s-target-tag {{ $attainmentTone }}">{{ $company['attainment'] }}%</span>
+            <!-- Card 2: Distributed Net -->
+            <div class="sb-card p-5 relative overflow-hidden">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Distributed Net</p>
+                        <p class="text-2xl font-bold text-slate-900 dark:text-white mt-1.5 text-num">
+                            ${{ number_format($bridge['distributedThisMonth'], 2) }}
+                        </p>
                     </div>
-                    <div class="s-target-bar">
-                        <span class="{{ $attainmentTone }}" style="width: {{ min(100, $company['attainment']) }}%"></span>
+                    <span class="inline-flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400">
+                        <i class="fas fa-arrow-trend-up"></i>
+                        Net
+                    </span>
+                </div>
+                <div class="mt-4">
+                    <svg class="w-full h-12" viewBox="0 0 120 40" preserveAspectRatio="none">
+                        <defs>
+                            <linearGradient id="grad-net" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.25"/>
+                                <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+                            </linearGradient>
+                        </defs>
+                        <path d="{{ $freshSparkline }}" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="{{ $freshSparkline }} L 120 40 L 0 40 Z" fill="url(#grad-net)" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Card 3: Pending Net (Value in Delivery) -->
+            <div class="sb-card p-5 relative overflow-hidden">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Pending Pipeline</p>
+                        <p class="text-2xl font-bold text-slate-900 dark:text-white mt-1.5 text-num">
+                            ${{ number_format($bridge['pendingNet'], 2) }}
+                        </p>
                     </div>
-                    <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400 s-num">
-                        ${{ number_format($company['sold'], 2) }} of ${{ number_format($company['target'], 2) }}
-                        @if($company['remaining'] > 0)
-                            · <strong>${{ number_format($company['remaining'], 2) }} to go</strong>
+                    <span class="inline-flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400">
+                        <i class="fas fa-clock"></i>
+                        Pending
+                    </span>
+                </div>
+                <div class="mt-4">
+                    <svg class="w-full h-12" viewBox="0 0 120 40" preserveAspectRatio="none">
+                        <defs>
+                            <linearGradient id="grad-pending" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.25"/>
+                                <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+                            </linearGradient>
+                        </defs>
+                        <path d="{{ $repeatSparkline }}" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="{{ $repeatSparkline }} L 120 40 L 0 40 Z" fill="url(#grad-pending)" />
+                    </svg>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Column 2 & 3: Quick Stats + Main Analytics Chart (Center of reference) -->
+        <div class="lg:col-span-2 flex flex-col gap-6">
+            
+            <!-- Quick Stats Sub-row (Orders, Active, Attainment) -->
+            <div class="grid grid-cols-3 gap-4">
+                
+                <!-- Orders Card -->
+                <div class="sb-card p-4 flex flex-col justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Orders Sold</span>
+                        <p class="text-lg font-bold text-slate-955 dark:text-white mt-1 text-num">
+                            {{ $company['ordersSold'] }}
+                        </p>
+                    </div>
+                    <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <span class="text-[9px] font-bold text-emerald-600 dark:text-emerald-400">Total</span>
+                        <div class="mini-bar-chart">
+                            <div class="mini-bar h-1.5"></div>
+                            <div class="mini-bar h-2"></div>
+                            <div class="mini-bar h-3.5 active-green"></div>
+                            <div class="mini-bar h-2.5 active-green"></div>
+                            <div class="mini-bar h-4 active-green"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Sellers Card -->
+                <div class="sb-card p-4 flex flex-col justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Active Sellers</span>
+                        <p class="text-lg font-bold text-slate-955 dark:text-white mt-1 text-num">
+                            {{ $company['activeSellers'] }}
+                        </p>
+                    </div>
+                    <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <span class="text-[9px] font-bold text-blue-600 dark:text-blue-400">Active</span>
+                        <div class="mini-bar-chart">
+                            <div class="mini-bar h-2 active-blue"></div>
+                            <div class="mini-bar h-3 active-blue"></div>
+                            <div class="mini-bar h-1.5"></div>
+                            <div class="mini-bar h-3.5 active-blue"></div>
+                            <div class="mini-bar h-4 active-blue"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Target Attainment Card -->
+                <div class="sb-card p-4 flex flex-col justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Attainment</span>
+                        <p class="text-lg font-bold text-slate-955 dark:text-white mt-1 text-num">
+                            {{ $company['attainment'] ?? 0 }}%
+                        </p>
+                    </div>
+                    <div class="flex flex-col gap-1 mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <div class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-indigo-600 h-full rounded-full" style="width: {{ min(100, $company['attainment'] ?? 0) }}%"></div>
+                        </div>
+                        <span class="text-[9px] text-slate-400 text-right font-medium">Goal: ${{ number_format($company['target'], 0) }}</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Main Sales Analytics Area Chart Card -->
+            <div class="sb-card p-6 flex flex-col justify-between flex-1">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Sales Analytics</p>
+                        <p class="text-lg font-extrabold text-slate-900 dark:text-white mt-0.5">Month over Month Trend</p>
+                    </div>
+                    <span class="text-xs text-slate-400 font-semibold">Last 12 months</span>
+                </div>
+                <div class="relative h-[220px]">
+                    <canvas id="companyTrendChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Column 4: Sidebar Details & Action Banners (Right side of reference) -->
+        <div class="lg:col-span-1 flex flex-col gap-6">
+            
+            <!-- What a great achievement alert card -->
+            <div class="sb-card p-5 bg-gradient-purple text-white relative overflow-hidden flex flex-col justify-between h-[150px]">
+                <div class="relative z-10">
+                    <p class="text-xs font-bold text-indigo-100 uppercase tracking-wide">Target Highlight</p>
+                    <p class="text-base font-extrabold mt-1">What a great achievement!</p>
+                    <p class="text-xs text-indigo-100/90 mt-1 leading-relaxed">
+                        @if(($company['attainment'] ?? 0) >= 100)
+                            The company target of ${{ number_format($company['target'], 2) }} has been exceeded.
                         @else
-                            · target met
+                            We have completed {{ $company['attainment'] ?? 0 }}% of the target for this month.
                         @endif
                     </p>
                 </div>
-            @endif
-        </div>
-
-        <div class="mt-6">
-            <canvas id="companyTrendChart" height="90"></canvas>
-        </div>
-
-        <!-- Fresh vs Repeat -->
-        <div class="mt-6 pt-5 border-t border-dashed border-gray-200 dark:border-gray-800">
-            <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
-                <span class="s-eyebrow">Fresh vs. Repeat</span>
-                <span class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                    Fresh — <span class="font-bold text-gray-900 dark:text-gray-100 s-num">${{ number_format($company['freshAmount'], 2) }}</span>
-                    <span class="text-xs text-gray-400 dark:text-gray-500 s-num">{{ $company['freshOrders'] }} {{ \Illuminate\Support\Str::plural('order', $company['freshOrders']) }}</span>
-                </span>
-                <span class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
-                    Repeat — <span class="font-bold text-gray-900 dark:text-gray-100 s-num">${{ number_format($company['repeatAmount'], 2) }}</span>
-                    <span class="text-xs text-gray-400 dark:text-gray-500 s-num">{{ $company['repeatOrders'] }} {{ \Illuminate\Support\Str::plural('order', $company['repeatOrders']) }}</span>
-                </span>
+                <div class="flex items-center justify-between mt-3 pt-3 border-t border-white/10 relative z-10">
+                    <span class="text-lg font-bold">${{ number_format($company['sold'], 0) }}</span>
+                    <a href="{{ route('orders.index') }}" class="text-xs font-bold text-white hover:underline flex items-center gap-1">
+                        See orders <i class="fas fa-arrow-right text-[10px]"></i>
+                    </a>
+                </div>
+                <!-- Backdrop icon -->
+                <i class="fas fa-trophy absolute right-[-15px] bottom-[-15px] text-8xl text-white/5 pointer-events-none"></i>
             </div>
-            <div class="mt-2.5 h-2 rounded-full overflow-hidden flex">
-                <div class="bg-emerald-500" style="width: {{ $companyFreshPct }}%"></div>
-                <div class="bg-amber-400" style="width: {{ $companyRepeatPct }}%"></div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Sold vs distributed bridge -->
-    <div class="s-panel p-6">
-        <p class="s-eyebrow mb-4"><i class="fas fa-arrows-turn-to-dots text-indigo-500 mr-1"></i> Sold vs. delivered value</p>
-        <div class="bridge-flow">
-            <div class="bridge-node">
-                <p class="bridge-label">Sold this month (gross)</p>
-                <p class="bridge-value s-num">${{ number_format($bridge['soldThisMonth'], 2) }}</p>
-            </div>
-            <i class="fas fa-arrow-right bridge-arrow"></i>
-            <div class="bridge-node">
-                <p class="bridge-label">Distributed this month (net)</p>
-                <p class="bridge-value s-num">${{ number_format($bridge['distributedThisMonth'], 2) }}</p>
-                <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">orders completed this month</p>
-            </div>
-            <i class="fas fa-ellipsis bridge-arrow"></i>
-            <div class="bridge-node">
-                <p class="bridge-label">Still in the pipeline</p>
-                <p class="bridge-value s-num">${{ number_format($bridge['pendingNet'], 2) }}</p>
-                <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">net value sold, not yet distributed</p>
-            </div>
-        </div>
-
-        <div class="mt-5 pt-4 border-t border-dashed border-gray-200 dark:border-gray-800 flex flex-wrap items-center justify-between gap-3">
-            <p class="text-xs text-gray-500 dark:text-gray-400">
-                Lifetime: ${{ number_format($bridge['allTimeSoldGross'], 2) }} sold (gross) →
-                ${{ number_format($bridge['allTimeDistributedNet'], 2) }} distributed (net)
-            </p>
-            @if($bridge['conversionPercent'] !== null)
-                <span class="s-target-tag is-met">{{ $bridge['conversionPercent'] }}% of sold value has reached distribution</span>
-            @endif
-        </div>
-    </div>
-
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-5">
-        <!-- Leader vs leader -->
-        <div class="s-panel p-5 sm:p-6">
-            <p class="s-eyebrow mb-2"><i class="fas fa-users-rectangle text-indigo-500 mr-1"></i> Leader vs. leader</p>
-            @forelse($leaderComparison as $index => $leader)
-                @php
-                    $tone = $leader['attainment'] === null ? 'is-none' : ($leader['attainment'] >= 100 ? 'is-met' : ($leader['attainment'] >= 60 ? 'is-close' : 'is-behind'));
-                    $leaderFreshPct = $leader['amount'] > 0 ? round($leader['freshAmount'] / $leader['amount'] * 100) : 0;
-                @endphp
-                <div class="rank-row">
-                    <span class="rank-badge {{ $index < 3 ? 'rank-'.($index + 1) : '' }}">{{ $index + 1 }}</span>
-                    <div class="min-w-0">
-                        <p class="rank-name">{{ $leader['name'] }}<span class="rank-chip">{{ $leader['members'] }} {{ \Illuminate\Support\Str::plural('member', $leader['members']) }}</span></p>
-                        <div class="s-target-bar is-slim">
-                            <span class="{{ $tone }}" style="width: {{ $leader['attainment'] === null ? round($leader['amount'] / $topLeaderAmount * 100) : min(100, $leader['attainment']) }}%"></span>
-                        </div>
-                        <div class="mt-1 h-1 rounded-full overflow-hidden flex">
-                            <div class="bg-emerald-500" style="width: {{ $leaderFreshPct }}%"></div>
-                            <div class="bg-amber-400" style="width: {{ max(0, 100 - $leaderFreshPct) }}%"></div>
-                        </div>
-                        <p class="rank-meta s-num">
-                            {{ $leader['orders'] }} {{ \Illuminate\Support\Str::plural('order', $leader['orders']) }}
-                            @if($leader['attainment'] !== null)
-                                · {{ $leader['attainment'] }}% of ${{ number_format($leader['target'], 2) }}
-                            @else
-                                · no target set
-                            @endif
-                        </p>
+            <!-- Top Performers List (Styled as modern chats/messages box) -->
+            <div class="sb-card p-5 flex-1 flex flex-col justify-between">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Top Performers</p>
+                    <div class="space-y-3 max-h-[260px] overflow-y-auto custom-scroll pr-1">
+                        @forelse($topPerformers->take(5) as $index => $person)
+                            <div class="flex items-center justify-between py-1.5">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div class="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-xs text-slate-700 dark:text-slate-200 border-2 border-white dark:border-slate-700 shadow-sm shrink-0">
+                                        {{ collect(explode(' ', $person['name']))->map(fn($n) => mb_substr($n, 0, 1))->join('') }}
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-bold text-slate-900 dark:text-white truncate">
+                                            {{ $person['name'] }}
+                                        </p>
+                                        <p class="text-[10px] text-slate-400 truncate">
+                                            {{ $person['orders'] }} {{ \Illuminate\Support\Str::plural('deal', $person['orders']) }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-extrabold text-slate-900 dark:text-white text-num">
+                                    ${{ number_format($person['amount'], 0) }}
+                                </span>
+                            </div>
+                        @empty
+                            <p class="text-xs text-slate-400 text-center py-4">Nobody has sold anything this month yet.</p>
+                        @endforelse
                     </div>
-                    <p class="rank-amount s-num">${{ number_format($leader['amount'], 2) }}</p>
                 </div>
-            @empty
-                <div class="s-empty">
-                    <p class="text-sm text-gray-500 dark:text-gray-400">No sales leaders yet.</p>
-                </div>
-            @endforelse
+            </div>
+
         </div>
 
-        <!-- Top performers, everyone -->
-        <div class="s-panel p-5 sm:p-6">
-            <div class="flex items-center justify-between mb-2">
-                <p class="s-eyebrow"><i class="fas fa-trophy text-amber-500 mr-1"></i> Top performers</p>
-                <span class="text-xs text-gray-400 dark:text-gray-500">every group</span>
-            </div>
-            @forelse($topPerformers->take(10) as $index => $person)
-                @php
-                    $tone = $person['achievement'] === null ? 'is-none' : ($person['achievement'] >= 100 ? 'is-met' : ($person['achievement'] >= 60 ? 'is-close' : 'is-behind'));
-                    $personFreshPct = $person['amount'] > 0 ? round($person['freshAmount'] / $person['amount'] * 100) : 0;
-                @endphp
-                <div class="rank-row">
-                    <span class="rank-badge {{ $index < 3 ? 'rank-'.($index + 1) : '' }}">{{ $index + 1 }}</span>
-                    <div class="min-w-0">
-                        <p class="rank-name">
-                            {{ $person['name'] }}
-                            @if($person['is_leader'])
-                                <span class="rank-chip">Leader</span>
-                            @endif
-                        </p>
-                        <div class="s-target-bar is-slim">
-                            <span class="{{ $tone }}" style="width: {{ $person['achievement'] === null ? round($person['amount'] / $topPerformerAmount * 100) : min(100, $person['achievement']) }}%"></span>
-                        </div>
-                        <div class="mt-1 h-1 rounded-full overflow-hidden flex">
-                            <div class="bg-emerald-500" style="width: {{ $personFreshPct }}%"></div>
-                            <div class="bg-amber-400" style="width: {{ max(0, 100 - $personFreshPct) }}%"></div>
-                        </div>
-                        <p class="rank-meta s-num">
-                            {{ $person['orders'] }} {{ \Illuminate\Support\Str::plural('order', $person['orders']) }}
-                            @if(! $person['is_leader'] && $person['leader'])
-                                · under {{ $person['leader'] }}
-                            @endif
-                            @if($person['achievement'] !== null)
-                                · {{ $person['achievement'] }}% of target
-                            @else
-                                · no target set
-                            @endif
-                        </p>
-                    </div>
-                    <p class="rank-amount s-num">${{ number_format($person['amount'], 2) }}</p>
-                </div>
-            @empty
-                <div class="s-empty">
-                    <i class="fas fa-trophy text-2xl text-gray-200 dark:text-gray-700"></i>
-                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Nobody has sold anything this month yet.</p>
-                </div>
-            @endforelse
-        </div>
     </div>
+
+    <!-- Bottom Row (Table + Donut Breakdown) -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        
+        <!-- Left Table: Leaders comparison -->
+        <div class="sb-card p-6 xl:col-span-2">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Team Leadership</p>
+                    <h3 class="text-base font-extrabold text-slate-900 dark:text-white mt-0.5">Leader Performance</h3>
+                </div>
+                <span class="text-xs font-medium text-slate-400">Attainment Overview</span>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-100 dark:border-slate-800 text-[10px] uppercase font-bold tracking-wider text-slate-400">
+                            <th class="pb-3 pl-2">Leader</th>
+                            <th class="pb-3">Orders</th>
+                            <th class="pb-3">Amount</th>
+                            <th class="pb-3">Attainment Goal</th>
+                            <th class="pb-3 text-right pr-2">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                        @forelse($leaderComparison as $index => $leader)
+                            <tr class="text-xs text-slate-700 dark:text-slate-300">
+                                <td class="py-3.5 pl-2 font-semibold text-slate-900 dark:text-white">
+                                    <div>{{ $leader['name'] }}</div>
+                                    <div class="mt-0.5 text-[10px] font-normal text-slate-400 dark:text-slate-500">
+                                        {{ $leader['members'] }} {{ \Illuminate\Support\Str::plural('seller', $leader['members']) }}
+                                        @if($leader['attainment'] !== null)
+                                            · {{ $leader['attainment'] }}% of ${{ number_format($leader['target'], 2) }}
+                                        @else
+                                            · no target set
+                                        @endif
+                                    </div>
+                                </td>
+                                <td class="py-3.5 text-num">{{ $leader['orders'] }}</td>
+                                <td class="py-3.5 font-bold text-slate-955 dark:text-white text-num">
+                                    ${{ number_format($leader['amount'], 2) }}
+                                </td>
+                                <td class="py-3.5 w-1/4">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                                            <div class="bg-emerald-500 h-full" style="width: {{ min(100, $leader['attainment'] ?? 0) }}%"></div>
+                                        </div>
+                                        <span class="text-num text-[10px] font-bold">{{ $leader['attainment'] ?? 0 }}%</span>
+                                    </div>
+                                </td>
+                                <td class="py-3.5 text-right pr-2">
+                                    @if(($leader['attainment'] ?? 0) >= 100)
+                                        <span class="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 text-[10px] font-bold">On Track</span>
+                                    @elseif(($leader['attainment'] ?? 0) >= 60)
+                                        <span class="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-200 text-[10px] font-bold">Close</span>
+                                    @else
+                                        <span class="px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-200 text-[10px] font-bold">Behind</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="py-4 text-center text-slate-400">No leaders comparison data</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Right Side: Fresh vs Repeat breakdown (Analytics Overview in reference) -->
+        <div class="sb-card p-6 xl:col-span-1 flex flex-col justify-between">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Analytics Overview</p>
+                <h3 class="text-base font-extrabold text-slate-900 dark:text-white mt-0.5">Fresh vs. Repeat Split</h3>
+            </div>
+            
+            <div class="relative h-[160px] my-4 flex items-center justify-center">
+                <canvas id="freshRepeatDonutChart"></canvas>
+            </div>
+
+            <div class="flex items-center justify-around text-xs pt-4 border-t border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                    <div>
+                        <p class="text-slate-400 font-semibold text-[10px]">FRESH</p>
+                        <p class="font-extrabold text-slate-900 dark:text-white mt-0.5 text-num">${{ number_format($company['freshAmount'], 2) }}</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+                    <div>
+                        <p class="text-slate-400 font-semibold text-[10px]">REPEAT</p>
+                        <p class="font-extrabold text-slate-950 dark:text-white mt-0.5 text-num">${{ number_format($company['repeatAmount'], 2) }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Team Quarter Progress -->
+    @if($quarterBreakdown->isNotEmpty())
+        <div class="sb-card p-6 mt-6">
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Team Quarter Progress</p>
+                    <h3 class="text-xl font-extrabold text-slate-900 dark:text-white mt-0.5">Quarterly Sales Progress</h3>
+                    <p class="text-xs text-slate-400 mt-1">Performance of each team member across the current quarter's monthly cycles.</p>
+                </div>
+            </div>
+
+            <!-- Chart (Full Width on Top) -->
+            <div class="w-full h-[320px] relative mb-8">
+                <canvas id="quarterTrendChart"></canvas>
+            </div>
+
+            <!-- Table (Below Chart, Full Width) -->
+            <div class="pt-6 border-t border-slate-100 dark:border-slate-800 overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="border-b border-slate-100 dark:border-slate-800 text-[10px] uppercase font-bold tracking-wider text-slate-400 bg-slate-50/50 dark:bg-slate-800/20">
+                            <th class="py-3 px-4 pl-3">Sales Person</th>
+                            <th class="py-3 px-4 text-right">1st Month ({{ $quarterNames['q1'] }})</th>
+                            <th class="py-3 px-4 text-right">2nd Month ({{ $quarterNames['q2'] }})</th>
+                            <th class="py-3 px-4 text-right">3rd Month ({{ $quarterNames['q3'] }})</th>
+                            <th class="py-3 px-4 pr-3 text-right">Quarter</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                        @foreach($quarterBreakdown as $seller)
+                            <tr class="text-slate-700 dark:text-slate-300 hover:bg-slate-50/50 dark:hover:bg-slate-800/10 transition-colors">
+                                <td class="py-3 px-4 pl-3 font-semibold text-slate-900 dark:text-white">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-extrabold text-[10px] text-slate-600 dark:text-slate-300 border-2 border-white dark:border-slate-700 shadow-sm shrink-0">
+                                            {{ collect(explode(' ', $seller['name']))->map(fn($n) => mb_substr($n, 0, 1))->join('') }}
+                                        </div>
+                                        <span class="truncate max-w-[200px]">{{ $seller['name'] }}</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4 text-right font-semibold text-blue-600 dark:text-blue-400 text-num">${{ number_format($seller['q1_amount']) }}</td>
+                                <td class="py-3 px-4 text-right font-semibold text-amber-600 dark:text-amber-500 text-num">${{ number_format($seller['q2_amount']) }}</td>
+                                <td class="py-3 px-4 text-right font-semibold text-purple-600 dark:text-purple-400 text-num">${{ number_format($seller['q3_amount']) }}</td>
+                                <td class="py-3 px-4 pr-3 text-right font-extrabold text-indigo-600 dark:text-indigo-400 text-sm text-num">${{ number_format($seller['quarter_amount']) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
+
 </div>
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const canvas = document.getElementById('companyTrendChart');
-
-        if (!canvas || typeof Chart === 'undefined') {
-            return;
-        }
-
         const trend = @json($trend);
         const isDark = document.documentElement.classList.contains('dark');
-        const context = canvas.getContext('2d');
 
-        new Chart(context, {
-            type: 'bar',
-            data: {
-                labels: trend.map(point => point.short),
-                datasets: [
-                    {
-                        label: 'Fresh',
-                        data: trend.map(point => point.fresh),
-                        backgroundColor: 'rgba(16,185,129,0.8)',
-                        borderRadius: 6,
-                        maxBarThickness: 42,
+        // 1. Month-over-Month Trend Line/Area Chart
+        const lineCanvas = document.getElementById('companyTrendChart');
+        if (lineCanvas) {
+            const ctx = lineCanvas.getContext('2d');
+            
+            // Create nice gradients for the area charts
+            const freshGrad = ctx.createLinearGradient(0, 0, 0, 200);
+            freshGrad.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+            freshGrad.addColorStop(1, 'rgba(16, 185, 129, 0)');
+
+            const repeatGrad = ctx.createLinearGradient(0, 0, 0, 200);
+            repeatGrad.addColorStop(0, 'rgba(245, 158, 11, 0.4)');
+            repeatGrad.addColorStop(1, 'rgba(245, 158, 11, 0)');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: trend.map(point => point.short),
+                    datasets: [
+                        {
+                            label: 'Fresh Sales',
+                            data: trend.map(point => point.fresh),
+                            borderColor: '#10b981',
+                            borderWidth: 3,
+                            backgroundColor: freshGrad,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointHoverRadius: 6,
+                        },
+                        {
+                            label: 'Repeat Sales',
+                            data: trend.map(point => point.repeat),
+                            borderColor: '#f59e0b',
+                            borderWidth: 3,
+                            backgroundColor: repeatGrad,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointHoverRadius: 6,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 10,
+                                font: { size: 11, family: 'Plus Jakarta Sans' },
+                                color: isDark ? '#94a3b8' : '#475569'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: isDark ? '#1e293b' : '#0f172a',
+                            titleFont: { family: 'Plus Jakarta Sans', size: 12 },
+                            bodyFont: { family: 'Plus Jakarta Sans', size: 12 },
+                            callbacks: {
+                                label: item => ` ${item.dataset.label}: $${item.parsed.y.toLocaleString()}`
+                            }
+                        }
                     },
-                    {
-                        label: 'Repeat',
-                        data: trend.map(point => point.repeat),
-                        backgroundColor: 'rgba(245,158,11,0.85)',
-                        borderRadius: 6,
-                        maxBarThickness: 42,
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                color: isDark ? '#64748b' : '#94a3b8',
+                                font: { size: 11, family: 'Plus Jakarta Sans' }
+                            }
+                        },
+                        y: {
+                            border: { display: false },
+                            grid: { color: isDark ? '#334155' : '#f1f5f9' },
+                            ticks: {
+                                color: isDark ? '#64748b' : '#94a3b8',
+                                font: { size: 11, family: 'Plus Jakarta Sans' },
+                                callback: val => `$${val >= 1000 ? (val / 1000) + 'k' : val}`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 2. Fresh vs Repeat Donut Chart
+        const donutCanvas = document.getElementById('freshRepeatDonutChart');
+        if (donutCanvas) {
+            new Chart(donutCanvas.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Fresh Sales', 'Repeat Sales'],
+                    datasets: [{
+                        data: [@json($company['freshAmount']), @json($company['repeatAmount'])],
+                        backgroundColor: ['#10b981', '#f59e0b'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '72%',
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        // 3. Quarterly Sales Progress Chart
+        const quarterCanvas = document.getElementById('quarterTrendChart');
+        if (quarterCanvas && typeof Chart !== 'undefined') {
+            const qBreakdown = @json($quarterBreakdown);
+            const qNames = @json($quarterNames);
+            const qContext = quarterCanvas.getContext('2d');
+            
+            new Chart(qContext, {
+                type: 'bar',
+                data: {
+                    labels: qBreakdown.map(s => s.name),
+                    datasets: [
+                        {
+                            label: '1st Month (' + qNames.q1 + ')',
+                            data: qBreakdown.map(s => s.q1_amount),
+                            backgroundColor: 'rgba(59, 130, 246, 0.85)',
+                            borderRadius: 4,
+                        },
+                        {
+                            label: '2nd Month (' + qNames.q2 + ')',
+                            data: qBreakdown.map(s => s.q2_amount),
+                            backgroundColor: 'rgba(245, 158, 11, 0.85)',
+                            borderRadius: 4,
+                        },
+                        {
+                            label: '3rd Month (' + qNames.q3 + ')',
+                            data: qBreakdown.map(s => s.q3_amount),
+                            backgroundColor: 'rgba(139, 92, 246, 0.85)',
+                            borderRadius: 4,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true, font: { size: 10, family: 'Plus Jakarta Sans' } },
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: item => ` ${item.dataset.label}: $${item.parsed.y.toLocaleString()}`,
+                            }
+                        }
                     },
-                ],
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom', labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true, font: { size: 11 } } },
-                    tooltip: {
-                        callbacks: {
-                            title: items => trend[items[0].dataIndex].label,
-                            label: item => item.dataset.label + ': $' +
-                                item.parsed.y.toLocaleString(undefined, { minimumFractionDigits: 2 }) +
-                                ' · ' + trend[item.dataIndex].count + ' orders',
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: isDark ? '#94a3b8' : '#475569', font: { size: 10, family: 'Plus Jakarta Sans', weight: '600' } },
+                        },
+                        y: {
+                            beginAtZero: true,
+                            border: { display: false },
+                            grid: { color: isDark ? '#334155' : '#f1f5f9' },
+                            ticks: {
+                                color: isDark ? '#64748b' : '#94a3b8',
+                                font: { size: 10, family: 'Plus Jakarta Sans' },
+                                callback: value => '$' + (value >= 1000 ? (value / 1000) + 'k' : value),
+                            },
                         },
                     },
-                },
-                scales: {
-                    x: {
-                        stacked: true,
-                        grid: { display: false },
-                        ticks: { color: isDark ? '#9ca3af' : '#6b7280', font: { size: 11, weight: '600' } },
-                    },
-                    y: {
-                        stacked: true,
-                        beginAtZero: true,
-                        border: { display: false },
-                        grid: { color: isDark ? '#1f2937' : '#f1f5f9' },
-                        ticks: {
-                            color: isDark ? '#6b7280' : '#9ca3af',
-                            font: { size: 11 },
-                            callback: value => '$' + (value >= 1000 ? (value / 1000) + 'k' : value),
-                        },
-                    },
-                },
-            },
-        });
+                }
+            });
+        }
     });
 </script>
 @endpush

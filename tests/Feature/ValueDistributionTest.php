@@ -29,7 +29,7 @@ class ValueDistributionTest extends TestCase
     {
         parent::setUp();
 
-        foreach (['admin', 'operation-manager', 'project-manager', 'team-leader', 'team-member', 'sales-member'] as $role) {
+        foreach (['admin', 'operation-manager', 'project-manager', 'team-leader', 'team-member', 'sales-leader', 'sales-member'] as $role) {
             Role::create(['name' => $role]);
         }
 
@@ -73,7 +73,7 @@ class ValueDistributionTest extends TestCase
             ->get(route('value-distribution.index'))
             ->assertOk()
             ->assertSee($order->name)
-            ->assertSee('Pending distribution (1)');
+            ->assertSee('id="vdPendingCount">1', false);
     }
 
     public function test_the_net_value_is_calculated_from_the_freelance_profiles_platform(): void
@@ -140,8 +140,8 @@ class ValueDistributionTest extends TestCase
         $this->actingAs($this->admin)
             ->get(route('value-distribution.index'))
             ->assertOk()
-            ->assertSee('Already distributed (1)')
-            ->assertSee('Pending distribution (0)');
+            ->assertSee('id="vdDistributedCount">1', false)
+            ->assertSee('id="vdPendingCount">0', false);
     }
 
     public function test_a_team_leader_only_sees_and_distributes_their_own_teams_orders(): void
@@ -165,16 +165,34 @@ class ValueDistributionTest extends TestCase
         ])->assertForbidden();
     }
 
-    public function test_sales_and_team_members_cannot_access_the_distribution_page(): void
+    public function test_sales_leader_and_sales_member_cannot_access_the_distribution_page(): void
     {
+        $salesLeader = User::factory()->create();
+        $salesLeader->assignRole('sales-leader');
+
         $salesPerson = User::factory()->create();
         $salesPerson->assignRole('sales-member');
 
         $teamMember = User::factory()->create(['team_id' => $this->teamA->id]);
         $teamMember->assignRole('team-member');
 
+        $this->actingAs($salesLeader)->get(route('value-distribution.index'))->assertForbidden();
         $this->actingAs($salesPerson)->get(route('value-distribution.index'))->assertForbidden();
         $this->actingAs($teamMember)->get(route('value-distribution.index'))->assertForbidden();
+    }
+
+    public function test_a_sales_leader_who_also_holds_an_operations_role_is_still_denied(): void
+    {
+        $salesLeader = User::factory()->create();
+        $salesLeader->assignRole(['sales-leader', 'team-leader']);
+
+        $this->actingAs($salesLeader)->get(route('value-distribution.index'))->assertForbidden();
+
+        $order = $this->completedOrder(['team_id' => $this->teamA->id, 'value' => 1000]);
+        $this->actingAs($salesLeader)
+            ->postJson(route('value-distribution.store', $order), [
+                'shares' => [['user_id' => $salesLeader->id, 'amount' => 800]],
+            ])->assertForbidden();
     }
 
     public function test_only_completed_orders_can_be_distributed(): void
@@ -220,8 +238,6 @@ class ValueDistributionTest extends TestCase
 
     public function test_the_add_person_search_excludes_sales_and_admin_accounts(): void
     {
-        Role::create(['name' => 'sales-leader']);
-
         $worker = User::factory()->create(['name' => 'Delivery Worker']);
         $worker->assignRole('team-member');
 
@@ -260,5 +276,80 @@ class ValueDistributionTest extends TestCase
         $order->refresh();
         $this->assertCount(1, $order->valueDistributions);
         $this->assertSame($b->id, $order->valueDistributions->first()->user_id);
+    }
+
+    public function test_the_lists_endpoint_searches_pending_orders(): void
+    {
+        $this->completedOrder(['team_id' => $this->teamA->id, 'name' => 'Zeta Landing Page', 'value' => 500]);
+        $this->completedOrder(['team_id' => $this->teamA->id, 'name' => 'Acme Rebrand', 'value' => 600]);
+
+        $response = $this->actingAs($this->admin)
+            ->getJson(route('value-distribution.lists', ['search' => 'zeta']))
+            ->assertOk();
+
+        $this->assertStringContainsString('Zeta Landing Page', $response->json('pending_html'));
+        $this->assertStringNotContainsString('Acme Rebrand', $response->json('pending_html'));
+        $this->assertSame(1, $response->json('pending_count'));
+    }
+
+    public function test_the_lists_endpoint_filters_pending_orders_by_team(): void
+    {
+        $this->completedOrder(['team_id' => $this->teamA->id, 'name' => 'Team A Order', 'value' => 500]);
+        $this->completedOrder(['team_id' => $this->teamB->id, 'name' => 'Team B Order', 'value' => 500]);
+
+        $response = $this->actingAs($this->admin)
+            ->getJson(route('value-distribution.lists', ['team' => $this->teamB->id]))
+            ->assertOk();
+
+        $this->assertStringContainsString('Team B Order', $response->json('pending_html'));
+        $this->assertStringNotContainsString('Team A Order', $response->json('pending_html'));
+        $this->assertSame(1, $response->json('pending_count'));
+    }
+
+    public function test_the_lists_endpoint_paginates_pending_orders(): void
+    {
+        for ($i = 1; $i <= 11; $i++) {
+            $this->completedOrder(['team_id' => $this->teamA->id, 'name' => "Order {$i}", 'value' => 100]);
+        }
+
+        $response = $this->actingAs($this->admin)
+            ->getJson(route('value-distribution.lists', ['pending_page' => 2]))
+            ->assertOk();
+
+        $this->assertSame(11, $response->json('pending_count'));
+        $this->assertStringContainsString('2 / 2', $response->json('pending_pager_html'));
+    }
+
+    public function test_the_lists_endpoint_opens_the_settled_panel_on_request(): void
+    {
+        $order = $this->completedOrder(['team_id' => $this->teamA->id, 'value' => 1000]);
+        $worker = User::factory()->create();
+        $this->actingAs($this->admin)->postJson(route('value-distribution.store', $order), [
+            'shares' => [['user_id' => $worker->id, 'amount' => 800]],
+        ])->assertOk();
+
+        $response = $this->actingAs($this->admin)
+            ->getJson(route('value-distribution.lists', ['settled_open' => 1]))
+            ->assertOk();
+
+        $this->assertStringContainsString($order->name, $response->json('settled_panel_html'));
+        $this->assertStringNotContainsString('<div id="vdSettledBody" class="vd-settled-body" hidden', $response->json('settled_panel_html'));
+
+        $closed = $this->actingAs($this->admin)
+            ->getJson(route('value-distribution.lists'))
+            ->assertOk();
+        $this->assertStringContainsString('<div id="vdSettledBody" class="vd-settled-body" hidden', $closed->json('settled_panel_html'));
+    }
+
+    public function test_sales_roles_cannot_use_the_lists_endpoint(): void
+    {
+        $salesLeader = User::factory()->create();
+        $salesLeader->assignRole('sales-leader');
+
+        $salesPerson = User::factory()->create();
+        $salesPerson->assignRole('sales-member');
+
+        $this->actingAs($salesLeader)->getJson(route('value-distribution.lists'))->assertForbidden();
+        $this->actingAs($salesPerson)->getJson(route('value-distribution.lists'))->assertForbidden();
     }
 }

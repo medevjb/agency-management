@@ -63,6 +63,9 @@ class PortfolioController extends Controller
         // Return JSON for AJAX requests
         if ($request->expectsJson()) {
             $portfolios = $query->latest()->paginate(12);
+            $portfolios->getCollection()->each(function ($portfolio) {
+                $portfolio->key = $portfolio->getRouteKey();
+            });
 
             return response()->json([
                 'data' => $portfolios->items(),
@@ -97,6 +100,9 @@ class PortfolioController extends Controller
         // Return JSON for AJAX requests
         if ($request->expectsJson()) {
             $portfolios = $query->latest()->paginate(12);
+            $portfolios->getCollection()->each(function ($portfolio) {
+                $portfolio->key = $portfolio->getRouteKey();
+            });
 
             return response()->json([
                 'data' => $portfolios->items(),

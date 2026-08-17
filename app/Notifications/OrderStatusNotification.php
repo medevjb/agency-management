@@ -41,7 +41,7 @@ class OrderStatusNotification extends Notification implements ShouldQueue
             ->line('**Previous Status:** '.$this->oldStatus)
             ->line('**New Status:** '.$this->newStatus)
             ->lineWhen($this->order->value, '**Value:** $'.number_format($this->order->value, 2))
-            ->action('View Order', url('/orders/'.$this->order->id))
+            ->action('View Order', route('orders.show', $this->order))
             ->line('Please review the updated status.');
     }
 

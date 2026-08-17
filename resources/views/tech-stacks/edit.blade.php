@@ -20,7 +20,7 @@
     <!-- Edit Tech Stack Form -->
     <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg dark:ring-1 dark:ring-gray-800">
         <div class="p-8">
-            <form method="POST" action="{{ route('tech-stacks.update', $techStack->id) }}">
+            <form method="POST" action="{{ route('tech-stacks.update', $techStack) }}">
                 @csrf
                 @method('PATCH')
                 <div class="space-y-8">
@@ -77,30 +77,13 @@
                             </h2>
 
                             <div>
-                                <label for="stack_leader_id" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                    <i class="fas fa-crown mr-2 text-purple-500 dark:text-purple-400"></i>Select Leader
-                                </label>
-
-                                <div class="relative">
-                                    <select id="stack_leader_id" name="stack_leader_id"
-                                            class="w-full border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all appearance-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
-                                        <option value="">Select a stack leader</option>
-                                        @foreach($users as $user)
-                                            <option value="{{ $user->id }}" {{ old('stack_leader_id', $techStack->stack_leader_id) == $user->id ? 'selected' : '' }}>
-                                                {{ $user->name }} ({{ $user->employee_id }})
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500"></i>
-                                    </div>
-                                </div>
-
-                                @error('stack_leader_id')
-                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center">
-                                        <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
-                                    </p>
-                                @enderror
+                                <x-leader-picker name="stack_leader_id"
+                                                 label="Select Leader"
+                                                 :users="$usersJson"
+                                                 :selected="old('stack_leader_id', $techStack->stack_leader_id)"
+                                                 placeholder="Select a stack leader"
+                                                 icon="fa-crown"
+                                                 uid="stackLeaderPicker" />
                             </div>
                         </div>
 
@@ -215,7 +198,7 @@ const techStackMembers = @json($techStack->users->pluck('id'));
                 params.append('exclude', excludeIds.join(','));
             }
 
-            const response = await axios.get(`{{ route('tech-stacks.search-members', ['teamId' => '__ID__']) }}?${params}`.replace('__ID__', {{ $techStack->team_id }}));
+            const response = await axios.get(`{{ route('tech-stacks.search-members', ['teamId' => '__ID__']) }}?${params}`.replace('__ID__', @json($techStack->team_id ? $techStack->team->getRouteKey() : null)));
             currentMembers = response.data.users;
             return currentMembers;
         } catch (error) {

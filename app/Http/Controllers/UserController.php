@@ -15,7 +15,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Yajra\DataTables\DataTables;
@@ -142,6 +141,7 @@ class UserController extends Controller
                         <input type="checkbox"
                                class="sr-only peer status-switcher"
                                data-user-id="'.$user->id.'"
+                               data-user-key="'.$user->getRouteKey().'"
                                data-user-name="'.htmlspecialchars($user->name).'"
                                '.$isChecked.'
                                '.$disabledPermission.'>
@@ -154,16 +154,16 @@ class UserController extends Controller
             })
             ->addColumn('actions', function ($user) {
                 return '<div class="flex items-center space-x-2">
-                    <a href="'.route('users.show', $user->id).'" class="group inline-flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-indigo-100 to-indigo-200 dark:from-indigo-500/10 dark:to-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:from-indigo-200 hover:to-indigo-300 dark:hover:from-indigo-500/20 dark:hover:to-indigo-500/20 transition-all duration-200 hover:scale-110 shadow-sm" title="View">
+                    <a href="'.route('users.show', $user).'" class="group inline-flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-indigo-100 to-indigo-200 dark:from-indigo-500/10 dark:to-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:from-indigo-200 hover:to-indigo-300 dark:hover:from-indigo-500/20 dark:hover:to-indigo-500/20 transition-all duration-200 hover:scale-110 shadow-sm" title="View">
                         <i class="fas fa-eye"></i>
                     </a>
-                    <a href="'.route('admin.users.roles', $user->id).'" class="group inline-flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-purple-100 to-purple-200 dark:from-purple-500/10 dark:to-purple-500/10 text-purple-600 dark:text-purple-400 hover:from-purple-200 hover:to-purple-300 dark:hover:from-purple-500/20 dark:hover:to-purple-500/20 transition-all duration-200 hover:scale-110 shadow-sm" title="Manage Roles">
+                    <a href="'.route('admin.users.roles', $user).'" class="group inline-flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-purple-100 to-purple-200 dark:from-purple-500/10 dark:to-purple-500/10 text-purple-600 dark:text-purple-400 hover:from-purple-200 hover:to-purple-300 dark:hover:from-purple-500/20 dark:hover:to-purple-500/20 transition-all duration-200 hover:scale-110 shadow-sm" title="Manage Roles">
                         <i class="fas fa-user-tag"></i>
                     </a>
-                    <a href="'.route('users.edit', $user->id).'" class="group inline-flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-emerald-100 to-emerald-200 dark:from-emerald-500/10 dark:to-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:from-emerald-200 hover:to-emerald-300 dark:hover:from-emerald-500/20 dark:hover:to-emerald-500/20 transition-all duration-200 hover:scale-110 shadow-sm" title="Edit">
+                    <a href="'.route('users.edit', $user).'" class="group inline-flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-emerald-100 to-emerald-200 dark:from-emerald-500/10 dark:to-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:from-emerald-200 hover:to-emerald-300 dark:hover:from-emerald-500/20 dark:hover:to-emerald-500/20 transition-all duration-200 hover:scale-110 shadow-sm" title="Edit">
                         <i class="fas fa-edit"></i>
                     </a>
-                    <button onclick="deleteUser('.$user->id.', \''.$user->name.'\')" class="group inline-flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-red-100 to-red-200 dark:from-red-500/10 dark:to-red-500/10 text-red-600 dark:text-red-400 hover:from-red-200 hover:to-red-300 dark:hover:from-red-500/20 dark:hover:to-red-500/20 transition-all duration-200 hover:scale-110 shadow-sm" title="Delete">
+                    <button onclick="deleteUser('.$user->getRouteKey().', \''.$user->name.'\')" class="group inline-flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-r from-red-100 to-red-200 dark:from-red-500/10 dark:to-red-500/10 text-red-600 dark:text-red-400 hover:from-red-200 hover:to-red-300 dark:hover:from-red-500/20 dark:hover:to-red-500/20 transition-all duration-200 hover:scale-110 shadow-sm" title="Delete">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>';
@@ -228,59 +228,7 @@ class UserController extends Controller
         $techStacks = TechStack::all();
         $roles = Role::all();
 
-        // Group permissions by module
-        $permissions = Permission::all()->groupBy(function ($permission) {
-            $name = $permission->name;
-
-            // Order Management
-            if (str_contains($name, 'order')) {
-                return 'Orders';
-            }
-
-            // User Management
-            if (str_contains($name, 'user')) {
-                return 'Users';
-            }
-
-            // Team Management
-            if (str_contains($name, 'team')) {
-                return 'Teams';
-            }
-
-            // Task Management
-            if (str_contains($name, 'task')) {
-                return 'Tasks';
-            }
-
-            // Profile Management
-            if (str_contains($name, 'profile')) {
-                return 'Profiles';
-            }
-
-            // Bug Report Management
-            if (str_contains($name, 'bug report')) {
-                return 'Bug Reports';
-            }
-
-            // Tech Stack Management
-            if (str_contains($name, 'tech stack')) {
-                return 'Tech Stacks';
-            }
-
-            // Portfolio Management
-            if (str_contains($name, 'portfolio')) {
-                return 'Portfolios';
-            }
-
-            // Settings
-            if (str_contains($name, 'setting')) {
-                return 'Settings';
-            }
-
-            return 'Other';
-        })->sortKeys();
-
-        return view('users.create', compact('teams', 'techStacks', 'roles', 'permissions'));
+        return view('users.create', compact('teams', 'techStacks', 'roles'));
     }
 
     /**
@@ -322,12 +270,6 @@ class UserController extends Controller
                 // Assign role
                 if (! empty($validated['role'])) {
                     $user->assignRole($validated['role']);
-                }
-
-                // Assign additional permissions
-                if (! empty($validated['permissions'])) {
-                    $permissions = Permission::whereIn('id', $validated['permissions'])->get();
-                    $user->syncPermissions($permissions);
                 }
 
                 // Assign managed teams (only for managers)
@@ -406,61 +348,9 @@ class UserController extends Controller
         $techStacks = TechStack::all();
         $roles = Role::all();
 
-        // Group permissions by module
-        $permissions = Permission::all()->groupBy(function ($permission) {
-            $name = $permission->name;
-
-            // Order Management
-            if (str_contains($name, 'order')) {
-                return 'Orders';
-            }
-
-            // User Management
-            if (str_contains($name, 'user')) {
-                return 'Users';
-            }
-
-            // Team Management
-            if (str_contains($name, 'team')) {
-                return 'Teams';
-            }
-
-            // Task Management
-            if (str_contains($name, 'task')) {
-                return 'Tasks';
-            }
-
-            // Profile Management
-            if (str_contains($name, 'profile')) {
-                return 'Profiles';
-            }
-
-            // Bug Report Management
-            if (str_contains($name, 'bug report')) {
-                return 'Bug Reports';
-            }
-
-            // Tech Stack Management
-            if (str_contains($name, 'tech stack')) {
-                return 'Tech Stacks';
-            }
-
-            // Portfolio Management
-            if (str_contains($name, 'portfolio')) {
-                return 'Portfolios';
-            }
-
-            // Settings
-            if (str_contains($name, 'setting')) {
-                return 'Settings';
-            }
-
-            return 'Other';
-        })->sortKeys();
-
         $user->load(['roles', 'permissions', 'managedTeams']);
 
-        return view('users.edit', compact('user', 'teams', 'techStacks', 'roles', 'permissions'));
+        return view('users.edit', compact('user', 'teams', 'techStacks', 'roles'));
     }
 
     /**
@@ -494,8 +384,6 @@ class UserController extends Controller
             'sales_target' => 'nullable|numeric|min:0|max:99999999.99',
             'sales_target_month' => 'nullable|date_format:Y-m',
             'role' => 'nullable|exists:roles,name',
-            'permissions' => 'nullable|array',
-            'permissions.*' => 'exists:permissions,id',
             'managed_teams' => 'nullable|array',
             'managed_teams.*' => 'exists:teams,id',
         ]);
@@ -506,16 +394,6 @@ class UserController extends Controller
             $validated['tech_stack_id'] = null;
         }
 
-        // Sales leaders cannot create team members
-        if ($currentUser && $currentUser->hasRole('sales-leader') && $user->exists) {
-            // Remove team creation permissions
-            if (isset($validated['permissions'])) {
-                $validated['permissions'] = array_filter($validated['permissions'], function ($perm) {
-                    return ! in_array($perm, ['manage team members', 'create users']);
-                });
-            }
-        }
-
         // Team leaders and members can only view teams, not edit
         if ($currentUser && $currentUser->hasRole(['team-leader', 'team-member']) && $user->exists) {
             // Prevent changing team_id for team leaders/members
@@ -523,9 +401,6 @@ class UserController extends Controller
         }
 
         $validated = $this->applyTrack($validated, $user);
-
-        // Ensure permissions array exists (empty array if not provided)
-        $validated['permissions'] = $validated['permissions'] ?? [];
 
         // Ensure managed_teams array exists (empty array if not provided)
         $validated['managed_teams'] = $validated['managed_teams'] ?? [];
@@ -570,15 +445,6 @@ class UserController extends Controller
 
                 if ($user->isSales()) {
                     SalesTeamSync::sync($user);
-                }
-
-                // Update permissions - always sync, even if empty
-                if (! empty($validated['permissions'])) {
-                    $permissions = Permission::whereIn('id', $validated['permissions'])->get();
-                    $user->syncPermissions($permissions);
-                } else {
-                    // Explicitly remove all direct permissions
-                    $user->permissions()->detach();
                 }
 
                 // Update managed teams (only for managers)

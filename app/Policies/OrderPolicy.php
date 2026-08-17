@@ -17,8 +17,8 @@ class OrderPolicy
     }
 
     /**
-     * Admin, OM, PM, team members, and sales users can view any order.
-     * Team leaders and stack leaders can only view their own team's orders.
+     * Admin, OM, PM, team members, team leaders, and sales users can view
+     * any order. Stack leaders can only view their own team's orders.
      * Sales leaders and members can see all orders like admin/OM/PM.
      */
     public function view(User $user, Order $order): bool
@@ -32,11 +32,11 @@ class OrderPolicy
             return true;
         }
 
-        if ($user->hasRole(['operation-manager', 'project-manager', 'team-member'])) {
+        if ($user->hasRole(['operation-manager', 'project-manager', 'team-member', 'team-leader'])) {
             return true;
         }
 
-        if ($user->hasRole(['team-leader', 'stack-leader'])) {
+        if ($user->hasRole('stack-leader')) {
             return $user->team_id === $order->team_id;
         }
 
@@ -121,13 +121,32 @@ class OrderPolicy
     }
 
     /**
-     * Progress specifically is also open to whoever the order is actually
-     * assigned to — a plain team-member has no other management rights on
-     * an order, but they're the one doing the work, so they can report how
-     * far along it is.
+     * Who may change which team an order belongs to. A team leader can
+     * reassign the team on any order — pulling it into their own team —
+     * even though every other edit stays limited to their team's orders.
+     */
+    public function manageTeam(User $user, Order $order): bool
+    {
+        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
+            return true;
+        }
+
+        return $user->hasRole('team-leader');
+    }
+
+    /**
+     * Who may report progress on an order. Everyone with operational rights
+     * plus whoever the order is actually assigned to — a plain team-member
+     * has no other management rights on an order, but they're the one doing
+     * the work, so they can report how far along it is. Sales people are
+     * excluded: they open the deal but never touch the delivery work.
      */
     public function updateProgress(User $user, Order $order): bool
     {
+        if ($user->isSales()) {
+            return false;
+        }
+
         if ($this->manageOperations($user, $order)) {
             return true;
         }

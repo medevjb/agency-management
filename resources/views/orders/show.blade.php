@@ -282,7 +282,6 @@
     .is-masked {
         filter: blur(6px);
         user-select: none;
-        pointer-events: none;
     }
 
     /* ---- Change log ----
@@ -993,6 +992,19 @@
         color: #fcd34d;
     }
 
+    .vd-label {
+        margin-bottom: 0.375rem;
+        font-size: 0.625rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #6b7280;
+    }
+
+    .dark .vd-label {
+        color: #9ca3af;
+    }
+
     /* Visible keyboard focus everywhere on this page. */
     .panel a:focus-visible,
     .panel button:focus-visible,
@@ -1240,7 +1252,7 @@
                                     </a>
                                 @endcan
                                 @can('delete', $order)
-                                    <button onclick="deleteOrder({{ $order->id }})"
+                                    <button onclick="deleteOrder('{{ $order->getRouteKey() }}')"
                                             class="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
                                         <i class="fas fa-trash"></i>
                                         Delete Order
@@ -1266,7 +1278,7 @@
 
             <div class="flex items-center gap-3">
                 @if($order->delivered_at)
-                    <span class="chip bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+                    <span class="chip bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" data-mirror-field="delivered_at" data-empty-label="Not yet">
                         <i class="fas fa-check text-[10px]"></i>Delivered {{ $order->delivered_at->format('M d, Y') }}
                     </span>
                 @elseif($daysLeft === null)
@@ -1355,7 +1367,7 @@
                            class="range">
                     <span id="progressInputValue" class="w-14 text-center text-sm font-bold num text-gray-900 dark:text-gray-100">{{ $progress }}%</span>
                     <div class="flex items-center gap-2">
-                        <button type="button" onclick="saveProgress({{ $order->id }})"
+                        <button type="button" onclick="saveProgress('{{ $order->getRouteKey() }}')"
                                 class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">
                             Save progress
                         </button>
@@ -1527,6 +1539,9 @@
                                 {!! $order->credentials ?: 'No credentials stored — click to add' !!}
                             </div>
                             <div class="inline-editor-input hidden w-full credentials-editor-shell rounded-lg border overflow-hidden">
+                                <textarea id="credentialsPlainEditor" rows="6"
+                                          class="hidden w-full resize-y px-4 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:outline-none"
+                                          placeholder="Hosting panel, client portal, API keys…"></textarea>
                                 <div id="credentialsQuillEditor"></div>
                                 <input type="hidden" name="credentials" id="credentialsInput" value="{{ $order->credentials }}">
                                 <div class="p-2 border-t border-amber-300 dark:border-amber-500/20 flex items-center justify-end gap-2 bg-amber-50/50 dark:bg-amber-950/10 rounded-b-lg">
@@ -1760,7 +1775,7 @@
                 @unless($isSalesUser)
                     <div class="meta-row">
                         <span class="meta-key">Team</span>
-                        @can('manageOperations', $order)
+                        @can('manageTeam', $order)
                             <span class="inline-editor" data-field="team_id" data-type="select" data-url="{{ route('orders.quick-update', $order) }}">
                                 <span class="inline-editor-display meta-value" data-empty-label="Unassigned">{{ $order->team?->name ?: 'Unassigned' }}</span>
                                 <select class="inline-editor-input hidden rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs px-2 py-1 text-gray-900 dark:text-gray-100">
@@ -1859,6 +1874,66 @@
                 </div>
             @endif
 
+            @unless($isSalesUser)
+                <div class="panel p-5">
+                    <div class="flex items-center justify-between gap-2 mb-3">
+                        <p class="eyebrow"><i class="fas fa-scale-balanced icon-blue"></i>Value distribution</p>
+                        @if($order->isValueFullyDistributed())
+                            <span class="chip bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+                                <i class="fas fa-circle-check text-[10px]"></i>Distributed
+                            </span>
+                        @elseif($order->valueDistributions->isNotEmpty())
+                            <span class="chip bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400">
+                                <i class="fas fa-hourglass-half text-[10px]"></i>Partly distributed
+                            </span>
+                        @else
+                            <span class="chip bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                                <i class="fas fa-circle-minus text-[10px]"></i>Not distributed
+                            </span>
+                        @endif
+                    </div>
+
+                    <p class="vd-label">Delivery value to</p>
+                    @if($order->valueDistributions->isNotEmpty())
+                        <div class="space-y-1.5 mb-3">
+                            @foreach($order->valueDistributions as $distribution)
+                                <div class="flex items-center gap-2">
+                                    <span class="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                                        {{ strtoupper(substr($distribution->user?->name ?? 'R', 0, 1)) }}
+                                    </span>
+                                    <span class="text-sm text-gray-700 dark:text-gray-200">{{ $distribution->user?->name ?? 'Removed user' }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-sm text-gray-400 dark:text-gray-500 italic mb-3">No value has been credited to anyone yet.</p>
+                    @endif
+
+                    @if($showsSalesOwner && ($order->salesShares->isNotEmpty() || $order->salesUser))
+                        <p class="vd-label">Sales credit to</p>
+                        <div class="space-y-1.5">
+                            @if($order->salesShares->isNotEmpty())
+                                @foreach($order->salesShares->sortByDesc('amount') as $share)
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-6 h-6 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                                            {{ strtoupper(substr($share->user?->name ?? 'R', 0, 1)) }}
+                                        </span>
+                                        <span class="text-sm text-gray-700 dark:text-gray-200">{{ $share->user?->name ?? 'Removed user' }}</span>
+                                    </div>
+                                @endforeach
+                            @elseif($order->salesUser)
+                                <div class="flex items-center gap-2">
+                                    <span class="w-6 h-6 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                                        {{ strtoupper(substr($order->salesUser->name, 0, 1)) }}
+                                    </span>
+                                    <span class="text-sm text-gray-700 dark:text-gray-200">{{ $order->salesUser->name }}</span>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+            @endunless
+
             <div class="panel p-5">
                 <div class="flex items-center justify-between mb-1">
                     <p class="eyebrow"><i class="fas fa-calendar-days icon-orange"></i>Dates</p>
@@ -1889,7 +1964,27 @@
                 </div>
                 <div class="meta-row">
                     <span class="meta-key">Delivered</span>
-                    <span class="meta-value">{{ $order->delivered_at ? $order->delivered_at->format('M d, Y g:i A') : 'Not yet' }}</span>
+                    @can('manageOperations', $order)
+                        <span class="inline-editor" data-field="delivered_at" data-type="date" data-url="{{ route('orders.quick-update', $order) }}">
+                            <span class="inline-editor-display meta-value" data-empty-label="Not yet" data-mirror-field="delivered_at">{{ $order->delivered_at ? $order->delivered_at->format('M d, Y') : 'Not yet' }}</span>
+                            <input type="date" class="inline-editor-input hidden rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-xs px-2 py-1" value="{{ $order->delivered_at ? $order->delivered_at->format('Y-m-d') : '' }}">
+                            <span class="inline-editor-status"></span>
+                        </span>
+                    @else
+                        <span class="meta-value">{{ $order->delivered_at ? $order->delivered_at->format('M d, Y') : 'Not yet' }}</span>
+                    @endcan
+                </div>
+                <div class="meta-row">
+                    <span class="meta-key">Completed</span>
+                    @can('manageOperations', $order)
+                        <span class="inline-editor" data-field="completed_at" data-type="date" data-url="{{ route('orders.quick-update', $order) }}">
+                            <span class="inline-editor-display meta-value" data-empty-label="Not yet" data-mirror-field="completed_at">{{ $order->completed_at ? $order->completed_at->format('M d, Y') : 'Not yet' }}</span>
+                            <input type="date" class="inline-editor-input hidden rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-xs px-2 py-1" value="{{ $order->completed_at ? $order->completed_at->format('Y-m-d') : '' }}">
+                            <span class="inline-editor-status"></span>
+                        </span>
+                    @else
+                        <span class="meta-value">{{ $order->completed_at ? $order->completed_at->format('M d, Y') : 'Not yet' }}</span>
+                    @endcan
                 </div>
                 <div class="meta-row">
                     <span class="meta-key">Created</span>
@@ -2183,14 +2278,23 @@
             });
     }
 
-    function toggleCredentials() {
+    function setCredentialsMasked(masked) {
         const body = document.getElementById('credentialsBody');
         const toggle = document.getElementById('credentialsToggle');
-        const masked = body.classList.toggle('is-masked');
 
-        toggle.innerHTML = masked
-            ? '<i class="fas fa-eye mr-1"></i>Reveal'
-            : '<i class="fas fa-eye-slash mr-1"></i>Hide';
+        if (body) {
+            body.classList.toggle('is-masked', masked);
+        }
+        if (toggle) {
+            toggle.innerHTML = masked
+                ? '<i class="fas fa-eye mr-1"></i>Reveal'
+                : '<i class="fas fa-eye-slash mr-1"></i>Hide';
+        }
+    }
+
+    function toggleCredentials() {
+        const body = document.getElementById('credentialsBody');
+        setCredentialsMasked(!(body && body.classList.contains('is-masked')));
     }
 
     function copyToClipboard(text, button) {
@@ -2377,7 +2481,16 @@
     document.addEventListener('DOMContentLoaded', function() {
         const editorElement = document.getElementById('credentialsQuillEditor');
         const hiddenInput = document.getElementById('credentialsInput');
-        if (editorElement && hiddenInput && typeof Quill !== 'undefined') {
+        const plainEditor = document.getElementById('credentialsPlainEditor');
+
+        if (!editorElement || !hiddenInput) {
+            return;
+        }
+
+        if (typeof Quill !== 'undefined') {
+            if (plainEditor) {
+                plainEditor.classList.add('hidden');
+            }
             credentialsQuill = new Quill(editorElement, {
                 theme: 'snow',
                 placeholder: 'Hosting panel, client portal, API keys…',
@@ -2394,8 +2507,37 @@
             if (hiddenInput.value) {
                 credentialsQuill.root.innerHTML = hiddenInput.value;
             }
+        } else {
+            // Quill isn't available (e.g. CDN blocked) — fall back to a plain
+            // textarea so credentials stay revealable and editable.
+            if (plainEditor) {
+                editorElement.classList.add('hidden');
+                plainEditor.classList.remove('hidden');
+                plainEditor.value = hiddenInput.value;
+            }
         }
     });
+
+    function readCredentialsEditor() {
+        if (credentialsQuill) {
+            return credentialsQuill.getText().trim() === '' ? '' : credentialsQuill.root.innerHTML;
+        }
+
+        const plain = document.getElementById('credentialsPlainEditor');
+
+        return plain ? plain.value : '';
+    }
+
+    function writeCredentialsEditor(value) {
+        if (credentialsQuill) {
+            credentialsQuill.root.innerHTML = value;
+        } else {
+            const plain = document.getElementById('credentialsPlainEditor');
+            if (plain) {
+                plain.value = value;
+            }
+        }
+    }
 
     const currentDates = {
         start_date: @js($order->start_date ? $order->start_date->format('Y-m-d') : ''),
@@ -2472,12 +2614,16 @@
                 break;
             }
             case 'start_date':
-            case 'end_date': {
+            case 'end_date':
+            case 'delivered_at':
+            case 'completed_at': {
                 currentDates[editor.field] = value || '';
                 document.querySelectorAll(`[data-mirror-field="${editor.field}"]`).forEach(el => {
                     el.textContent = value ? formatShortDate(value) : (el.dataset.emptyLabel || 'Not set');
                 });
-                renderDeliveryDaysChip();
+                if (editor.field === 'start_date' || editor.field === 'end_date') {
+                    renderDeliveryDaysChip();
+                }
                 break;
             }
             case 'team_id':
@@ -2496,12 +2642,8 @@
             case 'credentials': {
                 if (value) {
                     display.classList.remove('text-gray-400', 'dark:text-gray-500', 'italic', 'text-sm');
-                    display.classList.add('is-masked');
                     display.innerHTML = value;
-                    const toggle = document.getElementById('credentialsToggle');
-                    if (toggle) {
-                        toggle.innerHTML = '<i class="fas fa-eye mr-1"></i>Reveal';
-                    }
+                    setCredentialsMasked(true);
                 } else {
                     display.textContent = display.dataset.emptyLabel || 'No credentials stored';
                 }
@@ -2582,12 +2724,25 @@
             if (editor.root.classList.contains('is-editing')) {
                 return;
             }
+
+            // Reveal first: a masked credentials box opens on the first click,
+            // then starts editing on the second.
+            if (isQuill && editor.display.classList.contains('is-masked')) {
+                setCredentialsMasked(false);
+                return;
+            }
+
             editor.root.classList.add('is-editing');
             editor.display.classList.add('hidden');
             if (isQuill) {
                 root.querySelector('.credentials-editor-shell').classList.remove('hidden');
                 if (credentialsQuill) {
                     credentialsQuill.focus();
+                } else {
+                    const plain = root.querySelector('#credentialsPlainEditor');
+                    if (plain) {
+                        plain.focus();
+                    }
                 }
             } else {
                 editor.input.classList.remove('hidden');
@@ -2600,26 +2755,24 @@
 
         if (isQuill) {
             root.querySelector('.quill-save-btn').addEventListener('click', () => {
-                const htmlValue = credentialsQuill.getText().trim() === '' ? '' : credentialsQuill.root.innerHTML;
-                save(htmlValue);
+                save(readCredentialsEditor());
             });
             root.querySelector('.quill-cancel-btn').addEventListener('click', () => {
-                credentialsQuill.root.innerHTML = editor.value;
+                writeCredentialsEditor(editor.value);
                 restore();
             });
             if (credentialsQuill) {
                 credentialsQuill.keyboard.addBinding({
                     key: 'Escape'
                 }, function() {
-                    credentialsQuill.root.innerHTML = editor.value;
+                    writeCredentialsEditor(editor.value);
                     restore();
                 });
                 credentialsQuill.keyboard.addBinding({
                     key: 'Enter',
                     shortKey: true
                 }, function() {
-                    const htmlValue = credentialsQuill.getText().trim() === '' ? '' : credentialsQuill.root.innerHTML;
-                    save(htmlValue);
+                    save(readCredentialsEditor());
                 });
             }
         } else {

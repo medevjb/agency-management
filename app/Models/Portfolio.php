@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\EncryptsRouteKeys;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Portfolio extends Model
 {
-    use HasFactory, SoftDeletes;
+    use EncryptsRouteKeys, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'user_id',

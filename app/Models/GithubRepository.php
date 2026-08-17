@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\EncryptsRouteKeys;
 use Database\Factories\GithubRepositoryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class GithubRepository extends Model
 {
     /** @use HasFactory<GithubRepositoryFactory> */
-    use HasFactory;
+    use EncryptsRouteKeys, HasFactory;
 
     protected $fillable = [
         'github_account_id',

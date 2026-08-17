@@ -220,6 +220,7 @@
                 <div class="archive-card bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 flex flex-col gap-3"
                      data-archive-card
                      data-archive-card-id="{{ $task->id }}"
+                     data-archive-card-key="{{ $task->getRouteKey() }}"
                      data-archive-title="{{ e($task->title) }}"
                      data-archive-description="{{ e($archiveDescription ?? '') }}"
                      data-archive-project="{{ e($archiveProject ?? '') }}"
@@ -275,15 +276,15 @@
                             {{ $archiveArchivedAt ?? 'Date unavailable' }}
                         </span>
                         <div class="flex items-center gap-1.5">
-                            <button onclick="openArchiveView({{ $task->id }})" title="View"
+                            <button onclick="openArchiveView('{{ $task->getRouteKey() }}')" title="View"
                                     class="action-btn border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs px-3 py-1.5">
                                 <i class="fas fa-eye text-[11px]"></i> View
                             </button>
-                            <button onclick="openRestoreModal({{ $task->id }})" title="Restore"
+                            <button onclick="openRestoreModal('{{ $task->getRouteKey() }}')" title="Restore"
                                     class="action-btn bg-emerald-500 hover:bg-emerald-600 text-white text-xs px-3 py-1.5">
                                 <i class="fas fa-rotate-left text-[11px]"></i> Restore
                             </button>
-                            <button onclick="deleteTask({{ $task->id }})" title="Delete"
+                            <button onclick="deleteTask('{{ $task->getRouteKey() }}')" title="Delete"
                                     class="action-btn border border-red-200 dark:border-red-800 text-red-500 dark:text-red-400 bg-white dark:bg-slate-700 text-xs px-3 py-1.5">
                                 <i class="fas fa-trash text-[11px]"></i>
                             </button>
@@ -462,10 +463,10 @@
     let currentArchiveTask = null;
 
     function getArchiveTask(taskId) {
-        const card = archiveCards.find(c => Number(c.dataset.archiveCardId) === taskId);
+        const card = archiveCards.find(c => c.dataset.archiveCardKey === taskId);
         if (!card) { return null; }
         return {
-            id:            taskId,
+            id:            card.dataset.archiveCardKey,
             title:         card.dataset.archiveTitle         || '',
             description:   card.dataset.archiveDescription   || '',
             project:       card.dataset.archiveProject       || '',

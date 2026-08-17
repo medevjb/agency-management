@@ -29,8 +29,9 @@ class AppServiceProvider extends ServiceProvider
     {
         // Define gates for custom permissions
         Gate::define('accessValueDistribution', function ($user) {
-            // Only operations roles can access value distribution
-            return $user->hasRole(['admin', 'operation-manager', 'project-manager', 'team-leader', 'team-member']) || ! $user->isSales();
+            // Value distribution is strictly an operations concern; sales people
+            // never see it, even if they also hold an operations role.
+            return ! $user->isSales() && $user->hasRole(['admin', 'operation-manager', 'project-manager', 'team-leader']);
         });
 
         // Share project statuses with all views

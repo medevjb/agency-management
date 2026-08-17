@@ -20,12 +20,12 @@
                 <p class="text-gray-600 dark:text-gray-400 text-lg">View detailed information about {{ $user->name }}</p>
             </div>
             <div class="flex items-center space-x-3">
-                <a href="{{ route('users.edit', $user->id) }}"
+                <a href="{{ route('users.edit', $user) }}"
                    class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg">
                     <i class="fas fa-edit mr-2"></i> Edit User
                 </a>
                 @if(auth()->id() !== $user->id)
-                <button onclick="deleteUser({{ $user->id }}, '{{ $user->name }}')"
+                <button onclick="deleteUser('{{ $user->getRouteKey() }}', '{{ $user->name }}')"
                         class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg">
                     <i class="fas fa-trash mr-2"></i> Delete
                 </button>

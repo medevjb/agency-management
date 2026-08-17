@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\EncryptsRouteKeys;
 use Database\Factories\BugReportFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class BugReport extends Model
 {
     /** @use HasFactory<BugReportFactory> */
-    use HasFactory, SoftDeletes;
+    use EncryptsRouteKeys, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'user_id',

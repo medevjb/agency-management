@@ -24,7 +24,7 @@
         </div>
     </div>
 
-    <form action="{{ route('orders.update', $order->id) }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('orders.update', $order) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PATCH')
 
@@ -33,7 +33,7 @@
 
             <!-- Form Actions -->
             <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 px-6 py-4 flex items-center justify-end gap-3">
-                <a href="{{ route('orders.show', $order->id) }}"
+                <a href="{{ route('orders.show', $order) }}"
                    class="px-5 py-2.5 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-medium transition-all">
                     View Order
                 </a>

@@ -25,11 +25,11 @@
             </div>
             @canany(['update', 'delete'], $techStack)
             <div class="flex space-x-3">
-                <a href="{{ route('tech-stacks.edit', $techStack->id) }}"
+                <a href="{{ route('tech-stacks.edit', $techStack) }}"
                    class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl">
                     <i class="fas fa-edit mr-2"></i>Edit
                 </a>
-                <button onclick="deleteTechStack({{ $techStack->id }})"
+                <button onclick="deleteTechStack('{{ $techStack->getRouteKey() }}')"
                         class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl">
                     <i class="fas fa-trash mr-2"></i>Delete
                 </button>
@@ -121,7 +121,7 @@
                                     </div>
                                     @can('removeMember', $techStack)
                                         <button type="button"
-                                                onclick="removeMember({{ $techStack->id }}, {{ $member->id }}, '{{ $member->name }}')"
+                                                onclick="removeMember('{{ $techStack->getRouteKey() }}', '{{ $member->getRouteKey() }}', '{{ $member->name }}')"
                                                 class="p-2 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-500/10 rounded-lg transition-all"
                                                 title="Remove member">
                                             <i class="fas fa-times-circle text-xl"></i>
@@ -156,7 +156,7 @@
                     @if($techStack->orders->count() > 0)
                         <div class="space-y-3">
                             @foreach($techStack->orders as $project)
-                                <a href="{{ route('orders.show', $project->id) }}"
+                                <a href="{{ route('orders.show', $project) }}"
                                    class="block flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-500/10 dark:to-emerald-500/10 border border-green-200 dark:border-green-900 rounded-xl hover:shadow-md transition-all">
                                     <div class="flex items-center">
                                         <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center mr-4 shadow-md">
@@ -310,7 +310,7 @@
         </div>
 
         <!-- Member List -->
-        <form action="{{ route('tech-stacks.add-members', $techStack->id) }}" method="POST" id="addMemberForm">
+        <form action="{{ route('tech-stacks.add-members', $techStack) }}" method="POST" id="addMemberForm">
             @csrf
             <div class="max-h-80 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-xl p-2">
                 <div id="memberList">

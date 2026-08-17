@@ -170,7 +170,7 @@
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     @if($user->id !== auth()->id())
-                                        <button onclick="deleteUser({{ $user->id }})" class="text-red-600 hover:text-red-900">
+                                        <button onclick="deleteUser('{{ $user->getRouteKey() }}')" class="text-red-600 hover:text-red-900">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     @endif

@@ -1,6 +1,9 @@
 {{--
     Compact prev/next pager shared by the pending and settled lists.
-    Expects: $paginator (LengthAwarePaginator), $itemLabel (singular noun).
+    Expects: $paginator (LengthAwarePaginator), $itemLabel (singular noun),
+             $section ('pending' | 'distributed', used by the AJAX pager).
+    The links keep their real hrefs as a no-JS fallback; the AJAX layer
+    intercepts clicks on [data-pager-page] and swaps the lists in place.
 --}}
 @if($paginator->hasPages())
     <div class="vd-pager">
@@ -11,11 +14,13 @@
             @if($paginator->onFirstPage())
                 <span class="vd-pager-btn is-disabled"><i class="fas fa-chevron-left"></i></span>
             @else
-                <a href="{{ $paginator->previousPageUrl() }}" class="vd-pager-btn"><i class="fas fa-chevron-left"></i></a>
+                <a href="{{ $paginator->previousPageUrl() }}" class="vd-pager-btn"
+                   data-pager-page="{{ $paginator->currentPage() - 1 }}" data-pager-section="{{ $section ?? 'pending' }}"><i class="fas fa-chevron-left"></i></a>
             @endif
             <span class="vd-pager-page vd-mono">{{ $paginator->currentPage() }} / {{ $paginator->lastPage() }}</span>
             @if($paginator->hasMorePages())
-                <a href="{{ $paginator->nextPageUrl() }}" class="vd-pager-btn"><i class="fas fa-chevron-right"></i></a>
+                <a href="{{ $paginator->nextPageUrl() }}" class="vd-pager-btn"
+                   data-pager-page="{{ $paginator->currentPage() + 1 }}" data-pager-section="{{ $section ?? 'pending' }}"><i class="fas fa-chevron-right"></i></a>
             @else
                 <span class="vd-pager-btn is-disabled"><i class="fas fa-chevron-right"></i></span>
             @endif

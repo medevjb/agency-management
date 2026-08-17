@@ -368,6 +368,12 @@ class SalesRoleTest extends TestCase
         $this->actingAs($this->operationManager)->get(route('sales.dashboard'))->assertForbidden();
     }
 
+    public function test_a_sales_leader_lands_on_the_leadership_overview(): void
+    {
+        $this->actingAs($this->salesLeader)->get(route('dashboard'))->assertRedirect(route('sales.leadership'));
+        $this->actingAs($this->salesLeader)->get(route('orders.dashboard'))->assertRedirect(route('sales.leadership'));
+    }
+
     public function test_a_sale_is_credited_wholly_to_whoever_opened_it(): void
     {
         $this->actingAs($this->salesMember)->post(route('orders.store'), [

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\SalesTarget;
 use App\Models\User;
+use App\Services\SalesBonusService;
 use App\Support\GlobalMonth;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -74,9 +75,24 @@ class SalesDashboardController extends Controller
             ->take(8)
             ->get();
 
+        // A member reads their own delivery pipeline, a leader/admin the
+        // whole group's — same "whose numbers" rule the hero amount uses.
+        $pipelineIds = ($mine !== null && ! $showsBreakdown) ? $mineIds : $groupIds;
+        $pipeline = $this->pipelineFor($pipelineIds);
+
+        $heroAmount = ($mine !== null && ! $showsBreakdown) ? $mine['amount'] : $group['amount'];
+        $heroTarget = (float) ($mine !== null && ! $showsBreakdown ? $mine['target'] : $group['target']);
+        $projection = $this->projectionFor($heroAmount, $heroTarget, $monthStart, $monthEnd);
+
+        $topClientOrders = ($mine !== null && ! $showsBreakdown) ? $mineOrders : $groupOrders;
+        $topClients = $this->topClientsFor($topClientOrders);
+
+        $bonus = $mine !== null ? app(SalesBonusService::class)->calculate($user, $monthDate) : null;
+
         return view('sales.dashboard', compact(
             'group', 'mine', 'trend', 'bestMonth', 'memberBreakdown', 'recentOrders',
-            'selectedMonth', 'availableMonths', 'monthDate', 'showsBreakdown', 'isAdmin'
+            'selectedMonth', 'availableMonths', 'monthDate', 'showsBreakdown', 'isAdmin',
+            'pipeline', 'projection', 'topClients', 'bonus'
         ));
     }
 
@@ -131,10 +147,24 @@ class SalesDashboardController extends Controller
         $showsBreakdown = false;
         $isAdmin = false;
         $isPreview = true;
+        $bonus = null;
+
+        [$monthStart, $monthEnd] = GlobalMonth::periodFor($monthDate);
+        $pipeline = [
+            'total' => 1800.0, 'expected' => 990.0, 'count' => 2,
+            'atRiskCount' => 0, 'atRiskValue' => 0.0, 'atRisk' => collect(),
+        ];
+        $projection = $this->projectionFor(4200.0, 5000.0, $monthStart, $monthEnd);
+        $topClients = collect([
+            ['key' => 'acme', 'name' => 'Acme', 'amount' => 1200.0, 'count' => 2, 'repeat_count' => 1],
+            ['key' => 'globex', 'name' => 'Globex', 'amount' => 800.0, 'count' => 1, 'repeat_count' => 0],
+            ['key' => 'initech', 'name' => 'Initech', 'amount' => 650.0, 'count' => 1, 'repeat_count' => 0],
+        ]);
 
         return view('sales.dashboard', compact(
             'group', 'mine', 'trend', 'bestMonth', 'memberBreakdown', 'recentOrders',
-            'selectedMonth', 'availableMonths', 'monthDate', 'showsBreakdown', 'isAdmin', 'isPreview'
+            'selectedMonth', 'availableMonths', 'monthDate', 'showsBreakdown', 'isAdmin', 'isPreview',
+            'pipeline', 'projection', 'topClients', 'bonus'
         ));
     }
 
@@ -328,6 +358,122 @@ class SalesDashboardController extends Controller
                 ];
             })
             ->sortByDesc(fn (array $seller) => $seller['achievement'] ?? -1)
+            ->values();
+    }
+
+    /**
+     * Delivery pipeline for a set of sellers: everything they hold sales
+     * credit in that hasn't finished yet, its progress-weighted expected
+     * revenue, and the subset already past its deadline (at risk).
+     *
+     * @param  array<int, int>  $sellerIds
+     * @return array<string, mixed>
+     */
+    protected function pipelineFor(array $sellerIds): array
+    {
+        if ($sellerIds === []) {
+            return [
+                'total' => 0.0, 'expected' => 0.0, 'count' => 0,
+                'atRiskCount' => 0, 'atRiskValue' => 0.0, 'atRisk' => collect(),
+            ];
+        }
+
+        $open = Order::query()
+            ->whereHas('salesShares', fn ($share) => $share->whereIn('user_id', $sellerIds))
+            ->whereNotIn('status', ['delivered', 'completed', 'cancelled'])
+            ->with('salesUser:id,name')
+            ->get();
+
+        $total = (float) $open->sum('value');
+        $expected = (float) $open->sum(fn (Order $order) => (float) $order->value * ((int) $order->progress / 100));
+
+        $atRisk = $open
+            ->filter(fn (Order $order) => $order->end_date !== null && $order->end_date->lt(now()->startOfDay()))
+            ->sortBy('end_date')
+            ->values();
+
+        return [
+            'total' => round($total, 2),
+            'expected' => round($expected, 2),
+            'count' => $open->count(),
+            'atRiskCount' => $atRisk->count(),
+            'atRiskValue' => round((float) $atRisk->sum('value'), 2),
+            'atRisk' => $atRisk->take(6)->map(fn (Order $order) => [
+                'id' => $order->id,
+                'name' => $order->name,
+                'value' => (float) $order->value,
+                'end_date' => $order->end_date,
+                'days_overdue' => (int) $order->end_date->diffInDays(now()),
+                'sales_user' => $order->salesUser?->name,
+            ]),
+        ];
+    }
+
+    /**
+     * Straight-line month-end projection: what the current pace ($ per elapsed
+     * day of the billing cycle) implies for the full cycle, judged against the
+     * target. 'ahead' when it clears the target, 'close' within 60-100%,
+     * 'behind' below that, 'none' when there is no target to judge against.
+     *
+     * @return array<string, mixed>
+     */
+    protected function projectionFor(float $amount, float $target, Carbon $monthStart, Carbon $monthEnd): array
+    {
+        $daysInCycle = max(1, (int) $monthStart->diffInDays($monthEnd) + 1);
+        $daysElapsed = max(1, min($daysInCycle, (int) $monthStart->diffInDays(now()) + 1));
+
+        $projected = round($amount / $daysElapsed * $daysInCycle, 2);
+        $projectedPct = $target > 0 ? (int) round($projected / $target * 100) : null;
+
+        $pace = $projectedPct === null
+            ? 'none'
+            : ($projectedPct >= 100 ? 'ahead' : ($projectedPct >= 60 ? 'close' : 'behind'));
+
+        return [
+            'daysElapsed' => $daysElapsed,
+            'daysInCycle' => $daysInCycle,
+            'projected' => $projected,
+            'projectedPct' => $projectedPct,
+            'pace' => $pace,
+        ];
+    }
+
+    /**
+     * The month's top clients for a set of orders, ranked by credit. Repeat
+     * orders are attributed to the client they were matched to when entered
+     * (repeat_client_key), so a renamed client still counts as the same one.
+     *
+     * @param  Collection<int, Order>  $orders
+     * @return Collection<int, array<string, mixed>>
+     */
+    protected function topClientsFor(Collection $orders): Collection
+    {
+        $groups = [];
+
+        foreach ($orders as $order) {
+            $key = $order->is_repeat && filled($order->repeat_client_key)
+                ? $order->repeat_client_key
+                : $order->client_key;
+
+            if (filled($key)) {
+                $groups[$key][] = $order;
+            }
+        }
+
+        return collect($groups)
+            ->map(function (array $members, string $key) {
+                $memberOrders = collect($members);
+
+                return [
+                    'key' => $key,
+                    'name' => $memberOrders->sortByDesc('created_at')->first()->name,
+                    'amount' => round((float) $memberOrders->sum('credit'), 2),
+                    'count' => $memberOrders->count(),
+                    'repeat_count' => $memberOrders->where('is_repeat', true)->count(),
+                ];
+            })
+            ->sortByDesc('amount')
+            ->take(6)
             ->values();
     }
 }

@@ -47,7 +47,7 @@ class TaskUpdatedNotification extends Notification implements ShouldQueue
             ->line('**Status:** '.$this->task->status)
             ->line('**Priority:** '.$this->task->priority)
             ->line('**Due Date:** '.$this->task->due_date?->format('F d, Y'))
-            ->action('View Task', url('/tasks/'.$this->task->id))
+            ->action('View Task', route('tasks.show', $this->task))
             ->line('Please review the changes.');
     }
 

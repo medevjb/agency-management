@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\OrderSalesShare;
 use App\Models\SalesTarget;
+use App\Models\Task;
 use App\Models\Team;
 use App\Models\User;
 use App\Support\GlobalMonth;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
@@ -19,6 +22,10 @@ class DashboardController extends Controller
     public function __invoke(Request $request)
     {
         $user = Auth::user();
+
+        if ($user->isSalesLeader()) {
+            return redirect()->route('sales.leadership');
+        }
 
         if ($user->isSales()) {
             return redirect()->route('sales.dashboard');
@@ -141,6 +148,7 @@ class DashboardController extends Controller
             ->get();
 
         $priorityStats = [
+            'urgent' => $workloadOrders->where('priority', 'urgent')->count(),
             'high' => $workloadOrders->where('priority', 'high')->count(),
             'medium' => $workloadOrders->where('priority', 'medium')->count(),
             'low' => $workloadOrders->where('priority', 'low')->count(),
@@ -209,6 +217,39 @@ class DashboardController extends Controller
             ? (($stats['total'] - $previousStats['orders']) / $previousStats['orders']) * 100
             : 0;
 
+        // ---- Tasks ----
+        // Task distribution feeds the Tasks widget on the right rail. It only
+        // changes when tasks do, so it is cached per selected month like the
+        // rest of the page's aggregates.
+        $taskStats = $this->remember('dashboard.tasks.'.$selectedMonth, function () {
+            $tasks = Task::whereNull('archived_at')->get();
+
+            $statuses = $tasks->groupBy('status')->map->count();
+            $priorities = $tasks->groupBy('priority')->map->count();
+            $activeTasks = $tasks->where('status', '!=', 'completed');
+
+            return [
+                'total' => $tasks->count(),
+                'completed' => (int) ($statuses['completed'] ?? 0),
+                'status' => [
+                    'pending' => (int) ($statuses['pending'] ?? 0),
+                    'in-progress' => (int) ($statuses['in-progress'] ?? 0),
+                    'on-hold' => (int) ($statuses['on-hold'] ?? 0),
+                    'completed' => (int) ($statuses['completed'] ?? 0),
+                ],
+                'priority' => [
+                    'urgent' => (int) ($priorities['urgent'] ?? 0),
+                    'high' => (int) ($priorities['high'] ?? 0),
+                    'medium' => (int) ($priorities['medium'] ?? 0),
+                    'low' => (int) ($priorities['low'] ?? 0),
+                ],
+                'overdue' => $activeTasks->filter(fn ($task) => $task->due_date && $task->due_date->lt(now()))->count(),
+                'dueSoon' => $activeTasks->filter(fn ($task) => $task->due_date
+                    && $task->due_date->gte(now())
+                    && $task->due_date->lte(now()->addDays(7)))->count(),
+            ];
+        });
+
         // ---- Sales ----
         // Half of this page is the sales side: what was sold this month, how it
         // tracks against the targets in force, and who is bringing it in.
@@ -275,6 +316,20 @@ class DashboardController extends Controller
             }
         );
 
+        $quarterBreakdown = $this->quarterlyBreakdown($monthDate);
+
+        $quarter = ceil($monthDate->month / 3);
+        $startMonthNum = ($quarter - 1) * 3 + 1;
+        $q1Date = Carbon::create($monthDate->year, $startMonthNum, 1)->startOfMonth();
+        $q2Date = $q1Date->copy()->addMonth();
+        $q3Date = $q1Date->copy()->addMonths(2);
+
+        $quarterNames = [
+            'q1' => $q1Date->format('M'),
+            'q2' => $q2Date->format('M'),
+            'q3' => $q3Date->format('M'),
+        ];
+
         return view('dashboard', compact(
             'stats',
             'ordersByStatus',
@@ -291,7 +346,66 @@ class DashboardController extends Controller
             'availableMonths',
             'analytics',
             'salesStats',
-            'leaderboard'
+            'leaderboard',
+            'revenueByTeam',
+            'taskStats',
+            'quarterBreakdown',
+            'quarterNames'
         ));
+    }
+
+    /**
+     * Compute quarterly breakdown for the team/group.
+     */
+    protected function quarterlyBreakdown(Carbon $monthDate): Collection
+    {
+        $salesUserIds = User::withRoleName(['sales-leader', 'sales-member'])->pluck('id')->all();
+
+        if (empty($salesUserIds)) {
+            return collect();
+        }
+
+        $quarter = ceil($monthDate->month / 3);
+        $startMonthNum = ($quarter - 1) * 3 + 1;
+        $q1Date = Carbon::create($monthDate->year, $startMonthNum, 1)->startOfMonth();
+        $q2Date = $q1Date->copy()->addMonth();
+        $q3Date = $q1Date->copy()->addMonths(2);
+
+        [$q1Start, $q1End] = GlobalMonth::periodFor($q1Date);
+        [$q2Start, $q2End] = GlobalMonth::periodFor($q2Date);
+        [$q3Start, $q3End] = GlobalMonth::periodFor($q3Date);
+
+        $orders = Order::query()
+            ->whereHas('salesShares', fn ($share) => $share->whereIn('user_id', $salesUserIds))
+            ->whereBetween('created_at', [$q1Start, $q3End])
+            ->with(['salesShares' => fn ($share) => $share->whereIn('user_id', $salesUserIds)])
+            ->get();
+
+        return User::whereIn('id', $salesUserIds)
+            ->orderBy('name')
+            ->get()
+            ->map(function (User $seller) use ($orders, $q1Start, $q1End, $q2Start, $q2End, $q3Start, $q3End) {
+                $sellerOrders = $orders->filter(fn (Order $order) => $order->salesShares->contains('user_id', $seller->id));
+
+                $q1Amount = (float) $sellerOrders->filter(fn ($o) => $o->created_at->between($q1Start, $q1End))
+                    ->sum(fn ($o) => $o->salesShareFor($seller->id));
+
+                $q2Amount = (float) $sellerOrders->filter(fn ($o) => $o->created_at->between($q2Start, $q2End))
+                    ->sum(fn ($o) => $o->salesShareFor($seller->id));
+
+                $q3Amount = (float) $sellerOrders->filter(fn ($o) => $o->created_at->between($q3Start, $q3End))
+                    ->sum(fn ($o) => $o->salesShareFor($seller->id));
+
+                return [
+                    'id' => $seller->id,
+                    'name' => $seller->name,
+                    'q1_amount' => round($q1Amount, 2),
+                    'q2_amount' => round($q2Amount, 2),
+                    'q3_amount' => round($q3Amount, 2),
+                    'quarter_amount' => round($q1Amount + $q2Amount + $q3Amount, 2),
+                ];
+            })
+            ->sortByDesc('quarter_amount')
+            ->values();
     }
 }

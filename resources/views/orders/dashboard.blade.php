@@ -271,6 +271,41 @@
             </div>
         </div>
 
+        <!-- Priority & Revenue Trend Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Orders by Priority -->
+            <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 p-6">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
+                    <i class="fas fa-flag text-orange-500 mr-2"></i>
+                    Orders by Priority
+                </h3>
+                <div class="chart-container" style="height: 260px;">
+                    <canvas id="priorityChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Revenue Trend (interactive) -->
+            <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">
+                        <i class="fas fa-chart-line text-indigo-500 mr-2"></i>
+                        Revenue Trend
+                    </h3>
+                    <div class="flex gap-2">
+                        <button onclick="loadTrend('week')" id="trendWeekBtn"
+                            class="px-3 py-1.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Week</button>
+                        <button onclick="loadTrend('month')" id="trendMonthBtn"
+                            class="px-3 py-1.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Month</button>
+                        <button onclick="loadTrend('year')" id="trendYearBtn"
+                            class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-semibold hover:bg-indigo-700 transition-colors">Year</button>
+                    </div>
+                </div>
+                <div class="chart-container" style="height: 260px;">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
         <!-- Monthly & Yearly Delivery Analytics -->
         <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 p-6 mb-8">
             <div class="flex items-center justify-between mb-6">
@@ -773,6 +808,15 @@ if ($diffInSeconds <= 0) {
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
+        // Theme-aware chart colors (Chart.js bakes colors into the canvas, so
+        // this is read once at render time; the theme toggle does a full page reload)
+        const isDarkMode = document.documentElement.classList.contains('dark');
+        const chartGridColor = isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
+        const chartTickColor = isDarkMode ? '#9ca3af' : '#6b7280';
+
+        let priorityChartInstance = null;
+        let trendChartInstance = null;
+
         // Toggle between monthly and yearly delivery views
         function showDeliveryView(view) {
             const monthlyView = document.getElementById('monthlyView');
@@ -800,14 +844,113 @@ if ($diffInSeconds <= 0) {
             }
         }
 
+        function loadTrend(period) {
+            const buttons = { week: 'trendWeekBtn', month: 'trendMonthBtn', year: 'trendYearBtn' };
+            Object.keys(buttons).forEach(function (p) {
+                const btn = document.getElementById(buttons[p]);
+                if (!btn) return;
+                const active = p === period;
+                btn.classList.toggle('bg-indigo-600', active);
+                btn.classList.toggle('text-white', active);
+                btn.classList.toggle('bg-gray-200', !active);
+                btn.classList.toggle('dark:bg-gray-700', !active);
+                btn.classList.toggle('text-gray-700', !active);
+                btn.classList.toggle('dark:text-gray-200', !active);
+            });
+
+            fetch('{{ route('orders.dashboard.chart-data') }}?period=' + period)
+                .then(function (r) { return r.json(); })
+                .then(function (data) { renderTrend(data, period); })
+                .catch(function () { console.error('Failed to load trend data'); });
+        }
+
+        function renderTrend(data, period) {
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const labels = data.map(function (d) {
+                return period === 'year' ? (monthNames[(d.month || 1) - 1]) : (d.date || '');
+            });
+            const revenue = data.map(function (d) { return d.revenue; });
+            const orders = data.map(function (d) { return d.orders; });
+
+            if (trendChartInstance) trendChartInstance.destroy();
+
+            const ctx = document.getElementById('trendChart');
+            if (!ctx) return;
+
+            trendChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Revenue',
+                        data: revenue,
+                        backgroundColor: 'rgba(99, 102, 241, 0.75)',
+                        borderColor: '#6366f1',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        yAxisID: 'y'
+                    }, {
+                        label: 'Orders',
+                        type: 'line',
+                        data: orders,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: chartTickColor,
+                                usePointStyle: true,
+                                font: { size: 11 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.dataset.label === 'Revenue') {
+                                        return 'Revenue: $' + (context.parsed.y || 0).toLocaleString();
+                                    }
+                                    return 'Orders: ' + (context.parsed.y || 0);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            position: 'left',
+                            grid: { color: chartGridColor },
+                            ticks: {
+                                color: chartTickColor,
+                                callback: function(value) { return '$' + (value >= 1000 ? (value / 1000).toFixed(0) + 'k' : value); }
+                            }
+                        },
+                        y1: {
+                            beginAtZero: true,
+                            position: 'right',
+                            grid: { display: false },
+                            ticks: { color: chartTickColor, stepSize: 1 }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: chartTickColor }
+                        }
+                    }
+                }
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Dashboard loaded, Chart.js available:', typeof Chart !== 'undefined');
-
-            // Theme-aware chart colors (Chart.js bakes colors into the canvas, so
-            // this is read once at render time; the theme toggle does a full page reload)
-            const isDarkMode = document.documentElement.classList.contains('dark');
-            const chartGridColor = isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
-            const chartTickColor = isDarkMode ? '#9ca3af' : '#6b7280';
 
             try {
                 // Revenue Chart
@@ -937,6 +1080,57 @@ if ($diffInSeconds <= 0) {
                         cutout: '65%'
                     }
                 });
+
+                // Priority Chart
+                const priorityCtx = document.getElementById('priorityChart');
+                if (priorityCtx) {
+                    const ordersByPriority = {!! json_encode($ordersByPriority) !!};
+                    priorityChartInstance = new Chart(priorityCtx.getContext('2d'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['High', 'Medium', 'Low'],
+                            datasets: [{
+                                data: [
+                                    ordersByPriority.high || 0,
+                                    ordersByPriority.medium || 0,
+                                    ordersByPriority.low || 0
+                                ],
+                                backgroundColor: ['#f87171', '#fbbf24', '#34d399'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        color: chartTickColor,
+                                        padding: 20,
+                                        usePointStyle: true
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const value = context.parsed || 0;
+                                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                            const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                            return context.label + ': ' + value + ' (' + percentage + '%)';
+                                        }
+                                    }
+                                }
+                            },
+                            cutout: '65%'
+                        }
+                    });
+                }
+
+                // Initialize the interactive revenue trend chart (default: year)
+                if (document.getElementById('trendChart')) {
+                    loadTrend('year');
+                }
 
                 console.log('Charts initialized successfully');
             } catch (error) {

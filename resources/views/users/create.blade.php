@@ -530,93 +530,6 @@
                                     </label>
                                 </div>
                             </div>
-
-                            <!-- Additional Permissions -->
-                            <div class="mt-6">
-                                <div class="flex items-center justify-between mb-4">
-                                    <button type="button"
-                                            class="flex items-center text-base font-semibold text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                                            onclick="toggleAdditionalPermissions()">
-                                        <i class="fas fa-key mr-2 text-indigo-500 dark:text-indigo-400 text-sm"></i>
-                                        Additional Permissions
-                                        <i class="fas fa-chevron-down ml-2 text-sm transition-transform duration-200" id="additionalPermissionsIcon"></i>
-                                    </button>
-                                    <button type="button"
-                                            class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium transition-colors"
-                                            onclick="toggleAllAccordions()">
-                                        <i class="fas fa-expand-alt mr-1"></i>
-                                        <span id="toggleAllText">Expand All</span>
-                                    </button>
-                                </div>
-                                <div class="space-y-2 hidden" id="permissionsAccordion">
-                                    @foreach($permissions as $group => $groupPermissions)
-                                        <div class="permissions-accordion-item border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden transition-all duration-200">
-                                            <button type="button"
-                                                    class="accordion-header w-full px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-800 hover:from-indigo-50 hover:to-purple-50 dark:hover:from-indigo-500/10 dark:hover:to-purple-500/10 flex items-center justify-between text-left transition-all duration-200"
-                                                    onclick="toggleAccordion(this)">
-                                                <div class="flex items-center">
-                                                    <div class="flex items-center justify-center w-6 h-6 bg-indigo-500 text-white rounded mr-3">
-                                                        <i class="fas fa-chevron-down text-xs transition-transform duration-200 accordion-icon"></i>
-                                                    </div>
-                                                    <div class="text-left">
-                                                        <h5 class="text-sm font-semibold text-gray-900 dark:text-gray-100 capitalize">{{ $group }}</h5>
-                                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ count($groupPermissions) }} permissions</p>
-                                                    </div>
-                                                </div>
-                                                <div class="flex items-center space-x-2">
-                                                    @php
-                                                        $checkedCount = collect(old('permissions', []))->filter(function($perm) use ($groupPermissions) {
-                                                            return collect($groupPermissions)->pluck('id')->contains($perm);
-                                                        })->count();
-                                                    @endphp
-                                                    <span class="text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">
-                                                        {{ $checkedCount }}/{{ count($groupPermissions) }}
-                                                    </span>
-                                                    <i class="fas fa-shield-alt text-indigo-400 dark:text-indigo-400 text-sm"></i>
-                                                </div>
-                                            </button>
-                                            <div class="accordion-content hidden">
-                                                <div class="px-4 py-3 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
-                                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                                                        @foreach($groupPermissions as $permission)
-                                                            <label class="flex items-center p-2 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded cursor-pointer transition-colors duration-200 border border-transparent hover:border-indigo-200 dark:hover:border-indigo-800 group">
-                                                                <input type="checkbox" name="permissions[]" value="{{ $permission->id }}"
-                                                                       {{ in_array($permission->id, old('permissions', [])) ? 'checked' : '' }}
-                                                                       class="mr-2 w-3.5 h-3.5 text-indigo-600 bg-indigo-100 dark:bg-gray-800 border-indigo-300 dark:border-gray-600 rounded focus:ring-indigo-500 focus:ring-2">
-                                                                <div class="flex-1 min-w-0">
-                                                                    <div class="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">{{ ucfirst(str_replace('-', ' ', $permission->name)) }}</div>
-                                                                    <div class="text-xs text-gray-400 dark:text-gray-500 truncate">{{ $permission->name }}</div>
-                                                                </div>
-                                                            </label>
-                                                        @endforeach
-                                                    </div>
-                                                    @if(count($groupPermissions) > 4)
-                                                        <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
-                                                            <button type="button"
-                                                                    class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium transition-colors"
-                                                                    onclick="toggleAllPermissions(this, '{{ $group }}')">
-                                                                <i class="fas fa-check-square mr-1"></i>
-                                                                <span class="toggle-all-text">Select All {{ ucfirst($group) }}</span>
-                                                            </button>
-                                                            <span class="text-xs text-gray-400 dark:text-gray-500">
-                                                                {{ round(collect(old('permissions', []))->filter(function($perm) use ($groupPermissions) {
-                                                                    return collect($groupPermissions)->pluck('id')->contains($perm);
-                                                                })->count() / count($groupPermissions) * 100) }}% selected
-                                                            </span>
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                                <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-500/10 rounded-lg border border-blue-200 dark:border-blue-900">
-                                    <p class="text-xs text-blue-700 dark:text-blue-400 flex items-center">
-                                        <i class="fas fa-info-circle mr-2 text-blue-500 dark:text-blue-400"></i>
-                                        Default permissions are automatically assigned based on the selected role. Additional permissions are optional extras beyond the role defaults.
-                                    </p>
-                                </div>
-                            </div>
                         </div>
 
                         <!-- Form Actions -->
@@ -1010,60 +923,10 @@
     });
 </script>
 <script>
-// Define default permissions for each role
-const roleDefaultPermissions = {
-    'admin': [
-        // Admin gets most permissions by default
-        'view users', 'create users', 'edit users', 'delete users',
-        'view profiles', 'create profile', 'edit profile', 'delete profile',
-        'view teams', 'create teams', 'edit teams', 'delete teams',
-        'view orders', 'create orders', 'edit orders', 'delete orders',
-        'view tasks', 'create tasks', 'edit tasks', 'delete tasks', 'assign tasks',
-        'view bug reports', 'create bug reports', 'edit bug reports', 'delete bug reports',
-        'view tech stacks', 'create tech stacks', 'edit tech stacks', 'delete tech stacks'
-    ],
-    'operation-manager': [
-        // Operation manager permissions
-        'view users', 'create users', 'edit users',
-        'view profiles', 'create profile', 'edit profile',
-        'view teams', 'create teams', 'edit teams',
-        'view orders', 'create orders', 'edit orders',
-        'view tasks', 'create tasks', 'edit tasks', 'assign tasks',
-        'view bug reports', 'create bug reports', 'edit bug reports',
-        'view tech stacks', 'create tech stacks', 'edit tech stacks'
-    ],
-    'project-manager': [
-        // Project manager permissions
-        'view users',
-        'view profiles',
-        'view teams',
-        'view orders', 'create orders', 'edit orders',
-        'view tasks', 'create tasks', 'edit tasks', 'assign tasks',
-        'view bug reports',
-        'view tech stacks'
-    ],
-    'team-lead': [
-        // Team lead permissions
-        'view users',
-        'view profiles',
-        'view teams',
-        'view orders',
-        'view tasks', 'create tasks', 'edit tasks',
-        'view bug reports', 'create bug reports',
-        'view tech stacks'
-    ],
-    'employee': [
-        // Employee permissions
-        'view tasks',
-        'view bug reports', 'create bug reports',
-        'view tech stacks'
-    ]
-};
-
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Create user page loaded');
 
-    // Handle role change to show/hide managed teams section and auto-assign permissions
+    // Handle role change to show/hide managed teams section
     const roleSelect = document.getElementById('role');
     const managedTeamsSection = document.getElementById('managedTeamsSection');
 
@@ -1080,50 +943,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function autoAssignPermissions() {
-        const selectedRole = roleSelect.value;
-        if (!selectedRole || !roleDefaultPermissions[selectedRole]) {
-            return;
-        }
-
-        // Get all permission checkboxes
-        const permissionCheckboxes = document.querySelectorAll('input[name="permissions[]"]');
-
-        // Only proceed if permissions exist
-        if (permissionCheckboxes.length === 0) {
-            return;
-        }
-
-        // Uncheck all permissions first
-        permissionCheckboxes.forEach(checkbox => {
-            checkbox.checked = false;
-        });
-
-        // Check permissions that match the role defaults
-        permissionCheckboxes.forEach(checkbox => {
-            const permissionLabel = checkbox.closest('label').querySelector('.text-gray-400')?.textContent || '';
-            const permissionName = permissionLabel.toLowerCase().replace(/ /g, '-');
-
-            // Check if this permission should be enabled for the role
-            if (roleDefaultPermissions[selectedRole].some(perm => {
-                const permLower = perm.toLowerCase().replace(/ /g, '-');
-                return permissionName.includes(permLower) || permLower.includes(permissionName);
-            })) {
-                checkbox.checked = true;
-            }
-        });
-
-        // Update counters
-        updatePermissionCounters();
-    }
-
     // Initial check
     toggleManagedTeamsSection();
 
     // Listen for role changes
     roleSelect.addEventListener('change', function() {
         toggleManagedTeamsSection();
-        autoAssignPermissions();
     });
 
     // Test if all step elements exist
@@ -1329,123 +1154,7 @@ function togglePasswordVisibility(fieldId) {
     }
 }
 
-// Toggle additional permissions section
-function toggleAdditionalPermissions() {
-    const permissionsAccordion = document.getElementById('permissionsAccordion');
-    const icon = document.getElementById('additionalPermissionsIcon');
-
-    if (permissionsAccordion.classList.contains('hidden')) {
-        permissionsAccordion.classList.remove('hidden');
-        icon.classList.add('rotate-180');
-    } else {
-        permissionsAccordion.classList.add('hidden');
-        icon.classList.remove('rotate-180');
-
-        // Close all individual accordions when closing the main section
-        document.querySelectorAll('.accordion-content').forEach(item => {
-            item.classList.add('hidden');
-        });
-        document.querySelectorAll('.accordion-icon').forEach(item => {
-            item.classList.remove('rotate-180');
-        });
-    }
-}
-
-// Accordion functionality
-function toggleAccordion(button) {
-    const accordionItem = button.closest('.permissions-accordion-item');
-    const content = accordionItem.querySelector('.accordion-content');
-    const icon = button.querySelector('.accordion-icon');
-
-    if (content.classList.contains('hidden')) {
-        // Close all other accordions
-        document.querySelectorAll('.accordion-content').forEach(item => {
-            item.classList.add('hidden');
-        });
-        document.querySelectorAll('.accordion-icon').forEach(item => {
-            item.classList.remove('rotate-180');
-        });
-
-        // Open this accordion
-        content.classList.remove('hidden');
-        icon.classList.add('rotate-180');
-    } else {
-        // Close this accordion
-        content.classList.add('hidden');
-        icon.classList.remove('rotate-180');
-    }
-}
-
-// Toggle all permissions in a group
-function toggleAllPermissions(button, groupName) {
-    const accordionItem = button.closest('.accordion-content');
-    const checkboxes = accordionItem.querySelectorAll('input[name="permissions[]"]');
-    const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
-
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = !anyChecked;
-    });
-
-    // Update button text
-    const buttonText = button.querySelector('.toggle-all-text');
-    if (anyChecked) {
-        buttonText.textContent = 'Deselect All ' + ucfirst(groupName);
-    } else {
-        buttonText.textContent = 'Select All ' + ucfirst(groupName);
-    }
-
-    // Update counter
-    updatePermissionCounters();
-}
-
-// Toggle all accordions
-function toggleAllAccordions() {
-    const accordions = document.querySelectorAll('.accordion-content');
-    const toggleAllText = document.getElementById('toggleAllText');
-    const allOpen = Array.from(accordions).every(acc => !acc.classList.contains('hidden'));
-
-    if (allOpen) {
-        // Close all
-        accordions.forEach(accordion => {
-            accordion.classList.add('hidden');
-        });
-        document.querySelectorAll('.accordion-icon').forEach(icon => {
-            icon.classList.remove('rotate-180');
-        });
-        toggleAllText.textContent = 'Expand All';
-    } else {
-        // Open all
-        accordions.forEach(accordion => {
-            accordion.classList.remove('hidden');
-        });
-        document.querySelectorAll('.accordion-icon').forEach(icon => {
-            icon.classList.add('rotate-180');
-        });
-        toggleAllText.textContent = 'Collapse All';
-    }
-}
-
-// Update permission counters
-function updatePermissionCounters() {
-    document.querySelectorAll('.permissions-accordion-item').forEach(item => {
-        const checkboxes = item.querySelectorAll('input[name="permissions[]"]');
-        const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
-        const totalCount = checkboxes.length;
-
-        const counter = item.querySelector('.bg-gray-200');
-        if (counter) {
-            counter.textContent = `${checkedCount}/${totalCount}`;
-        }
-
-        // Update percentage
-        const percentage = item.querySelector('.text-gray-400');
-        if (percentage) {
-            percentage.textContent = `${Math.round(checkedCount / totalCount * 100)}% selected`;
-        }
-    });
-}
-
-// Add event listeners for permission checkboxes and field input
+// Add event listeners for field input
 document.addEventListener('DOMContentLoaded', function() {
     // Clear field error when user starts typing
     document.addEventListener('input', function(e) {
@@ -1459,11 +1168,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target.id && e.target.tagName === 'SELECT') {
             clearFieldError(e.target.id);
         }
-
-        // Handle permission checkboxes
-        if (e.target.name === 'permissions[]') {
-            updatePermissionCounters();
-        }
     });
 });
 
@@ -1475,7 +1179,6 @@ function showFieldError(fieldId, errorMessage) {
     // Map Laravel validation field names to actual field IDs
     const fieldMapping = {
         'password_confirmation': 'password',
-        'permissions': 'permissions_0', // Handle array field differently
     };
 
     actualFieldId = fieldMapping[fieldId] || fieldId;
@@ -1539,7 +1242,6 @@ function clearFieldError(fieldId) {
     // Map Laravel validation field names to actual field IDs
     const fieldMapping = {
         'password_confirmation': 'password',
-        'permissions': 'permissions_0', // Handle array field differently
     };
 
     actualFieldId = fieldMapping[fieldId] || fieldId;

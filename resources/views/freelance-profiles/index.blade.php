@@ -272,17 +272,17 @@
                             <i class="fas fa-chart-line mr-1 text-xs"></i>Analytics
                         </a>
                         @can('edit profile')
-                            <button onclick="editProfile({{ $profile->id }})"
+                            <button onclick="editProfile('{{ $profile->getRouteKey() }}')"
                                     class="flex-1 flex items-center justify-center px-3 py-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-500/20 font-medium text-xs transition-all">
                                 <i class="fas fa-edit mr-1 text-xs"></i>Edit
                             </button>
-                            <button onclick="toggleStatus({{ $profile->id }}, '{{ $profile->status }}')"
+                            <button onclick="toggleStatus('{{ $profile->getRouteKey() }}', '{{ $profile->status }}')"
                                     class="flex items-center justify-center px-2 py-2 {{ $profile->status === 'active' ? 'bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20' : 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-500/20' }} rounded-lg font-medium text-xs transition-all">
                                 <i class="fas {{ $profile->status === 'active' ? 'fa-ban' : 'fa-check' }} text-xs"></i>
                             </button>
                         @endcan
                         @can('delete profile')
-                            <button onclick="deleteProfile({{ $profile->id }})"
+                            <button onclick="deleteProfile('{{ $profile->getRouteKey() }}')"
                                     class="flex items-center justify-center px-2 py-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 font-medium text-xs transition-all">
                                 <i class="fas fa-trash text-xs"></i>
                             </button>
@@ -495,7 +495,7 @@ async function editProfile(id) {
         document.getElementById('modalTitle').textContent = 'Edit Profile';
         document.getElementById('submitBtnText').textContent = 'Update';
 
-        profileIdInput.value = profile.id;
+        profileIdInput.value = profile.key || profile.id;
         profileNameInput.value = profile.profile_name;
         usernameInput.value = profile.username;
 

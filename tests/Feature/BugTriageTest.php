@@ -59,7 +59,7 @@ class BugTriageTest extends TestCase
 
         $bugReport = BugReport::first();
 
-        $response->assertRedirect(route('bug-reports.show', $bugReport));
+        $this->assertRedirectToModel($response, 'bug-reports', $bugReport);
         $this->assertNull($bugReport->bug_category_id);
         $this->assertNull($bugReport->bug_priority_id);
         Queue::assertPushed(TriageBugReportJob::class, fn ($job) => $job->bugReport->id === $bugReport->id);
@@ -108,8 +108,9 @@ class BugTriageTest extends TestCase
 
         $bugReport = BugReport::first();
 
-        $response->assertRedirect(route('bug-reports.show', $bugReport));
+        $this->assertRedirectToModel($response, 'bug-reports', $bugReport);
         $this->assertEquals($this->category->id, $bugReport->bug_category_id);
+        $this->assertEquals($this->priority->id, $bugReport->bug_priority_id);
         Queue::assertNotPushed(TriageBugReportJob::class);
     }
 

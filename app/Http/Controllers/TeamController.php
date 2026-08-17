@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Team;
 use App\Models\User;
+use App\Support\IdEncrypter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
@@ -63,6 +64,9 @@ class TeamController extends Controller
                 $activeCount = $team->orders->whereIn('status', ['planning', 'in-progress'])->count();
 
                 return $count.' '.$activeCount.' active';
+            })
+            ->addColumn('key', function ($team) {
+                return $team->getRouteKey();
             })
             ->setRowId('id')
             ->make(true);
@@ -140,7 +144,7 @@ class TeamController extends Controller
      */
     public function show(string $id)
     {
-        $team = Team::with(['teamLeader', 'members', 'orders'])->findOrFail($id);
+        $team = Team::with(['teamLeader', 'members', 'orders'])->findOrFail(IdEncrypter::decrypt($id));
 
         $this->authorize('view', $team);
 
@@ -152,7 +156,7 @@ class TeamController extends Controller
      */
     public function edit(string $id)
     {
-        $team = Team::with(['teamLeader', 'members'])->findOrFail($id);
+        $team = Team::with(['teamLeader', 'members'])->findOrFail(IdEncrypter::decrypt($id));
 
         $this->authorize('update', $team);
 
@@ -175,7 +179,7 @@ class TeamController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $team = Team::findOrFail($id);
+        $team = Team::findOrFail(IdEncrypter::decrypt($id));
 
         $this->authorize('update', $team);
 
@@ -237,7 +241,7 @@ class TeamController extends Controller
      */
     public function destroy(string $id)
     {
-        $team = Team::findOrFail($id);
+        $team = Team::findOrFail(IdEncrypter::decrypt($id));
 
         $this->authorize('delete', $team);
 
@@ -266,7 +270,7 @@ class TeamController extends Controller
      */
     public function addMembers(Request $request, string $id)
     {
-        $team = Team::findOrFail($id);
+        $team = Team::findOrFail(IdEncrypter::decrypt($id));
 
         $this->authorize('addMembers', $team);
 
@@ -277,7 +281,7 @@ class TeamController extends Controller
 
         User::whereIn('id', $validated['members'])->update(['team_id' => $team->id]);
 
-        return redirect()->route('teams.show', $team->id)
+        return redirect()->route('teams.show', $team)
             ->with('success', 'Members added to team successfully.');
     }
 
@@ -286,20 +290,20 @@ class TeamController extends Controller
      */
     public function removeMember(string $id, string $user_id)
     {
-        $team = Team::findOrFail($id);
+        $team = Team::findOrFail(IdEncrypter::decrypt($id));
 
         $this->authorize('removeMember', $team);
 
-        $user = User::findOrFail($user_id);
+        $user = User::findOrFail(IdEncrypter::decrypt($user_id));
 
         if ($user->team_id !== $team->id) {
-            return redirect()->route('teams.show', $team->id)
+            return redirect()->route('teams.show', $team)
                 ->with('error', 'User is not a member of this team.');
         }
 
         $user->update(['team_id' => null]);
 
-        return redirect()->route('teams.show', $team->id)
+        return redirect()->route('teams.show', $team)
             ->with('success', 'Member removed from team successfully.');
     }
 }

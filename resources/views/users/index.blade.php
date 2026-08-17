@@ -845,7 +845,7 @@
                                 cancelButtonText: 'Cancel'
                             }).then((result) => {
                                 if (result.isConfirmed) {
-                                    axios.post(ROUTES.toggleStatus.replace('__ID__', userId))
+                                    axios.post(ROUTES.toggleStatus.replace('__ID__', checkbox.data('user-key')))
                                         .then(response => {
                                             if (response.data.success) {
                                                 Swal.fire({

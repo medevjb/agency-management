@@ -63,7 +63,7 @@ class BugReportTest extends TestCase
             'status' => 'pending',
         ]);
 
-        $response->assertRedirect(route('bug-reports.show', $bugReport));
+        $this->assertRedirectToModel($response, 'bug-reports', $bugReport);
         $this->assertEquals($newCategory->id, $bugReport->fresh()->bug_category_id);
     }
 }

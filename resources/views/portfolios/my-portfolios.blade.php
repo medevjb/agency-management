@@ -332,15 +332,15 @@ function createPortfolioCard(portfolio) {
                 <p class="text-gray-600 text-sm mb-4 line-clamp-2">${portfolio.description || 'No description provided.'}</p>
                 ${dateSection}
                 <div class="flex gap-2">
-                    <a href="/portfolios/${portfolio.id}"
+                    <a href="/portfolios/${portfolio.key}"
                         class="flex-1 text-center px-3 py-2 bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 rounded-lg hover:from-indigo-100 hover:to-purple-100 transition-all text-sm font-semibold">
                         <i class="fas fa-eye mr-1"></i> View
                     </a>
-                    <a href="/portfolios/${portfolio.id}/edit"
+                    <a href="/portfolios/${portfolio.key}/edit"
                         class="flex-1 text-center px-3 py-2 bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-700 rounded-lg hover:from-blue-100 hover:to-cyan-100 transition-all text-sm font-semibold">
                         <i class="fas fa-edit mr-1"></i> Edit
                     </a>
-                    <button onclick="deletePortfolio(${portfolio.id})"
+                    <button onclick="deletePortfolio('${portfolio.key}')"
                         class="px-3 py-2 bg-gradient-to-r from-red-50 to-pink-50 text-red-600 rounded-lg hover:from-red-100 hover:to-pink-100 transition-all text-sm font-semibold">
                         <i class="fas fa-trash"></i>
                     </button>

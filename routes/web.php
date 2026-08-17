@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\BonusFinancialSettingController;
 use App\Http\Controllers\BugReportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FreelanceProfileController;
@@ -55,6 +56,7 @@ Route::middleware(['auth'])->group(function () {
     // once the order is completed. Restricted to operations roles only.
     Route::middleware(['can:accessValueDistribution'])->group(function () {
         Route::get('/value-distribution', [ValueDistributionController::class, 'index'])->name('value-distribution.index');
+        Route::get('/value-distribution/lists', [ValueDistributionController::class, 'lists'])->name('value-distribution.lists');
         Route::post('/value-distribution/{order}', [ValueDistributionController::class, 'store'])->name('value-distribution.store');
     });
 
@@ -87,6 +89,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/tasks/archived', [TaskController::class, 'archived'])->name('tasks.archived');
     Route::get('/tasks/assignable-users', [TaskController::class, 'getAssignableUsers'])->name('tasks.assignable-users');
     Route::get('/tasks/orders-search', [TaskController::class, 'searchOrders'])->name('tasks.orders-search');
+    Route::get('/tasks/search-users', [TaskController::class, 'searchUsers'])->name('tasks.search-users');
     Route::get('/tasks/create', [TaskController::class, 'create'])->name('tasks.create');
     Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
     Route::get('/tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');
@@ -94,7 +97,6 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
     Route::patch('/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.update-status');
     // Task user assignment routes (must come before /tasks/{task} routes)
-    Route::get('/tasks/search-users', [TaskController::class, 'searchUsers'])->name('tasks.search-users');
     Route::post('/tasks/{task}/assign-users', [TaskController::class, 'assignUsers'])->name('tasks.assign-users');
     Route::get('/tasks/{task}/users', [TaskController::class, 'getUsers'])->name('tasks.get-users');
 
@@ -202,6 +204,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
 // Settings Routes - Only for users with admin role
 Route::middleware(['auth', 'role:admin'])->prefix('settings')->name('settings.')->group(function () {
+    Route::get('/sales-bonus', [BonusFinancialSettingController::class, 'index'])->name('sales-bonus.index');
+    Route::post('/sales-bonus', [BonusFinancialSettingController::class, 'store'])->name('sales-bonus.store');
     Route::get('/', [SettingsController::class, 'index'])->name('index');
     Route::get('/{group}', [SettingsController::class, 'index'])->name('group');
     Route::put('/{group}', [SettingsController::class, 'update'])->name('update');

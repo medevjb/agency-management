@@ -159,7 +159,7 @@
                                 </a>
                             @endcan
                             @can('delete profile')
-                                <button onclick="deleteProfile('{{ $profile->id }}')"
+                                <button onclick="deleteProfile('{{ $profile->getRouteKey() }}')"
                                         class="px-4 py-2 bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-500/20 font-semibold text-sm transition-all">
                                     <i class="fas fa-trash mr-2"></i>Delete
                                 </button>
@@ -413,7 +413,7 @@
                 </h3>
                 <div class="space-y-3">
                     @can('edit profile')
-                        <button onclick="toggleStatus('{{ $profile->id }}')"
+                        <button onclick="toggleStatus('{{ $profile->getRouteKey() }}')"
                                 class="w-full flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-500/10 dark:to-indigo-500/10 text-purple-700 dark:text-purple-400 rounded-xl hover:from-purple-100 hover:to-indigo-100 dark:hover:from-purple-500/20 dark:hover:to-indigo-500/20 transition-all group">
                             <div class="flex items-center">
                                 <div class="bg-purple-500 p-3 rounded-lg mr-4">
@@ -429,7 +429,7 @@
                     @endcan
 
                     @can('edit profile')
-                        <button onclick="toggleVerify('{{ $profile->id }}')"
+                        <button onclick="toggleVerify('{{ $profile->getRouteKey() }}')"
                                 class="w-full flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-500/10 dark:to-cyan-500/10 text-blue-700 dark:text-blue-400 rounded-xl hover:from-blue-100 hover:to-cyan-100 dark:hover:from-blue-500/20 dark:hover:to-cyan-500/20 transition-all group">
                             <div class="flex items-center">
                                 <div class="bg-blue-500 p-3 rounded-lg mr-4">
@@ -445,7 +445,7 @@
                     @endcan
 
                     @can('edit profile')
-                        <button onclick="toggleFeatured('{{ $profile->id }}')"
+                        <button onclick="toggleFeatured('{{ $profile->getRouteKey() }}')"
                                 class="w-full flex items-center justify-between p-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-500/10 dark:to-orange-500/10 text-yellow-700 dark:text-yellow-400 rounded-xl hover:from-yellow-100 hover:to-orange-100 dark:hover:from-yellow-500/20 dark:hover:to-orange-500/20 transition-all group">
                             <div class="flex items-center">
                                 <div class="bg-yellow-500 p-3 rounded-lg mr-4">

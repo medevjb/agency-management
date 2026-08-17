@@ -16,6 +16,10 @@ class OrderDashboardController extends Controller
 
     public function index(Request $request)
     {
+        if (auth()->user()->isSalesLeader()) {
+            return redirect()->route('sales.leadership');
+        }
+
         if (auth()->user()->isSales()) {
             return redirect()->route('sales.dashboard');
         }
@@ -29,7 +33,9 @@ class OrderDashboardController extends Controller
         $startDate = $periodStart->format('Y-m-d');
         $endDate = $periodEnd->format('Y-m-d');
 
-        $isTeamScoped = $user->hasRole(['team-leader', 'stack-leader']);
+        // Team leaders, stack leaders and team members only see their own
+        // team's orders here — admin, OM, PM and sales see everything.
+        $isTeamScoped = ! $user->isSales() && $user->hasRole(['team-leader', 'team-member', 'stack-leader']);
 
         // Statuses that stop an order from carrying into the next month's
         // view. 'delivered' is just another active/carrying status now —
@@ -269,7 +275,7 @@ class OrderDashboardController extends Controller
 
         $query = Order::query()->where('status', 'completed')->whereNotNull('completed_at');
 
-        if ($user->hasRole(['team-leader', 'stack-leader'])) {
+        if (! $user->isSales() && $user->hasRole(['team-leader', 'team-member', 'stack-leader'])) {
             $query->where('team_id', $user->team_id);
         }
 

@@ -75,7 +75,7 @@
         </div>
 
         @unless($isSalesUser)
-            <div class="md:w-36">
+            <div style="min-width: 160px;">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Priority <span class="text-red-500">*</span>
                 </label>

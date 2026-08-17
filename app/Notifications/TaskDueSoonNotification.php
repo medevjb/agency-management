@@ -43,7 +43,7 @@ class TaskDueSoonNotification extends Notification implements ShouldQueue
             ->line('**Due Date:** '.$this->task->due_date->format('F d, Y'))
             ->line('**Days Remaining:** '.$this->daysRemaining)
             ->lineWhen($this->task->description, '**Description:** '.$this->task->description)
-            ->action('View Task', url('/tasks/'.$this->task->id))
+            ->action('View Task', route('tasks.show', $this->task))
             ->line('Please ensure you complete this task on time.');
     }
 

@@ -177,6 +177,73 @@
         </div>
     </div>
 
+    {{-- Tasks & Bug Reports Row --}}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {{-- Monthly Tasks Chart --}}
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-md p-6">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100"><i class="fas fa-tasks text-purple-500 mr-2"></i>Monthly Tasks</h3>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">{{ $monthDate->year }} — created vs completed</p>
+                </div>
+            </div>
+            <canvas id="tasksChart" height="200"></canvas>
+        </div>
+
+        {{-- Bug Reports --}}
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-md p-6">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100"><i class="fas fa-bug text-red-500 mr-2"></i>Bug Reports</h3>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">By status</p>
+                </div>
+                <a href="{{ route('bug-reports.index') }}" class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium">View All</a>
+            </div>
+            <canvas id="bugsChart" height="150"></canvas>
+            <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 space-y-2">
+                @forelse($recentBugs as $bug)
+                    <a href="{{ route('bug-reports.show', $bug) }}" class="flex items-center justify-between gap-3 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/60 rounded-lg px-2 py-1.5 transition-colors">
+                        <span class="truncate text-gray-800 dark:text-gray-200 font-medium">{{ $bug->title }}</span>
+                        <span class="shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full
+                            @if($bug->status === 'resolved') bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400
+                            @elseif($bug->status === 'published') bg-purple-100 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400
+                            @elseif($bug->status === 'in_progress') bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400
+                            @else bg-yellow-100 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 @endif">
+                            {{ ucwords(str_replace('_', ' ', $bug->status)) }}
+                        </span>
+                    </a>
+                @empty
+                    <p class="text-sm text-gray-400 dark:text-gray-500 text-center py-3">No bug reports yet.</p>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
+    {{-- User Growth & Order Priority Row --}}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {{-- New Users Chart --}}
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-md p-6">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100"><i class="fas fa-user-plus text-blue-500 mr-2"></i>New Users</h3>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">{{ $monthDate->year }} — by signup month</p>
+                </div>
+            </div>
+            <canvas id="usersChart" height="200"></canvas>
+        </div>
+
+        {{-- Orders by Priority --}}
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-md p-6">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100"><i class="fas fa-flag text-orange-500 mr-2"></i>Orders by Priority</h3>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">All-time distribution</p>
+                </div>
+            </div>
+            <canvas id="priorityChart" height="200"></canvas>
+        </div>
+    </div>
+
     {{-- Middle Row: System Health + Role Distribution + Project Status --}}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -603,6 +670,155 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
+
+    // Monthly Tasks Chart (created vs completed)
+    const tasksCreated = @json(array_values($monthlyTasksCreated));
+    const tasksCompleted = @json(array_values($monthlyTasksCompleted));
+    new Chart(document.getElementById('tasksChart'), {
+        type: 'bar',
+        data: {
+            labels: months,
+            datasets: [{
+                label: 'Created',
+                data: tasksCreated,
+                backgroundColor: 'rgba(168,85,247,0.7)',
+                borderColor: 'rgba(168,85,247,1)',
+                borderWidth: 1,
+                borderRadius: 4,
+            }, {
+                label: 'Completed',
+                data: tasksCompleted,
+                backgroundColor: 'rgba(16,185,129,0.7)',
+                borderColor: 'rgba(16,185,129,1)',
+                borderWidth: 1,
+                borderRadius: 4,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: chartTickColor, usePointStyle: true, font: { size: 11 } }
+                }
+            },
+            scales: {
+                y: { beginAtZero: true, grid: { color: chartGridColor }, ticks: { color: chartTickColor, stepSize: 1 } },
+                x: { grid: { display: false }, ticks: { color: chartTickColor } }
+            }
+        }
+    });
+
+    // Bug Reports by Status (doughnut)
+    const bugStatuses = @json($bugStatusStats);
+    const bugLabels = Object.keys(bugStatuses).map(s => s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
+    const bugValues = Object.values(bugStatuses);
+    const bugColors = {
+        pending: '#f59e0b', in_progress: '#3b82f6', resolved: '#10b981', published: '#8b5cf6'
+    };
+    const bugBackground = Object.keys(bugStatuses).map(s => bugColors[s] || '#9ca3af');
+    const bugTotal = bugValues.reduce((a, b) => a + b, 0);
+    if (bugTotal > 0) {
+        new Chart(document.getElementById('bugsChart'), {
+            type: 'doughnut',
+            data: {
+                labels: bugLabels,
+                datasets: [{
+                    data: bugValues,
+                    backgroundColor: bugBackground,
+                    borderWidth: 0,
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: chartTickColor, padding: 12, usePointStyle: true, font: { size: 11 } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.parsed || 0;
+                                const percentage = bugTotal > 0 ? Math.round((value / bugTotal) * 100) : 0;
+                                return context.label + ': ' + value + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // New Users Chart (line)
+    const usersData = @json(array_values($monthlyNewUsers));
+    new Chart(document.getElementById('usersChart'), {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [{
+                label: 'New Users',
+                data: usersData,
+                fill: true,
+                backgroundColor: 'rgba(59,130,246,0.1)',
+                borderColor: 'rgba(59,130,246,1)',
+                borderWidth: 2,
+                pointBackgroundColor: 'rgba(59,130,246,1)',
+                tension: 0.4,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: chartGridColor }, ticks: { color: chartTickColor, stepSize: 1 } },
+                x: { grid: { display: false }, ticks: { color: chartTickColor } }
+            }
+        }
+    });
+
+    // Orders by Priority (doughnut)
+    const priorities = @json($ordersByPriority);
+    const priorityLabels = Object.keys(priorities).map(p => p.charAt(0).toUpperCase() + p.slice(1));
+    const priorityValues = Object.values(priorities);
+    const priorityColors = {
+        urgent: '#ef4444', high: '#f97316', medium: '#f59e0b', low: '#10b981'
+    };
+    const priorityBackground = Object.keys(priorities).map(p => priorityColors[p] || '#9ca3af');
+    const priorityTotal = priorityValues.reduce((a, b) => a + b, 0);
+    if (priorityTotal > 0) {
+        new Chart(document.getElementById('priorityChart'), {
+            type: 'doughnut',
+            data: {
+                labels: priorityLabels,
+                datasets: [{
+                    data: priorityValues,
+                    backgroundColor: priorityBackground,
+                    borderWidth: 0,
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: chartTickColor, padding: 12, usePointStyle: true, font: { size: 11 } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.parsed || 0;
+                                const percentage = priorityTotal > 0 ? Math.round((value / priorityTotal) * 100) : 0;
+                                return context.label + ': ' + value + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
 });
 </script>
 @endpush

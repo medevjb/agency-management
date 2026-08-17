@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\EncryptsRouteKeys;
 use Database\Factories\TechStackFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class TechStack extends Model
 {
     /** @use HasFactory<TechStackFactory> */
-    use HasFactory;
+    use EncryptsRouteKeys, HasFactory;
 
     protected $fillable = [
         'team_id',

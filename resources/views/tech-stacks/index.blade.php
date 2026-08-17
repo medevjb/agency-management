@@ -150,20 +150,20 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                 <div class="flex items-center justify-center space-x-2">
-                                    <a href="{{ route('tech-stacks.show', $techStack->id) }}"
+                                    <a href="{{ route('tech-stacks.show', $techStack) }}"
                                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/10 hover:bg-indigo-200 dark:hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-all duration-200 shadow-sm"
                                        title="View Tech Stack">
                                         <i class="fas fa-eye text-sm"></i>
                                     </a>
                                     @can('update', $techStack)
-                                        <a href="{{ route('tech-stacks.edit', $techStack->id) }}"
+                                        <a href="{{ route('tech-stacks.edit', $techStack) }}"
                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-500/10 hover:bg-blue-200 dark:hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-all duration-200 shadow-sm"
                                            title="Edit Tech Stack">
                                             <i class="fas fa-edit text-sm"></i>
                                         </a>
                                     @endcan
                                     @can('delete', $techStack)
-                                        <button onclick="deleteTechStack({{ $techStack->id }})"
+                                        <button onclick="deleteTechStack('{{ $techStack->getRouteKey() }}')"
                                                 class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 dark:bg-red-500/10 hover:bg-red-200 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-all duration-200 shadow-sm"
                                                 title="Delete Tech Stack">
                                             <i class="fas fa-trash text-sm"></i>

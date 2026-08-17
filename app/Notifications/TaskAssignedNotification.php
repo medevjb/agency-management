@@ -41,7 +41,7 @@ class TaskAssignedNotification extends Notification implements ShouldQueue
             ->line('**Due Date:** '.$this->task->due_date?->format('F d, Y'))
             ->lineWhen($this->task->description, '**Description:** '.$this->task->description)
             ->lineWhen($this->task->order_id, '**Order:** '.$this->task->order->name)
-            ->action('View Task', url('/tasks/'.$this->task->id))
+            ->action('View Task', route('tasks.show', $this->task))
             ->line('Please review and start working on this task.');
     }
 

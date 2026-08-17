@@ -1,0 +1,2590 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="ctNg2xg0CeVMtavJKHEVGQsQ0zA6nDR1TYDao0se">
+    <title>PMT - Dashboard</title>
+    <link rel="icon" type="image/png/jpg" href="https://pmt.test/image/stv.jpg">
+
+    <!-- Apply saved/system theme before first paint to avoid a light/dark flash -->
+    <script>
+        (function() {
+            const stored = localStorage.getItem('theme');
+            const isDark = stored ? stored === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.classList.toggle('dark', isDark);
+        })();
+    </script>
+
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="https://pmt.test:5173/resources/css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <!-- Axios CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.8/dist/axios.min.js"></script>
+    <script>
+        // Configure axios defaults for CSRF token
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').content;
+        axios.defaults.headers.common['Accept'] = 'application/json';
+    </script>
+    <style>
+        /* Custom Flatpickr Styling */
+        .flatpickr-calendar {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            font-family: 'Figtree', sans-serif;
+            padding: 12px;
+            width: 280px !important;
+            max-width: 95vw !important;
+            max-height: 90vh !important;
+            overflow: auto;
+            z-index: 99999 !important;
+        }
+
+        .flatpickr-calendar.inline {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .flatpickr-calendar.hasTime.noCalendar {
+            width: 280px !important;
+        }
+
+        .flatpickr-calendar:before,
+        .flatpickr-calendar:after {
+            display: none;
+        }
+
+        /* Month navigation */
+        .flatpickr-months {
+            margin: 0 0 12px 0;
+            padding: 0;
+            height: 32px;
+        }
+
+        .flatpickr-month {
+            height: 32px;
+            display: flex;
+            align-items: center;
+        }
+
+        .flatpickr-current-month {
+            padding: 0;
+            height: 32px;
+            line-height: 32px;
+            color: #1f2937;
+            font-weight: 600;
+            font-size: 14px;
+            position: relative;
+            left: 0;
+        }
+
+        .flatpickr-current-month span.cur-month {
+            font-weight: 700;
+            color: #6366f1;
+        }
+
+        .flatpickr-current-month span.cur-year {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .flatpickr-months .flatpickr-prev-month,
+        .flatpickr-months .flatpickr-next-month {
+            height: 32px;
+            width: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            border: none;
+            border-radius: 8px;
+            color: #4b5563;
+            fill: #4b5563;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .flatpickr-months .flatpickr-prev-month:hover,
+        .flatpickr-months .flatpickr-next-month:hover {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: #ffffff;
+            fill: #ffffff;
+            transform: scale(1.05);
+        }
+
+        .flatpickr-months .flatpickr-prev-month:active,
+        .flatpickr-months .flatpickr-next-month:active {
+            transform: scale(0.95);
+        }
+
+        .flatpickr-months .flatpickr-prev-month svg,
+        .flatpickr-months .flatpickr-next-month svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Days of week */
+        .flatpickr-weekdays {
+            margin-bottom: 6px;
+        }
+
+        .flatpickr-weekday {
+            color: #6b7280;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Calendar days */
+        .flatpickr-days {
+            width: 100%;
+        }
+
+        .dayContainer {
+            width: 100%;
+            min-width: 100%;
+            max-width: 100%;
+        }
+
+        .flatpickr-day {
+            height: 32px;
+            line-height: 32px;
+            border-radius: 8px;
+            color: #374151;
+            font-weight: 500;
+            font-size: 13px;
+            margin: 1px 0;
+            transition: all 0.2s ease;
+        }
+
+        .flatpickr-day:hover {
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            color: #4f46e5;
+            transform: scale(1.05);
+            border-color: transparent;
+        }
+
+        .flatpickr-day.prevMonthDay,
+        .flatpickr-day.nextMonthDay {
+            color: #d1d5db;
+        }
+
+        .flatpickr-day.today {
+            border: 2px solid #6366f1;
+            background: #ffffff;
+            color: #6366f1;
+            font-weight: 600;
+        }
+
+        .flatpickr-day.today:hover {
+            border: 2px solid #6366f1;
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            color: #4f46e5;
+        }
+
+        .flatpickr-day.selected,
+        .flatpickr-day.startRange,
+        .flatpickr-day.endRange,
+        .flatpickr-day.selected.inRange,
+        .flatpickr-day.startRange.inRange,
+        .flatpickr-day.endRange.inRange,
+        .flatpickr-day.selected:focus,
+        .flatpickr-day.startRange:focus,
+        .flatpickr-day.endRange:focus,
+        .flatpickr-day.selected:hover,
+        .flatpickr-day.startRange:hover,
+        .flatpickr-day.endRange:hover,
+        .flatpickr-day.selected.prevMonthDay,
+        .flatpickr-day.startRange.prevMonthDay,
+        .flatpickr-day.endRange.prevMonthDay,
+        .flatpickr-day.selected.nextMonthDay,
+        .flatpickr-day.startRange.nextMonthDay,
+        .flatpickr-day.endRange.nextMonthDay {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+            border-color: transparent !important;
+            color: #ffffff !important;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+        }
+
+        .flatpickr-day.inRange {
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%) !important;
+            border-color: transparent !important;
+            color: #4f46e5 !important;
+            box-shadow: none;
+        }
+
+        .flatpickr-day.disabled {
+            color: #d1d5db;
+            background: #f9fafb;
+            cursor: not-allowed;
+        }
+
+        .flatpickr-day.disabled:hover {
+            background: #f9fafb;
+            color: #d1d5db;
+            transform: none;
+        }
+
+        .flatpickr-day.week.selected {
+            box-shadow: -5px 0 0 #6366f1, 5px 0 0 #6366f1;
+        }
+
+        /* Week numbers */
+        .flatpickr-weekwrapper {
+            display: none;
+        }
+
+        /* Time picker */
+        .flatpickr-time {
+            border-top: 1px solid #e5e7eb;
+            height: 40px;
+        }
+
+        .flatpickr-time .numInputWrapper {
+            height: 32px;
+        }
+
+        .flatpickr-time .flatpickr-am-pm {
+            height: 32px;
+            line-height: 32px;
+        }
+
+        /* Calendar container position */
+        .flatpickr-calendar.open {
+            margin-top: 4px;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== Custom SweetAlert2 Styling ===== */
+        .swal2-popup {
+            font-family: 'Figtree', system-ui, -apple-system, sans-serif !important;
+            border-radius: 20px !important;
+            padding: 2rem 1.75rem 1.5rem !important;
+            border: 1px solid #e5e7eb !important;
+            box-shadow:
+                0 25px 50px -12px rgba(0, 0, 0, 0.15),
+                0 0 0 1px rgba(0, 0, 0, 0.03) !important;
+            max-width: 420px !important;
+        }
+
+        .swal2-popup.swal2-toast {
+            border-radius: 14px !important;
+            padding: 0.75rem 1rem !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        /* Backdrop */
+        .swal2-container {
+            backdrop-filter: blur(4px) !important;
+            -webkit-backdrop-filter: blur(4px) !important;
+        }
+
+        .swal2-container.swal2-backdrop-show {
+            background: rgba(17, 24, 39, 0.4) !important;
+        }
+
+        /* Icon ring overrides */
+        .swal2-icon {
+            border-width: 3px !important;
+            width: 64px !important;
+            height: 64px !important;
+            margin: 0 auto 1rem !important;
+        }
+
+        .swal2-icon .swal2-icon-content {
+            font-size: 2rem !important;
+        }
+
+        .swal2-icon.swal2-success {
+            border-color: #22c55e !important;
+            color: #22c55e !important;
+        }
+
+        .swal2-icon.swal2-success [class^='swal2-success-line'] {
+            background-color: #22c55e !important;
+        }
+
+        .swal2-icon.swal2-success .swal2-success-ring {
+            border-color: rgba(34, 197, 94, 0.25) !important;
+        }
+
+        .swal2-icon.swal2-warning {
+            border-color: #f59e0b !important;
+            color: #f59e0b !important;
+        }
+
+        .swal2-icon.swal2-error {
+            border-color: #ef4444 !important;
+            color: #ef4444 !important;
+        }
+
+        .swal2-icon.swal2-error [class^='swal2-x-mark-line'] {
+            background-color: #ef4444 !important;
+        }
+
+        .swal2-icon.swal2-info {
+            border-color: #6366f1 !important;
+            color: #6366f1 !important;
+        }
+
+        .swal2-icon.swal2-question {
+            border-color: #6366f1 !important;
+            color: #6366f1 !important;
+        }
+
+        /* Title */
+        .swal2-title {
+            font-size: 1.25rem !important;
+            font-weight: 700 !important;
+            color: #111827 !important;
+            padding: 0 !important;
+            margin-bottom: 0.35rem !important;
+            line-height: 1.4 !important;
+        }
+
+        /* Text / HTML content */
+        .swal2-html-container {
+            font-size: 0.875rem !important;
+            color: #6b7280 !important;
+            line-height: 1.6 !important;
+            margin: 0 0 0.25rem !important;
+            padding: 0 !important;
+        }
+
+        /* Actions / Buttons container */
+        .swal2-actions {
+            margin-top: 1.25rem !important;
+            gap: 0.625rem !important;
+        }
+
+        /* Shared button base */
+        .swal2-popup .swal2-styled {
+            font-family: 'Figtree', system-ui, -apple-system, sans-serif !important;
+            font-weight: 600 !important;
+            font-size: 0.875rem !important;
+            padding: 0.625rem 1.5rem !important;
+            border-radius: 10px !important;
+            letter-spacing: 0.01em !important;
+            transition: all 0.15s ease !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+            border: none !important;
+            min-width: 100px !important;
+        }
+
+        .swal2-popup .swal2-styled:focus {
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3) !important;
+        }
+
+        /* Confirm button */
+        .swal2-popup .swal2-styled.swal2-confirm {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+            color: #ffffff !important;
+        }
+
+        .swal2-popup .swal2-styled.swal2-confirm:hover {
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35) !important;
+        }
+
+        .swal2-popup .swal2-styled.swal2-confirm:active {
+            transform: translateY(0) !important;
+        }
+
+        /* Deny / Destructive button */
+        .swal2-popup .swal2-styled.swal2-deny {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+            color: #ffffff !important;
+        }
+
+        .swal2-popup .swal2-styled.swal2-deny:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35) !important;
+        }
+
+        /* Cancel button */
+        .swal2-popup .swal2-styled.swal2-cancel {
+            background: #ffffff !important;
+            color: #374151 !important;
+            border: 1px solid #d1d5db !important;
+        }
+
+        .swal2-popup .swal2-styled.swal2-cancel:hover {
+            background: #f9fafb !important;
+            border-color: #9ca3af !important;
+            transform: translateY(-1px) !important;
+        }
+
+        .swal2-popup .swal2-styled.swal2-cancel:focus {
+            box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.2) !important;
+        }
+
+        /* Input fields */
+        .swal2-input,
+        .swal2-textarea,
+        .swal2-select {
+            border: 1px solid #d1d5db !important;
+            border-radius: 10px !important;
+            font-size: 0.875rem !important;
+            padding: 0.625rem 0.875rem !important;
+            color: #111827 !important;
+            font-family: 'Figtree', system-ui, -apple-system, sans-serif !important;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+        }
+
+        .swal2-input:focus,
+        .swal2-textarea:focus,
+        .swal2-select:focus {
+            border-color: #6366f1 !important;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+            outline: none !important;
+        }
+
+        .swal2-input::placeholder,
+        .swal2-textarea::placeholder {
+            color: #9ca3af !important;
+        }
+
+        /* Validation message */
+        .swal2-validation-message {
+            background: #fef2f2 !important;
+            color: #dc2626 !important;
+            border-radius: 10px !important;
+            font-size: 0.8125rem !important;
+            font-weight: 500 !important;
+            padding: 0.625rem 1rem !important;
+            margin-top: 0.5rem !important;
+            border: 1px solid #fecaca !important;
+        }
+
+        .swal2-validation-message::before {
+            background: #ef4444 !important;
+        }
+
+        /* Close button */
+        .swal2-close {
+            font-size: 1.5rem !important;
+            color: #9ca3af !important;
+            width: 32px !important;
+            height: 32px !important;
+            border-radius: 8px !important;
+            transition: all 0.15s ease !important;
+            top: 0.875rem !important;
+            right: 0.875rem !important;
+        }
+
+        .swal2-close:hover {
+            color: #374151 !important;
+            background: #f3f4f6 !important;
+        }
+
+        /* Loading spinner */
+        .swal2-loading .swal2-styled.swal2-confirm {
+            border-color: transparent !important;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+            opacity: 0.8 !important;
+        }
+
+        /* Timer progress bar */
+        .swal2-timer-progress-bar {
+            background: linear-gradient(90deg, #6366f1, #8b5cf6) !important;
+            height: 4px !important;
+            border-radius: 0 0 20px 20px !important;
+        }
+
+        /* Footer */
+        .swal2-footer {
+            border-top: 1px solid #f3f4f6 !important;
+            color: #9ca3af !important;
+            font-size: 0.8125rem !important;
+            padding-top: 0.75rem !important;
+            margin-top: 0.75rem !important;
+        }
+
+        .swal2-footer a {
+            color: #6366f1 !important;
+            font-weight: 500 !important;
+        }
+
+        .swal2-footer a:hover {
+            color: #4f46e5 !important;
+        }
+
+        /* Popup animation overrides */
+        .swal2-popup.swal2-show {
+            animation: swalPopIn 0.25s cubic-bezier(0.21, 1.02, 0.73, 1) !important;
+        }
+
+        .swal2-popup.swal2-hide {
+            animation: swalPopOut 0.15s ease-in forwards !important;
+        }
+
+        @keyframes swalPopIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.92) translateY(8px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @keyframes swalPopOut {
+            0% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(0.92) translateY(8px);
+            }
+        }
+
+        /* ===== Dark Mode Overrides ===== */
+        /* Flatpickr and SweetAlert2 render their own markup outside Tailwind's
+           reach, so they need plain CSS overrides keyed off the `dark` class
+           on <html> rather than Tailwind's `dark:` utility variant. */
+        .dark .flatpickr-calendar {
+            background: #1f2937;
+            border-color: #374151;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .dark .flatpickr-current-month {
+            color: #f3f4f6;
+        }
+
+        .dark .flatpickr-current-month span.cur-year {
+            color: #9ca3af;
+        }
+
+        .dark .flatpickr-weekday {
+            color: #9ca3af;
+        }
+
+        .dark .flatpickr-months .flatpickr-prev-month,
+        .dark .flatpickr-months .flatpickr-next-month {
+            background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+            color: #e5e7eb;
+            fill: #e5e7eb;
+        }
+
+        .dark .flatpickr-day {
+            color: #e5e7eb;
+        }
+
+        .dark .flatpickr-day.prevMonthDay,
+        .dark .flatpickr-day.nextMonthDay {
+            color: #4b5563;
+        }
+
+        .dark .flatpickr-day.today {
+            background: #1f2937;
+        }
+
+        .dark .flatpickr-day.disabled {
+            background: #111827;
+            color: #4b5563;
+        }
+
+        .dark .flatpickr-day.disabled:hover {
+            background: #111827;
+            color: #4b5563;
+        }
+
+        .dark .flatpickr-time {
+            border-top-color: #374151;
+        }
+
+        .dark .swal2-popup {
+            background: #1f2937 !important;
+            border-color: #374151 !important;
+        }
+
+        .dark .swal2-title {
+            color: #f3f4f6 !important;
+        }
+
+        .dark .swal2-html-container {
+            color: #9ca3af !important;
+        }
+
+        .dark .swal2-popup .swal2-styled.swal2-cancel {
+            background: #374151 !important;
+            color: #e5e7eb !important;
+            border-color: #4b5563 !important;
+        }
+
+        .dark .swal2-popup .swal2-styled.swal2-cancel:hover {
+            background: #4b5563 !important;
+        }
+
+        .dark .swal2-input,
+        .dark .swal2-textarea,
+        .dark .swal2-select {
+            background: #111827 !important;
+            border-color: #4b5563 !important;
+            color: #f3f4f6 !important;
+        }
+
+        .dark .swal2-close {
+            color: #9ca3af !important;
+        }
+
+        .dark .swal2-close:hover {
+            color: #e5e7eb !important;
+            background: #374151 !important;
+        }
+
+        .dark .swal2-footer {
+            border-top-color: #374151 !important;
+            color: #6b7280 !important;
+        }
+
+        /* ---- Global month picker (header) ---- */
+        .month-picker-trigger {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.875rem;
+            border-radius: 9999px;
+            border: 1px solid #e0e7ff;
+            background-color: #eef2ff;
+            color: #4338ca;
+            font-size: 0.8125rem;
+            font-weight: 700;
+            transition: background-color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .month-picker-trigger:hover {
+            background-color: #e0e7ff;
+        }
+
+        .dark .month-picker-trigger {
+            background-color: rgba(99, 102, 241, 0.12);
+            border-color: rgba(99, 102, 241, 0.3);
+            color: #c7d2fe;
+        }
+
+        .dark .month-picker-trigger:hover {
+            background-color: rgba(99, 102, 241, 0.2);
+        }
+
+        .month-picker-chevron {
+            font-size: 0.625rem;
+            transition: transform 0.15s ease;
+        }
+
+        .month-picker-chevron.is-open {
+            transform: rotate(180deg);
+        }
+
+        .month-picker-panel {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 0.5rem);
+            z-index: 50;
+            width: 15rem;
+            padding: 0.75rem;
+            border-radius: 0.875rem;
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 12px 28px rgba(16, 24, 40, 0.14);
+        }
+
+        .dark .month-picker-panel {
+            background-color: #1f2937;
+            border-color: #374151;
+        }
+
+        .month-picker-heading {
+            padding: 0 0.375rem 0.5rem;
+            font-size: 0.6875rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #9ca3af;
+        }
+
+        .month-picker-list {
+            max-height: 16rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.125rem;
+        }
+
+        .month-picker-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0.5rem 0.625rem;
+            border-radius: 0.5rem;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: #374151;
+            text-align: left;
+            transition: background-color 0.15s ease;
+        }
+
+        .month-picker-option:hover {
+            background-color: #f3f4f6;
+        }
+
+        .dark .month-picker-option {
+            color: #d1d5db;
+        }
+
+        .dark .month-picker-option:hover {
+            background-color: #111827;
+        }
+
+        .month-picker-option.is-active {
+            background-color: #eef2ff;
+            color: #4338ca;
+        }
+
+        .dark .month-picker-option.is-active {
+            background-color: rgba(99, 102, 241, 0.15);
+            color: #c7d2fe;
+        }
+
+        .month-picker-footnote {
+            margin-top: 0.5rem;
+            padding: 0.5rem 0.375rem 0;
+            border-top: 1px solid #f3f4f6;
+            font-size: 0.6875rem;
+            color: #9ca3af;
+        }
+
+        .dark .month-picker-footnote {
+            border-top-color: #374151;
+        }
+
+        /* ====================================================================
+           Shared dashboard design system.
+
+           One token set for every analytics page (main dashboard, admin
+           dashboard, orders dashboard, sales dashboards, value distribution),
+           so a viewer moving between them reads it as one suite rather than
+           five separately-designed screens. Values here match the `.s-*` /
+           `.rank-*` classes already used on the sales-family pages — those
+           are left as-is (already shipped, already tested) rather than
+           renamed; this `.dash-*` set is what the other three pages read
+           from, and any dashboard built from here on should use it directly
+           instead of inventing another one-off card style.
+           ==================================================================== */
+        .dash-panel {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 1rem;
+            box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+        }
+
+        .dark .dash-panel {
+            background-color: #111827;
+            border-color: #1f2937;
+            box-shadow: none;
+        }
+
+        .dash-eyebrow {
+            font-size: 0.6875rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #6b7280;
+        }
+
+        .dark .dash-eyebrow {
+            color: #9ca3af;
+        }
+
+        .dash-num {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: 'tnum';
+        }
+
+        .dash-hero {
+            font-size: clamp(2rem, 4vw, 2.75rem);
+            line-height: 1.05;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: #111827;
+        }
+
+        .dark .dash-hero {
+            color: #ffffff;
+        }
+
+        .dash-delta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.1875rem 0.5625rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 800;
+        }
+
+        .dash-delta.is-up {
+            background-color: #d1fae5;
+            color: #047857;
+        }
+
+        .dash-delta.is-down {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .dash-delta.is-flat {
+            background-color: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .dark .dash-delta.is-up {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #6ee7b7;
+        }
+
+        .dark .dash-delta.is-down {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+        }
+
+        .dark .dash-delta.is-flat {
+            background-color: #1f2937;
+            color: #9ca3af;
+        }
+
+        /* Reads the same --icon-from / --icon-to custom properties the
+           existing gradient-icon cards already set inline, so pages don't
+           need their inline styles touched to adopt this. */
+        .dash-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.75rem;
+            height: 2.75rem;
+            border-radius: 0.875rem;
+            color: #ffffff;
+            font-size: 1.0625rem;
+            flex-shrink: 0;
+            background-image: linear-gradient(135deg, var(--icon-from, #6366f1), var(--icon-to, #8b5cf6));
+        }
+
+        .dash-stat-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #6b7280;
+        }
+
+        .dark .dash-stat-label {
+            color: #9ca3af;
+        }
+
+        .dash-stat-foot {
+            margin-top: 0.25rem;
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        .dash-grid-4 {
+            display: grid;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+            gap: 1rem;
+        }
+
+        @media (min-width: 640px) {
+            .dash-grid-4 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .dash-grid-4 {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+
+        .dash-bar {
+            height: 0.375rem;
+            margin-top: 0.5rem;
+            border-radius: 9999px;
+            background-color: #eef2f7;
+            overflow: hidden;
+        }
+
+        .dark .dash-bar {
+            background-color: #1f2937;
+        }
+
+        .dash-bar span {
+            display: block;
+            height: 100%;
+            border-radius: 9999px;
+            background-image: linear-gradient(90deg, #4f46e5 0%, #8b5cf6 100%);
+        }
+
+        span.dt-column-title {
+            text-align: start;
+            margin-left: 20px;
+        }
+    </style>
+    <style>
+    .s-panel {
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 1rem;
+        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+    }
+
+    .dark .s-panel {
+        background-color: #111827;
+        border-color: #1f2937;
+        box-shadow: none;
+    }
+
+    .s-eyebrow {
+        font-size: 0.6875rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #6b7280;
+    }
+
+    .dark .s-eyebrow {
+        color: #9ca3af;
+    }
+
+    .s-num {
+        font-variant-numeric: tabular-nums;
+        font-feature-settings: 'tnum';
+    }
+
+    /* The one number this page exists for. */
+    .s-hero-amount {
+        font-size: clamp(2.75rem, 7vw, 4.25rem);
+        line-height: 1;
+        font-weight: 800;
+        letter-spacing: -0.045em;
+        color: #111827;
+    }
+
+    .dark .s-hero-amount {
+        color: #ffffff;
+    }
+
+    .s-delta {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.25rem 0.625rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 800;
+    }
+
+    .s-delta.is-up {
+        background-color: #d1fae5;
+        color: #047857;
+    }
+
+    .s-delta.is-down {
+        background-color: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .s-delta.is-flat {
+        background-color: #f3f4f6;
+        color: #6b7280;
+    }
+
+    .dark .s-delta.is-up { background-color: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
+    .dark .s-delta.is-down { background-color: rgba(239, 68, 68, 0.15); color: #fca5a5; }
+    .dark .s-delta.is-flat { background-color: #1f2937; color: #9ca3af; }
+
+    .s-stat-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #6b7280;
+    }
+
+    .dark .s-stat-label {
+        color: #9ca3af;
+    }
+
+    .s-stat-value {
+        margin-top: 0.25rem;
+        font-size: 1.5rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: #111827;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .dark .s-stat-value {
+        color: #f3f4f6;
+    }
+
+    .s-stat-foot {
+        margin-top: 0.125rem;
+        font-size: 0.75rem;
+        color: #9ca3af;
+    }
+
+    .s-grid-4 {
+        display: grid;
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    @media (min-width: 640px) {
+        .s-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (min-width: 1024px) {
+        .s-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+
+    .s-split {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1.25rem;
+        align-items: start;
+    }
+
+    @media (min-width: 1280px) {
+        .s-split { grid-template-columns: minmax(0, 2fr) minmax(20rem, 1fr); }
+    }
+
+    .s-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .s-row:last-child { border-bottom: 0; }
+    .dark .s-row { border-bottom-color: #1f2937; }
+
+    .s-share {
+        margin-top: 0.375rem;
+        height: 0.3125rem;
+        border-radius: 9999px;
+        background-color: #eef2f7;
+        overflow: hidden;
+    }
+
+    .dark .s-share { background-color: #1f2937; }
+
+    .s-share span {
+        display: block;
+        height: 100%;
+        border-radius: 9999px;
+        background-image: linear-gradient(90deg, #4f46e5 0%, #8b5cf6 100%);
+    }
+
+    .s-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.125rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.625rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        background-color: #eef2ff;
+        color: #4338ca;
+    }
+
+    .dark .s-chip { background-color: rgba(99, 102, 241, 0.15); color: #a5b4fc; }
+
+    .s-team-context {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1rem;
+        margin-top: 1.5rem;
+        padding-top: 1.25rem;
+        border-top: 1px dashed #e5e7eb;
+    }
+
+    @media (min-width: 640px) {
+        .s-team-context {
+            grid-template-columns: auto minmax(12rem, 20rem);
+            align-items: end;
+            justify-content: space-between;
+        }
+    }
+
+    .dark .s-team-context {
+        border-top-color: #1f2937;
+    }
+
+    /* Target achievement */
+    .s-target {
+        margin-top: 1.5rem;
+        padding-top: 1.25rem;
+        border-top: 1px dashed #e5e7eb;
+    }
+
+    .dark .s-target {
+        border-top-color: #1f2937;
+    }
+
+    .s-target-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .s-target-pct {
+        font-size: 1.375rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+
+    .s-target-pct.is-met { color: #059669; }
+    .s-target-pct.is-close { color: #d97706; }
+    .s-target-pct.is-behind { color: #dc2626; }
+
+    .dark .s-target-pct.is-met { color: #34d399; }
+    .dark .s-target-pct.is-close { color: #fbbf24; }
+    .dark .s-target-pct.is-behind { color: #f87171; }
+
+    .s-target-bar {
+        position: relative;
+        height: 0.625rem;
+        border-radius: 9999px;
+        background-color: #eef2f7;
+        overflow: hidden;
+    }
+
+    .s-target-bar.is-slim {
+        height: 0.3125rem;
+        margin-top: 0.375rem;
+    }
+
+    .dark .s-target-bar {
+        background-color: #1f2937;
+    }
+
+    .s-target-bar span {
+        display: block;
+        height: 100%;
+        border-radius: 9999px;
+        transition: width 400ms ease;
+    }
+
+    .s-target-bar span.is-met { background-image: linear-gradient(90deg, #059669 0%, #10b981 100%); }
+    .s-target-bar span.is-close { background-image: linear-gradient(90deg, #d97706 0%, #f59e0b 100%); }
+    .s-target-bar span.is-behind { background-image: linear-gradient(90deg, #dc2626 0%, #f87171 100%); }
+    .s-target-bar span.is-none { background-color: #d1d5db; }
+
+    .s-target-foot {
+        margin-top: 0.5rem;
+        font-size: 0.75rem;
+        color: #6b7280;
+    }
+
+    .dark .s-target-foot {
+        color: #9ca3af;
+    }
+
+    .s-target-tag {
+        padding: 0.0625rem 0.4375rem;
+        border-radius: 9999px;
+        font-weight: 700;
+    }
+
+    .s-target-tag.is-met { background-color: #d1fae5; color: #047857; }
+    .s-target-tag.is-close { background-color: #fef3c7; color: #b45309; }
+    .s-target-tag.is-behind { background-color: #fee2e2; color: #b91c1c; }
+    .s-target-tag.is-none { background-color: #f3f4f6; color: #9ca3af; }
+
+    .dark .s-target-tag.is-met { background-color: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
+    .dark .s-target-tag.is-close { background-color: rgba(245, 158, 11, 0.15); color: #fcd34d; }
+    .dark .s-target-tag.is-behind { background-color: rgba(239, 68, 68, 0.15); color: #fca5a5; }
+    .dark .s-target-tag.is-none { background-color: #1f2937; color: #6b7280; }
+
+    .s-primary-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: #ffffff;
+        background-image: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.1);
+        transition: filter 0.15s ease;
+    }
+
+    .s-primary-btn:hover {
+        filter: brightness(1.08);
+    }
+
+    .s-secondary-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid #e5e7eb;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        transition: background-color 0.15s ease;
+    }
+
+    .s-secondary-btn:hover {
+        background-color: #f9fafb;
+    }
+
+    .dark .s-secondary-btn {
+        border-color: #1f2937;
+        color: #d1d5db;
+    }
+
+    .dark .s-secondary-btn:hover {
+        background-color: #1f2937;
+    }
+
+    .s-empty {
+        border: 1px dashed #e5e7eb;
+        border-radius: 0.875rem;
+        padding: 2rem 1.5rem;
+        text-align: center;
+    }
+
+    .dark .s-empty { border-color: #1f2937; }
+
+    .s-icon-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 0.75rem;
+        font-size: 0.875rem;
+        background-color: #eef2ff;
+        color: #4f46e5;
+    }
+
+    .dark .s-icon-chip { background-color: rgba(99, 102, 241, 0.12); color: #a5b4fc; }
+
+    .s-icon-chip.is-emerald { background-color: #d1fae5; color: #059669; }
+    .s-icon-chip.is-amber { background-color: #fef3c7; color: #d97706; }
+    .s-icon-chip.is-rose { background-color: #fee2e2; color: #e11d48; }
+
+    .dark .s-icon-chip.is-emerald { background-color: rgba(16, 185, 129, 0.12); color: #6ee7b7; }
+    .dark .s-icon-chip.is-amber { background-color: rgba(245, 158, 11, 0.12); color: #fcd34d; }
+    .dark .s-icon-chip.is-rose { background-color: rgba(244, 63, 94, 0.12); color: #fda4af; }
+
+    /* Month-end projection strip in the hero */
+    .s-projection {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.875rem 1rem;
+        border-radius: 0.875rem;
+        background-color: #f9fafb;
+        border: 1px solid #f3f4f6;
+    }
+
+    .dark .s-projection {
+        background-color: rgba(31, 41, 55, 0.55);
+        border-color: #1f2937;
+    }
+
+    .s-overdue-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.125rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.625rem;
+        font-weight: 800;
+        white-space: nowrap;
+        background-color: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .dark .s-overdue-badge { background-color: rgba(239, 68, 68, 0.15); color: #fca5a5; }
+
+    .s-share span.is-rose { background-image: linear-gradient(90deg, #dc2626 0%, #f87171 100%); }
+    .s-share span.is-emerald { background-image: linear-gradient(90deg, #059669 0%, #10b981 100%); }
+</style>
+</head>
+
+<body class="font-sans antialiased bg-gray-100 dark:bg-gray-950">
+    <!-- Sidebar Component -->
+    <!-- Desktop Sidebar -->
+<aside class="fixed top-0 left-0 h-screen w-64 bg-indigo-900 text-white hidden lg:flex flex-col shadow-2xl z-50">
+    <!-- Logo Section -->
+    <div class="flex items-center justify-center gap-2.5 h-16 px-6 border-b border-indigo-700/50 flex-shrink-0">
+        <span class="inline-flex items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white font-bold shadow-lg shadow-indigo-500/30 h-10 w-10 text-lg">
+        P
+    </span>
+            <span class="font-bold text-lg tracking-tight text-white">PMT</span>
+        </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto custom-scrollbar">
+
+        
+        <!-- Dashboard Section - Only for admin/OM/PM -->
+        
+        <!-- Sales Section -->
+                    <div class="mb-2 sidebar-section" data-section="sales">
+                <button
+                    class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                    <div class="flex items-center">
+                        <i class="fas fa-chart-line w-5 text-emerald-400 group-hover:text-emerald-300 transition-colors"></i>
+                        <span class="ml-3">Sales</span>
+                    </div>
+                    <i
+                        class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron rotate-180"></i>
+                </button>
+                <div class="sidebar-content mt-1 space-y-1 ml-4 ">
+                                            <a href="https://pmt.test/sales/dashboard"
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors bg-indigo-600/50 text-white">
+                            <i class="fas fa-sack-dollar w-5 mr-2"></i>
+                            My Sales
+                        </a>
+                        <a href="https://pmt.test/orders/create"
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors text-indigo-200">
+                            <i class="fas fa-plus w-5 mr-2"></i>
+                            Add Order
+                        </a>
+                                                                            </div>
+            </div>
+        
+        <!-- Orders Section -->
+        <div class="mb-2 sidebar-section" data-section="orders">
+            <button
+                class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                <div class="flex items-center">
+                    <i class="fas fa-shopping-cart w-5 text-indigo-300 group-hover:text-white transition-colors"></i>
+                    <span class="ml-3">Orders</span>
+                </div>
+                <i
+                    class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron "></i>
+            </button>
+            <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
+                                <a href="https://pmt.test/orders"
+                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors text-indigo-200">
+                    <i class="fas fa-list w-5 mr-2"></i>
+                    My Orders
+                </a>
+                                    <a href="https://pmt.test/orders/create"
+                        class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors text-indigo-200">
+                        <i class="fas fa-plus w-5 mr-2"></i>
+                        Add Order
+                    </a>
+                                            </div>
+        </div>
+
+        <!-- Tasks Section -->
+        <div class="mb-2 sidebar-section" data-section="tasks">
+            <button
+                class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                <div class="flex items-center">
+                    <i class="fas fa-tasks w-5 text-cyan-400 group-hover:text-cyan-300 transition-colors"></i>
+                    <span class="ml-3">Tasks</span>
+                </div>
+                <i
+                    class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron "></i>
+            </button>
+            <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
+                <a href="https://pmt.test/tasks"
+                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors text-indigo-200">
+                    <i class="fas fa-list w-5 mr-2"></i>
+                    All Tasks
+                </a>
+            </div>
+        </div>
+
+        <!-- Bug Reports Section -->
+        <div class="mb-2 sidebar-section" data-section="bug-reports">
+            <button
+                class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                <div class="flex items-center">
+                    <i class="fas fa-bug w-5 text-orange-400 group-hover:text-orange-300 transition-colors"></i>
+                    <span class="ml-3">Bug Reports</span>
+                </div>
+                <i
+                    class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron "></i>
+            </button>
+            <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
+                <a href="https://pmt.test/bug-reports"
+                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors text-indigo-200">
+                    <i class="fas fa-list w-5 mr-2"></i>
+                    All Bugs
+                </a>
+                                    <a href="https://pmt.test/bug-reports/create"
+                        class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors text-indigo-200">
+                        <i class="fas fa-plus w-5 mr-2"></i>
+                        Report Bug
+                    </a>
+                            </div>
+        </div>
+
+        <!-- Profile Management Section -->
+                            
+        
+
+        <!-- Team Management Section -->
+        <div class="mb-2 sidebar-section" data-section="team">
+            <button
+                class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                <div class="flex items-center">
+                    <i class="fas fa-users w-5 text-green-400 group-hover:text-green-300 transition-colors"></i>
+                    <span class="ml-3">Team</span>
+                </div>
+                <i
+                    class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron "></i>
+            </button>
+            <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
+                <a href="https://pmt.test/teams"
+                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors text-indigo-200">
+                    <i class="fas fa-users w-5 mr-2"></i>
+                    Teams
+                </a>
+                            </div>
+        </div>
+
+        <!-- Admin Section - Only for admin -->
+        
+        <!-- User Management for OM/PM (not admin section, separate) -->
+            </nav>
+
+    <!-- User Section -->
+    <div class="px-4 py-4 border-t border-indigo-700/50 flex-shrink-0">
+        <div class="flex items-center mb-3">
+            <div class="flex-shrink-0">
+                <img class="h-10 w-10 rounded-full ring-2 ring-indigo-400"
+                    src="https://ui-avatars.com/api/?name=Priya Sarker&background=4F46E5&color=fff&size=128"
+                    alt="Priya Sarker">
+            </div>
+            <div class="ml-3 flex-1">
+                <p class="text-sm font-semibold text-white">Priya Sarker</p>
+                <p class="text-xs text-indigo-300">linnea.bauch@example.com</p>
+            </div>
+        </div>
+        <a href="https://pmt.test/profile"
+            class="flex items-center justify-center w-full px-3 py-2 text-xs font-medium rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 transition-colors">
+            <i class="fas fa-user-edit mr-2"></i>
+            Edit Profile
+        </a>
+    </div>
+</aside>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="mobileSidebarOverlay"
+        class="hidden fixed inset-0 z-40 lg:hidden bg-gray-600 bg-opacity-75 transition-opacity duration-300"></div>
+
+    <!-- Mobile Sidebar -->
+    <aside id="mobileSidebar"
+        class="hidden fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-indigo-600 to-indigo-800 text-white lg:hidden">
+        <div class="flex flex-col h-full">
+            <div class="flex items-center justify-between h-16 px-4 border-b border-indigo-700">
+                <div class="flex items-center gap-2">
+                                        <span class="inline-flex items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white font-bold shadow-lg shadow-indigo-500/30 h-8 w-8 text-sm">
+        P
+    </span>
+                        <h1 class="text-xl font-bold">PMT</h1>
+                </div>
+                <button id="closeMobileSidebar" class="text-white hover:text-gray-300">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+                <!-- Dashboard Section - Only for management -->
+                
+                <!-- Orders Section -->
+                <div class="mb-2 sidebar-section" data-section="orders">
+                    <button
+                        class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                        <div class="flex items-center">
+                            <i
+                                class="fas fa-shopping-cart w-5 text-indigo-300 group-hover:text-white transition-colors"></i>
+                            <span class="ml-3">Orders</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron"></i>
+                    </button>
+                    <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
+                        <a href="https://pmt.test/orders/dashboard"
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors text-indigo-200">
+                            <i class="fas fa-chart-line w-5 mr-2"></i>
+                            Dashboard
+                        </a>
+                        <a href="https://pmt.test/orders"
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors text-indigo-200">
+                            <i class="fas fa-list w-5 mr-2"></i>
+                            All Orders
+                        </a>
+                        <a href="https://pmt.test/orders/create"
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors text-indigo-200">
+                            <i class="fas fa-plus w-5 mr-2"></i>
+                            Add Order
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Tasks Section -->
+                <div class="mb-2 sidebar-section" data-section="tasks">
+                    <button
+                        class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                        <div class="flex items-center">
+                            <i class="fas fa-tasks w-5 text-cyan-400 group-hover:text-cyan-300 transition-colors"></i>
+                            <span class="ml-3">Tasks</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron"></i>
+                    </button>
+                    <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
+                        <a href="https://pmt.test/tasks"
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors text-indigo-200">
+                            <i class="fas fa-list w-5 mr-2"></i>
+                            All Tasks
+                        </a>
+                        <a href="https://pmt.test/tasks/archived"
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors text-indigo-200">
+                            <i class="fas fa-archive w-5 mr-2"></i>
+                            Archived Tasks
+                        </a>
+                        <a href="https://pmt.test/tasks/create"
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors text-indigo-200">
+                            <i class="fas fa-plus w-5 mr-2"></i>
+                            Add Task
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Admin Section -->
+                
+                
+                <!-- Team Section -->
+                                    <div class="mb-2 sidebar-section" data-section="team">
+                        <button
+                            class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                            <div class="flex items-center">
+                                <i
+                                    class="fas fa-users w-5 text-green-400 group-hover:text-green-300 transition-colors"></i>
+                                <span class="ml-3">Team</span>
+                            </div>
+                            <i
+                                class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron"></i>
+                        </button>
+                        <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
+                                                            <a href="https://pmt.test/teams"
+                                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors text-indigo-200">
+                                    <i class="fas fa-users w-5 mr-2"></i>
+                                    Teams
+                                </a>
+                                                                                        <a href="https://pmt.test/tech-stacks"
+                                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors text-indigo-200">
+                                    <i class="fas fa-layer-group w-5 mr-2"></i>
+                                    Tech Stacks
+                                </a>
+                                                    </div>
+                    </div>
+                            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden lg:ml-64">
+        <!-- Header Component -->
+        <header class="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-800">
+    <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+            <!-- Mobile menu button -->
+            <button @click="sidebarOpen = true" class="lg:hidden text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+
+            <!-- Search Bar -->
+            <div class="flex-1 max-w-2xl mx-4">
+                <div class="relative">
+                    <input type="text" placeholder="Search..." class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500">
+                    <i class="fas fa-search absolute left-3 top-3 text-gray-400 dark:text-gray-500"></i>
+                </div>
+            </div>
+
+            <!-- Right side items -->
+            <div class="flex items-center space-x-4">
+                <!-- Global Month Picker -->
+                                    <div class="relative month-picker" x-data="{ open: false }">
+                        <button @click="open = !open" @click.away="open = false" type="button"
+                                class="month-picker-trigger" aria-haspopup="true" :aria-expanded="open">
+                            <i class="fas fa-calendar-days"></i>
+                            <span>August 2026</span>
+                            <i class="fas fa-chevron-down month-picker-chevron" :class="{ 'is-open': open }"></i>
+                        </button>
+
+                        <div x-show="open" x-transition x-cloak
+                             class="month-picker-panel">
+                            <p class="month-picker-heading">Viewing data for</p>
+                            <div class="month-picker-list">
+                                                                    <form method="POST" action="https://pmt.test/selected-month">
+                                        <input type="hidden" name="_token" value="ctNg2xg0CeVMtavJKHEVGQsQ0zA6nDR1TYDao0se" autocomplete="off">                                        <input type="hidden" name="month" value="2026-08">
+                                        <button type="submit"
+                                                class="month-picker-option is-active">
+                                            August 2026
+                                                                                            <i class="fas fa-check"></i>
+                                                                                    </button>
+                                    </form>
+                                                                    <form method="POST" action="https://pmt.test/selected-month">
+                                        <input type="hidden" name="_token" value="ctNg2xg0CeVMtavJKHEVGQsQ0zA6nDR1TYDao0se" autocomplete="off">                                        <input type="hidden" name="month" value="2026-07">
+                                        <button type="submit"
+                                                class="month-picker-option ">
+                                            July 2026
+                                                                                    </button>
+                                    </form>
+                                                                    <form method="POST" action="https://pmt.test/selected-month">
+                                        <input type="hidden" name="_token" value="ctNg2xg0CeVMtavJKHEVGQsQ0zA6nDR1TYDao0se" autocomplete="off">                                        <input type="hidden" name="month" value="2026-06">
+                                        <button type="submit"
+                                                class="month-picker-option ">
+                                            June 2026
+                                                                                    </button>
+                                    </form>
+                                                                    <form method="POST" action="https://pmt.test/selected-month">
+                                        <input type="hidden" name="_token" value="ctNg2xg0CeVMtavJKHEVGQsQ0zA6nDR1TYDao0se" autocomplete="off">                                        <input type="hidden" name="month" value="2026-05">
+                                        <button type="submit"
+                                                class="month-picker-option ">
+                                            May 2026
+                                                                                    </button>
+                                    </form>
+                                                                    <form method="POST" action="https://pmt.test/selected-month">
+                                        <input type="hidden" name="_token" value="ctNg2xg0CeVMtavJKHEVGQsQ0zA6nDR1TYDao0se" autocomplete="off">                                        <input type="hidden" name="month" value="2026-04">
+                                        <button type="submit"
+                                                class="month-picker-option ">
+                                            April 2026
+                                                                                    </button>
+                                    </form>
+                                                                    <form method="POST" action="https://pmt.test/selected-month">
+                                        <input type="hidden" name="_token" value="ctNg2xg0CeVMtavJKHEVGQsQ0zA6nDR1TYDao0se" autocomplete="off">                                        <input type="hidden" name="month" value="2026-03">
+                                        <button type="submit"
+                                                class="month-picker-option ">
+                                            March 2026
+                                                                                    </button>
+                                    </form>
+                                                                    <form method="POST" action="https://pmt.test/selected-month">
+                                        <input type="hidden" name="_token" value="ctNg2xg0CeVMtavJKHEVGQsQ0zA6nDR1TYDao0se" autocomplete="off">                                        <input type="hidden" name="month" value="2026-02">
+                                        <button type="submit"
+                                                class="month-picker-option ">
+                                            February 2026
+                                                                                    </button>
+                                    </form>
+                                                                    <form method="POST" action="https://pmt.test/selected-month">
+                                        <input type="hidden" name="_token" value="ctNg2xg0CeVMtavJKHEVGQsQ0zA6nDR1TYDao0se" autocomplete="off">                                        <input type="hidden" name="month" value="2026-01">
+                                        <button type="submit"
+                                                class="month-picker-option ">
+                                            January 2026
+                                                                                    </button>
+                                    </form>
+                                                                    <form method="POST" action="https://pmt.test/selected-month">
+                                        <input type="hidden" name="_token" value="ctNg2xg0CeVMtavJKHEVGQsQ0zA6nDR1TYDao0se" autocomplete="off">                                        <input type="hidden" name="month" value="2025-12">
+                                        <button type="submit"
+                                                class="month-picker-option ">
+                                            December 2025
+                                                                                    </button>
+                                    </form>
+                                                                    <form method="POST" action="https://pmt.test/selected-month">
+                                        <input type="hidden" name="_token" value="ctNg2xg0CeVMtavJKHEVGQsQ0zA6nDR1TYDao0se" autocomplete="off">                                        <input type="hidden" name="month" value="2025-11">
+                                        <button type="submit"
+                                                class="month-picker-option ">
+                                            November 2025
+                                                                                    </button>
+                                    </form>
+                                                                    <form method="POST" action="https://pmt.test/selected-month">
+                                        <input type="hidden" name="_token" value="ctNg2xg0CeVMtavJKHEVGQsQ0zA6nDR1TYDao0se" autocomplete="off">                                        <input type="hidden" name="month" value="2025-10">
+                                        <button type="submit"
+                                                class="month-picker-option ">
+                                            October 2025
+                                                                                    </button>
+                                    </form>
+                                                                    <form method="POST" action="https://pmt.test/selected-month">
+                                        <input type="hidden" name="_token" value="ctNg2xg0CeVMtavJKHEVGQsQ0zA6nDR1TYDao0se" autocomplete="off">                                        <input type="hidden" name="month" value="2025-09">
+                                        <button type="submit"
+                                                class="month-picker-option ">
+                                            September 2025
+                                                                                    </button>
+                                    </form>
+                                                            </div>
+                            <p class="month-picker-footnote">Applies to every dashboard until you change it again.</p>
+                        </div>
+                    </div>
+                
+                <!-- Theme Toggle -->
+                <button id="themeToggle" type="button" title="Toggle dark mode" aria-label="Toggle dark mode"
+                        class="inline-flex items-center justify-center w-9 h-9 rounded-full text-gray-500 dark:text-amber-300 hover:text-indigo-600 dark:hover:text-amber-200 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/40">
+                    <span class="dark:hidden"><i class="fas fa-moon text-sm"></i></span>
+                    <span class="hidden dark:inline-block"><i class="fas fa-sun text-base"></i></span>
+                </button>
+
+                <!-- Notifications Dropdown -->
+                <div class="relative" x-data="{ open: false }">
+                    <button @click="open = !open" @click.away="open = false" class="relative text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none">
+                        <i class="fas fa-bell text-xl"></i>
+                                            </button>
+
+                    <!-- Notifications Dropdown Panel -->
+                    <div x-show="open" x-transition x-cloak class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-2 z-50" style="display: none;">
+                        <div class="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Notifications</h3>
+                        </div>
+                        <div class="max-h-64 overflow-y-auto">
+                                                            <div class="px-4 py-3 text-center text-sm text-gray-500 dark:text-gray-400">
+                                    No new notifications
+                                </div>
+                                                    </div>
+                                            </div>
+                </div>
+
+                <!-- Messages Dropdown -->
+                <div class="relative" x-data="{ open: false }">
+                    <button @click="open = !open" @click.away="open = false" class="relative text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none">
+                        <i class="fas fa-envelope text-xl"></i>
+                    </button>
+
+                    <!-- Messages Dropdown Panel -->
+                    <div x-show="open" x-transition x-cloak class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-2 z-50" style="display: none;">
+                        <div class="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Messages</h3>
+                        </div>
+                        <div class="max-h-64 overflow-y-auto">
+                            <div class="px-4 py-3 text-center text-sm text-gray-500 dark:text-gray-400">
+                                No new messages
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Dropdown -->
+                <div class="relative">
+                    <button id="user-dropdown-btn"
+                            class="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none">
+                        <img class="h-8 w-8 rounded-full" src="https://ui-avatars.com/api/?name=Priya Sarker&background=4F46E5&color=fff" alt="Priya Sarker">
+                        <span class="hidden md:block">Priya Sarker</span>
+                        <i class="fas fa-chevron-down text-sm"></i>
+                    </button>
+
+                    <div id="user-dropdown"
+                         class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 hidden">
+                        <a href="https://pmt.test/profile" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <i class="fas fa-user mr-2"></i> Profile
+                        </a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <i class="fas fa-cog mr-2"></i> Settings
+                        </a>
+                        <hr class="my-1 border-gray-200 dark:border-gray-700">
+                        <form method="POST" action="https://pmt.test/logout">
+                            <input type="hidden" name="_token" value="ctNg2xg0CeVMtavJKHEVGQsQ0zA6nDR1TYDao0se" autocomplete="off">                            <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-950">
+            
+<div class="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto space-y-5">
+
+    
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <p class="s-eyebrow">My sales</p>
+            <h1 class="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100">
+                Hello, Priya
+            </h1>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                August 2026
+                                    · your orders, next to your team's
+                            </p>
+        </div>
+
+                    <div class="flex flex-wrap items-center gap-2">
+                                    <a href="https://pmt.test/orders/create" class="s-primary-btn">
+                        <i class="fas fa-plus mr-2"></i>New sale
+                    </a>
+                
+                <a href="https://pmt.test/orders" class="s-secondary-btn">
+                    <i class="fas fa-list mr-2"></i>My orders
+                </a>
+            </div>
+            </div>
+
+            <div class="s-panel p-6 border-emerald-200 dark:border-emerald-900">
+            <div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                    <p class="s-eyebrow">Q3 Bonus</p>
+                    <p class="mt-2 text-4xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 s-num">৳0.00</p>
+                    <p class="mt-1 text-sm font-semibold text-gray-600 dark:text-gray-300">Accruing bonus</p>
+                </div>
+                                    <p class="max-w-md text-sm text-amber-700 dark:text-amber-300">Your admin has not yet configured a bonus percentage and USD-to-BDT rate for this period.</p>
+                            </div>
+        </div>
+    
+    <!-- Sales amount: the headline -->
+    <div class="s-panel p-6 sm:p-8">
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+            <div>
+                <p class="s-eyebrow">You sold in August</p>
+                <p class="s-hero-amount s-num mt-2">$1,000.00</p>
+                <div class="mt-3 flex flex-wrap items-center gap-3">
+                    <span class="s-delta is-flat">
+                                                    No sales last month
+                                            </span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400 s-num">
+                        1 order ·
+                        $1,000.00 average deal
+                    </span>
+                </div>
+            </div>
+
+            <div class="text-left lg:text-right">
+                <p class="s-eyebrow"><i class="fas fa-trophy text-amber-400 mr-1"></i>Best month in the last year</p>
+                <p class="mt-1 text-lg font-bold text-gray-900 dark:text-gray-100 s-num">
+                    $1,000.00
+                    <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">in Aug 2026</span>
+                </p>
+            </div>
+        </div>
+
+                <div class="s-projection mt-6">
+            <div class="flex items-center gap-3">
+                <span class="w-9 h-9 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-sm">
+                    <i class="fas fa-bullseye"></i>
+                </span>
+                <div>
+                    <p class="s-eyebrow">Month-end projection</p>
+                    <p class="text-lg font-extrabold text-gray-900 dark:text-gray-100 s-num">$1,937.50</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 s-num">day 16 of 31</p>
+                </div>
+            </div>
+            <div class="text-left lg:text-right">
+                <span class="s-target-tag is-behind">Behind pace</span>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 s-num">39% of the $5,000.00 target</p>
+                            </div>
+        </div>
+
+                                <div class="s-target">
+                <div class="s-target-head">
+                    <p class="s-eyebrow">Your target · August</p>
+                    <p class="s-target-pct is-behind s-num">20%</p>
+                </div>
+                <div class="s-target-bar">
+                    <span class="is-behind" style="width: 20%"></span>
+                </div>
+                <p class="s-target-foot s-num">
+                    $1,000.00 of $5,000.00 minimum
+                                            · <strong>$4,000.00 to go</strong>
+                                    </p>
+            </div>
+        
+                    <div class="s-team-context">
+                <div>
+                    <p class="s-eyebrow">Your team sold</p>
+                    <p class="mt-1 text-xl font-bold text-gray-900 dark:text-gray-100 s-num">$1,000.00</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 s-num">
+                        1 order across the team
+                    </p>
+                </div>
+                <div class="s-context-bar">
+                    <div class="flex items-baseline justify-between gap-3 mb-1">
+                        <span class="text-xs font-bold text-gray-600 dark:text-gray-400">Your share</span>
+                        <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400 s-num">100%</span>
+                    </div>
+                    <div class="s-share">
+                        <span style="width: 100%"></span>
+                    </div>
+                </div>
+            </div>
+        
+        <div class="mt-6">
+            <canvas id="salesTrendChart" height="90"></canvas>
+        </div>
+    </div>
+
+    <!-- Supporting numbers -->
+    <div class="s-grid-4">
+        <div class="s-panel p-5">
+            <div class="flex items-center justify-between gap-2">
+                <p class="s-stat-label">Orders sold</p>
+                <span class="s-icon-chip"><i class="fas fa-receipt"></i></span>
+            </div>
+            <p class="s-stat-value">1</p>
+            <p class="s-stat-foot">in August 2026</p>
+        </div>
+        <div class="s-panel p-5">
+            <div class="flex items-center justify-between gap-2">
+                <p class="s-stat-label">Average deal</p>
+                <span class="s-icon-chip"><i class="fas fa-chart-line"></i></span>
+            </div>
+            <p class="s-stat-value">$1,000.00</p>
+            <p class="s-stat-foot">sold value ÷ orders</p>
+        </div>
+        <div class="s-panel p-5">
+            <div class="flex items-center justify-between gap-2">
+                <p class="s-stat-label">Delivered this month</p>
+                <span class="s-icon-chip is-emerald"><i class="fas fa-box-open"></i></span>
+            </div>
+            <p class="s-stat-value">$0.00</p>
+            <p class="s-stat-foot s-num">0 orders handed over</p>
+        </div>
+        <div class="s-panel p-5">
+            <div class="flex items-center justify-between gap-2">
+                <p class="s-stat-label">Still in delivery</p>
+                <span class="s-icon-chip is-amber"><i class="fas fa-hourglass-half"></i></span>
+            </div>
+            <p class="s-stat-value">$1,000.00</p>
+            <div class="s-share mt-2">
+                <span style="width: 0%"></span>
+            </div>
+            <p class="s-stat-foot s-num">
+                1 order · 0% average progress
+            </p>
+        </div>
+    </div>
+
+    <!-- Delivery pipeline -->
+    <div class="s-panel p-5 sm:p-6">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div>
+                <p class="s-eyebrow">Delivery pipeline · August 2026</p>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    Open orders you hold credit in — progress-weighted expected revenue, and anything already past its deadline.
+                </p>
+            </div>
+            <a href="https://pmt.test/orders" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
+                All orders
+            </a>
+        </div>
+
+        <div class="grid sm:grid-cols-3 gap-4">
+            <div class="rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-800 p-4">
+                <p class="text-xs font-bold text-gray-500 dark:text-gray-400">In delivery</p>
+                <p class="mt-1 text-2xl font-extrabold text-gray-900 dark:text-gray-100 s-num">$1,000.00</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500 s-num">1 order still running</p>
+            </div>
+            <div class="rounded-xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 p-4">
+                <p class="text-xs font-bold text-indigo-700 dark:text-indigo-400">Expected revenue</p>
+                <p class="mt-1 text-2xl font-extrabold text-indigo-700 dark:text-indigo-300 s-num">$0.00</p>
+                <div class="s-share mt-2">
+                    <span style="width: 0%"></span>
+                </div>
+                <p class="mt-1 text-xs text-indigo-500 dark:text-indigo-400 s-num">0% of deal value done</p>
+            </div>
+            <div class="rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 p-4">
+                <p class="text-xs font-bold text-rose-700 dark:text-rose-400">At risk</p>
+                <p class="mt-1 text-2xl font-extrabold text-rose-700 dark:text-rose-300 s-num">$0.00</p>
+                <p class="text-xs text-rose-500 dark:text-rose-400 s-num">0 overdue orders</p>
+            </div>
+        </div>
+
+                    <div class="mt-5 flex items-center gap-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 px-4 py-3">
+                <i class="fas fa-check-circle text-emerald-500"></i>
+                <p class="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Nothing overdue — every open order is still within its deadline.</p>
+            </div>
+            </div>
+    <!-- Fresh vs. Repeat -->
+    <div class="s-panel p-5 sm:p-6">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+            <div>
+                <p class="s-eyebrow">Fresh vs. Repeat · August 2026</p>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Green is fresh (new clients), yellow is repeat (clients who already bought through the same profile).</p>
+            </div>
+            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 text-xs font-bold s-num">
+                <i class="fas fa-rotate-right text-[10px]"></i>0% repeat orders
+            </span>
+        </div>
+
+                <div class="grid grid-cols-2 gap-4">
+            <div class="rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 p-4">
+                <p class="flex items-center gap-2 text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>Fresh
+                </p>
+                <p class="mt-1 text-xl font-extrabold text-gray-900 dark:text-gray-100 s-num">$1,000.00</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 s-num">1 order</p>
+            </div>
+            <div class="rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 p-4">
+                <p class="flex items-center gap-2 text-xs font-bold text-amber-700 dark:text-amber-400">
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>Repeat
+                </p>
+                <p class="mt-1 text-xl font-extrabold text-gray-900 dark:text-gray-100 s-num">$0.00</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 s-num">0 orders</p>
+            </div>
+        </div>
+        <div class="mt-3 h-2 rounded-full overflow-hidden flex">
+            <div class="bg-emerald-500" style="width: 100%"></div>
+            <div class="bg-amber-400" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <div class="s-split">
+        <!-- Recent orders -->
+        <div class="s-panel p-5 sm:p-6">
+            <div class="flex items-center justify-between mb-2">
+                <p class="s-eyebrow">Running orders — everyone</p>
+                <a href="https://pmt.test/orders" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
+                    All orders
+                </a>
+            </div>
+
+                            <a href="https://pmt.test/orders/eyJpdiI6IjZvQmNjR2RUUE9iV1J1bzdEQzU4QlE9PSIsInZhbHVlIjoiSTRGcEN0ejhHcmZWVGhvdExjZnNFUT09IiwibWFjIjoiZTVmZDNmNmI2Yzg5OWRkNmY4NDNmN2NlYjkxY2ZjMWQxNDkzYWM2Njk1MjE5N2Y0M2M2MTE4NWVhZTQwZTMxMCIsInRhZyI6IiJ9" class="s-row block sm:grid hover:opacity-80 transition-opacity">
+                    <span>
+                        <span class="block text-sm font-bold text-gray-900 dark:text-gray-100 truncate">
+                            Acme Corp
+                                                            <span class="s-chip ml-1">You</span>
+                                                    </span>
+                        <span class="block text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                            Aug 16, 2026
+                                                    </span>
+                    </span>
+                    <span class="text-right">
+                        <span class="block text-sm font-bold text-gray-900 dark:text-gray-100 s-num">$1,000.00</span>
+                        <span class="s-chip mt-1">In progress</span>
+                    </span>
+                </a>
+                    </div>
+
+        <!-- Who sold what (leaders only) -->
+        <div class="space-y-5">
+            
+            <div class="s-panel p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <p class="s-eyebrow">Month by month</p>
+                    <span class="flex items-center gap-2 text-[10px] font-bold text-gray-500 dark:text-gray-400">
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>Fresh</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-400"></span>Repeat</span>
+                    </span>
+                </div>
+                <div class="space-y-2">
+                                            <div>
+                            <div class="flex items-baseline justify-between gap-3">
+                                <span class="text-xs font-semibold text-gray-600 dark:text-gray-400">Aug 2026</span>
+                                <span class="text-xs font-bold text-gray-900 dark:text-gray-100 s-num">$1,000.00</span>
+                            </div>
+                            <div class="s-share">
+                                <span style="width: 100%"></span>
+                            </div>
+                                                        <div class="mt-1 h-1.5 rounded-full overflow-hidden flex">
+                                <div class="bg-emerald-500" style="width: 100%"></div>
+                                <div class="bg-amber-400" style="width: 0%"></div>
+                            </div>
+                        </div>
+                                            <div>
+                            <div class="flex items-baseline justify-between gap-3">
+                                <span class="text-xs font-semibold text-gray-600 dark:text-gray-400">Jul 2026</span>
+                                <span class="text-xs font-bold text-gray-900 dark:text-gray-100 s-num">$0.00</span>
+                            </div>
+                            <div class="s-share">
+                                <span style="width: 0%"></span>
+                            </div>
+                                                        <div class="mt-1 h-1.5 rounded-full overflow-hidden flex">
+                                <div class="bg-emerald-500" style="width: 0%"></div>
+                                <div class="bg-amber-400" style="width: 100%"></div>
+                            </div>
+                        </div>
+                                            <div>
+                            <div class="flex items-baseline justify-between gap-3">
+                                <span class="text-xs font-semibold text-gray-600 dark:text-gray-400">Jun 2026</span>
+                                <span class="text-xs font-bold text-gray-900 dark:text-gray-100 s-num">$0.00</span>
+                            </div>
+                            <div class="s-share">
+                                <span style="width: 0%"></span>
+                            </div>
+                                                        <div class="mt-1 h-1.5 rounded-full overflow-hidden flex">
+                                <div class="bg-emerald-500" style="width: 0%"></div>
+                                <div class="bg-amber-400" style="width: 100%"></div>
+                            </div>
+                        </div>
+                                            <div>
+                            <div class="flex items-baseline justify-between gap-3">
+                                <span class="text-xs font-semibold text-gray-600 dark:text-gray-400">May 2026</span>
+                                <span class="text-xs font-bold text-gray-900 dark:text-gray-100 s-num">$0.00</span>
+                            </div>
+                            <div class="s-share">
+                                <span style="width: 0%"></span>
+                            </div>
+                                                        <div class="mt-1 h-1.5 rounded-full overflow-hidden flex">
+                                <div class="bg-emerald-500" style="width: 0%"></div>
+                                <div class="bg-amber-400" style="width: 100%"></div>
+                            </div>
+                        </div>
+                                            <div>
+                            <div class="flex items-baseline justify-between gap-3">
+                                <span class="text-xs font-semibold text-gray-600 dark:text-gray-400">Apr 2026</span>
+                                <span class="text-xs font-bold text-gray-900 dark:text-gray-100 s-num">$0.00</span>
+                            </div>
+                            <div class="s-share">
+                                <span style="width: 0%"></span>
+                            </div>
+                                                        <div class="mt-1 h-1.5 rounded-full overflow-hidden flex">
+                                <div class="bg-emerald-500" style="width: 0%"></div>
+                                <div class="bg-amber-400" style="width: 100%"></div>
+                            </div>
+                        </div>
+                                            <div>
+                            <div class="flex items-baseline justify-between gap-3">
+                                <span class="text-xs font-semibold text-gray-600 dark:text-gray-400">Mar 2026</span>
+                                <span class="text-xs font-bold text-gray-900 dark:text-gray-100 s-num">$0.00</span>
+                            </div>
+                            <div class="s-share">
+                                <span style="width: 0%"></span>
+                            </div>
+                                                        <div class="mt-1 h-1.5 rounded-full overflow-hidden flex">
+                                <div class="bg-emerald-500" style="width: 0%"></div>
+                                <div class="bg-amber-400" style="width: 100%"></div>
+                            </div>
+                        </div>
+                                    </div>
+            </div>
+
+                                            <div class="s-panel p-5">
+                    <p class="s-eyebrow mb-3">Top clients · August</p>
+                                            <div class="py-2.5 border-b border-gray-100 dark:border-gray-800 last:border-0">
+                            <div class="flex items-baseline justify-between gap-3">
+                                <span class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                                    Acme Corp
+                                                                    </span>
+                                <span class="text-sm font-bold text-gray-900 dark:text-gray-100 s-num">$1,000.00</span>
+                            </div>
+                            <div class="s-share">
+                                <span style="width: 100%"></span>
+                            </div>
+                            <p class="mt-1 text-xs text-gray-400 dark:text-gray-500 s-num">1 order</p>
+                        </div>
+                                    </div>
+                    </div>
+    </div>
+</div>
+
+        </main>
+    </div>
+
+    <script src="https://pmt.test:5173/resources/js/app.js" type="module" defer></script>
+
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const SwalDefault = Swal.mixin({
+            customClass: {
+                popup: 'swal2-popup',
+                confirmButton: 'swal2-styled swal2-confirm',
+                cancelButton: 'swal2-styled swal2-cancel',
+                denyButton: 'swal2-styled swal2-deny',
+            },
+            buttonsStyling: false,
+            reverseButtons: true,
+            showClass: {
+                popup: 'swal2-show'
+            },
+            hideClass: {
+                popup: 'swal2-hide'
+            },
+        });
+    </script>
+
+    <!-- Flash Message Handler -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+                                });
+    </script>
+
+    <!-- Sidebar Accordion Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get all sidebar sections
+            const sidebarSections = document.querySelectorAll('.sidebar-section');
+
+            // Function to toggle a section (independent - no auto-close of others)
+            function toggleSection(section) {
+                const content = section.querySelector('.sidebar-content');
+                const chevron = section.querySelector('.sidebar-chevron');
+
+                // Toggle visibility
+                content.classList.toggle('hidden');
+                chevron.classList.toggle('rotate-180');
+            }
+
+            // Add click listeners to all sidebar toggles
+            sidebarSections.forEach(function(section) {
+                const toggle = section.querySelector('.sidebar-toggle');
+                if (toggle) {
+                    toggle.addEventListener('click', function() {
+                        toggleSection(section);
+                    });
+                }
+            });
+
+            // Mobile sidebar functionality
+            const mobileSidebarBtn = document.getElementById('mobileSidebarBtn');
+            const mobileSidebar = document.getElementById('mobileSidebar');
+            const mobileSidebarOverlay = document.getElementById('mobileSidebarOverlay');
+            const closeMobileSidebarBtn = document.getElementById('closeMobileSidebar');
+
+            if (mobileSidebarBtn && mobileSidebar && mobileSidebarOverlay) {
+                // Open mobile sidebar
+                mobileSidebarBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    mobileSidebar.classList.remove('hidden');
+                    mobileSidebarOverlay.classList.remove('hidden');
+                });
+
+                // Close mobile sidebar when clicking overlay
+                mobileSidebarOverlay.addEventListener('click', function() {
+                    mobileSidebar.classList.add('hidden');
+                    mobileSidebarOverlay.classList.add('hidden');
+                });
+
+                // Close mobile sidebar when clicking close button
+                if (closeMobileSidebarBtn) {
+                    closeMobileSidebarBtn.addEventListener('click', function() {
+                        mobileSidebar.classList.add('hidden');
+                        mobileSidebarOverlay.classList.add('hidden');
+                    });
+                }
+            }
+        });
+    </script>
+
+    <!-- User Dropdown Script -->
+    <script>
+        // User dropdown functionality - load when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            const userDropdownBtn = document.getElementById('user-dropdown-btn');
+            const userDropdown = document.getElementById('user-dropdown');
+
+            if (userDropdownBtn && userDropdown) {
+                // Toggle dropdown when button is clicked
+                userDropdownBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    userDropdown.classList.toggle('hidden');
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!userDropdown.contains(e.target) && !userDropdownBtn.contains(e.target)) {
+                        userDropdown.classList.add('hidden');
+                    }
+                });
+
+                // Close dropdown when pressing Escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        userDropdown.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
+
+    <!-- Theme Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggleBtn = document.getElementById('themeToggle');
+            if (!themeToggleBtn) {
+                return;
+            }
+
+            themeToggleBtn.addEventListener('click', function() {
+                const isDark = !document.documentElement.classList.contains('dark');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                // Reload so canvas-based charts (Chart.js) and any other JS that
+                // bakes colors in at render time pick up the new theme correctly.
+                window.location.reload();
+            });
+        });
+    </script>
+
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        // Initialize Flatpickr for date fields
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize all datepicker inputs
+            const dateInputs = document.querySelectorAll('.datepicker');
+            dateInputs.forEach(function(input) {
+                const picker = flatpickr(input, {
+                    dateFormat: 'Y-m-d',
+                    allowInput: false,
+                    disableMobile: true,
+                    clickOpens: true,
+                    inline: false,
+                    static: true,
+                    animate: true,
+                    monthSelectorType: 'static',
+                    appendTo: document.body,
+                    position: 'below',
+                    prevArrow: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>',
+                    nextArrow: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>',
+                    onChange: function(selectedDates, dateStr, instance) {
+                        // If end date exists and is before start date, update it
+                        if (instance.element.id === 'start_date' && selectedDates.length > 0) {
+                            const endDateInput = document.getElementById('end_date');
+                            if (endDateInput) {
+                                const endDate = flatpickr(endDateInput);
+                                endDate.set('minDate', dateStr);
+                                if (endDate.selectedDates.length > 0 && endDate.selectedDates[
+                                        0] < selectedDates[0]) {
+                                    endDate.setDate(selectedDates[0]);
+                                }
+                            }
+                        }
+
+                        // Calculate duration if function exists
+                        if (typeof calculateDuration === 'function') {
+                            calculateDuration();
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const canvas = document.getElementById('salesTrendChart');
+
+        if (!canvas || typeof Chart === 'undefined') {
+            return;
+        }
+
+        const trend = [{"label":"Sep 2025","short":"Sep","amount":0,"mine":0,"count":0,"fresh":0,"repeat":0},{"label":"Oct 2025","short":"Oct","amount":0,"mine":0,"count":0,"fresh":0,"repeat":0},{"label":"Nov 2025","short":"Nov","amount":0,"mine":0,"count":0,"fresh":0,"repeat":0},{"label":"Dec 2025","short":"Dec","amount":0,"mine":0,"count":0,"fresh":0,"repeat":0},{"label":"Jan 2026","short":"Jan","amount":0,"mine":0,"count":0,"fresh":0,"repeat":0},{"label":"Feb 2026","short":"Feb","amount":0,"mine":0,"count":0,"fresh":0,"repeat":0},{"label":"Mar 2026","short":"Mar","amount":0,"mine":0,"count":0,"fresh":0,"repeat":0},{"label":"Apr 2026","short":"Apr","amount":0,"mine":0,"count":0,"fresh":0,"repeat":0},{"label":"May 2026","short":"May","amount":0,"mine":0,"count":0,"fresh":0,"repeat":0},{"label":"Jun 2026","short":"Jun","amount":0,"mine":0,"count":0,"fresh":0,"repeat":0},{"label":"Jul 2026","short":"Jul","amount":0,"mine":0,"count":0,"fresh":0,"repeat":0},{"label":"Aug 2026","short":"Aug","amount":1000,"mine":1000,"count":1,"fresh":1000,"repeat":0}];
+        const isDark = document.documentElement.classList.contains('dark');
+        const context = canvas.getContext('2d');
+        const gradient = context.createLinearGradient(0, 0, 0, 220);
+        gradient.addColorStop(0, 'rgba(99, 102, 241, 0.95)');
+        gradient.addColorStop(1, 'rgba(139, 92, 246, 0.55)');
+
+        new Chart(context, {
+            type: 'bar',
+            data: {
+                labels: trend.map(point => point.short),
+                datasets: [
+                    {
+                        label: "Team",
+                        data: trend.map(point => point.amount),
+                        backgroundColor: gradient,
+                        borderRadius: 6,
+                        maxBarThickness: 42,
+                    },
+                                        {
+                        label: 'You',
+                        data: trend.map(point => point.mine),
+                        backgroundColor: 'rgba(16, 185, 129, 0.9)',
+                        borderRadius: 6,
+                        maxBarThickness: 42,
+                    },
+                                    ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true, font: { size: 11 } },
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: items => trend[items[0].dataIndex].label,
+                            label: item => item.dataset.label + ': $' +
+                                item.parsed.y.toLocaleString(undefined, { minimumFractionDigits: 2 }),
+                        },
+                    },
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: isDark ? '#9ca3af' : '#6b7280', font: { size: 11, weight: '600' } },
+                    },
+                    y: {
+                        beginAtZero: true,
+                        border: { display: false },
+                        grid: { color: isDark ? '#1f2937' : '#f1f5f9' },
+                        ticks: {
+                            color: isDark ? '#6b7280' : '#9ca3af',
+                            font: { size: 11 },
+                            callback: value => '$' + (value >= 1000 ? (value / 1000) + 'k' : value),
+                        },
+                    },
+                },
+            },
+        });
+    });
+</script>
+
+    
+    <script>
+        (function() {
+            const statusColors = {
+                'nra': 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300',
+                'pending': 'bg-yellow-100 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400',
+                'in-progress': 'bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400',
+                'delivered': 'bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400',
+                'on-hold': 'bg-orange-100 dark:bg-orange-500/10 text-orange-700 dark:text-orange-400',
+                'cancelled': 'bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400',
+            };
+
+            function badgeClass(val) {
+                return statusColors[val] || 'bg-purple-100 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400';
+            }
+
+            function initAjaxSelect(wrapper) {
+                if (wrapper._asi) return;
+                wrapper._asi = true;
+
+                const url = wrapper.dataset.url;
+                const badgeKey = wrapper.dataset.badge || '';
+                const uid = wrapper.dataset.uid;
+                const search = document.getElementById(uid + '_s');
+                const hidden = document.getElementById(uid + '_h');
+                const dropdown = document.getElementById(uid + '_d');
+                const clear = document.getElementById(uid + '_c');
+
+                let cached = null;
+                let timer = null;
+
+                function renderOptions(items) {
+                    if (!items.length) {
+                        dropdown.innerHTML =
+                            '<div class="px-4 py-3 text-sm text-gray-400 dark:text-gray-500">No results found</div>';
+                    } else {
+                        dropdown.innerHTML = items.map(item => {
+                            const label = String(item.name || item.label || '');
+                            const badgeVal = badgeKey ? (item[badgeKey] || '') : '';
+                            return `<button type="button"
+                                        data-id="${item.id}"
+                                        data-label="${label.replace(/"/g, '&quot;')}"
+                                        class="asi-opt w-full text-left px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 text-gray-900 dark:text-gray-100 text-sm border-b border-gray-100 dark:border-gray-700 last:border-0 flex items-center justify-between gap-2 transition-colors">
+                                    <span class="truncate">${label}</span>
+                                    ${badgeVal ? `<span class="flex-shrink-0 text-xs font-medium px-1.5 py-0.5 rounded ${badgeClass(badgeVal)}">${badgeVal}</span>` : ''}
+                                </button>`;
+                        }).join('');
+
+                        dropdown.querySelectorAll('.asi-opt').forEach(btn => {
+                            btn.addEventListener('click', () => pick(btn.dataset.id, btn.dataset.label));
+                        });
+                    }
+                    dropdown.classList.remove('hidden');
+                }
+
+                function pick(id, label) {
+                    hidden.value = id;
+                    search.value = label;
+                    search.classList.add('border-indigo-400', 'bg-indigo-50');
+                    clear.classList.remove('hidden');
+                    dropdown.classList.add('hidden');
+                    hidden.dispatchEvent(new Event('change', {
+                        bubbles: true
+                    }));
+                }
+
+                function reset() {
+                    hidden.value = '';
+                    search.value = '';
+                    search.classList.remove('border-indigo-400', 'bg-indigo-50');
+                    clear.classList.add('hidden');
+                    dropdown.classList.add('hidden');
+                    hidden.dispatchEvent(new Event('change', {
+                        bubbles: true
+                    }));
+                }
+
+                function fetchItems(q) {
+                    const endpoint = q ? `${url}?q=${encodeURIComponent(q)}` : url;
+                    fetch(endpoint)
+                        .then(r => r.json())
+                        .then(data => {
+                            if (!q) cached = data;
+                            renderOptions(data);
+                        });
+                }
+
+                search.addEventListener('focus', () => {
+                    if (search.value) return;
+                    if (cached) renderOptions(cached);
+                    else fetchItems('');
+                });
+
+                search.addEventListener('input', () => {
+                    const q = search.value.trim();
+                    clearTimeout(timer);
+                    if (!q) {
+                        if (cached) renderOptions(cached);
+                        else fetchItems('');
+                        return;
+                    }
+                    timer = setTimeout(() => fetchItems(q), 300);
+                });
+
+                clear.addEventListener('click', reset);
+
+                document.addEventListener('click', e => {
+                    if (!wrapper.contains(e.target)) dropdown.classList.add('hidden');
+                });
+            }
+
+            function initAll() {
+                document.querySelectorAll('[data-ajax-select]').forEach(initAjaxSelect);
+            }
+
+            document.addEventListener('DOMContentLoaded', initAll);
+
+            // Support dynamic modals — re-init whenever new nodes appear
+            const observer = new MutationObserver(() => initAll());
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        })();
+    </script>
+</body>
+
+</html>

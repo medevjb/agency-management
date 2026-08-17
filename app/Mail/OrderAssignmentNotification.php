@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -55,7 +56,7 @@ class OrderAssignmentNotification extends Mailable implements ShouldQueue
                 'techStackName' => $this->order->techStack?->name,
                 'creatorName' => $this->order->creator?->name,
                 'isTeamLeader' => $this->isTeamLeader,
-                'orderUrl' => url('/orders/'.$this->order->id),
+                'orderUrl' => route('orders.show', $this->order),
             ]
         );
     }
@@ -63,7 +64,7 @@ class OrderAssignmentNotification extends Mailable implements ShouldQueue
     /**
      * Get the attachments for the message.
      *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     * @return array<int, Attachment>
      */
     public function attachments(): array
     {

@@ -126,7 +126,7 @@
                                         <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ $user->email }}</p>
                                     </div>
                                 </div>
-                                <button onclick="removeUserFromRole({{ $user->id }}, '{{ $user->name }}')" class="opacity-0 group-hover:opacity-100 p-1 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 rounded transition-all">
+                                <button onclick="removeUserFromRole('{{ $user->getRouteKey() }}', '{{ $user->name }}')" class="opacity-0 group-hover:opacity-100 p-1 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 rounded transition-all">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
@@ -142,7 +142,7 @@
                     <select id="userSelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm">
                         <option value="">Select a user...</option>
                         @foreach($allUsers as $availableUser)
-                            <option value="{{ $availableUser->id }}">{{ $availableUser->name }} ({{ $availableUser->email }})</option>
+                            <option value="{{ $availableUser->getRouteKey() }}">{{ $availableUser->name }} ({{ $availableUser->email }})</option>
                         @endforeach
                     </select>
                     <button onclick="addUserToRole()" class="w-full mt-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg font-medium transition-colors">

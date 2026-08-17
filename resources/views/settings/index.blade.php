@@ -9,7 +9,12 @@
                 <i class="fas fa-cog text-indigo-600 dark:text-indigo-400 mr-2"></i>
                 System Settings
             </h1>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage your application settings and preferences</p>
+            <div class="mt-1 flex flex-wrap items-center justify-between gap-3">
+                <p class="text-sm text-gray-500 dark:text-gray-400">Manage your application settings and preferences</p>
+                <a href="{{ route('settings.sales-bonus.index') }}" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400">
+                    <i class="fas fa-coins mr-1"></i>Sales Bonus Configuration
+                </a>
+            </div>
         </div>
 
         @if(session('success'))

@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Team;
 use App\Models\TechStack;
 use App\Models\User;
+use App\Support\IdEncrypter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Yajra\DataTables\Facades\DataTables;
 
 class TechStackController extends Controller
@@ -141,7 +143,9 @@ class TechStackController extends Controller
             $teams = collect([Team::find($user->team_id)]);
         }
 
-        return view('tech-stacks.create', compact('users', 'teams'));
+        $usersJson = $this->usersJson($users);
+
+        return view('tech-stacks.create', compact('users', 'usersJson', 'teams'));
     }
 
     /**
@@ -227,7 +231,7 @@ class TechStackController extends Controller
      */
     public function show(string $id)
     {
-        $techStack = TechStack::with(['stackLeader', 'users', 'orders'])->findOrFail($id);
+        $techStack = TechStack::with(['stackLeader', 'users', 'orders'])->findOrFail(IdEncrypter::decrypt($id));
 
         $this->authorize('view', $techStack);
 
@@ -239,7 +243,7 @@ class TechStackController extends Controller
      */
     public function edit(string $id)
     {
-        $techStack = TechStack::with(['stackLeader', 'users'])->findOrFail($id);
+        $techStack = TechStack::with(['stackLeader', 'users'])->findOrFail(IdEncrypter::decrypt($id));
 
         $this->authorize('update', $techStack);
 
@@ -253,7 +257,9 @@ class TechStackController extends Controller
             $teams = collect([Team::find($user->team_id)]);
         }
 
-        return view('tech-stacks.edit', compact('techStack', 'users', 'teams'));
+        $usersJson = $this->usersJson($users);
+
+        return view('tech-stacks.edit', compact('techStack', 'users', 'usersJson', 'teams'));
     }
 
     /**
@@ -261,7 +267,7 @@ class TechStackController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $techStack = TechStack::findOrFail($id);
+        $techStack = TechStack::findOrFail(IdEncrypter::decrypt($id));
 
         $this->authorize('update', $techStack);
 
@@ -299,7 +305,7 @@ class TechStackController extends Controller
      */
     public function destroy(string $id)
     {
-        $techStack = TechStack::findOrFail($id);
+        $techStack = TechStack::findOrFail(IdEncrypter::decrypt($id));
 
         $this->authorize('delete', $techStack);
 
@@ -331,7 +337,7 @@ class TechStackController extends Controller
         $search = $request->get('search', '');
         $exclude = $request->get('exclude', []);
 
-        $query = User::where('team_id', $teamId)
+        $query = User::where('team_id', IdEncrypter::decrypt($teamId))
             ->where('is_active', true)
             ->when($search, function ($q) use ($search) {
                 $q->where(function ($query) use ($search) {
@@ -371,7 +377,7 @@ class TechStackController extends Controller
      */
     public function addMembers(Request $request, string $id)
     {
-        $techStack = TechStack::findOrFail($id);
+        $techStack = TechStack::findOrFail(IdEncrypter::decrypt($id));
 
         $this->authorize('addMembers', $techStack);
 
@@ -384,7 +390,7 @@ class TechStackController extends Controller
             $techStack->users()->attach($memberId);
         }
 
-        return redirect()->route('tech-stacks.show', $techStack->id)
+        return redirect()->route('tech-stacks.show', $techStack)
             ->with('success', 'Members added to tech stack successfully.');
     }
 
@@ -393,20 +399,37 @@ class TechStackController extends Controller
      */
     public function removeMember(string $id, string $user_id)
     {
-        $techStack = TechStack::findOrFail($id);
+        $techStack = TechStack::findOrFail(IdEncrypter::decrypt($id));
 
         $this->authorize('removeMember', $techStack);
 
-        $user = User::findOrFail($user_id);
+        $user = User::findOrFail(IdEncrypter::decrypt($user_id));
 
         if (! $techStack->users()->where('users.id', $user->id)->exists()) {
-            return redirect()->route('tech-stacks.show', $techStack->id)
+            return redirect()->route('tech-stacks.show', $techStack)
                 ->with('error', 'User is not a member of this tech stack.');
         }
 
         $techStack->users()->detach($user->id);
 
-        return redirect()->route('tech-stacks.show', $techStack->id)
+        return redirect()->route('tech-stacks.show', $techStack)
             ->with('success', 'Member removed from tech stack successfully.');
+    }
+
+    /**
+     * Build a lean JSON-friendly representation of users for the leader picker.
+     *
+     * @return Collection<int, array{id: int, name: string, employee_id: string, position: string}>
+     */
+    private function usersJson($users)
+    {
+        return $users->map(function ($user) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'employee_id' => $user->employee_id ?? '',
+                'position' => $user->position ?? '',
+            ];
+        })->values();
     }
 }

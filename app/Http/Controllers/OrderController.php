@@ -40,6 +40,12 @@ class OrderController extends Controller
         // Get selected month from request (no default - show all orders initially)
         $selectedMonth = $request->input('month', '');
 
+        // Team leaders land with their own team preselected in the filter;
+        // an explicit team_id in the URL always wins.
+        $selectedTeamId = $request->filled('team_id')
+            ? (int) $request->team_id
+            : ($user->hasRole('team-leader') && $user->team_id ? $user->team_id : null);
+
         // Initialize dates as null
         $startDate = null;
         $endDate = null;
@@ -61,7 +67,7 @@ class OrderController extends Controller
         $statuses = OrderStatus::orderBy('sort_order')->get();
 
         // Scope filter options based on role
-        if ($user->hasRole(['team-leader', 'stack-leader'])) {
+        if ($user->hasRole('stack-leader')) {
             $teams = Team::where('id', $user->team_id)->get();
             $techStacks = TechStack::where('team_id', $user->team_id)->get();
             $profiles = Profile::active()->get();
@@ -80,7 +86,7 @@ class OrderController extends Controller
             $users = User::where('team_id', $user->team_id)->get();
         }
 
-        return view('orders.index', compact('teams', 'statuses', 'techStacks', 'profiles', 'users', 'selectedMonth', 'availableMonths', 'startDate', 'endDate'));
+        return view('orders.index', compact('teams', 'statuses', 'techStacks', 'profiles', 'users', 'selectedMonth', 'availableMonths', 'startDate', 'endDate', 'selectedTeamId'));
     }
 
     public function getOrders(Request $request)
@@ -96,7 +102,9 @@ class OrderController extends Controller
         // if they also hold an operational role like team-leader, since a
         // sales-side account's team_id points at its auto-created sales
         // team (see SalesTeamSync), not an engineering delivery team.
-        if (! $user->isSales() && $user->hasRole(['team-leader', 'stack-leader'])) {
+        // Team leaders see all orders too; only stack leaders are scoped
+        // to their own team.
+        if (! $user->isSales() && $user->hasRole('stack-leader') && ! $user->hasRole('team-leader')) {
             $query->where('team_id', $user->team_id);
         }
         // Team members see all orders (with badge for assigned ones)
@@ -154,6 +162,11 @@ class OrderController extends Controller
             $query->where('priority', $request->priority);
         }
 
+        // Filter to the current sales user's own sales only.
+        if ($request->filled('my_sales') && $request->my_sales == '1' && $user->isSales()) {
+            $query->where('sales_user_id', $user->id);
+        }
+
         // Order by column (DataTables column index)
         if ($request->filled('order')) {
             $orderColumn = $request->input('order.0.column');
@@ -163,12 +176,6 @@ class OrderController extends Controller
             $adjustedColumn = $orderColumn - 1;
             $columns = ['order_id', 'name', 'status', 'priority', 'actual_revenue', 'team_id', 'tech_stack_id', 'freelance_profile_id', 'end_date', 'created_at', 'completed_at'];
 
-            // Sales people do not get the team and assignee columns, so the
-            // client side indexes shift by two from that point on.
-            if ($user->isSales()) {
-                unset($columns[5], $columns[6]);
-                $columns = array_values($columns);
-            }
             if (isset($columns[$adjustedColumn])) {
                 $query->orderBy($columns[$adjustedColumn], $orderDir);
             }
@@ -210,6 +217,7 @@ class OrderController extends Controller
         foreach ($orders as $order) {
             $data[] = [
                 'id' => $order->id,
+                'key' => $order->getRouteKey(),
                 'order_id' => $order->order_id,
                 'name' => $order->name,
                 'description' => $order->description,
@@ -491,6 +499,7 @@ class OrderController extends Controller
             'users',
             'statusHistory.changedByUser',
             'salesShares.user',
+            'valueDistributions.user',
         ]);
 
         $audits = $order->audits()->with('user')->paginate(self::AUDITS_PER_PAGE);
@@ -717,11 +726,15 @@ class OrderController extends Controller
         // only change the fields its sender is allowed to touch.
         $requested = array_keys($request->all());
 
+        if (in_array('team_id', $requested, true)) {
+            $this->authorize('manageTeam', $order);
+        }
+
         if (in_array('users', $requested, true)) {
             $this->authorize('manageAssignment', $order);
         }
 
-        if (array_intersect($requested, ['status', 'priority', 'completed_at', 'start_date', 'end_date', 'special_status', 'last_update_date', 'team_id', 'tech_stack_id', 'freelance_profile_id', 'order_id'])) {
+        if (array_intersect($requested, ['status', 'priority', 'delivered_at', 'completed_at', 'start_date', 'end_date', 'special_status', 'last_update_date', 'tech_stack_id', 'freelance_profile_id', 'order_id'])) {
             $this->authorize('manageOperations', $order);
         }
 
@@ -738,6 +751,7 @@ class OrderController extends Controller
             'priority' => 'nullable|in:low,medium,high',
             'progress' => 'nullable|integer|min:0|max:100',
             'completed_at' => 'nullable|date',
+            'delivered_at' => 'nullable|date',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'special_status' => 'nullable|in:selected_for_delivery,continue_for_next,stuck_order',
@@ -908,10 +922,13 @@ class OrderController extends Controller
 
         $query = User::query();
 
-        if ($user->hasRole(['admin', 'operation-manager', 'project-manager'])) {
+        if ($user->hasRole(['admin', 'operation-manager', 'project-manager', 'sales-leader', 'sales-member'])) {
             // Can see all users
         } else {
-            $query->where('team_id', $user->team_id);
+            $query->where(function ($q) use ($user) {
+                $q->where('team_id', $user->team_id)
+                    ->orWhereHas('roles', fn ($role) => $role->whereIn('name', ['sales-leader', 'sales-member']));
+            });
         }
 
         // Exclude already selected users

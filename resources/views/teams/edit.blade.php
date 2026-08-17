@@ -19,7 +19,7 @@
                 <p class="text-gray-600 dark:text-gray-400 text-lg">Update team information and manage team members</p>
             </div>
             <div class="flex-shrink-0">
-                <a href="{{ route('teams.show', $team->id) }}" class="inline-flex items-center justify-center px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105">
+                <a href="{{ route('teams.show', $team) }}" class="inline-flex items-center justify-center px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105">
                     <i class="fas fa-eye mr-2"></i>
                     View Team
                 </a>
@@ -39,7 +39,7 @@
         </div>
 
         <div class="p-6">
-            <form method="POST" action="{{ route('teams.update', $team->id) }}" id="editTeamForm">
+            <form method="POST" action="{{ route('teams.update', $team) }}" id="editTeamForm">
                 @csrf
                 @method('PATCH')
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -227,7 +227,7 @@
                                     <div class="text-sm text-gray-500 dark:text-gray-400">{{ $member->employee_id }}</div>
                                 </div>
                             </div>
-                            <form action="{{ route('teams.remove-member', [$team->id, $member->id]) }}"
+                            <form action="{{ route('teams.remove-member', [$team, $member]) }}"
                                   method="POST" class="inline" onsubmit="return confirm('Remove {{ $member->name }} from team?')">
                                 @csrf
                                 @method('DELETE')

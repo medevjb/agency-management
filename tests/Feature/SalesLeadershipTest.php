@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\Profile;
 use App\Models\SalesTarget;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -173,5 +174,46 @@ class SalesLeadershipTest extends TestCase
             ->assertSee('$2,000.00')   // company sold this month
             ->assertSee('$1,200.00')   // repeat
             ->assertSee('$800.00');    // fresh
+    }
+
+    public function test_quarterly_progress_table_and_data_is_shown_on_leadership_page(): void
+    {
+        Carbon::setTestNow('2026-08-16 12:00:00');
+
+        try {
+            Order::factory()->create([
+                'sales_user_id' => $this->memberA1->id,
+                'created_by' => $this->memberA1->id,
+                'value' => 3000,
+                'created_at' => '2026-07-15 10:00:00',
+            ]);
+
+            Order::factory()->create([
+                'sales_user_id' => $this->memberA1->id,
+                'created_by' => $this->memberA1->id,
+                'value' => 1500,
+                'created_at' => '2026-08-10 10:00:00',
+            ]);
+
+            Order::factory()->create([
+                'sales_user_id' => $this->memberA1->id,
+                'created_by' => $this->memberA1->id,
+                'value' => 2000,
+                'created_at' => '2026-09-05 10:00:00',
+            ]);
+
+            $response = $this->actingAs($this->admin)
+                ->get(route('sales.leadership'))
+                ->assertOk();
+
+            $this->assertStringContainsString('Team Quarter Progress', $response->getContent());
+            $this->assertStringContainsString('Member A1', $response->getContent());
+            $this->assertStringContainsString('$3,000', $response->getContent());
+            $this->assertStringContainsString('$1,500', $response->getContent());
+            $this->assertStringContainsString('$2,000', $response->getContent());
+            $this->assertStringContainsString('$6,500', $response->getContent());
+        } finally {
+            Carbon::setTestNow();
+        }
     }
 }

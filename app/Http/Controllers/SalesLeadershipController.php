@@ -70,9 +70,24 @@ class SalesLeadershipController extends Controller
         $trend = $this->companyTrend($allSalesIds);
         $bridge = $this->soldVsDistributedBridge($monthStart, $monthEnd, $company['sold']);
 
+        $quarter = ceil($monthDate->month / 3);
+        $startMonthNum = ($quarter - 1) * 3 + 1;
+        $q1Date = Carbon::create($monthDate->year, $startMonthNum, 1)->startOfMonth();
+        $q2Date = $q1Date->copy()->addMonth();
+        $q3Date = $q1Date->copy()->addMonths(2);
+
+        $quarterBreakdown = $this->quarterlyBreakdown($allSalesIds, $monthDate);
+
+        $quarterNames = [
+            'q1' => $q1Date->format('M'),
+            'q2' => $q2Date->format('M'),
+            'q3' => $q3Date->format('M'),
+        ];
+
         return view('sales.leadership', compact(
             'company', 'leaderComparison', 'topPerformers', 'trend', 'bridge',
-            'selectedMonth', 'availableMonths', 'monthDate'
+            'selectedMonth', 'availableMonths', 'monthDate', 'quarterBreakdown',
+            'quarterNames', 'monthStart', 'monthEnd'
         ));
     }
 
@@ -273,5 +288,61 @@ class SalesLeadershipController extends Controller
             'pendingNet' => max(0, round($pendingNet, 2)),
             'conversionPercent' => $allTimeSoldGross > 0 ? round($allTimeDistributedNet / $allTimeSoldGross * 100, 1) : null,
         ];
+    }
+
+    /**
+     * Compute quarterly breakdown for the team/group.
+     *
+     * @param  array<int, int>  $sellerIds
+     * @return Collection<int, array<string, mixed>>
+     */
+    protected function quarterlyBreakdown(array $sellerIds, Carbon $monthDate): Collection
+    {
+        if ($sellerIds === []) {
+            return collect();
+        }
+
+        $quarter = ceil($monthDate->month / 3);
+        $startMonthNum = ($quarter - 1) * 3 + 1;
+        $q1Date = Carbon::create($monthDate->year, $startMonthNum, 1)->startOfMonth();
+        $q2Date = $q1Date->copy()->addMonth();
+        $q3Date = $q1Date->copy()->addMonths(2);
+
+        [$q1Start, $q1End] = GlobalMonth::periodFor($q1Date);
+        [$q2Start, $q2End] = GlobalMonth::periodFor($q2Date);
+        [$q3Start, $q3End] = GlobalMonth::periodFor($q3Date);
+
+        $orders = Order::query()
+            ->whereHas('salesShares', fn ($share) => $share->whereIn('user_id', $sellerIds))
+            ->whereBetween('created_at', [$q1Start, $q3End])
+            ->with(['salesShares' => fn ($share) => $share->whereIn('user_id', $sellerIds)])
+            ->get();
+
+        return User::whereIn('id', $sellerIds)
+            ->orderBy('name')
+            ->get()
+            ->map(function (User $seller) use ($orders, $q1Start, $q1End, $q2Start, $q2End, $q3Start, $q3End) {
+                $sellerOrders = $orders->filter(fn (Order $order) => $order->salesShares->contains('user_id', $seller->id));
+
+                $q1Amount = (float) $sellerOrders->filter(fn ($o) => $o->created_at->between($q1Start, $q1End))
+                    ->sum(fn ($o) => $o->salesShareFor($seller->id));
+
+                $q2Amount = (float) $sellerOrders->filter(fn ($o) => $o->created_at->between($q2Start, $q2End))
+                    ->sum(fn ($o) => $o->salesShareFor($seller->id));
+
+                $q3Amount = (float) $sellerOrders->filter(fn ($o) => $o->created_at->between($q3Start, $q3End))
+                    ->sum(fn ($o) => $o->salesShareFor($seller->id));
+
+                return [
+                    'id' => $seller->id,
+                    'name' => $seller->name,
+                    'q1_amount' => round($q1Amount, 2),
+                    'q2_amount' => round($q2Amount, 2),
+                    'q3_amount' => round($q3Amount, 2),
+                    'quarter_amount' => round($q1Amount + $q2Amount + $q3Amount, 2),
+                ];
+            })
+            ->sortByDesc('quarter_amount')
+            ->values();
     }
 }

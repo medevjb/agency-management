@@ -161,7 +161,7 @@
                                     {{ $repoCount }} repo{{ $repoCount === 1 ? '' : 's' }}
                                 </span>
                                 <div class="flex items-center gap-1 flex-shrink-0">
-                                    <button type="button" onclick="openRepoModal({{ $account->id }}, '{{ addslashes($account->label) }}')"
+                                    <button type="button" onclick="openRepoModal('{{ $account->getRouteKey() }}', '{{ addslashes($account->label) }}')"
                                         title="Manage repositories"
                                         class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                                         <i class="fas fa-list-check text-sm"></i>
@@ -201,7 +201,7 @@
         <div id="repoTree" class="divide-y divide-gray-100 dark:divide-gray-800">
             @forelse($accounts as $account)
                 @foreach($account->repositories as $repo)
-                    <div class="repo-row" data-repo-id="{{ $repo->id }}" data-search="{{ strtolower($repo->full_name) }}">
+                    <div class="repo-row" data-repo-id="{{ $repo->getRouteKey() }}" data-search="{{ strtolower($repo->full_name) }}">
                         <button type="button" class="repo-toggle w-full flex items-center justify-between gap-3 px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors text-left">
                             <div class="flex items-center min-w-0">
                                 <span class="tree-gutter flex items-center justify-center flex-shrink-0">

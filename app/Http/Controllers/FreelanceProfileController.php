@@ -213,6 +213,7 @@ class FreelanceProfileController extends Controller
             $ordersQuery->select(['id', 'freelance_profile_id', 'order_id', 'name', 'client_key', 'value', 'status', 'created_at', 'is_repeat'])
                 ->with('salesShares.user');
         }]);
+        $profile->key = $profile->getRouteKey();
 
         if (request()->expectsJson()) {
             return response()->json([
@@ -235,6 +236,8 @@ class FreelanceProfileController extends Controller
         $this->authorize('update', $profile);
 
         if (request()->expectsJson()) {
+            $profile->key = $profile->getRouteKey();
+
             return response()->json([
                 'profile' => $profile,
             ]);

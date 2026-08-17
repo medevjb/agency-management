@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BugReport;
 use App\Models\Order;
 use App\Models\Project;
 use App\Models\Setting;
@@ -145,6 +146,38 @@ class AdminController extends Controller
                 ->take(5)
                 ->values();
 
+            // Monthly task creation + completion by month (current year), from
+            // one fetch. Grouped in PHP rather than with MONTH(), which only
+            // exists on MySQL.
+            $taskRows = Task::whereNull('archived_at')
+                ->whereYear('created_at', $monthDate->year)
+                ->get(['created_at', 'completed_at']);
+
+            $monthlyTasksCreated = [];
+            $monthlyTasksCompleted = [];
+            for ($i = 1; $i <= 12; $i++) {
+                $monthlyTasksCreated[$i] = $taskRows->filter(fn (Task $task) => (int) $task->created_at->format('n') === $i)->count();
+                $monthlyTasksCompleted[$i] = $taskRows->filter(fn (Task $task) => $task->completed_at && (int) $task->completed_at->format('n') === $i)->count();
+            }
+
+            // Bug reports by status
+            $bugStatusStats = BugReport::selectRaw('status, COUNT(*) as count')
+                ->groupBy('status')
+                ->pluck('count', 'status');
+
+            // New users per month (current year)
+            $userRows = User::whereYear('created_at', $monthDate->year)->get(['created_at']);
+
+            $monthlyNewUsers = [];
+            for ($i = 1; $i <= 12; $i++) {
+                $monthlyNewUsers[$i] = $userRows->filter(fn (User $user) => (int) $user->created_at->format('n') === $i)->count();
+            }
+
+            // Orders by priority (all-time)
+            $ordersByPriority = Order::selectRaw('priority, COUNT(*) as count')
+                ->groupBy('priority')
+                ->pluck('count', 'priority');
+
             return [
                 'stats' => $stats,
                 'roleStats' => $roleStats,
@@ -152,6 +185,11 @@ class AdminController extends Controller
                 'monthlyRevenue' => $monthlyRevenue,
                 'monthlyOrders' => $monthlyOrders,
                 'topTeams' => $topTeams,
+                'monthlyTasksCreated' => $monthlyTasksCreated,
+                'monthlyTasksCompleted' => $monthlyTasksCompleted,
+                'bugStatusStats' => $bugStatusStats,
+                'monthlyNewUsers' => $monthlyNewUsers,
+                'ordersByPriority' => $ordersByPriority,
             ];
         });
 
@@ -161,9 +199,15 @@ class AdminController extends Controller
         $monthlyRevenue = $aggregates['monthlyRevenue'];
         $monthlyOrders = $aggregates['monthlyOrders'];
         $topTeams = $aggregates['topTeams'];
+        $monthlyTasksCreated = $aggregates['monthlyTasksCreated'];
+        $monthlyTasksCompleted = $aggregates['monthlyTasksCompleted'];
+        $bugStatusStats = $aggregates['bugStatusStats'];
+        $monthlyNewUsers = $aggregates['monthlyNewUsers'];
+        $ordersByPriority = $aggregates['ordersByPriority'];
 
         $recentUsers = User::latest()->take(5)->get();
         $recentOrders = Order::with(['team', 'creator'])->latest()->take(5)->get();
+        $recentBugs = BugReport::with('user')->latest()->take(5)->get();
 
         // Recent activity
         $activities = Project::with('createdBy')
@@ -211,9 +255,15 @@ class AdminController extends Controller
             'projectStatusStats',
             'recentUsers',
             'recentOrders',
+            'recentBugs',
             'monthlyRevenue',
             'monthlyOrders',
             'topTeams',
+            'monthlyTasksCreated',
+            'monthlyTasksCompleted',
+            'bugStatusStats',
+            'monthlyNewUsers',
+            'ordersByPriority',
             'activities',
             'selectedMonth',
             'availableMonths',
