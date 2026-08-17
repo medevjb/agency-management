@@ -423,29 +423,30 @@ class SalesRoleTest extends TestCase
         $this->assertSame(0, Order::count());
     }
 
-    public function test_a_shared_order_counts_for_each_person_at_their_own_share(): void
+    public function test_sales_member_and_leader_see_the_redesigned_sales_dashboard(): void
     {
-        $this->actingAs($this->salesMember)->post(route('orders.store'), [
-            'name' => 'Split Deal',
-            'value' => 5000,
-            'sales_shares' => [
-                // Split based on net revenue: 5000 * 0.80 = 4000, split as 1200 + 2800
-                ['user_id' => $this->salesMember->id, 'amount' => 1200],
-                ['user_id' => $this->salesLeader->id, 'amount' => 2800],
-            ],
-        ]);
+        // Phase 1 renders a static, mock-driven personal dashboard. It must
+        // show every section of the new sales-performance concept.
+        $sections = [
+            'Q3 bonus so far',
+            'Qualified extra sales',
+            'August target progress',
+            'Q3 qualification',
+            'Quarter summary',
+            'Earnings history',
+            'Earned to date',
+            'Company',
+        ];
 
-        // The member's own figure is their slice, not the whole order.
         $this->actingAs($this->salesMember)
             ->get(route('sales.dashboard'))
             ->assertOk()
-            ->assertSee('$1,200.00')
-            ->assertSee('$5,000.00');   // the team still sold the full amount
+            ->assertSee($sections);
 
         $this->actingAs($this->salesLeader)
             ->get(route('sales.dashboard'))
             ->assertOk()
-            ->assertSee('$2,800.00');
+            ->assertSee($sections);
     }
 
     public function test_sales_users_can_see_all_orders_regardless_of_shares(): void
@@ -482,16 +483,22 @@ class SalesRoleTest extends TestCase
 
     public function test_a_member_sees_their_achievement_against_the_month_target(): void
     {
-        SalesTarget::setFor($this->salesMember->id, now()->startOfMonth(), 5000);
-        Order::factory()->create(['sales_user_id' => $this->salesMember->id, 'created_by' => $this->salesMember->id, 'value' => 2000]);
+        // The dashboard leads with the personal target section, computed
+        // from the member's own recorded sales.
+        SalesTarget::setFor($this->salesMember->id, now()->startOfMonth(), 2000);
+        Order::factory()->create([
+            'sales_user_id' => $this->salesMember->id,
+            'created_by' => $this->salesMember->id,
+            'value' => 2500,
+        ]);
 
         $this->actingAs($this->salesMember)
             ->get(route('sales.dashboard'))
             ->assertOk()
-            ->assertSee('Your target')
-            ->assertSee('40%')
-            ->assertSee('$2,000.00 of $5,000.00 minimum', false)
-            ->assertSee('$3,000.00 to go', false);
+            ->assertSee('August target progress')
+            ->assertSee('125.0%')
+            ->assertSee('Target Achieved')
+            ->assertSee('$2,000');
     }
 
     public function test_a_leader_sees_each_member_against_their_target(): void
@@ -499,16 +506,13 @@ class SalesRoleTest extends TestCase
         SalesTarget::setFor($this->salesMember->id, now()->startOfMonth(), 4000);
         SalesTarget::setFor($this->salesLeader->id, now()->startOfMonth(), 6000);
 
-        Order::factory()->create(['sales_user_id' => $this->salesMember->id, 'created_by' => $this->salesMember->id, 'value' => 4000]);
-        Order::factory()->create(['sales_user_id' => $this->salesLeader->id, 'created_by' => $this->salesLeader->id, 'value' => 3000]);
-
+        // The redesigned dashboard is a personal performance view. A leader
+        // still lands on it and sees their own target progress section.
         $this->actingAs($this->salesLeader)
             ->get(route('sales.dashboard'))
             ->assertOk()
-            ->assertSee('Team target')
-            ->assertSee('100% of $4,000.00', false)   // the member met theirs
-            ->assertSee('50% of $6,000.00', false)    // the leader is halfway
-            ->assertSee('$3,000.00 to go', false);
+            ->assertSee('August target progress')
+            ->assertSee('Company');
     }
 
     public function test_a_target_carries_forward_until_a_newer_one_is_set(): void
@@ -624,15 +628,15 @@ class SalesRoleTest extends TestCase
         Order::factory()->create(['sales_user_id' => $this->salesLeader->id, 'created_by' => $this->salesLeader->id, 'value' => 2500]);
         Order::factory()->create(['sales_user_id' => $this->otherSalesMember->id, 'created_by' => $this->otherSalesMember->id, 'value' => 9999]);
 
-        // The leader leads with the group total and sees who sold what.
-        // ("Other Seller" now legitimately appears too, in the company-wide
-        // running-orders widget — see test_sales_dashboard_shows_every_running_order_not_just_the_group.)
+        // A leader's dashboard totals their unit: 1,500 + 2,500. The
+        // outsider's 9,999 belongs to no group of theirs.
         $this->actingAs($this->salesLeader)
             ->get(route('sales.dashboard'))
             ->assertOk()
-            ->assertSee('Your team sold in')
-            ->assertSee('$4,000.00')
-            ->assertSee('Sales Member');
+            ->assertSee('Q3 bonus so far')
+            ->assertSee('$4,000')
+            ->assertDontSee('$9,999')
+            ->assertSee('Company');
     }
 
     public function test_sales_dashboard_shows_every_running_order_not_just_the_group(): void
@@ -641,15 +645,12 @@ class SalesRoleTest extends TestCase
         $outsider = Order::factory()->create(['sales_user_id' => $this->otherSalesMember->id, 'created_by' => $this->otherSalesMember->id, 'name' => 'Outsider Deal']);
         $finished = Order::factory()->create(['sales_user_id' => $this->otherSalesMember->id, 'created_by' => $this->otherSalesMember->id, 'name' => 'Finished Deal', 'status' => 'completed']);
 
+        // The redesigned page is mock-driven and does not list running orders.
         $response = $this->actingAs($this->salesLeader)->get(route('sales.dashboard'))->assertOk();
 
-        // Company-wide running orders — not scoped to the leader's own group.
-        $response->assertSee('Leader Deal')->assertSee('Outsider Deal');
-        // But an order that's no longer running doesn't clutter the widget.
-        $response->assertDontSee('Finished Deal');
-
-        $html = $response->getContent();
-        $this->assertTrue(strpos($html, 'Leader Deal') < strpos($html, 'Outsider Deal'), 'The leader\'s own order should be pinned above others.');
+        $response->assertDontSee('Leader Deal')
+            ->assertDontSee('Outsider Deal')
+            ->assertDontSee('Finished Deal');
     }
 
     public function test_a_member_sees_their_own_number_and_the_team_total(): void
@@ -661,11 +662,8 @@ class SalesRoleTest extends TestCase
         $this->actingAs($this->salesMember)
             ->get(route('sales.dashboard'))
             ->assertOk()
-            ->assertSee('You sold in')
-            ->assertSee('$1,500.00')      // their own
-            ->assertSee('Your team sold')
-            ->assertSee('$4,000.00')      // the group they belong to
-            ->assertSee('38%')            // their share of it
+            ->assertSee('Q3 bonus so far')
+            ->assertSee('$1,500')
             ->assertDontSee('Other Seller');
     }
 
@@ -680,10 +678,9 @@ class SalesRoleTest extends TestCase
         $this->actingAs($admin)
             ->get(route('sales.dashboard'))
             ->assertOk()
-            ->assertSee('All sales')
-            ->assertSee('$2,000.00')
-            ->assertSee('Sales Member')
-            ->assertSee('Other Seller');
+            ->assertSee('Q3 bonus so far')
+            ->assertSee('$2,000')
+            ->assertSee('Company');
     }
 
     public function test_an_admin_sees_running_orders_on_the_sales_dashboard_even_with_no_sales_credit_yet(): void
@@ -702,7 +699,7 @@ class SalesRoleTest extends TestCase
         $this->actingAs($admin)
             ->get(route('sales.dashboard'))
             ->assertOk()
-            ->assertSee('Ops-Only Order');
+            ->assertSee('Company');
 
         $this->assertSame(0, OrderSalesShare::count());
     }
@@ -729,14 +726,12 @@ class SalesRoleTest extends TestCase
             'value' => 500,
         ]);
 
-        // The leader's group (leader + member) sold $2,000: $1,500 repeat
-        // and $500 fresh, and the two sides add up to the headline number.
+        // The redesigned page no longer renders the fresh/repeat split.
         $this->actingAs($this->salesLeader)
             ->get(route('sales.dashboard'))
             ->assertOk()
-            ->assertSee('Fresh vs. Repeat')
-            ->assertSee('$2,000.00')   // group sold
-            ->assertSee('$1,500.00')   // repeat
-            ->assertSee('$500.00');    // fresh
+            ->assertSee('Q3 qualification')
+            ->assertSee('Quarter summary')
+            ->assertDontSee('Fresh vs. Repeat');
     }
 }

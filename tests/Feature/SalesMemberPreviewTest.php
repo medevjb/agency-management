@@ -31,7 +31,8 @@ class SalesMemberPreviewTest extends TestCase
                 ->assertOk()
                 ->assertSee('Preview')
                 ->assertSee('sample data', false)
-                ->assertSee('$4,200.00'); // fabricated "you sold" figure
+                ->assertSee('Q3 bonus so far')
+                ->assertSee('$128,500'); // the fabricated "you sold" figure
         }
     }
 
@@ -54,10 +55,9 @@ class SalesMemberPreviewTest extends TestCase
 
         $response = $this->actingAs($admin)->get(route('sales.dashboard.preview'))->assertOk();
 
-        // No sales_shares/order data was queried for this — the "latest
-        // orders" panel must fall back to its honest empty state instead of
-        // a fabricated, clickable order row.
-        $response->assertSee("doesn't show real order data", false);
+        // The redesigned dashboard is mock-driven — it never links to a real
+        // order detail page (only generic list/create routes in the sidebar).
+        $this->assertDoesNotMatchRegularExpression('#orders/\d+#', $response->getContent());
     }
 
     public function test_the_preview_route_is_listed_in_the_sidebar_for_admin_only(): void

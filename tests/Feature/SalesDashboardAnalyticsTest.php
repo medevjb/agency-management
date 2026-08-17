@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\BonusFinancialSetting;
 use App\Models\Order;
 use App\Models\SalesTarget;
+use App\Models\Setting;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -42,115 +44,244 @@ class SalesDashboardAnalyticsTest extends TestCase
         parent::tearDown();
     }
 
-    protected function sold(User $seller, string $name, float $value, array $extra = []): Order
+    /** The OrderObserver credits the sales owner automatically. */
+    protected function sold(User $seller, float $value, ?Carbon $when = null): Order
     {
-        // The OrderObserver credits the sales owner automatically.
-        return Order::factory()->create(array_merge([
+        return Order::factory()->create([
             'sales_user_id' => $seller->id,
             'created_by' => $seller->id,
-            'name' => $name,
             'value' => $value,
-        ], $extra));
+            'created_at' => $when ?? now(),
+        ]);
     }
 
-    public function test_the_month_end_projection_judges_the_pace_against_the_target(): void
+    protected function configureBonus(string $rate = '0.01', string $exchange = '122.50'): void
     {
-        SalesTarget::setFor($this->member->id, now()->startOfMonth(), 5000);
-        $this->sold($this->member, 'Acme Corp', 1000);
-
-        $response = $this->actingAs($this->member)
-            ->get(route('sales.dashboard'));
-        file_put_contents(base_path('scratch_response.html'), $response->getContent());
-        $response->assertOk()
-            ->assertSee('Month-end projection')
-            ->assertSee('Behind pace');
+        BonusFinancialSetting::create([
+            'bonus_percentage' => $rate,
+            'usd_to_bdt_rate' => $exchange,
+            'effective_from' => '2026-01-01',
+            'is_active' => true,
+            'created_by' => $this->admin->id,
+        ]);
     }
 
-    public function test_the_projection_shows_on_track_when_the_pace_clears_the_target(): void
+    public function test_the_monthly_figures_come_from_recorded_sales(): void
     {
         SalesTarget::setFor($this->member->id, now()->startOfMonth(), 1000);
-        $this->sold($this->member, 'Acme Corp', 1000);
+        $this->sold($this->member, 1500);
 
         $this->actingAs($this->member)
             ->get(route('sales.dashboard'))
             ->assertOk()
-            ->assertSee('On track');
+            ->assertSee('$1,500')      // sales
+            ->assertSee('$1,000')      // target
+            ->assertSee('150.0%');       // achievement
     }
 
-    public function test_the_delivery_pipeline_shows_expected_revenue_and_flags_overdue_orders(): void
+    public function test_extra_sales_is_the_amount_above_target(): void
     {
-        $this->sold($this->member, 'Overdue Deal', 1000, [
-            'status' => 'in-progress',
-            'progress' => 50,
-            'end_date' => '2026-08-10',
-        ]);
-        $this->sold($this->member, 'On Time Deal', 2000, [
-            'status' => 'in-progress',
-            'progress' => 25,
-            'end_date' => '2026-08-31',
-        ]);
-        $this->sold($this->member, 'Already Delivered', 500, ['status' => 'delivered']);
-
-        $response = $this->actingAs($this->member)
-            ->get(route('sales.dashboard'))
-            ->assertOk();
-
-        $this->assertStringContainsString('Delivery pipeline', $response->getContent());
-        $this->assertStringContainsString('$3,000.00', $response->getContent()); // total in delivery
-        $this->assertStringContainsString('$1,000.00', $response->getContent()); // expected revenue
-        $this->assertStringContainsString('Overdue Deal', $response->getContent());
-        $this->assertStringContainsString('6d overdue', $response->getContent());
-        $this->assertStringContainsString('On Time Deal', $response->getContent());
-    }
-
-    public function test_the_pipeline_shows_a_clean_state_when_nothing_is_overdue(): void
-    {
-        $this->sold($this->member, 'On Time Deal', 2000, [
-            'status' => 'in-progress',
-            'end_date' => '2026-08-31',
-        ]);
+        SalesTarget::setFor($this->member->id, now()->startOfMonth(), 1000);
+        $this->sold($this->member, 1500);
 
         $this->actingAs($this->member)
             ->get(route('sales.dashboard'))
             ->assertOk()
-            ->assertSee('Nothing overdue', false);
+            ->assertSee('$500.00')
+            ->assertSee('Target Achieved');
     }
 
-    public function test_top_clients_are_ranked_by_revenue_and_repeat_orders_stay_grouped(): void
+    public function test_a_month_below_target_shows_a_shortfall_not_negative_extra(): void
     {
-        $this->sold($this->member, 'Acme Corp', 1200, ['created_at' => '2026-08-01', 'client_key' => 'acme corp']);
-        $this->sold($this->member, 'Acme Worldwide', 800, [
-            'created_at' => '2026-08-10',
-            'client_key' => 'acme worldwide',
-            'repeat_client_key' => 'acme corp',
-            'is_repeat' => true,
-        ]);
-        $this->sold($this->member, 'Globex', 900, ['created_at' => '2026-08-05', 'client_key' => 'globex']);
+        SalesTarget::setFor($this->member->id, now()->startOfMonth(), 2000);
+        $this->sold($this->member, 800);
 
-        $response = $this->actingAs($this->member)
+        $content = $this->actingAs($this->member)
             ->get(route('sales.dashboard'))
-            ->assertOk();
+            ->assertOk()
+            ->assertSee('$1,200.00')     // shortfall to target
+            ->getContent();
 
-        // The renamed repeat order rolls up under the tracked client as its
-        // display name, outranking Globex by combined revenue.
-        $this->assertStringContainsString('Top clients', $response->getContent());
-        $this->assertStringContainsString('Acme Worldwide', $response->getContent());
-        $this->assertStringContainsString('×1 repeat', $response->getContent());
-        $this->assertTrue(strpos($response->getContent(), 'Acme Worldwide') < strpos($response->getContent(), 'Globex'));
+        $this->assertStringNotContainsString('-$', $content);
+        $this->assertStringNotContainsString('$-', $content);
     }
 
-    public function test_admin_sees_the_pipeline_across_every_sales_group(): void
+    public function test_the_bonus_is_calculated_from_the_configured_rate(): void
     {
-        $this->sold($this->member, 'Company Wide Deal', 1500, [
-            'status' => 'in-progress',
-            'end_date' => '2026-08-10',
-        ]);
+        $this->configureBonus();
+        SalesTarget::setFor($this->member->id, now()->startOfMonth(), 1000);
+        $this->sold($this->member, 3000);
+
+        // $2,000 extra x 1% = $20 x 122.50 = BDT 2,450
+        $this->actingAs($this->member)
+            ->get(route('sales.dashboard'))
+            ->assertOk()
+            ->assertSee('$2,000.00')
+            ->assertSee('৳2,450.00');
+    }
+
+    public function test_a_stored_fraction_rate_is_shown_as_a_percentage(): void
+    {
+        $this->configureBonus('0.01');
+        SalesTarget::setFor($this->member->id, now()->startOfMonth(), 1000);
+        $this->sold($this->member, 2000);
+
+        $this->actingAs($this->member)
+            ->get(route('sales.dashboard'))
+            ->assertOk()
+            ->assertSee('1.00% bonus rate')
+            ->assertSee('৳122.50 per USD');
+    }
+
+    public function test_an_unconfigured_bonus_shows_zero_with_an_explanation(): void
+    {
+        SalesTarget::setFor($this->member->id, now()->startOfMonth(), 1000);
+        $this->sold($this->member, 3000);
+
+        $this->actingAs($this->member)
+            ->get(route('sales.dashboard'))
+            ->assertOk()
+            ->assertSee('৳0.00')
+            ->assertSee('Bonus rates not configured yet')
+            ->assertSee('as soon as the rates are configured', false)
+            // Sales figures stay live while bonus is unconfigured.
+            ->assertSee('$3,000')
+            ->assertSee('$1,000');
+    }
+
+    public function test_only_an_admin_is_offered_the_bonus_settings_link(): void
+    {
+        $this->actingAs($this->member)
+            ->get(route('sales.dashboard'))
+            ->assertOk()
+            ->assertDontSee('Configure bonus rates');
 
         $this->actingAs($this->admin)
             ->get(route('sales.dashboard'))
             ->assertOk()
-            ->assertSee('Delivery pipeline')
-            ->assertSee('Company Wide Deal')
-            ->assertSee('6d overdue');
+            ->assertSee('Configure bonus rates');
+    }
+
+    public function test_the_explanation_disappears_once_rates_are_configured(): void
+    {
+        $this->configureBonus();
+        SalesTarget::setFor($this->member->id, now()->startOfMonth(), 1000);
+        $this->sold($this->member, 2000);
+
+        $this->actingAs($this->member)
+            ->get(route('sales.dashboard'))
+            ->assertOk()
+            ->assertDontSee('Bonus rates not configured yet');
+    }
+
+    public function test_the_company_target_falls_back_to_the_sum_of_sales_targets(): void
+    {
+        $other = User::factory()->create();
+        $other->assignRole('sales-member');
+
+        SalesTarget::setFor($this->member->id, now()->startOfMonth(), 1000);
+        SalesTarget::setFor($other->id, now()->startOfMonth(), 4000);
+
+        $this->actingAs($this->member)
+            ->get(route('sales.dashboard'))
+            ->assertOk()
+            // 1,000 + 4,000 = 5,000, shown in full below the millions scale
+            ->assertSee('of $5,000');
+    }
+
+    public function test_an_admin_set_company_target_overrides_the_sum(): void
+    {
+        SalesTarget::setFor($this->member->id, now()->startOfMonth(), 1000);
+        Setting::updateOrCreate(
+            ['key' => 'company_gross_target'],
+            ['value' => '2000000', 'group' => 'company', 'type' => 'number', 'label' => 'Company Gross Sales Target'],
+        );
+
+        $this->actingAs($this->member)
+            ->get(route('sales.dashboard'))
+            ->assertOk()
+            ->assertSee('of $2.00M');
+    }
+
+    public function test_earnings_history_totals_the_trailing_quarters(): void
+    {
+        $this->configureBonus();
+        SalesTarget::setFor($this->member->id, now()->startOfMonth(), 1000);
+        $this->sold($this->member, 3000);
+
+        $this->actingAs($this->member)
+            ->get(route('sales.dashboard'))
+            ->assertOk()
+            ->assertSee('Earnings history')
+            ->assertSee('Earned to date')
+            ->assertSee('Accruing')
+            ->assertSee('Paid');
+    }
+
+    public function test_the_page_renders_for_a_salesperson_with_no_sales(): void
+    {
+        $this->actingAs($this->member)
+            ->get(route('sales.dashboard'))
+            ->assertOk()
+            ->assertSee('Q3 bonus so far')
+            ->assertSee('Earnings history');
+    }
+
+    public function test_the_period_follows_the_selected_month(): void
+    {
+        $this->actingAs($this->member)
+            ->post(route('selected-month.update'), ['month' => '2026-05'])
+            ->assertRedirect();
+
+        $this->actingAs($this->member)
+            ->get(route('sales.dashboard'))
+            ->assertOk()
+            ->assertSee('Viewing May 2026')
+            ->assertSee('Q2 bonus so far')
+            ->assertSee('April–June');
+    }
+
+    public function test_no_bonus_amount_is_attributed_to_an_individual_month(): void
+    {
+        $this->configureBonus();
+        SalesTarget::setFor($this->member->id, now()->startOfMonth(), 1000);
+        $this->sold($this->member, 3000);
+
+        $content = $this->actingAs($this->member)->get(route('sales.dashboard'))->assertOk()->getContent();
+
+        // The quarter ledger reports extra sales; taka appears only at
+        // quarter level, because the rate applies once per quarter.
+        $this->assertStringContainsString('Extra sales', $content);
+        $this->assertStringNotContainsString('Month bonus', $content);
+    }
+
+    public function test_the_removed_kpi_row_is_gone(): void
+    {
+        $content = $this->actingAs($this->member)->get(route('sales.dashboard'))->assertOk()->getContent();
+
+        // "My Sales" is deliberately absent from this list: it is a sidebar
+        // navigation link, not a dashboard KPI card.
+        foreach (['Target Achievement', 'Bonus Accrued', 'Q3 Bonus Wallet', 'from last month'] as $removed) {
+            $this->assertStringNotContainsString($removed, $content);
+        }
+    }
+
+    public function test_the_old_dashboard_sections_are_gone(): void
+    {
+        $content = $this->actingAs($this->member)->get(route('sales.dashboard'))->assertOk()->getContent();
+
+        foreach (['Month-end projection', 'Delivery pipeline', 'Fresh vs. Repeat', 'Top clients'] as $removed) {
+            $this->assertStringNotContainsString($removed, $content);
+        }
+    }
+
+    public function test_admin_sees_the_same_redesigned_dashboard(): void
+    {
+        $this->actingAs($this->admin)
+            ->get(route('sales.dashboard'))
+            ->assertOk()
+            ->assertSee('Q3 bonus so far')
+            ->assertSee('Earnings history')
+            ->assertSee('Company');
     }
 }
