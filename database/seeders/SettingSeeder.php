@@ -599,6 +599,15 @@ class SettingSeeder extends Seeder
                 'description' => 'Define available project statuses with icons and colors',
                 'is_public' => false,
             ],
+            [
+                'group' => 'company',
+                'key' => 'company_gross_target',
+                'value' => '0',
+                'type' => 'number',
+                'label' => 'Company Gross Sales Target',
+                'description' => 'Company-wide gross sales target per month. Leave at 0 to use the sum of every salesperson\'s own target instead.',
+                'is_public' => false,
+            ],
         ];
 
         foreach ($settings as $setting) {
