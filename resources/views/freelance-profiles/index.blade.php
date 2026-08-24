@@ -57,11 +57,11 @@
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.04em;
-        background-color: #eef2ff;
-        color: #4338ca;
+        background-color: #FFF3EC;
+        color: #C63508;
     }
 
-    .dark .s-chip { background-color: rgba(99, 102, 241, 0.15); color: #a5b4fc; }
+    .dark .s-chip { background-color: rgba(255, 90, 31, 0.15); color: #FFA26E; }
 
     .s-chip.is-new { background-color: #f3f4f6; color: #4b5563; }
     .dark .s-chip.is-new { background-color: #1f2937; color: #9ca3af; }
@@ -519,7 +519,7 @@ async function editProfile(id) {
             title: 'Error!',
             text: error.response?.data?.message || 'Failed to load profile',
             icon: 'error',
-            confirmButtonColor: '#9333ea'
+            confirmButtonColor: '#D67D06'
         });
     }
 }
@@ -574,7 +574,7 @@ async function submitForm(event) {
             title: 'Success!',
             text: isEditing ? 'Profile updated successfully!' : 'Profile created successfully!',
             icon: 'success',
-            confirmButtonColor: '#9333ea'
+            confirmButtonColor: '#D67D06'
         }).then(() => {
             window.location.reload();
         });
@@ -583,7 +583,7 @@ async function submitForm(event) {
             title: 'Error!',
             text: error.response?.data?.message || 'Something went wrong.',
             icon: 'error',
-            confirmButtonColor: '#9333ea'
+            confirmButtonColor: '#D67D06'
         });
     }
 }
@@ -597,7 +597,7 @@ async function toggleStatus(id, currentStatus) {
         text: `You want to ${action} this profile?`,
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#9333ea',
+        confirmButtonColor: '#D67D06',
         cancelButtonColor: '#6b7280',
         confirmButtonText: `Yes, ${action} it!`,
         cancelButtonText: 'Cancel'
@@ -612,7 +612,7 @@ async function toggleStatus(id, currentStatus) {
                     title: 'Success!',
                     text: `Profile ${action}d successfully!`,
                     icon: 'success',
-                    confirmButtonColor: '#9333ea'
+                    confirmButtonColor: '#D67D06'
                 }).then(() => {
                     window.location.reload();
                 });
@@ -621,7 +621,7 @@ async function toggleStatus(id, currentStatus) {
                     title: 'Error!',
                     text: error.response?.data?.message || 'Something went wrong.',
                     icon: 'error',
-                    confirmButtonColor: '#9333ea'
+                    confirmButtonColor: '#D67D06'
                 });
             }
         }
@@ -635,7 +635,7 @@ function deleteProfile(id) {
         text: "You won't be able to revert this!",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#9333ea',
+        confirmButtonColor: '#D67D06',
         cancelButtonColor: '#6b7280',
         confirmButtonText: 'Yes, delete it!',
         cancelButtonText: 'Cancel'
@@ -647,7 +647,7 @@ function deleteProfile(id) {
                         title: 'Deleted!',
                         text: response.data.message,
                         icon: 'success',
-                        confirmButtonColor: '#9333ea'
+                        confirmButtonColor: '#D67D06'
                     }).then(() => {
                         window.location.reload();
                     });
@@ -657,7 +657,7 @@ function deleteProfile(id) {
                         title: 'Error!',
                         text: error.response?.data?.message || 'Something went wrong.',
                         icon: 'error',
-                        confirmButtonColor: '#9333ea'
+                        confirmButtonColor: '#D67D06'
                     });
                 });
         }

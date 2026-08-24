@@ -101,7 +101,7 @@
         display: block;
         height: 100%;
         border-radius: 9999px;
-        background-image: linear-gradient(90deg, #4f46e5 0%, #8b5cf6 100%);
+        background-image: linear-gradient(90deg, #F0430A 0%, #F59A0F 100%);
     }
 
     .s-share span.is-emerald { background-image: linear-gradient(90deg, #059669 0%, #10b981 100%); }
@@ -115,7 +115,7 @@
         font-size: 0.875rem;
         font-weight: 700;
         color: #ffffff;
-        background-image: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+        background-image: linear-gradient(90deg, #F0430A 0%, #D67D06 100%);
         box-shadow: 0 1px 2px rgba(16, 24, 40, 0.1);
         transition: filter 0.15s ease;
     }
@@ -168,12 +168,12 @@
 
     .s-badge.is-emerald { background-color: #d1fae5; color: #047857; }
     .s-badge.is-amber { background-color: #fef3c7; color: #b45309; }
-    .s-badge.is-indigo { background-color: #eef2ff; color: #4338ca; }
+    .s-badge.is-indigo { background-color: #FFF3EC; color: #C63508; }
     .s-badge.is-gray { background-color: #f3f4f6; color: #6b7280; }
 
     .dark .s-badge.is-emerald { background-color: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
     .dark .s-badge.is-amber { background-color: rgba(245, 158, 11, 0.15); color: #fcd34d; }
-    .dark .s-badge.is-indigo { background-color: rgba(99, 102, 241, 0.15); color: #a5b4fc; }
+    .dark .s-badge.is-indigo { background-color: rgba(255, 90, 31, 0.15); color: #FFA26E; }
     .dark .s-badge.is-gray { background-color: #1f2937; color: #9ca3af; }
 
     /* Target / bonus zone track */
@@ -193,7 +193,7 @@
         bottom: 0;
     }
 
-    .s-zone-seg.is-target { background-image: linear-gradient(90deg, #4f46e5 0%, #8b5cf6 100%); }
+    .s-zone-seg.is-target { background-image: linear-gradient(90deg, #F0430A 0%, #F59A0F 100%); }
     .s-zone-seg.is-bonus { background-image: linear-gradient(90deg, #059669 0%, #10b981 100%); }
 
     .s-zone-mark {
@@ -238,7 +238,7 @@
         display: inline-block;
     }
 
-    .s-zone-key i.is-target { background-color: #6366f1; }
+    .s-zone-key i.is-target { background-color: #FF5A1F; }
     .s-zone-key i.is-bonus { background-color: #10b981; }
 
     /* Bonus derivation, shown as reading material rather than debug output. */
@@ -334,10 +334,10 @@
         flex: 1 1 0%;
         min-height: 0.25rem;
         border-radius: 0.1875rem 0.1875rem 0 0;
-        background-color: #c7d2fe;
+        background-color: #FFC7A6;
     }
 
-    .dark .s-spark-bar { background-color: #3730a3; }
+    .dark .s-spark-bar { background-color: #9C2B0B; }
 
     /* A month that cleared its target is money, so it takes the money colour. */
     .s-spark-bar.is-qualified { background-color: #10b981; }

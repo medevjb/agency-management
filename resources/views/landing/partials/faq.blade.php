@@ -1,9 +1,9 @@
 {{-- ============================ FAQ ============================ --}}
-<section id="faq" class="relative py-24 bg-indigo-50/40">
+<section id="faq" class="relative py-24 bg-paper-100/60">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-14">
-            <span data-reveal class="reveal inline-block text-xs font-bold uppercase tracking-widest text-indigo-600 mb-3">FAQ</span>
-            <h2 data-reveal class="reveal text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">Questions, answered</h2>
+            <span data-reveal class="reveal eyebrow inline-flex mb-3">FAQ</span>
+            <h2 data-reveal class="reveal font-display text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">Questions, answered</h2>
         </div>
 
         <div class="space-y-4" x-data="{ open: 0 }">
@@ -21,7 +21,7 @@
                     <button @click="open === {{ $i }} ? open = null : open = {{ $i }}"
                             class="w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
                         <span class="font-semibold text-gray-900">{{ $f[0] }}</span>
-                        <i class="fas fa-chevron-down text-gray-400 transition-transform shrink-0" :class="open === {{ $i }} ? 'rotate-180' : ''"></i>
+                        <i class="fas fa-chevron-down transition-transform shrink-0" :class="open === {{ $i }} ? 'rotate-180 text-ember-500' : 'text-gray-400'"></i>
                     </button>
                     <div x-show="open === {{ $i }}" x-collapse x-cloak>
                         <p class="px-6 pb-5 text-gray-600 leading-relaxed">{{ $f[1] }}</p>

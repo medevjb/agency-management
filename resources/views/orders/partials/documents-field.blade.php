@@ -82,8 +82,8 @@
 
     .doc-dropzone:hover,
     .doc-dropzone.is-dragging {
-        border-color: #818cf8;
-        background-color: #eef2ff;
+        border-color: #FF7A3D;
+        background-color: #FFF3EC;
     }
 
     .dark .doc-dropzone {
@@ -93,8 +93,8 @@
 
     .dark .doc-dropzone:hover,
     .dark .doc-dropzone.is-dragging {
-        border-color: #6366f1;
-        background-color: rgba(99, 102, 241, 0.08);
+        border-color: #FF5A1F;
+        background-color: rgba(255, 90, 31, 0.08);
     }
 </style>
 @endpush
@@ -179,7 +179,7 @@
                         title: 'Removed',
                         text: response.data.message || 'Document removed.',
                         icon: 'success',
-                        confirmButtonColor: '#9333ea',
+                        confirmButtonColor: '#D67D06',
                         timer: 1600,
                         showConfirmButton: false
                     });

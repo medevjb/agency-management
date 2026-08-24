@@ -4,150 +4,189 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Orbit - Sign In</title>
+
+    @php
+        $siteLogo = \App\Models\Setting::get('site_logo');
+        $siteName = \App\Models\Setting::get('site_name', config('app.name', 'Orbit'));
+    @endphp
+
+    <title>{{ $siteName }} — Sign in</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Keep this CDN Tailwind instance in sync with the app's brand palette
+        // (tailwind.config.js) since it doesn't read that file.
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        display: ['"Bricolage Grotesque"', 'sans-serif'],
+                        sans: ['"Instrument Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        indigo: { 50: '#FFF3EC', 100: '#FFE4D3', 200: '#FFC7A6', 300: '#FFA26E', 400: '#FF7A3D', 500: '#FF5A1F', 600: '#F0430A', 700: '#C63508', 800: '#9C2B0B', 900: '#7A250D', 950: '#431004' },
+                        purple: { 50: '#FFF8EB', 100: '#FFEFC7', 200: '#FFDD8A', 300: '#FFC94D', 400: '#FFB238', 500: '#F59A0F', 600: '#D67D06', 700: '#AD5F08', 800: '#8A4A0E', 900: '#723D10', 950: '#5C3208' },
+                        violet: { 50: '#FFF8EB', 100: '#FFEFC7', 200: '#FFDD8A', 300: '#FFC94D', 400: '#FFB238', 500: '#F59A0F', 600: '#D67D06', 700: '#AD5F08', 800: '#8A4A0E', 900: '#723D10', 950: '#5C3208' },
+                        ink: { DEFAULT: '#0B0E14', soft: '#151A24' },
+                        paper: { DEFAULT: '#FBF8F2' },
+                        ember: { 50: '#FFF3EC', 100: '#FFE4D3', 200: '#FFC7A6', 300: '#FFA26E', 400: '#FF7A3D', 500: '#FF5A1F', 600: '#F0430A', 700: '#C63508' },
+                        gold: { 300: '#FFC94D', 400: '#FFB238', 500: '#F59A0F' },
+                        aqua: { 400: '#2FCBB6', 500: '#16B8A0' },
+                    },
+                },
+            },
+        };
+    </script>
+
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700|bricolage-grotesque:600,700,800|jetbrains-mono:500,600" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='40' y2='40' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%23FFC94D'/%3E%3Cstop offset='1' stop-color='%23FF5A1F'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='40' height='40' rx='9' fill='url(%23g)'/%3E%3Crect y='17' width='40' height='6' fill='%230B0E14'/%3E%3Cpath d='M15 20 L22 15 L22 18.5 L27 18.5 L27 21.5 L22 21.5 L22 25 Z' fill='%230B0E14'/%3E%3C/svg%3E">
+
     <style>
-        * {
-            font-family: 'Inter', sans-serif;
+        * { font-family: 'Instrument Sans', sans-serif; }
+
+        body { background: #FBF8F2; }
+
+        .eyebrow {
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #FFC94D;
         }
 
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
+        .gradient-mesh {
+            background:
+                radial-gradient(at 20% 20%, rgba(255, 90, 31, 0.30) 0px, transparent 45%),
+                radial-gradient(at 80% 0%, rgba(255, 178, 56, 0.22) 0px, transparent 45%),
+                radial-gradient(at 50% 100%, rgba(22, 184, 160, 0.16) 0px, transparent 45%);
         }
 
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .input-field {
-            transition: all 0.3s ease;
-            border: 2px solid #e5e7eb;
-        }
-
-        .input-field:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
-        }
-
-        .floating-shape {
+        .glow-blob {
             position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            animation: float 20s infinite;
+            border-radius: 9999px;
+            filter: blur(70px);
+            opacity: 0.5;
+            pointer-events: none;
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(180deg); }
+        .board-row {
+            display: grid;
+            grid-template-columns: auto 1fr auto auto;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 4px;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.07);
+        }
+        .board-row:last-child { border-bottom: none; }
+        .row-code { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 0.6875rem; color: rgba(255, 255, 255, 0.35); white-space: nowrap; }
+        .row-title { font-size: 0.8125rem; font-weight: 600; color: #F5F1E8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .row-platform { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 0.625rem; font-weight: 700; letter-spacing: 0.06em; padding: 2px 7px; border-radius: 5px; }
+        .row-platform.fvr { background: rgba(22, 184, 160, 0.16); color: #5FE2CE; }
+        .row-platform.upw { background: rgba(255, 178, 56, 0.16); color: #FFC94D; }
+        .flap-face { display: inline-flex; align-items: center; justify-content: center; padding: 2px 9px; border-radius: 5px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 0.625rem; font-weight: 700; letter-spacing: 0.06em; }
+        .flap-face.pend { background: rgba(255, 178, 56, 0.16); color: #FFC94D; }
+        .flap-face.tran { background: rgba(255, 90, 31, 0.18); color: #FFA26E; }
+        .flap-face.dlvr { background: rgba(22, 184, 160, 0.18); color: #5FE2CE; }
+
+        .board-live-dot {
+            display: inline-block; width: 7px; height: 7px; border-radius: 9999px; background: #FF5A1F;
+            animation: livePulse 1.8s ease-in-out infinite;
+        }
+        @keyframes livePulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 90, 31, 0.55); }
+            70% { box-shadow: 0 0 0 8px rgba(255, 90, 31, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 90, 31, 0); }
         }
 
-        .logo-icon {
-            animation: pulse 2s ease-in-out infinite;
-        }
+        .input-field { transition: border-color .2s ease, box-shadow .2s ease; border: 1.5px solid #e5e7eb; }
+        .input-field:focus { border-color: #FF5A1F; box-shadow: 0 0 0 4px rgba(255, 90, 31, 0.12); }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
+        .reveal { opacity: 0; transform: translateY(14px); animation: revealIn .6s ease forwards; }
+        .reveal-delay-1 { animation-delay: .08s; }
+        .reveal-delay-2 { animation-delay: .16s; }
+        @keyframes revealIn { to { opacity: 1; transform: none; } }
 
-        .feature-icon {
-            transition: all 0.3s ease;
-        }
-
-        .feature-card:hover .feature-icon {
-            transform: translateY(-5px) scale(1.1);
+        @media (prefers-reduced-motion: reduce) {
+            .board-live-dot { animation: none; }
+            .reveal { animation: none; opacity: 1; transform: none; }
         }
     </style>
 </head>
-<body class="min-h-screen gradient-bg flex items-center justify-center p-4 overflow-hidden relative">
-    <!-- Floating Shapes -->
-    <div class="floating-shape w-64 h-64 top-20 -left-20" style="animation-delay: 0s;"></div>
-    <div class="floating-shape w-48 h-48 top-40 right-10" style="animation-delay: 2s;"></div>
-    <div class="floating-shape w-32 h-32 bottom-20 left-1/4" style="animation-delay: 4s;"></div>
-    <div class="floating-shape w-40 h-40 bottom-10 right-1/4" style="animation-delay: 6s;"></div>
+<body class="min-h-screen flex items-center justify-center p-4 lg:p-8">
 
-    <div class="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
-        <!-- Left Side - Branding -->
-        <div class="text-white text-center lg:text-left space-y-8">
-            <!-- Logo -->
-            <div class="flex items-center justify-center lg:justify-start gap-4">
-                <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-2xl logo-icon">
-                    <i class="fas fa-globe text-3xl text-purple-600"></i>
-                </div>
-                <h1 class="text-5xl font-bold tracking-tight">Orbit</h1>
-            </div>
+    <div class="w-full max-w-5xl grid lg:grid-cols-2 rounded-3xl overflow-hidden shadow-2xl shadow-ember-900/10">
 
-            <!-- Tagline -->
-            <div class="space-y-4">
-                <h2 class="text-3xl lg:text-4xl font-bold leading-tight">
-                    Streamline Your<br>Workflow
-                </h2>
-                <p class="text-lg text-purple-100 max-w-md mx-auto lg:mx-0">
-                    The ultimate platform for managing orders, tasks, teams, and portfolios. Everything you need, in perfect orbit.
+        <!-- Left: brand panel (hidden on small screens) -->
+        <div class="hidden lg:flex relative flex-col justify-between bg-ink p-10 overflow-hidden">
+            <div class="absolute inset-0 gradient-mesh"></div>
+            <div class="glow-blob bg-ember-500 w-72 h-72 -top-16 -left-16"></div>
+            <div class="glow-blob bg-gold-400 w-64 h-64 bottom-0 -right-10"></div>
+
+            <div class="relative reveal">
+                <a href="{{ route('home') }}" class="inline-flex items-center gap-2.5">
+                    <x-site-logo img-class="h-9 w-auto max-w-[150px] object-contain" badge-class="h-9 w-9 text-base" />
+                    <span class="font-display font-semibold text-lg text-white">{{ $siteName }}</span>
+                </a>
+
+                <h1 class="font-display mt-10 text-3xl font-bold tracking-tight text-white leading-[1.15]">
+                    Run your agency like<br>a dispatch tower
+                </h1>
+                <p class="mt-4 text-sm text-white/55 leading-relaxed max-w-sm">
+                    Track every Fiverr &amp; Upwork order, assign the right team, and see real delivered revenue — all in one command center.
                 </p>
             </div>
 
-            <!-- Features -->
-            <div class="grid grid-cols-3 gap-4 max-w-lg mx-auto lg:mx-0">
-                <div class="feature-card text-center p-4">
-                    <div class="feature-icon w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-2">
-                        <i class="fas fa-tasks text-white text-xl"></i>
-                    </div>
-                    <p class="text-sm font-medium">Smart Tasks</p>
+            <div class="relative reveal reveal-delay-1 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                <div class="flex items-center gap-2 mb-1 eyebrow">
+                    <span class="board-live-dot"></span> Live dispatch
                 </div>
-                <div class="feature-card text-center p-4">
-                    <div class="feature-icon w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-2">
-                        <i class="fas fa-users text-white text-xl"></i>
+                <div class="mt-2">
+                    <div class="board-row">
+                        <span class="row-code">ORD-2041</span>
+                        <span class="row-title">Logo animation</span>
+                        <span class="row-platform fvr">FVR</span>
+                        <span class="flap-face pend">PEND</span>
                     </div>
-                    <p class="text-sm font-medium">Team Sync</p>
-                </div>
-                <div class="feature-card text-center p-4">
-                    <div class="feature-icon w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-2">
-                        <i class="fas fa-chart-line text-white text-xl"></i>
+                    <div class="board-row">
+                        <span class="row-code">ORD-2039</span>
+                        <span class="row-title">Shopify theme</span>
+                        <span class="row-platform upw">UPW</span>
+                        <span class="flap-face tran">TRAN</span>
                     </div>
-                    <p class="text-sm font-medium">Analytics</p>
+                    <div class="board-row">
+                        <span class="row-code">ORD-2034</span>
+                        <span class="row-title">Brand kit</span>
+                        <span class="row-platform fvr">FVR</span>
+                        <span class="flap-face dlvr">DLVR</span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Right Side - Login Form -->
-        <div class="glass-card rounded-3xl shadow-2xl p-8 lg:p-10">
-            <div class="text-center mb-8">
-                <h3 class="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h3>
-                <p class="text-gray-600">Sign in to continue to Orbit</p>
+        <!-- Right: sign-in form -->
+        <div class="bg-white p-8 sm:p-10 lg:p-12 flex flex-col justify-center">
+
+            <!-- Mobile-only logo -->
+            <a href="{{ route('home') }}" class="lg:hidden inline-flex items-center gap-2.5 mb-8 self-center">
+                <x-site-logo img-class="h-9 w-auto max-w-[150px] object-contain" badge-class="h-9 w-9 text-base" />
+                <span class="font-display font-semibold text-lg text-gray-900">{{ $siteName }}</span>
+            </a>
+
+            <div class="mb-8 text-center lg:text-left reveal">
+                <h2 class="font-display text-2xl font-bold text-gray-900">Welcome back</h2>
+                <p class="mt-1 text-gray-500 text-sm">Sign in to continue to {{ $siteName }}</p>
             </div>
 
-            <form method="POST" action="{{ route('login') }}" class="space-y-6">
+            <form method="POST" action="{{ route('login') }}" class="space-y-5 reveal reveal-delay-1">
                 @csrf
 
-                <!-- Email -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2" for="email">
-                        <i class="fas fa-envelope mr-2 text-purple-600"></i>Email Address
-                    </label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5" for="email">Email address</label>
                     <input
                         id="email"
                         type="email"
@@ -157,20 +196,15 @@
                         autofocus
                         autocomplete="username"
                         placeholder="you@example.com"
-                        class="input-field w-full px-4 py-3 rounded-xl outline-none text-gray-900 placeholder-gray-400"
+                        class="input-field w-full px-4 py-2.5 rounded-lg outline-none text-gray-900 placeholder-gray-400"
                     >
                     @error('email')
-                        <p class="mt-2 text-sm text-red-600 flex items-center">
-                            <i class="fas fa-exclamation-circle mr-2"></i>{{ $message }}
-                        </p>
+                        <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <!-- Password -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2" for="password">
-                        <i class="fas fa-lock mr-2 text-purple-600"></i>Password
-                    </label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5" for="password">Password</label>
                     <div class="relative">
                         <input
                             id="password"
@@ -178,70 +212,48 @@
                             name="password"
                             required
                             autocomplete="current-password"
-                            placeholder="•••••••••"
-                            class="input-field w-full px-4 py-3 rounded-xl outline-none text-gray-900 placeholder-gray-400 pr-12"
+                            placeholder="••••••••"
+                            class="input-field w-full px-4 py-2.5 rounded-lg outline-none text-gray-900 placeholder-gray-400 pr-11"
                         >
                         <button
                             type="button"
                             onclick="togglePassword()"
-                            class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                            class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                            aria-label="Show password"
                         >
                             <i id="password-toggle-icon" class="fas fa-eye"></i>
                         </button>
                     </div>
                     @error('password')
-                        <p class="mt-2 text-sm text-red-600 flex items-center">
-                            <i class="fas fa-exclamation-circle mr-2"></i>{{ $message }}
-                        </p>
+                        <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <!-- Remember Me -->
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
                     <label class="flex items-center cursor-pointer">
-                        <input
-                            type="checkbox"
-                            name="remember"
-                            class="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                        >
+                        <input type="checkbox" name="remember" class="w-4 h-4 rounded border-gray-300 text-ember-600 focus:ring-ember-500">
                         <span class="ml-2 text-sm text-gray-600">Remember me</span>
                     </label>
 
                     @if (Route::has('password.request'))
-                        <a
-                            href="{{ route('password.request') }}"
-                            class="text-sm font-medium text-purple-600 hover:text-purple-700 transition-colors"
-                        >
+                        <a href="{{ route('password.request') }}" class="text-sm font-medium text-ember-600 hover:text-ember-700 transition-colors">
                             Forgot password?
                         </a>
                     @endif
                 </div>
 
-                <!-- Submit Button -->
                 <button
                     type="submit"
-                    class="btn-primary w-full py-4 rounded-xl text-white font-semibold text-lg shadow-lg"
+                    class="w-full py-3 rounded-lg text-white font-semibold bg-gradient-to-r from-ember-600 to-gold-500 shadow-lg shadow-ember-500/25 hover:shadow-ember-500/40 transition-shadow"
                 >
-                    <i class="fas fa-sign-in-alt mr-2"></i>
-                    Sign In
+                    Sign in <i class="fas fa-arrow-right text-xs ml-1"></i>
                 </button>
             </form>
 
-            <!-- Footer -->
-            <div class="mt-8 text-center">
-                <p class="text-sm text-gray-500">
-                    Secure login powered by Orbit
-                    <i class="fas fa-shield-alt ml-2 text-purple-600"></i>
-                </p>
-            </div>
+            <p class="mt-8 text-center text-xs text-gray-400 reveal reveal-delay-2">
+                Secure sign-in powered by {{ $siteName }}
+            </p>
         </div>
-    </div>
-
-    <!-- Copyright -->
-    <div class="absolute bottom-4 left-0 right-0 text-center z-10">
-        <p class="text-white/70 text-sm">
-            © 2025 Orbit. All rights reserved.
-        </p>
     </div>
 
     <script>

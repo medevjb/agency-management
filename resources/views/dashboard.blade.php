@@ -16,8 +16,8 @@
         transition: all 0.2s ease;
     }
     .order-card:hover {
-        border-color: #6366f1;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+        border-color: #FF5A1F;
+        box-shadow: 0 4px 12px rgba(255, 90, 31, 0.15);
     }
     .progress-bar {
         transition: width 0.6s ease;
@@ -222,11 +222,11 @@
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.04em;
-        background-color: #eef2ff;
-        color: #4338ca;
+        background-color: #FFF3EC;
+        color: #C63508;
     }
 
-    .dark .board-tag { background-color: rgba(99, 102, 241, 0.15); color: #a5b4fc; }
+    .dark .board-tag { background-color: rgba(255, 90, 31, 0.15); color: #FFA26E; }
 
     .board-meta {
         margin-top: 0.25rem;
@@ -252,8 +252,8 @@
     <!-- Page Header -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">Dashboard</h1>
-            <p class="text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-1">Welcome back, {{ Auth::user()->name }}! Here's your order overview.</p>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-1">Welcome back, {{ Auth::user()->name }}! Here's your order overview.</p>
         </div>
         <div class="flex flex-wrap gap-3 items-center">
             {{-- The month is now chosen once from the header picker and applies
@@ -262,7 +262,7 @@
                 <i class="fas fa-calendar-alt text-xs"></i>
                 {{ $availableMonths[$selectedMonth] ?? $selectedMonth }}
             </span>
-            <a href="{{ route('orders.create') }}" class="inline-flex items-center px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-indigo-200 hover:shadow-xl">
+            <a href="{{ route('orders.create') }}" class="inline-flex items-center px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-indigo-200 dark:shadow-none hover:shadow-xl">
                 <i class="fas fa-plus mr-2"></i>New Order
             </a>
         </div>
@@ -359,7 +359,7 @@
                     <p class="dash-hero dash-num">{{ number_format($stats['total']) }}</p>
                     <p class="dash-stat-foot"><i class="fas fa-folder mr-1"></i>All orders</p>
                 </div>
-                <div class="dash-icon" style="--icon-from: #6366f1; --icon-to: #8b5cf6;">
+                <div class="dash-icon" style="--icon-from: #FF5A1F; --icon-to: #F59A0F;">
                     <i class="fas fa-folder"></i>
                 </div>
             </div>
@@ -401,7 +401,7 @@
                     <p class="dash-hero dash-num">${{ number_format($stats['revenue'], 0) }}</p>
                     <p class="dash-stat-foot text-purple-600 dark:text-purple-400 dash-num"><i class="fas fa-check-circle mr-1"></i>{{ $stats['delivered'] }} orders this month</p>
                 </div>
-                <div class="dash-icon" style="--icon-from: #8b5cf6; --icon-to: #a78bfa;">
+                <div class="dash-icon" style="--icon-from: #F59A0F; --icon-to: #FFB238;">
                     <i class="fas fa-chart-line"></i>
                 </div>
             </div>
@@ -1277,8 +1277,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     datasets: [{
                         label: 'Revenue',
                         data: revenueByTeam.map(r => r.value),
-                        backgroundColor: 'rgba(99, 102, 241, 0.8)',
-                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(255, 90, 31, 0.8)',
+                        borderColor: '#FF5A1F',
                         borderWidth: 1,
                         borderRadius: 4
                     }]
@@ -1401,7 +1401,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         {
                             label: '3rd Month (' + qNames.q3 + ')',
                             data: qBreakdown.map(s => s.q3_amount),
-                            backgroundColor: 'rgba(139, 92, 246, 0.85)',
+                            backgroundColor: 'rgba(245, 154, 15, 0.85)',
                             borderRadius: 4,
                         }
                     ]

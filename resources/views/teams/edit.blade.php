@@ -260,7 +260,7 @@
         border-radius: 10px;
     }
     .max-h-64::-webkit-scrollbar-thumb {
-        background: #6366f1;
+        background: #FF5A1F;
         border-radius: 10px;
     }
 
@@ -268,19 +268,19 @@
         transition: all 0.15s ease;
     }
     .leader-option:hover {
-        background-color: #eef2ff;
+        background-color: #FFF3EC;
     }
     .leader-option.selected {
-        background-color: #e0e7ff;
-        border-color: #6366f1;
+        background-color: #FFE4D3;
+        border-color: #FF5A1F;
     }
 
     .dark .leader-option:hover {
-        background-color: rgba(99, 102, 241, 0.1);
+        background-color: rgba(255, 90, 31, 0.1);
     }
     .dark .leader-option.selected {
-        background-color: rgba(99, 102, 241, 0.15);
-        border-color: #818cf8;
+        background-color: rgba(255, 90, 31, 0.15);
+        border-color: #FF7A3D;
     }
 </style>
 @endpush

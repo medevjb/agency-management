@@ -622,8 +622,8 @@ document.addEventListener('DOMContentLoaded', function () {
             datasets: [{
                 label: 'Revenue',
                 data: revenueData,
-                backgroundColor: 'rgba(99,102,241,0.7)',
-                borderColor: 'rgba(99,102,241,1)',
+                backgroundColor: 'rgba(255, 90, 31,0.7)',
+                borderColor: 'rgba(255, 90, 31,1)',
                 borderWidth: 1,
                 borderRadius: 4,
             }]
@@ -681,8 +681,8 @@ document.addEventListener('DOMContentLoaded', function () {
             datasets: [{
                 label: 'Created',
                 data: tasksCreated,
-                backgroundColor: 'rgba(168,85,247,0.7)',
-                borderColor: 'rgba(168,85,247,1)',
+                backgroundColor: 'rgba(245, 154, 15,0.7)',
+                borderColor: 'rgba(245, 154, 15,1)',
                 borderWidth: 1,
                 borderRadius: 4,
             }, {
@@ -714,7 +714,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const bugLabels = Object.keys(bugStatuses).map(s => s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
     const bugValues = Object.values(bugStatuses);
     const bugColors = {
-        pending: '#f59e0b', in_progress: '#3b82f6', resolved: '#10b981', published: '#8b5cf6'
+        pending: '#f59e0b', in_progress: '#3b82f6', resolved: '#10b981', published: '#F59A0F'
     };
     const bugBackground = Object.keys(bugStatuses).map(s => bugColors[s] || '#9ca3af');
     const bugTotal = bugValues.reduce((a, b) => a + b, 0);
