@@ -592,19 +592,19 @@
 
     .dark .track-card { border-color: #374151; }
 
-    .track-card:hover { border-color: #a5b4fc; }
+    .track-card:hover { border-color: #FFA26E; }
 
     .track-option input:checked + .track-card {
-        border-color: #4f46e5;
-        background-color: #eef2ff;
+        border-color: #F0430A;
+        background-color: #FFF3EC;
     }
 
     .dark .track-option input:checked + .track-card {
-        background-color: rgba(99, 102, 241, 0.1);
+        background-color: rgba(255, 90, 31, 0.1);
     }
 
     .track-option input:focus-visible + .track-card {
-        outline: 2px solid #6366f1;
+        outline: 2px solid #FF5A1F;
         outline-offset: 2px;
     }
 
@@ -616,14 +616,14 @@
         height: 2.5rem;
         border-radius: 0.75rem;
         background-color: #f3f4f6;
-        color: #4f46e5;
+        color: #F0430A;
         flex-shrink: 0;
     }
 
-    .dark .track-icon { background-color: #1f2937; color: #a5b4fc; }
+    .dark .track-icon { background-color: #1f2937; color: #FFA26E; }
 
     .track-option input:checked + .track-card .track-icon {
-        background-image: linear-gradient(135deg, #4f46e5, #7c3aed);
+        background-image: linear-gradient(135deg, #F0430A, #D67D06);
         color: #ffffff;
     }
 
@@ -671,7 +671,7 @@
         min-width: 320px;
         max-width: 480px;
         background: #ffffff;
-        border-left: 4px solid #6366F1;
+        border-left: 4px solid #FF5A1F;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
         backdrop-filter: blur(10px);
     }
@@ -722,7 +722,7 @@
 
     .toast-progress {
         height: 3px;
-        background: #6366F1;
+        background: #FF5A1F;
         animation: toast-progress 5s linear;
         border-radius: 0 0 0 4px;
     }
@@ -839,17 +839,17 @@
 
     /* Permission checkbox hover effect */
     .permissions-accordion-item label:hover input[type="checkbox"] {
-        border-color: #4f46e5;
+        border-color: #F0430A;
     }
 
     .permissions-accordion-item label:has(input:checked) {
-        background-color: #eef2ff;
-        border-color: #4f46e5;
+        background-color: #FFF3EC;
+        border-color: #F0430A;
     }
 
     .dark .permissions-accordion-item label:has(input:checked) {
-        background-color: rgba(99, 102, 241, 0.1);
-        border-color: #6366f1;
+        background-color: rgba(255, 90, 31, 0.1);
+        border-color: #FF5A1F;
     }
 </style>
 @endpush

@@ -5,6 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Access Denied - {{ config('app.name') }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Keep this CDN Tailwind instance in sync with the app's brand palette
+        // (tailwind.config.js) since it doesn't read that file.
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        indigo: { 50: '#FFF3EC', 100: '#FFE4D3', 200: '#FFC7A6', 300: '#FFA26E', 400: '#FF7A3D', 500: '#FF5A1F', 600: '#F0430A', 700: '#C63508', 800: '#9C2B0B', 900: '#7A250D', 950: '#431004' },
+                        purple: { 50: '#FFF8EB', 100: '#FFEFC7', 200: '#FFDD8A', 300: '#FFC94D', 400: '#FFB238', 500: '#F59A0F', 600: '#D67D06', 700: '#AD5F08', 800: '#8A4A0E', 900: '#723D10', 950: '#5C3208' },
+                        violet: { 50: '#FFF8EB', 100: '#FFEFC7', 200: '#FFDD8A', 300: '#FFC94D', 400: '#FFB238', 500: '#F59A0F', 600: '#D67D06', 700: '#AD5F08', 800: '#8A4A0E', 900: '#723D10', 950: '#5C3208' },
+                    },
+                },
+            },
+        };
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-gradient-to-br from-yellow-50 via-white to-red-50 min-h-screen flex items-center justify-center p-4">

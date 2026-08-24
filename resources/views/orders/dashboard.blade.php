@@ -884,8 +884,8 @@ if ($diffInSeconds <= 0) {
                     datasets: [{
                         label: 'Revenue',
                         data: revenue,
-                        backgroundColor: 'rgba(99, 102, 241, 0.75)',
-                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(255, 90, 31, 0.75)',
+                        borderColor: '#FF5A1F',
                         borderWidth: 1,
                         borderRadius: 4,
                         yAxisID: 'y'
@@ -974,12 +974,12 @@ if ($diffInSeconds <= 0) {
                         datasets: [{
                             label: 'Value',
                             data: Object.values(monthlyRevenue),
-                            borderColor: '#6366f1',
-                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            borderColor: '#FF5A1F',
+                            backgroundColor: 'rgba(255, 90, 31, 0.1)',
                             borderWidth: 3,
                             fill: true,
                             tension: 0.4,
-                            pointBackgroundColor: '#6366f1',
+                            pointBackgroundColor: '#FF5A1F',
                             pointBorderColor: '#fff',
                             pointBorderWidth: 2,
                             pointRadius: 5,

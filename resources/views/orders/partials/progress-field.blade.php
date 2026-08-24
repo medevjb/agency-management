@@ -43,7 +43,7 @@
         appearance: none;
         cursor: pointer;
         background-color: #e5e7eb;
-        accent-color: #4f46e5;
+        accent-color: #F0430A;
     }
 
     .dark .progress-range {
@@ -66,7 +66,7 @@
         position: absolute;
         inset: 0 auto 0 0;
         border-radius: 9999px;
-        background-image: linear-gradient(90deg, #4f46e5 0%, #8b5cf6 100%);
+        background-image: linear-gradient(90deg, #F0430A 0%, #F59A0F 100%);
         transition: width 250ms ease;
     }
 

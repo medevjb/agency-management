@@ -79,15 +79,15 @@
 @push('styles')
 <style>
     .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-        background: #4f46e5 !important;
+        background: #F0430A !important;
         color: white !important;
-        border: 1px solid #4f46e5 !important;
+        border: 1px solid #F0430A !important;
     }
 
     .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
-        background: #6366f1 !important;
+        background: #FF5A1F !important;
         color: white !important;
-        border: 1px solid #6366f1 !important;
+        border: 1px solid #FF5A1F !important;
     }
 
     .dt-buttons {

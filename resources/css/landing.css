@@ -7,10 +7,11 @@
    ========================================================================== */
 
 :root {
-    --brand-indigo: #6366f1;
-    --brand-indigo-deep: #4f46e5;
-    --brand-purple: #a855f7;
-    --ink: #0b1020;
+    --ember: #FF5A1F;
+    --ember-deep: #C63508;
+    --gold: #FFB238;
+    --aqua: #16B8A0;
+    --ink: #0B0E14;
 }
 
 html {
@@ -19,7 +20,7 @@ html {
 
 body.landing {
     font-family: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
-    background-color: #ffffff;
+    background-color: #FBF8F2;
     color: #1f2937;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
@@ -28,10 +29,10 @@ body.landing {
 /* --- Animated gradient mesh background ----------------------------------- */
 .gradient-mesh {
     background:
-        radial-gradient(at 20% 20%, rgba(99, 102, 241, 0.35) 0px, transparent 45%),
-        radial-gradient(at 80% 10%, rgba(168, 85, 247, 0.30) 0px, transparent 45%),
-        radial-gradient(at 70% 70%, rgba(79, 70, 229, 0.30) 0px, transparent 45%),
-        radial-gradient(at 10% 80%, rgba(56, 189, 248, 0.22) 0px, transparent 45%);
+        radial-gradient(at 20% 20%, rgba(255, 90, 31, 0.30) 0px, transparent 45%),
+        radial-gradient(at 80% 10%, rgba(255, 178, 56, 0.28) 0px, transparent 45%),
+        radial-gradient(at 70% 70%, rgba(22, 184, 160, 0.22) 0px, transparent 45%),
+        radial-gradient(at 10% 80%, rgba(255, 90, 31, 0.16) 0px, transparent 45%);
     background-size: 180% 180%;
     animation: meshDrift 18s ease-in-out infinite alternate;
 }
@@ -53,14 +54,14 @@ body.landing {
 
 /* --- Glass surface ------------------------------------------------------- */
 .glass {
-    background: rgba(255, 255, 255, 0.7);
+    background: rgba(251, 248, 242, 0.75);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
 .glass-dark {
-    background: rgba(17, 24, 39, 0.55);
+    background: rgba(11, 14, 20, 0.6);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -71,11 +72,11 @@ body.landing {
     transition: background-color 0.35s ease, box-shadow 0.35s ease, backdrop-filter 0.35s ease, border-color 0.35s ease;
 }
 #siteNav.is-scrolled {
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(251, 248, 242, 0.88);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-    box-shadow: 0 8px 30px -12px rgba(15, 23, 42, 0.18);
-    border-color: rgba(226, 232, 240, 0.9) !important;
+    box-shadow: 0 8px 30px -12px rgba(11, 14, 20, 0.18);
+    border-color: rgba(226, 220, 206, 0.9) !important;
 }
 
 /* --- Mockup "browser" chrome -------------------------------------------- */
@@ -84,9 +85,9 @@ body.landing {
     background: #ffffff;
     box-shadow:
         0 1px 0 rgba(15, 23, 42, 0.04),
-        0 30px 60px -20px rgba(49, 46, 129, 0.35),
-        0 12px 24px -12px rgba(15, 23, 42, 0.25);
-    border: 1px solid rgba(226, 232, 240, 0.9);
+        0 30px 60px -20px rgba(198, 53, 8, 0.25),
+        0 12px 24px -12px rgba(11, 14, 20, 0.2);
+    border: 1px solid rgba(226, 220, 206, 0.9);
     overflow: hidden;
     will-change: transform;
 }
@@ -134,15 +135,151 @@ body.landing {
 
 /* --- Gradient text ------------------------------------------------------- */
 .text-gradient {
-    background: linear-gradient(120deg, var(--brand-indigo-deep), var(--brand-purple) 60%, #38bdf8);
+    background: linear-gradient(120deg, var(--ember), var(--gold) 55%, var(--ember-deep));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
 }
 
+/* --- Eyebrow / system label (mono) --------------------------------------- */
+.eyebrow {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ember-deep);
+}
+.eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-right: 8px;
+    border-radius: 9999px;
+    background: var(--ember);
+    vertical-align: middle;
+}
+
 /* --- Custom scrollbar inside mockups ------------------------------------ */
 .mini-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
 .mini-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 9999px; }
+
+/* ==========================================================================
+   Dispatch board — hero signature element
+   ========================================================================== */
+.dispatch-board {
+    border-radius: 20px;
+    background: linear-gradient(180deg, #10141F 0%, #0B0E14 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+        0 40px 80px -24px rgba(11, 14, 20, 0.55),
+        0 0 0 1px rgba(255, 90, 31, 0.06) inset;
+    overflow: hidden;
+}
+
+.board-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #FFC94D;
+}
+
+.board-live-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    background: var(--ember);
+    box-shadow: 0 0 0 0 rgba(255, 90, 31, 0.6);
+    animation: livePulse 1.8s ease-in-out infinite;
+}
+@keyframes livePulse {
+    0%   { box-shadow: 0 0 0 0 rgba(255, 90, 31, 0.55); }
+    70%  { box-shadow: 0 0 0 8px rgba(255, 90, 31, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 90, 31, 0); }
+}
+
+.board-clock {
+    margin-left: auto;
+    color: rgba(255, 255, 255, 0.4);
+    font-variant-numeric: tabular-nums;
+}
+
+.board-rows {
+    padding: 6px 8px;
+}
+
+.board-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 10px;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.07);
+}
+.board-row:last-child { border-bottom: none; }
+
+.row-code {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.6875rem;
+    color: rgba(255, 255, 255, 0.35);
+    white-space: nowrap;
+}
+.row-title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #F5F1E8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.row-platform {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 2px 7px;
+    border-radius: 5px;
+}
+.row-platform.fvr { background: rgba(22, 184, 160, 0.16); color: #5FE2CE; }
+.row-platform.upw { background: rgba(255, 178, 56, 0.16); color: #FFC94D; }
+
+/* --- Split-flap status flap ------------------------------------------------ */
+.flap {
+    perspective: 240px;
+    width: 64px;
+    height: 22px;
+}
+.flap-face {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    border-radius: 5px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+}
+.flap-face[data-state="PEND"] { background: rgba(255, 178, 56, 0.16); color: #FFC94D; }
+.flap-face[data-state="TRAN"] { background: rgba(255, 90, 31, 0.18); color: #FFA26E; }
+.flap-face[data-state="DLVR"] { background: rgba(22, 184, 160, 0.18); color: #5FE2CE; }
+
+/* --- Net revenue floating chip -------------------------------------------- */
+.chip-card {
+    border-radius: 16px;
+}
 
 /* --- Respect reduced motion --------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
@@ -150,7 +287,8 @@ body.landing {
     .gradient-mesh,
     .float-soft,
     .float-soft-delayed,
-    .marquee-track {
+    .marquee-track,
+    .board-live-dot {
         animation: none !important;
     }
     .reveal {

@@ -211,7 +211,7 @@ function addUserToRole() {
             icon: 'warning',
             title: 'Select User',
             text: 'Please select a user to add to this role.',
-            confirmButtonColor: '#6366f1'
+            confirmButtonColor: '#FF5A1F'
         });
         return;
     }

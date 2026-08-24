@@ -22,8 +22,8 @@
         transition: all 0.2s ease;
     }
     .order-card:hover {
-        border-color: #6366f1;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+        border-color: #FF5A1F;
+        box-shadow: 0 4px 12px rgba(255, 90, 31, 0.15);
     }
 </style>
 @endpush

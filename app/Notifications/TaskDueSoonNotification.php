@@ -24,7 +24,7 @@ class TaskDueSoonNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'database'];
     }
 
     /**
@@ -55,10 +55,11 @@ class TaskDueSoonNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'task_id' => $this->task->id,
-            'task_title' => $this->task->title,
-            'due_date' => $this->task->due_date,
-            'days_remaining' => $this->daysRemaining,
+            'title' => 'Task due soon',
+            'message' => $this->task->title.' — due in '.$this->daysRemaining.' day'.($this->daysRemaining === 1 ? '' : 's'),
+            'icon' => 'fa-clock',
+            'color' => 'red',
+            'url' => route('tasks.show', $this->task),
         ];
     }
 }

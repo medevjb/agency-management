@@ -19,7 +19,10 @@
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700|bricolage-grotesque:500,600,700,800|jetbrains-mono:500,600,700" rel="stylesheet" />
+
+    <!-- Favicon (dispatch mark) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='40' y2='40' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%23FFC94D'/%3E%3Cstop offset='1' stop-color='%23FF5A1F'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='40' height='40' rx='9' fill='url(%23g)'/%3E%3Crect y='17' width='40' height='6' fill='%230B0E14'/%3E%3Cpath d='M15 20 L22 15 L22 18.5 L27 18.5 L27 21.5 L22 21.5 L22 25 Z' fill='%230B0E14'/%3E%3C/svg%3E">
 
     <!-- Styles -->
     @vite('resources/css/landing.css')

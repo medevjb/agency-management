@@ -25,14 +25,14 @@ div.dt-container div.dt-search {
 }
 
 .dataTables_wrapper .dataTables_length select:hover {
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    border-color: #FF5A1F;
+    box-shadow: 0 0 0 3px rgba(255, 90, 31, 0.1);
 }
 
 .dataTables_wrapper .dataTables_length select:focus {
     outline: none;
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    border-color: #FF5A1F;
+    box-shadow: 0 0 0 3px rgba(255, 90, 31, 0.1);
 }
 
 /* Global DataTables Filter/Buttons Container */
@@ -278,40 +278,40 @@ div.dt-container div.dt-search {
 }
 
 .flatpickr-day:hover {
-    background: linear-gradient(135deg, #f3e8ff 0%, #e0e7ff 100%);
+    background: linear-gradient(135deg, #FFEFC7 0%, #FFE4D3 100%);
     border-color: transparent;
 }
 
 .flatpickr-day.today {
-    border-color: #9333ea;
-    background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+    border-color: #D67D06;
+    background: linear-gradient(135deg, #FFEFC7 0%, #FFEFC7 100%);
     font-weight: 600;
 }
 
 .flatpickr-day.selected {
-    background: linear-gradient(135deg, #9333ea 0%, #6366f1 100%) !important;
-    border-color: #9333ea !important;
+    background: linear-gradient(135deg, #D67D06 0%, #FF5A1F 100%) !important;
+    border-color: #D67D06 !important;
     color: white !important;
     font-weight: 600;
 }
 
 .flatpickr-day.selected:hover {
-    background: linear-gradient(135deg, #7e22ce 0%, #4f46e5 100%) !important;
+    background: linear-gradient(135deg, #AD5F08 0%, #F0430A 100%) !important;
 }
 
 .flatpickr-day.startRange,
 .flatpickr-day.endRange,
 .flatpickr-day.selected.startRange,
 .flatpickr-day.selected.endRange {
-    background: linear-gradient(135deg, #9333ea 0%, #6366f1 100%) !important;
-    border-color: #9333ea !important;
+    background: linear-gradient(135deg, #D67D06 0%, #FF5A1F 100%) !important;
+    border-color: #D67D06 !important;
     color: white !important;
 }
 
 .flatpickr-day.inRange {
-    background: #f3e8ff;
+    background: #FFEFC7;
     border-color: transparent;
-    box-shadow: -2px 0 0 #e9d5ff, 2px 0 0 #e9d5ff;
+    box-shadow: -2px 0 0 #FFDD8A, 2px 0 0 #FFDD8A;
 }
 
 .flatpickr-day.disabled {
@@ -331,7 +331,7 @@ div.dt-container div.dt-search {
 
 .flatpickr-current-month {
     font-weight: 600;
-    color: #9333ea;
+    color: #D67D06;
 }
 
 .flatpickr-weekday {

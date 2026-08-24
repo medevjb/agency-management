@@ -37,8 +37,8 @@
         }
 
         .task-column.drag-over {
-            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
-            border-color: #6366f1;
+            background: linear-gradient(135deg, #FFE4D3 0%, #FFC7A6 100%);
+            border-color: #FF5A1F;
             transform: scale(1.02);
         }
 
@@ -64,8 +64,8 @@
         }
 
         .column-on-hold .task-column-header {
-            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
-            color: #6b21a8;
+            background: linear-gradient(135deg, #FFEFC7 0%, #FFDD8A 100%);
+            color: #8A4A0E;
         }
 
         .column-completed .task-column-header {
@@ -120,8 +120,8 @@
         }
 
         .stat-card.active {
-            border-color: #6366f1;
-            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+            border-color: #FF5A1F;
+            background: linear-gradient(135deg, #FFEFC7 0%, #FFEFC7 100%);
         }
 
         /* Filter Pills */
@@ -138,12 +138,12 @@
 
         .filter-pill:hover {
             transform: translateY(-2px);
-            border-color: #6366f1;
+            border-color: #FF5A1F;
         }
 
         .filter-pill.active {
-            border-color: #6366f1;
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-color: #FF5A1F;
+            background: linear-gradient(135deg, #FF5A1F 0%, #F59A0F 100%);
             color: white;
         }
 
@@ -152,7 +152,7 @@
             width: 32px;
             height: 32px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            background: linear-gradient(135deg, #FF5A1F 0%, #F59A0F 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -166,7 +166,7 @@
             width: 18px;
             height: 18px;
             cursor: pointer;
-            accent-color: #6366f1;
+            accent-color: #FF5A1F;
         }
 
         /* Drop Zone */
@@ -183,8 +183,8 @@
         }
 
         .drop-zone.drag-over {
-            background: rgba(99, 102, 241, 0.1);
-            border: 2px dashed #6366f1;
+            background: rgba(255, 90, 31, 0.1);
+            border: 2px dashed #FF5A1F;
         }
 
         /* Clickable area for adding tasks */
@@ -202,7 +202,7 @@
         }
 
         .drop-zone:hover::after {
-            background: linear-gradient(to top, rgba(99, 102, 241, 0.05) 0%, transparent 100%);
+            background: linear-gradient(to top, rgba(255, 90, 31, 0.05) 0%, transparent 100%);
         }
 
         .drop-zone .add-task-placeholder {
@@ -257,16 +257,16 @@
         }
 
         .column-on-hold .add-task-placeholder {
-            border-color: #d8b4fe;
-            color: #9333ea;
+            border-color: #FFC94D;
+            color: #D67D06;
             background: rgba(243, 232, 255, 0.6);
         }
 
         .column-on-hold .add-task-placeholder:hover {
-            border-color: #a855f7;
-            color: #7c3aed;
+            border-color: #F59A0F;
+            color: #D67D06;
             background: rgba(243, 232, 255, 0.9);
-            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2);
+            box-shadow: 0 4px 12px rgba(245, 154, 15, 0.2);
         }
 
         .column-completed .add-task-placeholder {
@@ -418,13 +418,13 @@
         }
 
         .alert-btn-primary {
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            background: linear-gradient(135deg, #FF5A1F 0%, #F59A0F 100%);
             color: white;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 4px 15px rgba(255, 90, 31, 0.4);
         }
 
         .alert-btn-primary:hover {
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+            box-shadow: 0 6px 20px rgba(255, 90, 31, 0.6);
         }
 
         .alert-btn-secondary {
@@ -434,8 +434,8 @@
         }
 
         .alert-btn-secondary:hover {
-            border-color: #6366f1;
-            color: #6366f1;
+            border-color: #FF5A1F;
+            color: #FF5A1F;
         }
 
         .alert-btn-danger {
@@ -644,7 +644,7 @@
         }
 
         .progress-bar-on-hold {
-            background: linear-gradient(90deg, #a855f7 0%, #9333ea 100%);
+            background: linear-gradient(90deg, #F59A0F 0%, #D67D06 100%);
             transition: width 0.5s ease;
         }
 
@@ -683,12 +683,12 @@
             width: 20px;
             height: 20px;
             border-radius: 6px;
-            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
-            color: #6b21a8;
+            background: linear-gradient(135deg, #FFEFC7 0%, #FFDD8A 100%);
+            color: #8A4A0E;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 1px 2px rgba(168, 85, 247, 0.2);
+            box-shadow: 0 1px 2px rgba(245, 154, 15, 0.2);
         }
 
         .status-icon-completed {
@@ -734,8 +734,8 @@
         }
 
         .dark .task-column.drag-over {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
-            border-color: #818cf8;
+            background: linear-gradient(135deg, rgba(255, 90, 31, 0.15) 0%, rgba(245, 154, 15, 0.15) 100%);
+            border-color: #FF7A3D;
         }
 
         .dark .column-pending .task-column-header {
@@ -749,8 +749,8 @@
         }
 
         .dark .column-on-hold .task-column-header {
-            background: rgba(168, 85, 247, 0.15);
-            color: #c084fc;
+            background: rgba(245, 154, 15, 0.15);
+            color: #FFB238;
         }
 
         .dark .column-completed .task-column-header {
@@ -779,8 +779,8 @@
         }
 
         .dark .stat-card.active {
-            border-color: #818cf8;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(139, 92, 246, 0.12) 100%);
+            border-color: #FF7A3D;
+            background: linear-gradient(135deg, rgba(255, 90, 31, 0.12) 0%, rgba(245, 154, 15, 0.12) 100%);
         }
 
         .dark .filter-pill {
@@ -790,12 +790,12 @@
         }
 
         .dark .filter-pill:hover {
-            border-color: #818cf8;
+            border-color: #FF7A3D;
         }
 
         .dark .drop-zone.drag-over {
-            background: rgba(99, 102, 241, 0.15);
-            border-color: #818cf8;
+            background: rgba(255, 90, 31, 0.15);
+            border-color: #FF7A3D;
         }
 
         .dark .drop-zone .add-task-placeholder {
@@ -830,13 +830,13 @@
 
         .dark .column-on-hold .add-task-placeholder {
             border-color: rgba(216, 180, 254, 0.4);
-            color: #c084fc;
+            color: #FFB238;
             background: rgba(243, 232, 255, 0.06);
         }
 
         .dark .column-on-hold .add-task-placeholder:hover {
-            border-color: #a855f7;
-            color: #d8b4fe;
+            border-color: #F59A0F;
+            color: #FFC94D;
             background: rgba(243, 232, 255, 0.1);
         }
 
@@ -879,8 +879,8 @@
         }
 
         .dark .alert-btn-secondary:hover {
-            border-color: #818cf8;
-            color: #818cf8;
+            border-color: #FF7A3D;
+            color: #FF7A3D;
         }
 
         .dark .toast {
@@ -961,8 +961,8 @@
         }
 
         .dark .status-icon-on-hold {
-            background: rgba(168, 85, 247, 0.15);
-            color: #c084fc;
+            background: rgba(245, 154, 15, 0.15);
+            color: #FFB238;
         }
 
         .dark .status-icon-completed {

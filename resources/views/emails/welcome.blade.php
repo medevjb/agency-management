@@ -38,7 +38,7 @@
 
         /* Header */
         .email-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #FF5A1F 0%, #C63508 100%);
             padding: 40px;
             text-align: center;
         }
@@ -76,7 +76,7 @@
 
         .welcome-text {
             background-color: #f8f9fa;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #FF5A1F;
             padding: 20px;
             margin: 30px 0;
             border-radius: 4px;
@@ -92,7 +92,7 @@
         }
 
         .credentials-box h3 {
-            color: #667eea;
+            color: #FF5A1F;
             font-size: 18px;
             margin-bottom: 15px;
             font-weight: 600;
@@ -129,20 +129,20 @@
 
         .btn {
             display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #FF5A1F 0%, #C63508 100%);
             color: #ffffff;
             text-decoration: none;
             padding: 16px 40px;
             border-radius: 50px;
             font-size: 16px;
             font-weight: 600;
-            box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 14px rgba(255, 90, 31, 0.4);
             transition: all 0.3s ease;
         }
 
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            box-shadow: 0 6px 20px rgba(255, 90, 31, 0.6);
         }
 
         /* Info cards */
@@ -173,7 +173,7 @@
         }
 
         .info-card-value {
-            color: #667eea;
+            color: #FF5A1F;
             font-weight: 600;
             font-size: 16px;
         }
@@ -193,7 +193,7 @@
         }
 
         .email-footer a {
-            color: #667eea;
+            color: #FF5A1F;
             text-decoration: none;
         }
 

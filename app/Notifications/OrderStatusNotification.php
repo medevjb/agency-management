@@ -24,7 +24,7 @@ class OrderStatusNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'database'];
     }
 
     /**
@@ -53,10 +53,11 @@ class OrderStatusNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'order_id' => $this->order->id,
-            'order_name' => $this->order->name,
-            'old_status' => $this->oldStatus,
-            'new_status' => $this->newStatus,
+            'title' => 'Order status updated',
+            'message' => $this->order->name.': '.$this->oldStatus.' → '.$this->newStatus,
+            'icon' => 'fa-shopping-cart',
+            'color' => 'ember',
+            'url' => route('orders.show', $this->order),
         ];
     }
 }

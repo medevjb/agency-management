@@ -16,7 +16,7 @@
             transform: scale(1.05);
         }
         .gradient-overlay {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.9) 0%, rgba(139, 92, 246, 0.9) 100%);
+            background: linear-gradient(135deg, rgba(255, 90, 31, 0.9) 0%, rgba(245, 154, 15, 0.9) 100%);
         }
         .stat-card {
             transition: all 0.3s ease;

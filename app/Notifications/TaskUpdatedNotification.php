@@ -24,7 +24,7 @@ class TaskUpdatedNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'database'];
     }
 
     /**
@@ -58,11 +58,19 @@ class TaskUpdatedNotification extends Notification implements ShouldQueue
      */
     public function toArray(object $notifiable): array
     {
+        $label = match ($this->changeType) {
+            'status' => 'Task status updated',
+            'priority' => 'Task priority changed',
+            'due_date' => 'Task due date changed',
+            default => 'Task updated',
+        };
+
         return [
-            'task_id' => $this->task->id,
-            'task_title' => $this->task->title,
-            'change_type' => $this->changeType,
-            'status' => $this->task->status,
+            'title' => $label,
+            'message' => $this->task->title,
+            'icon' => 'fa-tasks',
+            'color' => 'gold',
+            'url' => route('tasks.show', $this->task),
         ];
     }
 }
