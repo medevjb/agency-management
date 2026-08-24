@@ -6,6 +6,7 @@ use App\Http\Controllers\BugReportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FreelanceProfileController;
 use App\Http\Controllers\GitHubController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderDashboardController;
 use App\Http\Controllers\PortfolioController;
@@ -38,6 +39,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::get('/load-more', [NotificationController::class, 'loadMore'])->name('load-more');
+        Route::get('/{id}/open', [NotificationController::class, 'open'])->name('open');
+        Route::post('/read-all', [NotificationController::class, 'markAllRead'])->name('read-all');
+    });
 
     // Global AJAX search endpoints
     Route::prefix('search')->name('search.')->group(function () {
