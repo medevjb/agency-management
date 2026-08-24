@@ -88,14 +88,14 @@
         }
 
         #ordersTable_wrapper .dataTables_length select:hover {
-            border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            border-color: #FF5A1F;
+            box-shadow: 0 0 0 3px rgba(255, 90, 31, 0.1);
         }
 
         #ordersTable_wrapper .dataTables_length select:focus {
             outline: none;
-            border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            border-color: #FF5A1F;
+            box-shadow: 0 0 0 3px rgba(255, 90, 31, 0.1);
         }
 
         #ordersTable_wrapper .dataTables_info {
@@ -140,17 +140,17 @@
         }
 
         #ordersTable_wrapper .dataTables_paginate .paginate_button.current {
-            background: linear-gradient(135deg, #6366f1 0%, #5558dd 100%) !important;
-            border-color: #6366f1 !important;
+            background: linear-gradient(135deg, #FF5A1F 0%, #FF5A1F 100%) !important;
+            border-color: #FF5A1F !important;
             color: white !important;
             font-weight: 600 !important;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+            box-shadow: 0 4px 12px rgba(255, 90, 31, 0.3) !important;
             transform: translateY(-1px);
         }
 
         #ordersTable_wrapper .dataTables_paginate .paginate_button.current:hover {
-            background: linear-gradient(135deg, #5558dd 0%, #4c51bf 100%) !important;
-            border-color: #4c51bf !important;
+            background: linear-gradient(135deg, #FF5A1F 0%, #C63508 100%) !important;
+            border-color: #C63508 !important;
             box-shadow: 0 6px 16px rgba(85, 83, 221, 0.4) !important;
         }
 
@@ -292,7 +292,7 @@
 
         .inline-select:focus {
             outline: none;
-            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+            box-shadow: 0 0 0 2px rgba(245, 154, 15, 0.2);
         }
 
         .inline-select option {
@@ -331,7 +331,7 @@
         .dark #ordersTable_wrapper .dt-length select:focus,
         .dark #ordersTable_wrapper .dt-search input:hover,
         .dark #ordersTable_wrapper .dt-search input:focus {
-            border-color: #818cf8;
+            border-color: #FF7A3D;
         }
 
         .dark #ordersTable_wrapper .dt-length label,
@@ -357,8 +357,8 @@
         }
 
         .dark #ordersTable_wrapper .dt-paging .page-item.active .page-link {
-            background-color: #4f46e5;
-            border-color: #4f46e5;
+            background-color: #F0430A;
+            border-color: #F0430A;
             color: #ffffff;
         }
 
@@ -459,7 +459,7 @@
             border-radius: 9999px;
             appearance: none;
             cursor: pointer;
-            background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+            background: linear-gradient(90deg, #FF5A1F 0%, #F59A0F 100%);
             outline: none;
         }
 
@@ -469,7 +469,7 @@
             height: 1.25rem;
             border-radius: 9999px;
             background: #ffffff;
-            border: 3px solid #6366f1;
+            border: 3px solid #FF5A1F;
             box-shadow: 0 2px 6px rgba(16, 24, 40, 0.25);
             cursor: grab;
         }
@@ -479,7 +479,7 @@
             height: 1.25rem;
             border-radius: 9999px;
             background: #ffffff;
-            border: 3px solid #6366f1;
+            border: 3px solid #FF5A1F;
             box-shadow: 0 2px 6px rgba(16, 24, 40, 0.25);
             cursor: grab;
         }
@@ -728,7 +728,7 @@
             margin-left: -0.375rem;
             border-radius: 9999px;
             border: 2px solid #ffffff;
-            background-color: #4f46e5;
+            background-color: #F0430A;
             color: #ffffff;
             font-size: 0.625rem;
             font-weight: 700;
@@ -776,7 +776,7 @@
             position: absolute;
             inset: 0 auto 0 0;
             border-radius: 9999px;
-            background-color: #6366f1;
+            background-color: #FF5A1F;
         }
 
         .overdue-chevron {
@@ -865,13 +865,13 @@
         }
 
         .overdue-btn.is-primary {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-            border-color: #4f46e5;
+            background: linear-gradient(135deg, #F0430A 0%, #D67D06 100%);
+            border-color: #F0430A;
             color: #ffffff;
         }
 
         .overdue-btn.is-primary:hover {
-            background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
+            background: linear-gradient(135deg, #C63508 0%, #AD5F08 100%);
         }
 
         /* Action menu styles */
@@ -2033,7 +2033,7 @@
                                 const progress = Math.max(0, Math.min(100, parseInt(data) || 0));
                                 const circumference = 2 * Math.PI * 15.5;
                                 const offset = circumference * (1 - progress / 100);
-                                const stroke = progress >= 100 ? '#10b981' : '#6366f1';
+                                const stroke = progress >= 100 ? '#10b981' : '#FF5A1F';
                                 const documents = parseInt(row.documents_count) || 0;
                                 const documentsBadge = documents > 0 ?
                                     `<a href="${urlTemplates.show}${row.key}" class="inline-flex items-center gap-0.5 text-[10px] font-semibold text-blue-500 dark:text-blue-400 hover:underline" title="${documents} document(s)">
@@ -2372,7 +2372,7 @@
                                 title: 'Select Action',
                                 text: 'Please select a bulk action to perform.',
                                 icon: 'warning',
-                                confirmButtonColor: '#9333ea'
+                                confirmButtonColor: '#D67D06'
                             });
                             return;
                         }
@@ -2382,7 +2382,7 @@
                                 title: 'No Selection',
                                 text: 'Please select at least one order.',
                                 icon: 'warning',
-                                confirmButtonColor: '#9333ea'
+                                confirmButtonColor: '#D67D06'
                             });
                             return;
                         }
@@ -2416,7 +2416,7 @@
                                 text: `Mark ${selectedIds.length} order(s) as ${actionNames[action]}?`,
                                 icon: 'question',
                                 showCancelButton: true,
-                                confirmButtonColor: '#9333ea',
+                                confirmButtonColor: '#D67D06',
                                 cancelButtonColor: '#6b7280',
                                 confirmButtonText: 'Yes, update!',
                                 cancelButtonText: 'Cancel'
@@ -2443,7 +2443,7 @@
                                     title: 'Success!',
                                     text: response.data.message || 'Bulk action completed successfully.',
                                     icon: 'success',
-                                    confirmButtonColor: '#9333ea'
+                                    confirmButtonColor: '#D67D06'
                                 }).then(() => {
                                     selectedIds = [];
                                     $('#checkAll, #selectAll').prop('checked', false);
@@ -2456,7 +2456,7 @@
                                     title: 'Error!',
                                     text: error.response?.data?.message || 'Something went wrong.',
                                     icon: 'error',
-                                    confirmButtonColor: '#9333ea'
+                                    confirmButtonColor: '#D67D06'
                                 });
                             });
                     }
@@ -2529,7 +2529,7 @@
                                     title: 'Deleted!',
                                     text: response.data.message || 'Order has been deleted.',
                                     icon: 'success',
-                                    confirmButtonColor: '#9333ea'
+                                    confirmButtonColor: '#D67D06'
                                 }).then(() => {
                                     $('#ordersTable').DataTable().ajax.reload();
                                 });
@@ -2582,7 +2582,7 @@
                     text: `Change ${fieldLabels[field]} to "${valueLabels[newValue]}"?`,
                     icon: 'question',
                     showCancelButton: true,
-                    confirmButtonColor: '#9333ea',
+                    confirmButtonColor: '#D67D06',
                     cancelButtonColor: '#6b7280',
                     confirmButtonText: 'Yes, update!',
                     cancelButtonText: 'Cancel'
@@ -2599,7 +2599,7 @@
                                     title: 'Updated!',
                                     text: response.data.message || 'Order updated successfully.',
                                     icon: 'success',
-                                    confirmButtonColor: '#9333ea',
+                                    confirmButtonColor: '#D67D06',
                                     timer: 1500,
                                     showConfirmButton: false
                                 }).then(() => {
@@ -2666,7 +2666,7 @@
                 const value = parseInt(range.value) || 0;
                 const dark = document.documentElement.classList.contains('dark');
                 const trackColor = dark ? '#374151' : '#e5e7eb';
-                range.style.background = `linear-gradient(90deg, #6366f1 0%, #8b5cf6 ${value}%, ${trackColor} ${value}%, ${trackColor} 100%)`;
+                range.style.background = `linear-gradient(90deg, #FF5A1F 0%, #F59A0F ${value}%, ${trackColor} ${value}%, ${trackColor} 100%)`;
                 valueLabel.textContent = value + '%';
 
                 if (value === progressModalState.original) {
@@ -2756,7 +2756,7 @@
                                 text: `Change completed date to "${dateStr}"?`,
                                 icon: 'question',
                                 showCancelButton: true,
-                                confirmButtonColor: '#9333ea',
+                                confirmButtonColor: '#D67D06',
                                 cancelButtonColor: '#6b7280',
                                 confirmButtonText: 'Yes, update!',
                                 cancelButtonText: 'Cancel'
@@ -2774,7 +2774,7 @@
                                                 text: response.data.message ||
                                                     'Completed date updated successfully.',
                                                 icon: 'success',
-                                                confirmButtonColor: '#9333ea',
+                                                confirmButtonColor: '#D67D06',
                                                 timer: 1500,
                                                 showConfirmButton: false
                                             }).then(() => {
@@ -2827,7 +2827,7 @@
                                 text: `Change start date to "${dateStr}"?`,
                                 icon: 'question',
                                 showCancelButton: true,
-                                confirmButtonColor: '#9333ea',
+                                confirmButtonColor: '#D67D06',
                                 cancelButtonColor: '#6b7280',
                                 confirmButtonText: 'Yes, update!',
                                 cancelButtonText: 'Cancel'
@@ -2845,7 +2845,7 @@
                                                 text: response.data.message ||
                                                     'Start date updated successfully.',
                                                 icon: 'success',
-                                                confirmButtonColor: '#9333ea',
+                                                confirmButtonColor: '#D67D06',
                                                 timer: 1500,
                                                 showConfirmButton: false
                                             }).then(() => {
@@ -2975,7 +2975,7 @@
                                 text: `Change last update date to "${dateStr}"?`,
                                 icon: 'question',
                                 showCancelButton: true,
-                                confirmButtonColor: '#9333ea',
+                                confirmButtonColor: '#D67D06',
                                 cancelButtonColor: '#6b7280',
                                 confirmButtonText: 'Yes, update!',
                                 cancelButtonText: 'Cancel'
@@ -2993,7 +2993,7 @@
                                                 text: response.data.message ||
                                                     'Last update date updated successfully.',
                                                 icon: 'success',
-                                                confirmButtonColor: '#9333ea',
+                                                confirmButtonColor: '#D67D06',
                                                 timer: 1500,
                                                 showConfirmButton: false
                                             }).then(() => {
@@ -3221,7 +3221,7 @@
                     text: `Assign ${userIds.length} user(s) to this order?`,
                     icon: 'question',
                     showCancelButton: true,
-                    confirmButtonColor: '#9333ea',
+                    confirmButtonColor: '#D67D06',
                     cancelButtonColor: '#6b7280',
                     confirmButtonText: 'Yes, update!',
                     cancelButtonText: 'Cancel'
@@ -3240,7 +3240,7 @@
                                     title: 'Updated!',
                                     text: response.data.message || 'User assignments updated successfully.',
                                     icon: 'success',
-                                    confirmButtonColor: '#9333ea',
+                                    confirmButtonColor: '#D67D06',
                                     timer: 1500,
                                     showConfirmButton: false
                                 }).then(() => {
@@ -3319,7 +3319,7 @@
                     confirmButtonText: 'Export All',
                     denyButtonText: 'Export Filtered',
                     cancelButtonText: 'Cancel',
-                    confirmButtonColor: '#9333ea',
+                    confirmButtonColor: '#D67D06',
                     denyButtonColor: '#3b82f6',
                     cancelButtonColor: '#6b7280'
                 }).then((result) => {
@@ -3370,7 +3370,7 @@
                                 title: 'No Data',
                                 text: 'No orders found to export.',
                                 icon: 'info',
-                                confirmButtonColor: '#9333ea'
+                                confirmButtonColor: '#D67D06'
                             });
                             return;
                         }
@@ -3434,7 +3434,7 @@
                             title: 'Export Complete!',
                             text: `Successfully exported ${orders.length} order(s).`,
                             icon: 'success',
-                            confirmButtonColor: '#9333ea'
+                            confirmButtonColor: '#D67D06'
                         });
                     })
                     .catch(error => {

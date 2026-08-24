@@ -1,5 +1,5 @@
 {{-- ============================ Footer ============================ --}}
-<footer class="bg-gray-900 text-gray-400">
+<footer class="bg-ink text-gray-400">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-10">
 
@@ -9,7 +9,7 @@
                     <x-site-logo
                         img-class="h-8 w-auto max-w-[140px] object-contain bg-white/5 rounded-lg p-1"
                         badge-class="h-8 w-8 text-sm" />
-                    <span class="font-bold text-white text-lg">{{ $siteName }}</span>
+                    <span class="font-display font-semibold text-white text-lg">{{ $siteName }}</span>
                 </div>
                 <p class="text-sm leading-relaxed text-gray-500">
                     {{ $siteDescription }}

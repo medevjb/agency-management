@@ -88,7 +88,7 @@
 
         .flatpickr-current-month span.cur-month {
             font-weight: 700;
-            color: #6366f1;
+            color: #FF5A1F;
         }
 
         .flatpickr-current-month span.cur-year {
@@ -114,7 +114,7 @@
 
         .flatpickr-months .flatpickr-prev-month:hover,
         .flatpickr-months .flatpickr-next-month:hover {
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            background: linear-gradient(135deg, #FF5A1F 0%, #F59A0F 100%);
             color: #ffffff;
             fill: #ffffff;
             transform: scale(1.05);
@@ -167,8 +167,8 @@
         }
 
         .flatpickr-day:hover {
-            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
-            color: #4f46e5;
+            background: linear-gradient(135deg, #FFE4D3 0%, #FFC7A6 100%);
+            color: #F0430A;
             transform: scale(1.05);
             border-color: transparent;
         }
@@ -179,16 +179,16 @@
         }
 
         .flatpickr-day.today {
-            border: 2px solid #6366f1;
+            border: 2px solid #FF5A1F;
             background: #ffffff;
-            color: #6366f1;
+            color: #FF5A1F;
             font-weight: 600;
         }
 
         .flatpickr-day.today:hover {
-            border: 2px solid #6366f1;
-            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
-            color: #4f46e5;
+            border: 2px solid #FF5A1F;
+            background: linear-gradient(135deg, #FFE4D3 0%, #FFC7A6 100%);
+            color: #F0430A;
         }
 
         .flatpickr-day.selected,
@@ -209,17 +209,17 @@
         .flatpickr-day.selected.nextMonthDay,
         .flatpickr-day.startRange.nextMonthDay,
         .flatpickr-day.endRange.nextMonthDay {
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+            background: linear-gradient(135deg, #FF5A1F 0%, #F59A0F 100%) !important;
             border-color: transparent !important;
             color: #ffffff !important;
             font-weight: 600;
-            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 2px 8px rgba(255, 90, 31, 0.3);
         }
 
         .flatpickr-day.inRange {
-            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%) !important;
+            background: linear-gradient(135deg, #FFE4D3 0%, #FFC7A6 100%) !important;
             border-color: transparent !important;
-            color: #4f46e5 !important;
+            color: #F0430A !important;
             box-shadow: none;
         }
 
@@ -236,7 +236,7 @@
         }
 
         .flatpickr-day.week.selected {
-            box-shadow: -5px 0 0 #6366f1, 5px 0 0 #6366f1;
+            box-shadow: -5px 0 0 #FF5A1F, 5px 0 0 #FF5A1F;
         }
 
         /* Week numbers */
@@ -345,13 +345,13 @@
         }
 
         .swal2-icon.swal2-info {
-            border-color: #6366f1 !important;
-            color: #6366f1 !important;
+            border-color: #FF5A1F !important;
+            color: #FF5A1F !important;
         }
 
         .swal2-icon.swal2-question {
-            border-color: #6366f1 !important;
-            color: #6366f1 !important;
+            border-color: #FF5A1F !important;
+            color: #FF5A1F !important;
         }
 
         /* Title */
@@ -394,19 +394,19 @@
         }
 
         .swal2-popup .swal2-styled:focus {
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3) !important;
+            box-shadow: 0 0 0 3px rgba(255, 90, 31, 0.3) !important;
         }
 
         /* Confirm button */
         .swal2-popup .swal2-styled.swal2-confirm {
-            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+            background: linear-gradient(135deg, #FF5A1F 0%, #F0430A 100%) !important;
             color: #ffffff !important;
         }
 
         .swal2-popup .swal2-styled.swal2-confirm:hover {
-            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
+            background: linear-gradient(135deg, #F0430A 0%, #C63508 100%) !important;
             transform: translateY(-1px) !important;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35) !important;
+            box-shadow: 0 4px 12px rgba(255, 90, 31, 0.35) !important;
         }
 
         .swal2-popup .swal2-styled.swal2-confirm:active {
@@ -458,8 +458,8 @@
         .swal2-input:focus,
         .swal2-textarea:focus,
         .swal2-select:focus {
-            border-color: #6366f1 !important;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+            border-color: #FF5A1F !important;
+            box-shadow: 0 0 0 3px rgba(255, 90, 31, 0.15) !important;
             outline: none !important;
         }
 
@@ -504,13 +504,13 @@
         /* Loading spinner */
         .swal2-loading .swal2-styled.swal2-confirm {
             border-color: transparent !important;
-            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+            background: linear-gradient(135deg, #FF5A1F 0%, #F0430A 100%) !important;
             opacity: 0.8 !important;
         }
 
         /* Timer progress bar */
         .swal2-timer-progress-bar {
-            background: linear-gradient(90deg, #6366f1, #8b5cf6) !important;
+            background: linear-gradient(90deg, #FF5A1F, #F59A0F) !important;
             height: 4px !important;
             border-radius: 0 0 20px 20px !important;
         }
@@ -525,12 +525,12 @@
         }
 
         .swal2-footer a {
-            color: #6366f1 !important;
+            color: #FF5A1F !important;
             font-weight: 500 !important;
         }
 
         .swal2-footer a:hover {
-            color: #4f46e5 !important;
+            color: #F0430A !important;
         }
 
         /* Popup animation overrides */
@@ -674,26 +674,26 @@
             gap: 0.5rem;
             padding: 0.5rem 0.875rem;
             border-radius: 9999px;
-            border: 1px solid #e0e7ff;
-            background-color: #eef2ff;
-            color: #4338ca;
+            border: 1px solid #FFE4D3;
+            background-color: #FFF3EC;
+            color: #C63508;
             font-size: 0.8125rem;
             font-weight: 700;
             transition: background-color 0.15s ease, border-color 0.15s ease;
         }
 
         .month-picker-trigger:hover {
-            background-color: #e0e7ff;
+            background-color: #FFE4D3;
         }
 
         .dark .month-picker-trigger {
-            background-color: rgba(99, 102, 241, 0.12);
-            border-color: rgba(99, 102, 241, 0.3);
-            color: #c7d2fe;
+            background-color: rgba(255, 90, 31, 0.12);
+            border-color: rgba(255, 90, 31, 0.3);
+            color: #FFC7A6;
         }
 
         .dark .month-picker-trigger:hover {
-            background-color: rgba(99, 102, 241, 0.2);
+            background-color: rgba(255, 90, 31, 0.2);
         }
 
         .month-picker-chevron {
@@ -767,13 +767,13 @@
         }
 
         .month-picker-option.is-active {
-            background-color: #eef2ff;
-            color: #4338ca;
+            background-color: #FFF3EC;
+            color: #C63508;
         }
 
         .dark .month-picker-option.is-active {
-            background-color: rgba(99, 102, 241, 0.15);
-            color: #c7d2fe;
+            background-color: rgba(255, 90, 31, 0.15);
+            color: #FFC7A6;
         }
 
         .month-picker-footnote {
@@ -896,7 +896,7 @@
             color: #ffffff;
             font-size: 1.0625rem;
             flex-shrink: 0;
-            background-image: linear-gradient(135deg, var(--icon-from, #6366f1), var(--icon-to, #8b5cf6));
+            background-image: linear-gradient(135deg, var(--icon-from, #FF5A1F), var(--icon-to, #F59A0F));
         }
 
         .dash-stat-label {
@@ -949,12 +949,12 @@
             display: block;
             height: 100%;
             border-radius: 9999px;
-            background-image: linear-gradient(90deg, #4f46e5 0%, #8b5cf6 100%);
+            background-image: linear-gradient(90deg, #F0430A 0%, #F59A0F 100%);
         }
 
         span.dt-column-title {
             text-align: start;
-            margin-left: 20px;
+            margin-left: 16px;
         }
     </style>
     @stack('styles')
@@ -970,9 +970,9 @@
 
     <!-- Mobile Sidebar -->
     <aside id="mobileSidebar"
-        class="hidden fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-indigo-600 to-indigo-800 text-white lg:hidden">
+        class="hidden fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-ink to-ink-soft text-white lg:hidden">
         <div class="flex flex-col h-full">
-            <div class="flex items-center justify-between h-16 px-4 border-b border-indigo-700">
+            <div class="flex items-center justify-between h-16 px-4 border-b border-white/10">
                 <div class="flex items-center gap-2">
                     @php $mobileSiteName = \App\Models\Setting::get('site_name', config('app.name', 'PMT')); @endphp
                     <x-site-logo img-class="h-8 w-auto max-w-[120px] object-contain" badge-class="h-8 w-8 text-sm" />
@@ -988,16 +988,16 @@
                 @role(['admin', 'operation-manager', 'project-manager'])
                     <div class="mb-2 sidebar-section" data-section="dashboard">
                         <button
-                            class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                            class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-white/5 transition-all duration-200 group">
                             <div class="flex items-center">
-                                <i class="fas fa-th-large w-5 text-indigo-300 group-hover:text-white transition-colors"></i>
+                                <i class="fas fa-th-large w-5 text-white/40 group-hover:text-gold-400 transition-colors"></i>
                                 <span class="ml-3">Dashboard</span>
                             </div>
                             <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron"></i>
                         </button>
                         <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
                             <a href="{{ route('dashboard') }}"
-                                class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('dashboard') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                                class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-white/5 transition-colors {{ request()->routeIs('dashboard') ? 'bg-ember-500/15 text-ember-300' : 'text-white/60' }}">
                                 <i class="fas fa-chart-line w-5 mr-2"></i>
                                 Overview
                             </a>
@@ -1008,27 +1008,27 @@
                 <!-- Orders Section -->
                 <div class="mb-2 sidebar-section" data-section="orders">
                     <button
-                        class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                        class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-white/5 transition-all duration-200 group">
                         <div class="flex items-center">
                             <i
-                                class="fas fa-shopping-cart w-5 text-indigo-300 group-hover:text-white transition-colors"></i>
+                                class="fas fa-shopping-cart w-5 text-white/40 group-hover:text-gold-400 transition-colors"></i>
                             <span class="ml-3">Orders</span>
                         </div>
                         <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron"></i>
                     </button>
                     <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
                         <a href="{{ route('orders.dashboard') }}"
-                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('orders.dashboard') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-white/5 transition-colors {{ request()->routeIs('orders.dashboard') ? 'bg-ember-500/15 text-ember-300' : 'text-white/60' }}">
                             <i class="fas fa-chart-line w-5 mr-2"></i>
                             Dashboard
                         </a>
                         <a href="{{ route('orders.index') }}"
-                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('orders.index') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-white/5 transition-colors {{ request()->routeIs('orders.index') ? 'bg-ember-500/15 text-ember-300' : 'text-white/60' }}">
                             <i class="fas fa-list w-5 mr-2"></i>
                             All Orders
                         </a>
                         <a href="{{ route('orders.create') }}"
-                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('orders.create') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-white/5 transition-colors {{ request()->routeIs('orders.create') ? 'bg-ember-500/15 text-ember-300' : 'text-white/60' }}">
                             <i class="fas fa-plus w-5 mr-2"></i>
                             Add Order
                         </a>
@@ -1038,26 +1038,26 @@
                 <!-- Tasks Section -->
                 <div class="mb-2 sidebar-section" data-section="tasks">
                     <button
-                        class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                        class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-white/5 transition-all duration-200 group">
                         <div class="flex items-center">
-                            <i class="fas fa-tasks w-5 text-cyan-400 group-hover:text-cyan-300 transition-colors"></i>
+                            <i class="fas fa-tasks w-5 text-white/40 group-hover:text-gold-400 transition-colors"></i>
                             <span class="ml-3">Tasks</span>
                         </div>
                         <i class="fas fa-chevron-down text-xs transition-transform duration-200 sidebar-chevron"></i>
                     </button>
                     <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
                         <a href="{{ route('tasks.index') }}"
-                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tasks.index') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-white/5 transition-colors {{ request()->routeIs('tasks.index') ? 'bg-ember-500/15 text-ember-300' : 'text-white/60' }}">
                             <i class="fas fa-list w-5 mr-2"></i>
                             All Tasks
                         </a>
                         <a href="{{ route('tasks.archived') }}"
-                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tasks.archived') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-white/5 transition-colors {{ request()->routeIs('tasks.archived') ? 'bg-ember-500/15 text-ember-300' : 'text-white/60' }}">
                             <i class="fas fa-archive w-5 mr-2"></i>
                             Archived Tasks
                         </a>
                         <a href="{{ route('tasks.create') }}"
-                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tasks.create') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                            class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-white/5 transition-colors {{ request()->routeIs('tasks.create') ? 'bg-ember-500/15 text-ember-300' : 'text-white/60' }}">
                             <i class="fas fa-plus w-5 mr-2"></i>
                             Add Task
                         </a>
@@ -1068,7 +1068,7 @@
                 @role('admin')
                     <div class="mb-2 sidebar-section" data-section="admin">
                         <button
-                            class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-red-600/30 transition-all duration-200 group">
+                            class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-red-500/10 transition-all duration-200 group">
                             <div class="flex items-center">
                                 <i
                                     class="fas fa-shield-alt w-5 text-red-400 group-hover:text-red-300 transition-colors"></i>
@@ -1078,27 +1078,27 @@
                         </button>
                         <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
                             <a href="{{ route('admin.dashboard') }}"
-                                class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('admin.*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
+                                class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-500/10 transition-colors {{ request()->routeIs('admin.*') ? 'bg-red-500/15 text-red-300' : 'text-white/60' }}">
                                 <i class="fas fa-tachometer-alt w-5 mr-2"></i>
                                 Admin Dashboard
                             </a>
                             <a href="{{ route('users.index') }}"
-                                class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('users.*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
+                                class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-500/10 transition-colors {{ request()->routeIs('users.*') ? 'bg-red-500/15 text-red-300' : 'text-white/60' }}">
                                 <i class="fas fa-users-cog w-5 mr-2"></i>
                                 Manage Users
                             </a>
                             <a href="{{ route('admin.roles') }}"
-                                class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('admin.roles*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
+                                class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-500/10 transition-colors {{ request()->routeIs('admin.roles*') ? 'bg-red-500/15 text-red-300' : 'text-white/60' }}">
                                 <i class="fas fa-key w-5 mr-2"></i>
                                 Roles & Permissions
                             </a>
                             <a href="{{ route('admin.github.index') }}"
-                                class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('admin.github.*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
+                                class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-500/10 transition-colors {{ request()->routeIs('admin.github.*') ? 'bg-red-500/15 text-red-300' : 'text-white/60' }}">
                                 <i class="fas fa-code-branch w-5 mr-2"></i>
                                 GitHub Commits
                             </a>
                             <a href="{{ route('settings.index') }}"
-                                class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-600/20 transition-colors {{ request()->routeIs('settings.*') ? 'bg-red-600/50 text-white' : 'text-indigo-200' }}">
+                                class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-red-500/10 transition-colors {{ request()->routeIs('settings.*') ? 'bg-red-500/15 text-red-300' : 'text-white/60' }}">
                                 <i class="fas fa-cog w-5 mr-2"></i>
                                 System Settings
                             </a>
@@ -1109,8 +1109,8 @@
                 @role(['operation-manager', 'project-manager'])
                     <div class="mb-2 sidebar-section" data-section="admin">
                         <a href="{{ route('admin.github.index') }}"
-                            class="flex items-center px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 {{ request()->routeIs('admin.github.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
-                            <i class="fas fa-code-branch w-5 mr-2 text-indigo-300"></i>
+                            class="flex items-center px-4 py-3 text-sm font-semibold rounded-lg hover:bg-white/5 transition-all duration-200 {{ request()->routeIs('admin.github.*') ? 'bg-ember-500/15 text-ember-300' : 'text-white/60' }}">
+                            <i class="fas fa-code-branch w-5 mr-2 text-white/40"></i>
                             GitHub Commits
                         </a>
                     </div>
@@ -1121,10 +1121,10 @@
                         auth()->user()->can('viewAny', \App\Models\TechStack::class))
                     <div class="mb-2 sidebar-section" data-section="team">
                         <button
-                            class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group">
+                            class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-lg hover:bg-white/5 transition-all duration-200 group">
                             <div class="flex items-center">
                                 <i
-                                    class="fas fa-users w-5 text-green-400 group-hover:text-green-300 transition-colors"></i>
+                                    class="fas fa-users w-5 text-white/40 group-hover:text-gold-400 transition-colors"></i>
                                 <span class="ml-3">Team</span>
                             </div>
                             <i
@@ -1133,14 +1133,14 @@
                         <div class="sidebar-content mt-1 space-y-1 ml-4 hidden">
                             @can('viewAny', \App\Models\Team::class)
                                 <a href="{{ route('teams.index') }}"
-                                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('teams.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-white/5 transition-colors {{ request()->routeIs('teams.*') ? 'bg-ember-500/15 text-ember-300' : 'text-white/60' }}">
                                     <i class="fas fa-users w-5 mr-2"></i>
                                     Teams
                                 </a>
                             @endcan
                             @can('viewAny', \App\Models\TechStack::class)
                                 <a href="{{ route('tech-stacks.index') }}"
-                                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-indigo-700/30 transition-colors {{ request()->routeIs('tech-stacks.*') ? 'bg-indigo-600/50 text-white' : 'text-indigo-200' }}">
+                                    class="flex items-center px-4 py-2 text-sm rounded-lg hover:bg-white/5 transition-colors {{ request()->routeIs('tech-stacks.*') ? 'bg-ember-500/15 text-ember-300' : 'text-white/60' }}">
                                     <i class="fas fa-layer-group w-5 mr-2"></i>
                                     Tech Stacks
                                 </a>

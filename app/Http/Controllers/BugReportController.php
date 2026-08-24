@@ -9,9 +9,13 @@ use App\Models\BugCategory;
 use App\Models\BugImage;
 use App\Models\BugPriority;
 use App\Models\BugReport;
+use App\Notifications\BugReportStatusNotification;
+use App\Notifications\BugReportSubmittedNotification;
 use App\Services\BugTriageService;
+use App\Support\NotificationRecipients;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -123,6 +127,8 @@ class BugReportController extends Controller
             TriageBugReportJob::dispatch($bugReport->fresh(['images']));
         }
 
+        Notification::send(NotificationRecipients::management(), new BugReportSubmittedNotification($bugReport));
+
         return redirect()->route('bug-reports.show', $bugReport)
             ->with('success', 'Bug report submitted successfully.');
     }
@@ -160,6 +166,8 @@ class BugReportController extends Controller
     {
         $this->authorize('update', $bugReport);
 
+        $oldStatus = $bugReport->status;
+
         $bugReport->update([
             'bug_category_id' => $request->bug_category_id,
             'bug_priority_id' => $request->bug_priority_id,
@@ -168,6 +176,10 @@ class BugReportController extends Controller
             'status' => $request->status,
             'admin_notes' => $request->admin_notes,
         ]);
+
+        if ($bugReport->status !== $oldStatus && $bugReport->user_id !== auth()->id()) {
+            $bugReport->user->notify(new BugReportStatusNotification($bugReport, $oldStatus));
+        }
 
         // Handle status transitions
         if ($request->status === 'resolved' && ! $bugReport->resolved_at) {

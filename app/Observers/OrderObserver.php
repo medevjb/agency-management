@@ -4,6 +4,9 @@ namespace App\Observers;
 
 use App\Models\Order;
 use App\Models\OrderAudit;
+use App\Notifications\OrderCreatedNotification;
+use App\Support\NotificationRecipients;
+use Illuminate\Support\Facades\Notification;
 
 class OrderObserver
 {
@@ -24,6 +27,8 @@ class OrderObserver
         );
 
         OrderAudit::record($order, 'created', [], $values);
+
+        Notification::send(NotificationRecipients::management(), new OrderCreatedNotification($order));
     }
 
     public function updated(Order $order): void

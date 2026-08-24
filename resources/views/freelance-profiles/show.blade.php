@@ -57,11 +57,11 @@
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.04em;
-        background-color: #eef2ff;
-        color: #4338ca;
+        background-color: #FFF3EC;
+        color: #C63508;
     }
 
-    .dark .s-chip { background-color: rgba(99, 102, 241, 0.15); color: #a5b4fc; }
+    .dark .s-chip { background-color: rgba(255, 90, 31, 0.15); color: #FFA26E; }
 
     .s-chip.is-new { background-color: #f3f4f6; color: #4b5563; }
     .dark .s-chip.is-new { background-color: #1f2937; color: #9ca3af; }
@@ -557,8 +557,8 @@ document.addEventListener('DOMContentLoaded', function () {
             datasets: [{
                 label: 'Revenue',
                 data: trend.map(m => m.revenue),
-                backgroundColor: 'rgba(99,102,241,0.7)',
-                borderColor: 'rgba(99,102,241,1)',
+                backgroundColor: 'rgba(255, 90, 31,0.7)',
+                borderColor: 'rgba(255, 90, 31,1)',
                 borderWidth: 1,
                 borderRadius: 4,
             }]
@@ -647,7 +647,7 @@ function deleteProfile(id) {
         text: "You won't be able to revert this!",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#9333ea',
+        confirmButtonColor: '#D67D06',
         cancelButtonColor: '#6b7280',
         confirmButtonText: 'Yes, delete it!',
         cancelButtonText: 'Cancel'
@@ -659,7 +659,7 @@ function deleteProfile(id) {
                         title: 'Deleted!',
                         text: response.data.message,
                         icon: 'success',
-                        confirmButtonColor: '#9333ea'
+                        confirmButtonColor: '#D67D06'
                     }).then(() => {
                         window.location.href = '{{ route('freelance-profiles.index') }}';
                     });
@@ -669,7 +669,7 @@ function deleteProfile(id) {
                         title: 'Error!',
                         text: error.response.data.message || 'Something went wrong.',
                         icon: 'error',
-                        confirmButtonColor: '#9333ea'
+                        confirmButtonColor: '#D67D06'
                     });
                 });
         }
@@ -683,7 +683,7 @@ function toggleStatus(id) {
                 title: 'Success!',
                 text: response.data.message,
                 icon: 'success',
-                confirmButtonColor: '#9333ea'
+                confirmButtonColor: '#D67D06'
             }).then(() => {
                 window.location.reload();
             });
@@ -693,7 +693,7 @@ function toggleStatus(id) {
                 title: 'Error!',
                 text: error.response.data.message || 'Something went wrong.',
                 icon: 'error',
-                confirmButtonColor: '#9333ea'
+                confirmButtonColor: '#D67D06'
             });
         });
 }
@@ -705,7 +705,7 @@ function toggleVerify(id) {
                 title: 'Success!',
                 text: response.data.message,
                 icon: 'success',
-                confirmButtonColor: '#9333ea'
+                confirmButtonColor: '#D67D06'
             }).then(() => {
                 window.location.reload();
             });
@@ -715,7 +715,7 @@ function toggleVerify(id) {
                 title: 'Error!',
                 text: error.response.data.message || 'Something went wrong.',
                 icon: 'error',
-                confirmButtonColor: '#9333ea'
+                confirmButtonColor: '#D67D06'
             });
         });
 }
@@ -727,7 +727,7 @@ function toggleFeatured(id) {
                 title: 'Success!',
                 text: response.data.message,
                 icon: 'success',
-                confirmButtonColor: '#9333ea'
+                confirmButtonColor: '#D67D06'
             }).then(() => {
                 window.location.reload();
             });
@@ -737,7 +737,7 @@ function toggleFeatured(id) {
                 title: 'Error!',
                 text: error.response.data.message || 'Something went wrong.',
                 icon: 'error',
-                confirmButtonColor: '#9333ea'
+                confirmButtonColor: '#D67D06'
             });
         });
 }

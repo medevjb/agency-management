@@ -119,8 +119,8 @@
 
 <style>
 input[type="checkbox"].sr-only:checked + div .w-5 {
-    background-color: #4F46E5;
-    border-color: #4F46E5;
+    background-color: #F0430A;
+    border-color: #F0430A;
 }
 
 input[type="checkbox"].sr-only:checked + div .w-5 i {
