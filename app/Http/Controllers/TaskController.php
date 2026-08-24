@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\Task;
 use App\Models\TaskAudit;
 use App\Models\User;
+use App\Notifications\TaskAssignedNotification;
 use App\Notifications\TaskUpdatedNotification;
 use App\Services\EmailService;
 use App\Services\TaskAssignmentService;
@@ -175,6 +176,7 @@ class TaskController extends Controller
         // Send email notification to assigned user
         if ($task->assigned_to && $task->assignedTo) {
             EmailService::sendTo($task->assignedTo->email, new TaskAssignmentNotification($task, $task->assignedTo));
+            $task->assignedTo->notify(new TaskAssignedNotification($task));
         }
 
         // Load relationships for response
@@ -258,6 +260,7 @@ class TaskController extends Controller
         // Send email notification to newly assigned user if assignment changed
         if ($task->assigned_to && $task->assigned_to !== $oldAssignedTo && $task->assignedTo) {
             EmailService::sendTo($task->assignedTo->email, new TaskAssignmentNotification($task, $task->assignedTo));
+            $task->assignedTo->notify(new TaskAssignedNotification($task));
         }
 
         // Notify assigned user about important updates

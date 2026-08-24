@@ -40,14 +40,14 @@
         }
 
         .dataTables_wrapper .dataTables_length select:hover {
-            border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            border-color: #FF5A1F;
+            box-shadow: 0 0 0 3px rgba(255, 90, 31, 0.1);
         }
 
         .dataTables_wrapper .dataTables_length select:focus {
             outline: none;
-            border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            border-color: #FF5A1F;
+            box-shadow: 0 0 0 3px rgba(255, 90, 31, 0.1);
         }
 
         .dataTables_wrapper .dataTables_filter {
@@ -89,8 +89,8 @@
 
         .dataTables_wrapper .dataTables_filter input:focus {
             outline: none;
-            border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            border-color: #FF5A1F;
+            box-shadow: 0 0 0 3px rgba(255, 90, 31, 0.1);
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'%3e%3ccircle cx='11' cy='11' r='8' stroke='%23636f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3e%3cpath d='m21 21-4.35-4.35' stroke='%23636f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
             background-color: #f9fafb;
         }
@@ -148,17 +148,17 @@
         }
 
         .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-            background: linear-gradient(135deg, #6366f1 0%, #5558dd 100%);
-            border-color: #6366f1;
+            background: linear-gradient(135deg, #FF5A1F 0%, #FF5A1F 100%);
+            border-color: #FF5A1F;
             color: white;
             font-weight: 600;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 12px rgba(255, 90, 31, 0.3);
             transform: translateY(-1px);
         }
 
         .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
-            background: linear-gradient(135deg, #5558dd 0%, #4c51bf 100%);
-            border-color: #4c51bf;
+            background: linear-gradient(135deg, #FF5A1F 0%, #C63508 100%);
+            border-color: #C63508;
             box-shadow: 0 6px 16px rgba(85, 83, 221, 0.4);
         }
 
@@ -284,7 +284,7 @@
         .dark #usersTable_wrapper .dt-length select:focus,
         .dark #usersTable_wrapper .dt-search input:hover,
         .dark #usersTable_wrapper .dt-search input:focus {
-            border-color: #818cf8;
+            border-color: #FF7A3D;
         }
 
         .dark #usersTable_wrapper .dt-length label,
@@ -310,8 +310,8 @@
         }
 
         .dark #usersTable_wrapper .dt-paging .page-item.active .page-link {
-            background-color: #4f46e5;
-            border-color: #4f46e5;
+            background-color: #F0430A;
+            border-color: #F0430A;
             color: #ffffff;
         }
 
