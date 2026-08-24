@@ -236,7 +236,7 @@
     }
 
     .progress-bar-on-hold {
-        background: linear-gradient(90deg, #a855f7 0%, #9333ea 100%);
+        background: linear-gradient(90deg, #F59A0F 0%, #D67D06 100%);
         transition: width 0.5s ease;
     }
 
@@ -275,12 +275,12 @@
         width: 20px;
         height: 20px;
         border-radius: 6px;
-        background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
-        color: #6b21a8;
+        background: linear-gradient(135deg, #FFEFC7 0%, #FFDD8A 100%);
+        color: #8A4A0E;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 1px 2px rgba(168, 85, 247, 0.2);
+        box-shadow: 0 1px 2px rgba(245, 154, 15, 0.2);
     }
 
     .status-icon-completed {

@@ -643,6 +643,12 @@ class OrderController extends Controller
                     $user->notify(new OrderStatusNotification($order, $oldStatus, $order->status));
                 }
             });
+
+            // The sales owner isn't necessarily in $order->users (that's the
+            // fulfillment team), but they still need to know their order moved.
+            if ($order->salesUser && $order->salesUser->id !== auth()->id() && ! $order->users->contains($order->salesUser->id)) {
+                $order->salesUser->notify(new OrderStatusNotification($order, $oldStatus, $order->status));
+            }
         }
 
         return redirect()->route('orders.index')

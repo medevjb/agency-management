@@ -158,7 +158,7 @@
         .credit-balance {
             font-size: 0.75rem;
             font-weight: 700;
-            color: #4f46e5;
+            color: #F0430A;
         }
 
         .credit-add:hover,
@@ -168,7 +168,7 @@
 
         .dark .credit-add,
         .dark .credit-balance {
-            color: #a5b4fc;
+            color: #FFA26E;
         }
 
         .credit-remaining {

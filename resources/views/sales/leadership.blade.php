@@ -53,7 +53,7 @@
 
     /* Gradients */
     .bg-gradient-purple {
-        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        background: linear-gradient(135deg, #F0430A 0%, #D67D06 100%);
     }
 
     .text-num {
@@ -689,7 +689,7 @@
                         {
                             label: '3rd Month (' + qNames.q3 + ')',
                             data: qBreakdown.map(s => s.q3_amount),
-                            backgroundColor: 'rgba(139, 92, 246, 0.85)',
+                            backgroundColor: 'rgba(245, 154, 15, 0.85)',
                             borderRadius: 4,
                         }
                     ]

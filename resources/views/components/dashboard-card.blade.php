@@ -5,10 +5,10 @@
     $iconGradient = match ($color) {
         'green' => ['#10b981', '#34d399'],
         'yellow' => ['#f59e0b', '#fbbf24'],
-        'purple' => ['#8b5cf6', '#a78bfa'],
+        'purple' => ['#F59A0F', '#FFB238'],
         'orange' => ['#f97316', '#fb923c'],
         'red' => ['#ef4444', '#f87171'],
-        default => ['#6366f1', '#8b5cf6'],
+        default => ['#FF5A1F', '#F59A0F'],
     };
 @endphp
 

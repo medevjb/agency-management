@@ -57,38 +57,43 @@
                 </button>
 
                 <!-- Notifications Dropdown -->
+                @php
+                    $headerUnreadCount = auth()->user()->unreadNotifications()->count();
+                    $headerRecentNotifications = auth()->user()->notifications()->take(5)->get();
+                @endphp
                 <div class="relative" x-data="{ open: false }">
                     <button @click="open = !open" @click.away="open = false" class="relative text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none">
                         <i class="fas fa-bell text-xl"></i>
-                        @if(auth()->user()->unreadNotifications()->count() > 0)
-                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{{ auth()->user()->unreadNotifications()->count() }}</span>
+                        @if($headerUnreadCount > 0)
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{{ $headerUnreadCount > 9 ? '9+' : $headerUnreadCount }}</span>
                         @endif
                     </button>
 
                     <!-- Notifications Dropdown Panel -->
                     <div x-show="open" x-transition x-cloak class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-2 z-50" style="display: none;">
-                        <div class="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700">
                             <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Notifications</h3>
-                        </div>
-                        <div class="max-h-64 overflow-y-auto">
-                            @if(auth()->user()->unreadNotifications()->count() > 0)
-                                @foreach(auth()->user()->unreadNotifications()->take(5)->get() as $notification)
-                                    <div class="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
-                                        <p class="text-sm text-gray-800 dark:text-gray-200">{{ $notification->data['message'] ?? 'New notification' }}</p>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
-                                    </div>
-                                @endforeach
-                            @else
-                                <div class="px-4 py-3 text-center text-sm text-gray-500 dark:text-gray-400">
-                                    No new notifications
-                                </div>
+                            @if($headerUnreadCount > 0)
+                                <form method="POST" action="{{ route('notifications.read-all') }}">
+                                    @csrf
+                                    <button type="submit" class="text-xs font-medium text-ember-600 dark:text-ember-400 hover:text-ember-700 dark:hover:text-ember-300">
+                                        Mark all read
+                                    </button>
+                                </form>
                             @endif
                         </div>
-                        @if(auth()->user()->unreadNotifications()->count() > 0)
-                            <div class="px-4 py-2 border-t border-gray-200 dark:border-gray-700">
-                                <a href="{{ route('profile.edit') }}" class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">View all notifications</a>
-                            </div>
-                        @endif
+                        <div class="max-h-80 overflow-y-auto">
+                            @if($headerRecentNotifications->isEmpty())
+                                <div class="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                                    No notifications yet
+                                </div>
+                            @else
+                                @include('notifications._items', ['notifications' => $headerRecentNotifications])
+                            @endif
+                        </div>
+                        <div class="px-4 py-2 border-t border-gray-200 dark:border-gray-700">
+                            <a href="{{ route('notifications.index') }}" class="text-sm text-ember-600 dark:text-ember-400 hover:text-ember-700 dark:hover:text-ember-300">View all notifications</a>
+                        </div>
                     </div>
                 </div>
 
